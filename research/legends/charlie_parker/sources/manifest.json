@@ -1,0 +1,34 @@
+{
+  "schema_version": "2.0",
+  "legend_id": "charlie_parker",
+  "handling": "private_sources_not_committed",
+  "sources": [
+    {
+      "source_id": "cp_audio_greatest_hits_project",
+      "type": "audio",
+      "status": "private_project_source",
+      "derived_artifacts": [
+        "observations/audio/greatest_hits_study_v0_1.md",
+        "observations/audio/greatest_hits_annotations_v0_1.json"
+      ]
+    },
+    {
+      "source_id": "cp_symbolic_131",
+      "type": "pedagogical_symbolic",
+      "status": "aggregate_only_public",
+      "derived_runtime_data": "src/music_intelligence/legends/parker/data/conditional_stats.json"
+    },
+    {
+      "source_id": "cp_phrase_space_46_tunes",
+      "type": "derived_score_analysis",
+      "status": "aggregate_only_public",
+      "derived_runtime_data": "src/music_intelligence/legends/parker/data/phrase_space_stats.json"
+    },
+    {
+      "source_id": "cp_alignment_benchmark_manifest",
+      "type": "alignment_manifest",
+      "status": "provisional_identity_checks_required",
+      "derived_runtime_data": "src/music_intelligence/legends/parker/data/alignment_benchmarks.json"
+    }
+  ]
+}
