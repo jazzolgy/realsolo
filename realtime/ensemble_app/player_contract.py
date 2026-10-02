@@ -99,6 +99,8 @@ def monophonic_solo_gesture(
     duration_beats: float,
     *,
     velocity: int = 82,
+    articulation: tuple[str, ...] = (),
+    instrument_role: str = "tenor_sax",
     source: str = "core_immediate",
 ) -> RenderGesture:
     return RenderGesture(
@@ -108,7 +110,8 @@ def monophonic_solo_gesture(
                 pitch_midi,
                 velocity,
                 duration_beats,
-                instrument_role="solo",
+                articulation=articulation,
+                instrument_role=instrument_role,
             ),
         ),
         source=source,
