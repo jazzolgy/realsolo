@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from music_intelligence.harmony import HarmonicFrame
+from music_intelligence.reasoning.groove_context import GrooveTemporalContext
 
 
 class DrumVoice(str, Enum):
@@ -140,6 +141,7 @@ class DrummerRuntimeContext:
     requested_kick: bool = False
     harmonic_transition_confidence: float = 0.0
     harmony: HarmonicFrame | None = None
+    groove: GrooveTemporalContext | None = None
 
     def validate(self) -> None:
         if self.pattern_phase_beats is not None and self.pattern_phase_beats < 0:
@@ -162,3 +164,5 @@ class DrummerRuntimeContext:
                 raise ValueError(f"{name} must be within 0..1")
         if self.harmony is not None:
             self.harmony.validate()
+        if self.groove is not None:
+            self.groove.validate()
