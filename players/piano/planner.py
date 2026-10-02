@@ -225,11 +225,18 @@ def expand_candidate_set_expressively(
         if candidate.realization is None:
             out.append(candidate)
             continue
+        foreground_register = context.soloist_register_midi
+        if context.ensemble_mode in {
+            PianoEnsembleMode.PIANO_HEAD_TRIO,
+            PianoEnsembleMode.PIANO_SOLO_TRIO,
+        } and context.piano_foreground_register_midi is not None:
+            foreground_register = context.piano_foreground_register_midi
+
         variants = expand_expression_variants(
             candidate,
             interaction_state,
             bass_activity=context.bass_activity,
-            soloist_register_midi=context.soloist_register_midi,
+            soloist_register_midi=foreground_register,
         )
         out.extend(variants or (candidate,))
     return PianoCompingCandidateSet(tuple(out))
