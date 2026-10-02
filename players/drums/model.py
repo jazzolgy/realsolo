@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from music_intelligence.harmony import HarmonicFrame
+from music_intelligence.reasoning.groove_context import GrooveTemporalContext
 
 
 class DrumVoice(str, Enum):
@@ -54,12 +55,15 @@ class DrumHit:
     velocity: int
     microtiming_ms: float = 0.0
     articulation: str = "normal"
+    onset_offset_beats: float = 0.0
 
     def validate(self) -> None:
         if not 1 <= self.velocity <= 127:
             raise ValueError("velocity must be within MIDI range 1..127")
         if abs(self.microtiming_ms) > 80:
             raise ValueError("microtiming_ms is a local expressive offset, not future scheduling")
+        if abs(self.onset_offset_beats) > 1.0:
+            raise ValueError("onset_offset_beats must remain a local immediate offset")
 
 
 @dataclass(frozen=True)
@@ -140,6 +144,7 @@ class DrummerRuntimeContext:
     requested_kick: bool = False
     harmonic_transition_confidence: float = 0.0
     harmony: HarmonicFrame | None = None
+    groove: GrooveTemporalContext | None = None
 
     def validate(self) -> None:
         if self.pattern_phase_beats is not None and self.pattern_phase_beats < 0:
@@ -162,3 +167,5 @@ class DrummerRuntimeContext:
                 raise ValueError(f"{name} must be within 0..1")
         if self.harmony is not None:
             self.harmony.validate()
+        if self.groove is not None:
+            self.groove.validate()

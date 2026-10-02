@@ -24,6 +24,7 @@ from .timing import (
     bounded_timing_offset_ms,
     is_ride_anchor,
     tempo_conditioned_swing_prior,
+    swing_prior_from_groove,
 )
 
 
@@ -47,10 +48,11 @@ def _base_time_hits(
     plan: DrummerSoftPlan,
     context: DrummerRuntimeContext,
 ) -> tuple[DrumHit, ...]:
-    if plan.feel is not TimeFeel.SWING:
+    shared_feel = context.groove.feel.value if context.groove is not None else plan.feel.value
+    if shared_feel not in {"swing", "shuffle"}:
         return ()
 
-    prior = tempo_conditioned_swing_prior(context.tempo_bpm)
+    prior = swing_prior_from_groove(context.groove, fallback_bpm=context.tempo_bpm)
     hits: list[DrumHit] = []
 
     # Online realization: evaluate only whether *this instant* is a ride anchor.
@@ -95,7 +97,7 @@ def build_immediate_candidates(
     context.validate()
     base_hits = _base_time_hits(plan, context)
     prop = comping_propensity(plan, context)
-    prior = tempo_conditioned_swing_prior(context.tempo_bpm)
+    prior = swing_prior_from_groove(context.groove, fallback_bpm=context.tempo_bpm)
     out: list[DrumGesture] = []
 
     if base_hits:

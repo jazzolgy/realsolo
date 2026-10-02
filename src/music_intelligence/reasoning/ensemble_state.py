@@ -15,6 +15,8 @@ from dataclasses import dataclass, field, replace
 from enum import Enum
 from typing import Mapping, Sequence
 
+from .groove_context import GrooveTemporalContext
+
 
 class PlayerRole(str, Enum):
     SOLOIST = "soloist"
@@ -158,6 +160,7 @@ class EnsembleState:
     ensemble_tension: float = 0.5
     space_available: float = 0.5
     leader_player_id: str | None = None
+    groove: GrooveTemporalContext | None = None
     generation: int = 0
 
     def validate(self) -> None:
@@ -168,6 +171,8 @@ class EnsembleState:
             i.validate()
         for event in self.recent_interactions:
             event.validate()
+        if self.groove is not None:
+            self.groove.validate()
         ids = [p.player_id for p in self.players]
         if len(ids) != len(set(ids)):
             raise ValueError("player_id values must be unique")
@@ -202,6 +207,7 @@ class PlayerEnsembleView:
     ensemble_tension: float
     space_available: float
     leader_player_id: str | None
+    groove: GrooveTemporalContext | None
 
 
 def player_view(state: EnsembleState, player_id: str) -> PlayerEnsembleView:
@@ -218,6 +224,7 @@ def player_view(state: EnsembleState, player_id: str) -> PlayerEnsembleView:
         ensemble_tension=state.ensemble_tension,
         space_available=state.space_available,
         leader_player_id=state.leader_player_id,
+        groove=state.groove,
     )
 
 
@@ -274,6 +281,7 @@ def update_player_intent(
         ensemble_tension=tension,
         space_available=space,
         leader_player_id=leader,
+        groove=state.groove,
         generation=state.generation + 1,
     )
 

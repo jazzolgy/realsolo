@@ -18,6 +18,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from music_intelligence.reasoning.groove_context import GrooveFeel, GrooveTemporalContext
+
 
 @dataclass(frozen=True)
 class SwingTimingPrior:
@@ -125,3 +127,31 @@ def bounded_timing_offset_ms(
     prior.validate()
     expressive = max(-prior.max_humanize_ms, min(prior.max_humanize_ms, expressive_offset_ms))
     return base_bias_ms + role_relative_ms + expressive
+
+
+def swing_prior_from_groove(
+    groove: GrooveTemporalContext | None,
+    *,
+    fallback_bpm: float,
+) -> SwingTimingPrior:
+    """Project the shared ensemble groove into the drummer's timing prior.
+
+    Drums may add role-relative offsets, but they must not invent a conflicting
+    swing ratio when Shared has already established one.
+    """
+    base=tempo_conditioned_swing_prior(fallback_bpm)
+    if groove is None:
+        return base
+    groove.validate()
+    if groove.feel not in {GrooveFeel.SWING, GrooveFeel.SHUFFLE}:
+        return base
+    prior=SwingTimingPrior(
+        bpm=groove.tempo_bpm,
+        swing_ratio=max(1.0, groove.effective_swing_ratio),
+        ride_bias_ms=base.ride_bias_ms,
+        pedal_hihat_relative_ms=base.pedal_hihat_relative_ms,
+        snare_relative_ms=base.snare_relative_ms,
+        max_humanize_ms=base.max_humanize_ms,
+    )
+    prior.validate()
+    return prior
