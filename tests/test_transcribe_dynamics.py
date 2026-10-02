@@ -14,7 +14,13 @@ from music_intelligence.transcribe.projection import (
     project_pitched_event,
 )
 from music_intelligence.transcribe.notation import NotatedAtomKind, ScoreSpan
-from music_intelligence.transcribe.score import ScoreEvent, ScorePart, assemble_score
+from music_intelligence.transcribe.score import (
+    ScoreEvent,
+    ScorePart,
+    ScoreSpanner,
+    ScoreSpannerKind,
+    assemble_score,
+)
 from music_intelligence.transcribe.spelling import WrittenPitch
 
 
@@ -137,3 +143,35 @@ def test_same_dynamic_is_not_repeated_at_next_measure():
     score = assemble_score(score_id="dyn:bars", title="Bars", parts=(part,))
 
     assert _dynamic_names(score_to_musicxml(score)) == ["p"]
+
+
+
+def test_hairpin_suppresses_intermediate_dynamic_labels():
+    part = ScorePart(
+        "vln",
+        "Violin",
+        "violin",
+        ("staff",),
+        (
+            _score_note("n1", 0, "mp"),
+            _score_note("n2", 1, "mf"),
+            _score_note("n3", 2, "f"),
+        ),
+        profile_id="violin",
+    )
+    score = assemble_score(
+        score_id="dyn:hairpin-clean",
+        title="Hairpin Clean",
+        parts=(part,),
+        spanners=(
+            ScoreSpanner(
+                "hp:clean",
+                ScoreSpannerKind.CRESCENDO,
+                "vln",
+                "n1",
+                "n3",
+            ),
+        ),
+    )
+
+    assert _dynamic_names(score_to_musicxml(score)) == ["mp", "f"]
