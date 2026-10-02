@@ -380,5 +380,86 @@
       "statement": "Piano re-entry can use rhythmic pickup/anticipation when percussive support carries the space.",
       "status": "DESIGN_INFERENCE"
     }
+  ],
+  "turn_taking_fixed_window_probe": [
+    {
+      "start": 428.75,
+      "foreground_during_pre": 0.867,
+      "low_support_during_pre": 1.194,
+      "attack_during_pre": 0.974,
+      "foreground_post_during": 1.158,
+      "label": "AMBIGUOUS"
+    },
+    {
+      "start": 433,
+      "foreground_during_pre": 0.179,
+      "low_support_during_pre": 0.811,
+      "attack_during_pre": 0.381,
+      "foreground_post_during": 4.87,
+      "label": "SUPPORTED_HANDOFF_REENTRY"
+    },
+    {
+      "start": 1308,
+      "foreground_during_pre": 0.138,
+      "low_support_during_pre": 0.649,
+      "attack_during_pre": 0.727,
+      "foreground_post_during": 6.392,
+      "label": "SUPPORTED_HANDOFF_REENTRY"
+    },
+    {
+      "start": 1313.25,
+      "foreground_during_pre": 0.133,
+      "low_support_during_pre": 0.877,
+      "attack_during_pre": 0.482,
+      "foreground_post_during": 12.023,
+      "label": "SUPPORTED_HANDOFF_REENTRY"
+    },
+    {
+      "start": 1355.25,
+      "foreground_during_pre": 0.771,
+      "low_support_during_pre": 1.023,
+      "attack_during_pre": 0.816,
+      "foreground_post_during": 4.189,
+      "label": "AMBIGUOUS"
+    },
+    {
+      "start": 1365.75,
+      "foreground_during_pre": 2.06,
+      "low_support_during_pre": 0.73,
+      "attack_during_pre": 1.792,
+      "foreground_post_during": 0.859,
+      "label": "FOREGROUND_CONTINUES_FIXED_WINDOW"
+    },
+    {
+      "start": 1386.25,
+      "foreground_during_pre": 0.538,
+      "low_support_during_pre": 1.211,
+      "attack_during_pre": 0.756,
+      "foreground_post_during": 1.734,
+      "label": "AMBIGUOUS"
+    },
+    {
+      "start": 1549.25,
+      "foreground_during_pre": 0.247,
+      "low_support_during_pre": 0.517,
+      "attack_during_pre": 0.451,
+      "foreground_post_during": 9.694,
+      "label": "COLLECTIVE_RELEASE_REENTRY"
+    },
+    {
+      "start": 2008,
+      "foreground_during_pre": 0.192,
+      "low_support_during_pre": 0.382,
+      "attack_during_pre": 0.236,
+      "foreground_post_during": 5.413,
+      "label": "COLLECTIVE_RELEASE_REENTRY"
+    }
+  ],
+  "methodological_findings": [
+    {
+      "id": "PA-M1",
+      "statement": "Turn-taking classification can change when a fixed handoff window includes part of the re-entry.",
+      "implication": "Prefer boundary-aligned variable-duration handoff intervals in runtime."
+    }
   ]
 }
