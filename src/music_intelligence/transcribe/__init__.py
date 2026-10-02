@@ -64,13 +64,35 @@ from .instrument_rules import (
     sax_notation_directive,
 )
 from .score import (
+    LogicalScore,
+    LogicalScoreEvent,
+    LogicalScorePart,
     ReadableScore,
     ScoreEvent,
     ScorePart,
+    assemble_logical_score,
     assemble_score,
     extract_individual_part,
 )
 from .musicxml import score_to_musicxml
+from .engraving import (
+    BeamState,
+    EngravingIntent,
+    EngravingPlan,
+    EngravingProfile,
+    StemDirection,
+    TupletBracketMode,
+    VerticalPlacement,
+    beam_group_intents,
+    build_default_engraving_plan,
+    voice_stem_directions,
+)
+from .layout import (
+    LayoutPressure,
+    OpticalSpacingDecision,
+    layout_pressures,
+    optical_spacing_decisions,
+)
 from .sequence import assemble_monophonic_voice
 from .projection import EventProjectionResult, project_pitched_event
 
@@ -117,12 +139,30 @@ __all__ = [
     "bass_notation_directive",
     "drum_notation_directive",
     "sax_notation_directive",
+    "LogicalScore",
+    "LogicalScoreEvent",
+    "LogicalScorePart",
     "ReadableScore",
     "ScoreEvent",
     "ScorePart",
+    "assemble_logical_score",
     "assemble_score",
     "extract_individual_part",
     "score_to_musicxml",
+    "BeamState",
+    "EngravingIntent",
+    "EngravingPlan",
+    "EngravingProfile",
+    "StemDirection",
+    "TupletBracketMode",
+    "VerticalPlacement",
+    "beam_group_intents",
+    "build_default_engraving_plan",
+    "voice_stem_directions",
+    "LayoutPressure",
+    "OpticalSpacingDecision",
+    "layout_pressures",
+    "optical_spacing_decisions",
     "assemble_monophonic_voice",
     "EventProjectionResult",
     "project_pitched_event",
