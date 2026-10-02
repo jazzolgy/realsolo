@@ -264,3 +264,73 @@ sequences.
 The runtime invariant remains:
 
 `Plan intention, not notes.`
+
+
+## Pass 6 — Phrase-space / activity-transition scan
+
+A second whole-album pass used 250 ms blocks and a robust activity score combining:
+
+- RMS energy
+- time-domain attack/flux proxy
+- zero-crossing rate
+
+After 1-second smoothing, the lower 20% and upper 20% activity regions were compared.
+
+### AUDIO-OBSERVED
+
+- 373 low-activity runs of roughly 1–8 seconds were detected outside obvious full-track silence.
+- 118 of those were adjacent to substantially higher activity before or after them and
+  are candidate **phrase-space / handoff transition** regions.
+- Examples include transitions around:
+  - 397.75–398.75 s
+  - 428.75–429.75 s
+  - 433.00–435.25 s
+  - 1308.00–1310.75 s
+  - 1313.25–1315.50 s
+  - 1355.25–1356.75 s
+  - 1365.75–1367.00 s
+  - 1386.25–1387.50 s
+  - 1549.25–1551.50 s
+  - 2008.00–2010.75 s
+
+The 1109–1114 s region is a likely track boundary rather than an intra-performance
+phrase-space event and must be excluded from interaction learning.
+
+### AUDIO-INFERRED
+
+The high count of short low-activity windows is consistent with bebop performance
+containing many brief reductions in surface density rather than continuous maximal
+activity.
+
+However, the full mix cannot yet say whether each window represents:
+- Parker resting;
+- piano laying out;
+- a drummer/bass texture change;
+- a sustained note;
+- a formal break;
+- or several of these simultaneously.
+
+### DESIGN-INFERENCE
+
+RealSolo should not model phrase space as binary silence only.
+
+Useful future state:
+
+```
+phrase_space_window
+  duration
+  activity_drop
+  pre_activity
+  post_activity
+  actor_confidence
+  provenance
+```
+
+This can support:
+- soloist breath / release detection;
+- pianist answer windows;
+- ensemble handoff;
+- density recovery;
+- intentional sustained-note space.
+
+Actor attribution must remain separate from the raw activity transition.
