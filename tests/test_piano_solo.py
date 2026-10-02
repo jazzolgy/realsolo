@@ -114,3 +114,56 @@ def test_exact_future_solo_notes_are_still_forbidden():
             PianoSoloContext(),
             state,
         )
+
+
+def test_sparse_left_hand_allows_right_hand_to_clarify_harmony():
+    evaluator = PianoSoloEvaluator()
+    ctx = PianoSoloContext(
+        left_hand_harmonic_coverage=0.1,
+    )
+    harmonic = CandidateEvent(
+        67,
+        0.5,
+        tags=frozenset({"guide_tone", "harmonic_identity"}),
+    )
+    score = evaluator.evaluate(harmonic, ctx)
+    assert score.components.get("right_hand_harmonic_support", 0) > 0
+
+
+def test_dense_left_hand_can_penalize_duplicate_right_hand_harmonic_outline():
+    evaluator = PianoSoloEvaluator()
+    ctx = PianoSoloContext(
+        left_hand_harmonic_coverage=0.9,
+    )
+    duplicate = CandidateEvent(
+        67,
+        0.5,
+        tags=frozenset({"harmonic_outline"}),
+    )
+    score = evaluator.evaluate(duplicate, ctx)
+    assert score.components.get("duplicate_harmonic_outline", 0) < 0
+
+
+def test_active_left_hand_register_can_penalize_right_hand_collision():
+    evaluator = PianoSoloEvaluator()
+    ctx = PianoSoloContext(
+        left_hand_comping_activity=0.8,
+        left_hand_register_top_midi=64,
+    )
+    near = CandidateEvent(67, 0.5, tags=frozenset({"passing"}))
+    score = evaluator.evaluate(near, ctx)
+    assert score.components.get("left_hand_register_collision", 0) < 0
+
+
+def test_busy_left_hand_rhythm_can_penalize_dense_right_hand_run():
+    evaluator = PianoSoloEvaluator()
+    ctx = PianoSoloContext(
+        left_hand_rhythmic_coverage=0.9,
+    )
+    run = CandidateEvent(
+        72,
+        0.25,
+        tags=frozenset({"dense_run"}),
+    )
+    score = evaluator.evaluate(run, ctx)
+    assert score.components.get("left_hand_rhythmic_crowding", 0) < 0
