@@ -46,3 +46,15 @@ Notation is downstream of committed performance.
 
 It must never feed a rewritten score back into the live player as if the score
 had been the original improvisational decision.
+
+
+## Standalone boundary
+
+The notation engine must not import RealSolo player or reasoning packages.
+
+RealSolo may pass its existing commitment enum because the transcribe intake
+contract normalizes commitment values at the boundary. Standalone sources use
+the transcribe-owned `PerformanceCommitment` enum.
+
+Future RealSolo-specific conversion logic belongs in an adapter layer, not in
+the reusable notation engine.
