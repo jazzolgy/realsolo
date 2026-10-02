@@ -35,6 +35,14 @@ from .planner import (
 )
 from .narrative import NarrativeBiasScore, evaluate_narrative_bias
 from .variation import GestureSignature, VariationContext, VariationScore, evaluate_variation
+from .ensemble_response import (
+    EnsembleActor,
+    EnsembleResponseBias,
+    EnsembleResponseObservation,
+    GestureResponseRecord,
+    ResponseType,
+    evaluate_response_bias,
+)
 from .expression import (
     DynamicLevel,
     PianoExpressionIntent,
@@ -101,6 +109,12 @@ __all__ = [
     "VariationContext",
     "VariationScore",
     "evaluate_variation",
+    "EnsembleActor",
+    "EnsembleResponseBias",
+    "EnsembleResponseObservation",
+    "GestureResponseRecord",
+    "ResponseType",
+    "evaluate_response_bias",
     "PianoRhythmicIntent",
     "RhythmicPlacement",
     "apply_rhythmic_intent",
