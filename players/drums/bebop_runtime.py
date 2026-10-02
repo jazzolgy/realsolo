@@ -25,6 +25,7 @@ from .bass_coupling import (
     project_bass_pulse,
 )
 from music_intelligence.reasoning.ensemble_state import EnsembleState
+from .chorus_memory import BebopChorusMemory, chorus_gesture_adjustment
 from .comping_phrase import (
     CompPhraseAction,
     SnarePhraseMemory,
@@ -69,6 +70,7 @@ class BebopRuntimeProjection:
     snare_memory: SnarePhraseMemory = SnarePhraseMemory()
     legend: DrumLegendProjection | None = None
     vocabulary_intents: tuple[DrumVocabularyIntent, ...] = ()
+    chorus_memory: BebopChorusMemory = BebopChorusMemory()
 
     def validate(self) -> None:
         self.soloist.validate()
@@ -77,6 +79,7 @@ class BebopRuntimeProjection:
             self.bass.validate()
         self.ride_memory.validate()
         self.snare_memory.validate()
+        self.chorus_memory.validate()
 
     @classmethod
     def from_ensemble_state(
@@ -95,6 +98,7 @@ class BebopRuntimeProjection:
             snare_memory=SnarePhraseMemory(),
             legend=None,
             vocabulary_intents=(),
+            chorus_memory=BebopChorusMemory(),
         )
 
 
@@ -121,6 +125,8 @@ def _bass_intent(
         return None
     if context.requested_kick or "explicit_cue" in gesture.tags:
         return BassDrumIntent.ENSEMBLE_FIGURE_SUPPORT
+    if "bass_bomb" in gesture.tags:
+        return BassDrumIntent.INTERACTIVE_ACCENT
     if gesture.role is GestureRole.SETUP:
         return BassDrumIntent.SETUP
     if interaction.state in {BebopInteractionState.BUILD, BebopInteractionState.HANDOFF}:
@@ -163,6 +169,43 @@ def _quiet_bass_floor_candidate(
     return gesture
 
 
+def _interactive_bass_bomb_candidate(
+    plan: DrummerSoftPlan,
+    *,
+    interaction: BebopInteractionDecision,
+    context: DrummerRuntimeContext,
+) -> DrumGesture | None:
+    """Offer a clearly foreground bass-drum accent only when musically justified."""
+    if not (
+        context.requested_kick
+        or interaction.state in {BebopInteractionState.BUILD, BebopInteractionState.HANDOFF}
+        or context.phrase_position >= 0.9
+    ):
+        return None
+    velocity = 98 if context.requested_kick else int(78 + 24 * plan.energy)
+    gesture = DrumGesture(
+        hits=(
+            DrumHit(
+                DrumVoice.BASS_DRUM,
+                Limb.RIGHT_FOOT,
+                velocity=max(72, min(116, velocity)),
+                microtiming_ms=plan.microtiming_bias_ms,
+                articulation="bomb" if not context.requested_kick else "ensemble_kick",
+            ),
+        ),
+        role=GestureRole.ACCENT,
+        tags=frozenset({
+            "bebop",
+            "bass_bomb",
+            "interactive_bass_accent",
+            *(("explicit_cue",) if context.requested_kick else ()),
+        }),
+        provenance=("drum_player", "bebop_runtime"),
+    )
+    gesture.validate()
+    return gesture
+
+
 def build_bebop_candidates(
     plan: DrummerSoftPlan,
     context: DrummerRuntimeContext,
@@ -186,7 +229,7 @@ def build_bebop_candidates(
     # Generic snare comping is replaced by phrase-memory-aware bebop comping.
     generic = [
         g for g in generic
-        if "snare_comp" not in g.tags
+        if "snare_comp" not in g.tags and "bass_drum_comp" not in g.tags
     ]
 
     # Replace the generic canonical ride-time gesture with a bebop continuity
@@ -249,6 +292,14 @@ def build_bebop_candidates(
         floor = _quiet_bass_floor_candidate(time_gesture.hits, plan)
         if floor is not None:
             generic.append(floor)
+
+    bomb = _interactive_bass_bomb_candidate(
+        plan,
+        interaction=interaction,
+        context=context,
+    )
+    if bomb is not None:
+        generic.append(bomb)
 
     # Deduplicate by musical surface + tags.
     seen: set[tuple[tuple[tuple[str, str, int, str], ...], tuple[str, ...], str]] = set()
@@ -377,7 +428,7 @@ def score_bebop_gesture(
             components.append(("avoid_ambiguous_bass_role", v))
 
     if bass_intent is BassDrumIntent.INTERACTIVE_ACCENT:
-        if "bass_drum_comp" in gesture.tags or "explicit_cue" in gesture.tags:
+        if "bass_bomb" in gesture.tags or "explicit_cue" in gesture.tags:
             v = 0.22 * profile.bass_interactive_accent.value
             score += v
             components.append(("bass_interactive_accent", v))
@@ -396,6 +447,12 @@ def score_bebop_gesture(
             v = -0.24 * profile.phrase_pacing_memory.value * recent
             score += v
             components.append(("phrase_pacing_memory", v))
+
+    # Chorus-scale self-restraint: remember how much the drummer has already
+    # contributed across the form without redefining Shared Core form.
+    delta, parts = chorus_gesture_adjustment(gesture, projection.chorus_memory)
+    score += delta
+    components.extend(parts)
 
     # Shared Legend Intelligence affects ranking through drummer-specific
     # realization features; it never inserts a precomposed future phrase.
