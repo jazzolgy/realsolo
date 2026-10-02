@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Mapping
 
-from music_intelligence.bass import (
+from players.bass import (
     BassCommittedAction,
     BassContext,
     BassInteractionContext,
@@ -12,7 +12,7 @@ from music_intelligence.bass import (
     choose_bass_interaction_intent,
     choose_immediate_bass_action,
 )
-from music_intelligence.drums import (
+from players.drums import (
     DrummerPerformanceMemory,
     DrummerRuntimeContext,
     DrummerSoftPlan,
