@@ -2,6 +2,10 @@
 
 CR-001: instrument-neutral sonority / orchestration semantics.
 This module does not replace monophonic CandidateEvent.
+
+Important: one polyphonic action does not imply sample-accurate simultaneity.
+Each voice may carry its own onset offset, so a single committed sonority may
+be slightly rolled, arpeggiated, spread, or otherwise near-simultaneous.
 """
 from __future__ import annotations
 
@@ -21,6 +25,9 @@ class InstrumentAssignment:
 class VoiceEvent:
     voice_id: str
     pitch_midi: int
+    # Relative to the PolyphonicEventCandidate anchor. Values need not be equal.
+    # Positive and negative values are allowed so expressive spread can straddle
+    # the nominal group onset when the scheduler supports it.
     onset_offset_beats: float = 0.0
     duration_beats: float | None = None
     velocity: int | None = None
@@ -86,7 +93,12 @@ class BassRelation:
 
 @dataclass(frozen=True)
 class PolyphonicEventCandidate:
-    """One immediately playable sonority/action containing one or more voices."""
+    """One immediately playable polyphonic gesture containing one or more voices.
+
+    "One action" means one current musical decision/gesture. It does NOT mean
+    every note has the same physical onset. VoiceEvent.onset_offset_beats may
+    distribute the notes around the gesture anchor.
+    """
     voices: tuple[VoiceEvent, ...]
     duration_beats: float
     onset_offset_beats: float = 0.0
@@ -147,6 +159,17 @@ class PolyphonicEventCandidate:
     def spacing_semitones(self) -> tuple[int, ...]:
         pitches = sorted(self.pitches_midi)
         return tuple(b - a for a, b in zip(pitches, pitches[1:]))
+
+    @property
+    def voice_onset_spread_beats(self) -> float:
+        """Physical onset spread inside this single musical gesture."""
+        offsets = [v.onset_offset_beats for v in self.voices]
+        return max(offsets) - min(offsets)
+
+    @property
+    def voices_by_onset(self) -> tuple[VoiceEvent, ...]:
+        """Scheduling order; semantic voice order remains available separately."""
+        return tuple(sorted(self.voices, key=lambda v: v.onset_offset_beats))
 
     def to_dict(self) -> dict[str, Any]:
         self.validate()
