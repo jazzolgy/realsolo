@@ -5,17 +5,7 @@ from enum import Enum
 from typing import Iterable
 
 
-class SoloArticulation(str, Enum):
-    SUSTAIN = "sustain"
-    SHORT = "short"
-    LEGATO = "legato"
-    VIBRATO = "vibrato"
-    SUBTONE = "subtone"
-    GROWL = "growl"
-    SCOOP = "scoop"
-    FALL = "fall"
-    BREATHY = "breathy"
-    ACCENT = "accent"
+from players.sax.articulation import SoloArticulation
 
 
 _ALIASES = {
