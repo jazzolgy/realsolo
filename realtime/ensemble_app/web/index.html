@@ -53,6 +53,7 @@ h1{margin:0;font-size:clamp(25px,4vw,38px);letter-spacing:-.03em}.sub{color:#9ba
 <section class="chart" id="chart" aria-label="Chord chart"></section>
 <div class="footer"><span>Chart transport is the Stage-1 clock. Microphone interaction is added in Stage 2.</span><span id="stateText">Stopped</span></div>
 <div class="footer"><span id="audioText">Audio engine: oscillator fallback</span><span id="bankText">Load an SF2/SF3/DLS bank for sample playback</span></div>
+<div class="footer"><span id="providerText">Players: checking integration status…</span><span>App renders committed gestures; players own musical policy</span></div>
 <script type="module" src="/soundfont_engine.js"></script>
 </main>
 <script>
@@ -61,7 +62,7 @@ var els={
 title:document.querySelector("#title"),chart:document.querySelector("#chart"),role:document.querySelector("#role"),tempo:document.querySelector("#tempo"),
 transpose:document.querySelector("#transpose"),choruses:document.querySelector("#choruses"),play:document.querySelector("#play"),stop:document.querySelector("#stop"),
 aiRole:document.querySelector("#aiRole"),position:document.querySelector("#position"),currentChord:document.querySelector("#currentChord"),chorus:document.querySelector("#chorus"),stateText:document.querySelector("#stateText"),audioText:document.querySelector("#audioText"),
-soundMode:document.querySelector("#soundMode"),soundfont:document.querySelector("#soundfont"),bankText:document.querySelector("#bankText")
+soundMode:document.querySelector("#soundMode"),soundfont:document.querySelector("#soundfont"),bankText:document.querySelector("#bankText"),providerText:document.querySelector("#providerText")
 };
 var audioCtx=null,master=null,sampler=null,lastScheduledBeat=-1,soloStep=0;
 for(var i=-12;i<=12;i++){var opt=document.createElement("option");opt.value=String(i);opt.textContent=i===0?"0":(i>0?"+"+i:String(i));els.transpose.appendChild(opt);}
@@ -139,6 +140,12 @@ var chord=chordAt(barIndex,beatInBar),when=audioCtx.currentTime+Math.max(.025,(l
 if(els.role.value==="comper")playSolo(chord,nextChordAt(barIndex,beatInBar),beatInBar,when,beatDur);else playAccompaniment(chord,Math.floor(beatInBar),when,beatDur);
 }
 }
+async function loadPlayerStatus(){
+try{
+var r=await fetch("/api/player-status");var rows=await r.json();
+els.providerText.textContent="Players · "+rows.map(function(x){return x.role+":"+x.state;}).join(" · ");
+}catch(e){els.providerText.textContent="Player status unavailable";}
+}
 async function loadChart(){
 var tr=Number(els.transpose.value||0);var res=await fetch("/api/chart?transpose="+encodeURIComponent(tr));chart=await res.json();els.title.textContent=chart.title;
 if(!playing)els.tempo.value=Math.round(chart.tempo_bpm);renderChart();render(0);
@@ -175,7 +182,7 @@ els.transpose.addEventListener("change",loadChart);
 els.soundfont.addEventListener("change",function(){var f=els.soundfont.files&&els.soundfont.files[0];if(f)loadSoundFont(f).catch(function(err){els.bankText.textContent="SoundFont error: "+err.message;els.soundMode.value="oscillator";});});
 els.soundMode.addEventListener("change",function(){if(els.soundMode.value==="sampler"&&!sampleReady()){els.bankText.textContent="Choose an SF2/SF3/DLS file first.";els.soundMode.value="oscillator";}});
 els.tempo.addEventListener("change",function(){els.tempo.value=String(clamp(Number(els.tempo.value)||120,40,320));});
-loadChart().catch(function(err){els.stateText.textContent="Chart load error: "+err.message;});
+loadPlayerStatus();loadChart().catch(function(err){els.stateText.textContent="Chart load error: "+err.message;});
 })();
 </script>
 </body>

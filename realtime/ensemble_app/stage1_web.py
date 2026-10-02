@@ -9,6 +9,7 @@ from .chart import ChartBar, SongChart
 from .harmony_display import transpose_chord
 from .stage1_music import Stage1Soloist, accompaniment_frame
 from .player_contract import fallback_accompaniment_gesture, monophonic_solo_gesture
+from .player_provider import current_stage1_provider_status
 
 WEB_ROOT = Path(__file__).with_name("web")
 
@@ -60,6 +61,17 @@ class Stage1Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
+        if parsed.path == "/api/player-status":
+            body = json.dumps(
+                [status.to_dict() for status in current_stage1_provider_status()]
+            ).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
         if parsed.path == "/api/reset-solo":
             self.soloist.reset()
             body = b'{"ok": true}'

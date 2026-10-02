@@ -78,3 +78,16 @@ They are marked `source=realtime_fallback`.
 
 Do not improve those fallback musical rules in the realtime branch. Improve the
 corresponding player workstream instead.
+
+
+## Shared-Core projection adapter
+
+`player_adapter.committed_polyphonic_to_render_gesture()` now provides the
+canonical path from a selected `PolyphonicEventCandidate` into the renderer.
+
+Important: this adapter runs **after** a player has selected/committed the
+gesture. It never sees candidate sets and does not re-score musical alternatives.
+
+This means the existing piano workstream can connect without leaking
+piano-policy code into realtime, and bass/drums can use the same path once their
+player implementations expose committed events.
