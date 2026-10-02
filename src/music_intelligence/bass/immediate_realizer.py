@@ -239,6 +239,22 @@ def _interaction_memory_score(
         score -= .08
         reasons.append("stepwise momentum saturation")
 
+    # Walking should not repeat the same role-grid every bar. If the candidate
+    # recreates the role heard at the same metric slot one bar ago, apply a
+    # modest diversity pressure. This is softer than randomization: harmony,
+    # voice-leading and interaction may still justify the repetition.
+    if ctx.mode is BassMode.WALKING and len(memory.recent_harmonic_roles) >= 4:
+        previous_same_slot = memory.recent_harmonic_roles[-4]
+        if role.value == previous_same_slot:
+            score -= .055
+            reasons.append("walking role-pattern repetition pressure")
+        if len(memory.recent_harmonic_roles) >= 8:
+            last4 = memory.recent_harmonic_roles[-4:]
+            prev4 = memory.recent_harmonic_roles[-8:-4]
+            if last4 == prev4 and role.value == previous_same_slot:
+                score -= .045
+                reasons.append("repeated bar-level walking template")
+
     if (
         memory.consecutive_direction_count >= 3
         and memory.previous_interval_semitones not in (None, 0)
@@ -347,8 +363,13 @@ def generate_immediate_bass_candidates(
             for pc in sorted(pcs):
                 if pc in {root_pc, fifth_pc}:
                     continue
-                raw.append((pc, BassHarmonicRole.CHORD_TONE, 0.14,
-                            ("shared current-harmony pitch-class option",)))
+                base = 0.14 if ctx.mode is BassMode.WALKING else 0.035
+                reason = (
+                    "shared current-harmony pitch-class option"
+                    if ctx.mode is BassMode.WALKING
+                    else "two-feel non-root/fifth chord member kept as a low-priority color"
+                )
+                raw.append((pc, BassHarmonicRole.CHORD_TONE, base, (reason,)))
 
     next_root = frame.next_expected.root_pc if frame.next_expected is not None else None
     late_measure = ctx.beat_in_measure >= ctx.meter_numerator - 1.0
