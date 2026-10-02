@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 
 from music_intelligence.harmony.jazz_harmony_core import HarmonicFrame
 from music_intelligence.reasoning.interaction_scheduler import InteractionDirective
+from music_intelligence.legends.interfaces import LegendProfileView
 
 from .ghost_notes import (
     BassGhostContext,
@@ -76,6 +77,7 @@ class BassStepInput:
     local_key_pitch_classes: frozenset[int] = frozenset()
     score_evidence: BassScoreEvidenceDirective = BassScoreEvidenceDirective()
     directive: InteractionDirective | None = None
+    legend_profile: LegendProfileView | None = None
 
 
 @dataclass(frozen=True)
@@ -151,6 +153,7 @@ class BassSequentialRunner:
                 phrase_intent,
                 recent_repetition_count=solo_snapshot.repetition_count,
                 future_harmony_available=item.frame.next_expected is not None,
+                legend_profile=item.legend_profile,
             )
             solo_plan = choose_bass_solo_plan(
                 options,
