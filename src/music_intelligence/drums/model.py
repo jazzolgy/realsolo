@@ -96,6 +96,7 @@ class DrummerSoftPlan:
     interaction_intent: str = "support"
     ride_velocity: int = 76
     microtiming_bias_ms: float = 0.0
+    expressive_timing_offset_ms: float = 0.0
     exact_future_gestures: tuple[DrumGesture, ...] = ()
 
     def validate(self) -> None:
@@ -107,6 +108,8 @@ class DrummerSoftPlan:
             raise ValueError("ride_velocity must be within MIDI range 1..127")
         if abs(self.microtiming_bias_ms) > 50:
             raise ValueError("plan microtiming bias is implausibly large")
+        if abs(self.expressive_timing_offset_ms) > 50:
+            raise ValueError("expressive timing intention is implausibly large")
         if self.exact_future_gestures:
             raise ValueError("DrummerSoftPlan may not freeze future drum gestures")
 
@@ -120,6 +123,7 @@ class DrummerRuntimeContext:
     Harmony and is consumed read-only.
     """
     position_in_bar_beats: float
+    tempo_bpm: float = 140.0
     beats_per_bar: int = 4
     phrase_position: float = 0.0
     ensemble_activity: float = 0.5
@@ -131,6 +135,8 @@ class DrummerRuntimeContext:
     harmony: HarmonicFrame | None = None
 
     def validate(self) -> None:
+        if self.tempo_bpm <= 0:
+            raise ValueError("tempo_bpm must be positive")
         if self.beats_per_bar <= 0:
             raise ValueError("beats_per_bar must be positive")
         if not 0.0 <= self.position_in_bar_beats < self.beats_per_bar:
