@@ -22,6 +22,8 @@ class DrumVoice(str, Enum):
     HIGH_TOM = "high_tom"
     MID_TOM = "mid_tom"
     FLOOR_TOM = "floor_tom"
+    COWBELL = "cowbell"
+    CLAVE = "clave"
 
 
 class Limb(str, Enum):
