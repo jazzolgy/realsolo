@@ -11,6 +11,7 @@ from dataclasses import dataclass, replace
 from enum import Enum
 
 from .model import DrumGesture, DrumHit, DrummerRuntimeContext, DrumVoice, GestureRole, Limb
+from music_intelligence.reasoning.groove_context import groove_timing_offset_ms
 
 
 class RhythmicTransform(str, Enum):
@@ -450,18 +451,34 @@ def realize_motif_now(
     voice = _voice_from_contour(motif.orchestration_contour[i], intensity)
     accent = motif.accent_vector[i]
     velocity = max(1, min(127, int(42 + 58 * intensity + 22 * accent)))
+    swing_eligible = (
+        "sixteenth" not in motif.subdivision
+        and "quint" not in motif.subdivision
+        and "triplet" not in motif.subdivision
+    )
+    groove_ms = groove_timing_offset_ms(
+        context.position_in_bar_beats,
+        context.groove,
+        swing_eligible=swing_eligible,
+    )
+    groove_tag = (
+        f"groove:{context.groove.feel.value}"
+        if context.groove is not None
+        else "groove:player_default"
+    )
     gesture = DrumGesture(
         hits=(
             DrumHit(
                 voice=voice,
                 limb=_limb_for_voice(voice, i),
                 velocity=velocity,
+                microtiming_ms=groove_ms,
                 articulation=f"motif_{development_tag}",
             ),
         ),
         role=GestureRole.FILL,
         tags=frozenset(
-            {"drum_solo", "rhythmic_motif", development_tag, motif.motif_id}
+            {"drum_solo", "rhythmic_motif", development_tag, motif.motif_id, groove_tag}
         ),
         confidence=0.9,
         provenance=motif.provenance + ("realize_motif_now",),
