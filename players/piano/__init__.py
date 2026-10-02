@@ -35,6 +35,13 @@ from .planner import (
 )
 from .narrative import NarrativeBiasScore, evaluate_narrative_bias
 from .variation import GestureSignature, VariationContext, VariationScore, evaluate_variation
+from .harmonic_creativity import (
+    HarmonicCreativeFreedom,
+    adapt_continuity_profile_for_harmony,
+    adapt_creativity_context_for_harmony,
+    assess_harmonic_creative_freedom,
+)
+from .harmonic_semantics import annotate_harmonic_semantics, harmonic_semantic_tags
 from .creative_continuity import (
     CreativityContext,
     CreativeContinuityScore,
@@ -163,6 +170,12 @@ __all__ = [
     "DimensionContinuityProfile",
     "evaluate_creative_continuity",
     "profile_from_harmonic_context",
+    "HarmonicCreativeFreedom",
+    "adapt_continuity_profile_for_harmony",
+    "adapt_creativity_context_for_harmony",
+    "assess_harmonic_creative_freedom",
+    "annotate_harmonic_semantics",
+    "harmonic_semantic_tags",
     "PianoRhythmicIntent",
     "RhythmicPlacement",
     "apply_rhythmic_intent",
