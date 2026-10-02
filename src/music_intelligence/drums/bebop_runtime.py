@@ -25,6 +25,11 @@ from .bass_coupling import (
     project_bass_pulse,
 )
 from music_intelligence.reasoning.ensemble_state import EnsembleState
+from .comping_phrase import (
+    CompPhraseAction,
+    SnarePhraseMemory,
+    build_snare_phrase_candidates,
+)
 from .ride_continuity import (
     RideContinuityMemory,
     build_ride_candidates,
@@ -55,6 +60,7 @@ class BebopRuntimeProjection:
     phrase_memory: BebopPhraseMemory
     bass: BassPulseProjection | None = None
     ride_memory: RideContinuityMemory = RideContinuityMemory()
+    snare_memory: SnarePhraseMemory = SnarePhraseMemory()
 
     def validate(self) -> None:
         self.soloist.validate()
@@ -62,6 +68,7 @@ class BebopRuntimeProjection:
         if self.bass is not None:
             self.bass.validate()
         self.ride_memory.validate()
+        self.snare_memory.validate()
 
     @classmethod
     def from_ensemble_state(
@@ -77,6 +84,7 @@ class BebopRuntimeProjection:
             phrase_memory=phrase_memory,
             bass=project_bass_pulse(ensemble_state),
             ride_memory=RideContinuityMemory(),
+            snare_memory=SnarePhraseMemory(),
         )
 
 
@@ -165,6 +173,12 @@ def build_bebop_candidates(
 
     generic = list(build_immediate_candidates(plan, context))
 
+    # Generic snare comping is replaced by phrase-memory-aware bebop comping.
+    generic = [
+        g for g in generic
+        if "snare_comp" not in g.tags
+    ]
+
     # Replace the generic canonical ride-time gesture with a bebop continuity
     # surface. Keep any simultaneous non-ride anchor (e.g. pedal hi-hat 2&4).
     canonical_time = next(
@@ -199,6 +213,19 @@ def build_bebop_candidates(
         )
         combined.validate()
         generic.append(combined)
+
+    for snare_candidate in build_snare_phrase_candidates(
+        plan,
+        context,
+        interaction.state,
+        choose_comp_intent(
+            interaction,
+            projection.phrase_memory,
+            phrase_position=context.phrase_position,
+        ),
+        projection.snare_memory,
+    ):
+        generic.append(snare_candidate.gesture)
 
     generic.append(_intentional_non_response_candidate())
 
@@ -284,6 +311,30 @@ def score_bebop_gesture(
             v = -0.20
         score += v
         components.append(("intentional_non_response", v))
+
+    if "snare_phrase" in gesture.tags:
+        phrase_candidates = build_snare_phrase_candidates(
+            plan,
+            context,
+            interaction.state,
+            comp_intent,
+            projection.snare_memory,
+        )
+        matching = next(
+            (
+                candidate for candidate in phrase_candidates
+                if candidate.action.value in gesture.tags
+            ),
+            None,
+        )
+        if matching is not None:
+            v = matching.score_bias
+            score += v
+            components.append(("snare_phrase_development", v))
+            if matching.relation_to_motif > 0:
+                mv = 0.16 * matching.relation_to_motif
+                score += mv
+                components.append(("snare_motif_relation", mv))
 
     if gesture.role is GestureRole.COMP:
         # Selectivity penalizes generic activity when the interaction state asks
