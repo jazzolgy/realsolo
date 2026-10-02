@@ -1,0 +1,200 @@
+{
+  "schema_version": "1.0",
+  "source_id": "literature.clark_2014",
+  "recording_id": "bill_evans_trio.alice_in_wonderland.village_vanguard_1961",
+  "items": [
+    {
+      "vocabulary_id": "lafaro.alice.long_3_4_rhythmic_cell.v1",
+      "tune_id": "Alice In Wonderland",
+      "chorus": "B",
+      "bar": "2-26",
+      "phrase_position": "accompaniment_development",
+      "rhythm": "recurrent 3/4 cell with periodic dotted-quarter/eighth interruption",
+      "contour": "variable_pitch_under_stable_rhythmic_identity",
+      "interval_pattern": "",
+      "articulation": "",
+      "register": "variable",
+      "tension_curve": "stable_identity_with_local_harmonic_adaptation",
+      "source_instrument": "bass",
+      "dimensions": [
+        "rhythm",
+        "density_arc",
+        "phrase_shape",
+        "target_behavior"
+      ],
+      "transferable_to": [
+        "bass",
+        "piano",
+        "drums",
+        "sax"
+      ],
+      "domains": [
+        "rhythm_subdivision",
+        "motif_development",
+        "repetition_variation"
+      ],
+      "context_tags": [
+        "solo",
+        "develop",
+        "3_4",
+        "productive_repetition"
+      ],
+      "candidate_uses": [
+        "abstracted_pattern",
+        "hybrid_composition"
+      ],
+      "signature_status": "signature_candidate",
+      "signature_evidence_count": 1,
+      "confidence": 0.86,
+      "provenance": [
+        "literature:clark_2014",
+        "analysis:alice_chorus_b_bars_2_26",
+        "derived_abstract_no_literal_notes"
+      ]
+    },
+    {
+      "vocabulary_id": "lafaro.alice.offbeat_downbeat_avoidance.v1",
+      "tune_id": "Alice In Wonderland",
+      "chorus": "A",
+      "bar": "4-9",
+      "phrase_position": "phrase_development",
+      "entrance": "offbeat_entry",
+      "rhythm": "multi-bar syncopated phrase avoids beat-one landing",
+      "contour": "independent_linear_motion",
+      "register": "mobile",
+      "tension_curve": "metric_tension_without_losing_form",
+      "source_instrument": "bass",
+      "dimensions": [
+        "rhythm",
+        "phrase_shape",
+        "tension_release"
+      ],
+      "transferable_to": [
+        "bass",
+        "piano",
+        "drums",
+        "sax"
+      ],
+      "domains": [
+        "phrase_entrance",
+        "rhythm_subdivision",
+        "motif_development"
+      ],
+      "context_tags": [
+        "solo",
+        "develop",
+        "3_4",
+        "syncopated_entry"
+      ],
+      "candidate_uses": [
+        "abstracted_pattern",
+        "hybrid_composition"
+      ],
+      "signature_status": "recurring",
+      "signature_evidence_count": 1,
+      "confidence": 0.82,
+      "provenance": [
+        "literature:clark_2014",
+        "analysis:alice_chorus_a_bars_4_9",
+        "derived_abstract_no_literal_notes"
+      ]
+    },
+    {
+      "vocabulary_id": "lafaro.alice.eighth_polyrhythm_retarget.v1",
+      "tune_id": "Alice In Wonderland",
+      "chorus": "B",
+      "bar": "43-44",
+      "phrase_position": "local_transition",
+      "rhythm": "eighth-note polyrhythmic cell",
+      "contour": "cell_transposed_with_harmony",
+      "harmonic_function": "local_chord_retarget",
+      "register": "stable_cell_register",
+      "tension_curve": "polyrhythmic_tension_then_return_to_accompaniment",
+      "source_instrument": "bass",
+      "dimensions": [
+        "rhythm",
+        "accent",
+        "target_behavior",
+        "phrase_shape"
+      ],
+      "transferable_to": [
+        "bass",
+        "piano",
+        "drums",
+        "sax"
+      ],
+      "domains": [
+        "rhythm_subdivision",
+        "linear_connection",
+        "repetition_variation"
+      ],
+      "context_tags": [
+        "solo",
+        "develop",
+        "polyrhythm",
+        "harmonic_retarget"
+      ],
+      "candidate_uses": [
+        "abstracted_pattern",
+        "fragment_recall",
+        "hybrid_composition"
+      ],
+      "signature_status": "recurring",
+      "signature_evidence_count": 1,
+      "confidence": 0.84,
+      "provenance": [
+        "literature:clark_2014",
+        "analysis:alice_chorus_b_bars_43_44",
+        "derived_abstract_no_literal_notes"
+      ]
+    },
+    {
+      "vocabulary_id": "lafaro.alice.space_triggered_foreground_answer.v1",
+      "tune_id": "Alice In Wonderland",
+      "phrase_position": "piano_phrase_gap",
+      "entrance": "respond_to_open_space",
+      "ending": "handoff_back_to_piano",
+      "rhythm": "foreground eighth-note response after piano leaves space",
+      "contour": "ascending_response",
+      "register": "ascend_to_upper_register_then_handoff",
+      "tension_curve": "open_space_to_foreground_arrival_to_handoff",
+      "source_instrument": "bass",
+      "dimensions": [
+        "rhythm",
+        "contour",
+        "phrase_shape",
+        "interaction_role",
+        "register_trajectory"
+      ],
+      "transferable_to": [
+        "bass",
+        "piano",
+        "sax"
+      ],
+      "domains": [
+        "call_response",
+        "ensemble_interaction",
+        "phrase_entrance",
+        "register_trajectory"
+      ],
+      "context_tags": [
+        "solo",
+        "answer",
+        "ensemble_space",
+        "foreground_handoff"
+      ],
+      "candidate_uses": [
+        "abstracted_pattern",
+        "hybrid_composition"
+      ],
+      "signature_status": "none",
+      "signature_evidence_count": 1,
+      "confidence": 0.78,
+      "provenance": [
+        "literature:clark_2014",
+        "analysis:alice_conversational_counterpoint",
+        "derived_abstract_no_literal_notes"
+      ]
+    }
+  ]
+}
