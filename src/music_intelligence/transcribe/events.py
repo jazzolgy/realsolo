@@ -34,12 +34,21 @@ class PerformanceTimeSpan:
     onset_seconds: float
     offset_seconds: float | None = None
     transport_beat: float | None = None
+    transport_offset_beat: float | None = None
 
     def validate(self) -> None:
         if self.onset_seconds < 0:
             raise ValueError("onset_seconds may not be negative")
         if self.offset_seconds is not None and self.offset_seconds < self.onset_seconds:
             raise ValueError("offset_seconds may not precede onset_seconds")
+        if (
+            self.transport_beat is not None
+            and self.transport_offset_beat is not None
+            and self.transport_offset_beat <= self.transport_beat
+        ):
+            raise ValueError("transport_offset_beat must follow transport_beat")
+        if self.transport_offset_beat is not None and self.transport_beat is None:
+            raise ValueError("transport_offset_beat requires transport_beat")
 
     @property
     def duration_seconds(self) -> float | None:
