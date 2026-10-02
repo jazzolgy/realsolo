@@ -157,6 +157,20 @@ def voice_stem_directions(events: tuple[ScoreEvent, ...]) -> dict[str, StemDirec
     return directions
 
 
+def meter_beam_group(
+    meter_numerator: int,
+    meter_denominator: int,
+) -> Fraction:
+    """Return the primary beat grouping in quarter-note units."""
+
+    if meter_numerator <= 0 or meter_denominator <= 0:
+        raise ValueError("meter must be positive")
+    written_beat = Fraction(4, meter_denominator)
+    if meter_numerator in {6, 9, 12}:
+        return 3 * written_beat
+    return written_beat
+
+
 def beam_group_intents(
     events: tuple[ScoreEvent, ...],
     *,
@@ -206,7 +220,13 @@ def build_default_engraving_plan(
     profile.validate()
     all_events = tuple(event for part in score.parts for event in part.events)
     stem_map = voice_stem_directions(all_events)
-    beam_map = beam_group_intents(all_events)
+    beam_map = beam_group_intents(
+        all_events,
+        beat_group=meter_beam_group(
+            score.meter_numerator,
+            score.meter_denominator,
+        ),
+    )
 
     intents: list[EngravingIntent] = []
     for event in all_events:
