@@ -1,0 +1,116 @@
+{
+  "schema_version": "0.1",
+  "batch_id": "scorebook.linear.comparator.001",
+  "policy": "Abstract observations only; no complete melody or literal phrase sequence stored.",
+  "observations": [
+    {
+      "observation_id": "anthropology.fast_bebop.head",
+      "song_id": "score.newreal1.anthropology",
+      "source_locator": "NewReal1.pdf:p11",
+      "likely_routes": [
+        "chordal",
+        "diatonic_passing",
+        "chromatic_passing",
+        "approach",
+        "enclosure"
+      ],
+      "structural_targets": [
+        "guide_tone",
+        "chord_tone",
+        "next_harmony_target"
+      ],
+      "interval_motion": "small_mixed",
+      "motion_source": "mixed",
+      "contour": "mixed",
+      "target_horizon": "short",
+      "section_role": "head",
+      "rhythmic_density": "high",
+      "confidence": 0.9,
+      "provenance": [
+        "vision:NewReal1:p11",
+        "manual-abstract-review"
+      ]
+    },
+    {
+      "observation_id": "autumn_leaves.medium_swing.head",
+      "song_id": "score.newreal1.autumn_leaves",
+      "source_locator": "NewReal1.pdf:p12",
+      "likely_routes": [
+        "chordal",
+        "diatonic_passing",
+        "approach",
+        "common_tone"
+      ],
+      "structural_targets": [
+        "guide_tone",
+        "chord_tone",
+        "resolution_target"
+      ],
+      "interval_motion": "stepwise",
+      "motion_source": "field",
+      "contour": "mixed",
+      "target_horizon": "medium",
+      "section_role": "head",
+      "rhythmic_density": "medium_sparse",
+      "confidence": 0.92,
+      "provenance": [
+        "vision:NewReal1:p12",
+        "manual-abstract-review"
+      ]
+    },
+    {
+      "observation_id": "actual_proof.funk.head",
+      "song_id": "score.newreal3.actual_proof",
+      "source_locator": "NewReal3.pdf:p1",
+      "likely_routes": [
+        "chordal",
+        "scale_fragment",
+        "arpeggio_fragment",
+        "common_tone"
+      ],
+      "structural_targets": [
+        "chord_color",
+        "upper_structure",
+        "section_anchor"
+      ],
+      "interval_motion": "leap_mixed",
+      "motion_source": "mixed",
+      "contour": "mixed",
+      "target_horizon": "short",
+      "section_role": "head",
+      "rhythmic_density": "syncopated_mixed",
+      "confidence": 0.88,
+      "provenance": [
+        "vision:NewReal3:p1",
+        "manual-abstract-review"
+      ]
+    },
+    {
+      "observation_id": "asa.medium_funk.head",
+      "song_id": "score.newreal2.asa",
+      "source_locator": "NewReal2.pdf:p9",
+      "likely_routes": [
+        "chordal",
+        "scale_fragment",
+        "chromatic_passing",
+        "arpeggio_fragment"
+      ],
+      "structural_targets": [
+        "altered_dominant_target",
+        "chord_tone",
+        "color_tone"
+      ],
+      "interval_motion": "small_mixed",
+      "motion_source": "mixed",
+      "contour": "oscillating",
+      "target_horizon": "short",
+      "section_role": "head",
+      "rhythmic_density": "medium_high",
+      "confidence": 0.88,
+      "provenance": [
+        "vision:NewReal2:p9",
+        "manual-abstract-review"
+      ]
+    }
+  ]
+}
