@@ -302,3 +302,61 @@ def test_silence_repetition_streak_does_not_force_sound():
         VariationContext(variation_pressure=1.0),
     )
     assert "repetition_streak" not in score.components
+
+
+def test_pattern_consistency_reduces_exact_repeat_penalty_without_removing_it():
+    state = PianoCompingState()
+    ctx = PianoCompingContext(
+        phrase_boundary_probability=0.8,
+        available_space_beats=1.0,
+        variation_pressure=1.0,
+    )
+    candidate = next(c for c in slate(ctx, state).candidates if c.realization is not None)
+    state.commit(candidate, section_energy=0.5)
+
+    plain = evaluate_variation(
+        candidate,
+        state.recent_signatures,
+        VariationContext(
+            variation_pressure=1.0,
+            pattern_consistency_strength=0.0,
+        ),
+    )
+    stable_pattern = evaluate_variation(
+        candidate,
+        state.recent_signatures,
+        VariationContext(
+            variation_pressure=1.0,
+            pattern_consistency_strength=1.0,
+        ),
+    )
+
+    assert stable_pattern.total > plain.total
+    assert stable_pattern.components["exact_repetition"] < 0
+
+
+def test_pattern_consistency_can_reward_high_similarity():
+    state = PianoCompingState()
+    ctx = PianoCompingContext(
+        phrase_boundary_probability=0.8,
+        available_space_beats=1.0,
+    )
+    candidate = next(c for c in slate(ctx, state).candidates if c.realization is not None)
+    state.commit(candidate, section_energy=0.5)
+
+    varied = replace(
+        candidate,
+        tags=frozenset(
+            {tag for tag in candidate.tags if not tag.startswith("dynamic:")}
+            | {"dynamic:soft"}
+        ),
+    )
+    score = evaluate_variation(
+        varied,
+        state.recent_signatures,
+        VariationContext(
+            variation_pressure=0.4,
+            pattern_consistency_strength=1.0,
+        ),
+    )
+    assert score.components.get("pattern_consistency", 0) > 0
