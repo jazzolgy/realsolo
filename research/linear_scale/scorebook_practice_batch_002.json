@@ -1,0 +1,133 @@
+{
+  "schema_version": "0.1",
+  "practice_batch_id": "scorebook.linear.batch002",
+  "basis": "canonical Scorebook Ingestion Layer seeds",
+  "source_policy": "Store only abstract score/linear evidence; do not store complete copyrighted melodies.",
+  "songs": [
+    {
+      "song_id": "score.newreal1.airegin",
+      "source": {
+        "book": "NewReal1.pdf",
+        "pages": [
+          2
+        ]
+      },
+      "score_evidence": [
+        "medium_up_latin",
+        "head_swings",
+        "ABAC",
+        "solo_break",
+        "piano_tacet_head",
+        "coda_navigation"
+      ],
+      "linear_findings": [
+        "player_role_gate_required",
+        "feel_is_orthogonal_to_scale_identity",
+        "section_role_must_reach_player_policy"
+      ]
+    },
+    {
+      "song_id": "score.newreal1.anthropology",
+      "source": {
+        "book": "NewReal1.pdf",
+        "pages": [
+          11
+        ]
+      },
+      "score_evidence": [
+        "fast_bebop",
+        "rapid_functional_harmonic_rhythm",
+        "dense_stepwise_chromatic_motion"
+      ],
+      "linear_findings": [
+        "short_target_horizon_matters",
+        "approach_passing_anticipation_are_first_class",
+        "do_not_map_each_chord_to_one_scale"
+      ]
+    },
+    {
+      "song_id": "score.newreal1.autumn_leaves",
+      "source": {
+        "book": "NewReal1.pdf",
+        "pages": [
+          12
+        ]
+      },
+      "score_evidence": [
+        "medium_swing",
+        "repeated_functional_cycles",
+        "minor_ii_v_resolution",
+        "rhythmic_interpretation_flexible"
+      ],
+      "linear_findings": [
+        "future_harmony_targeting_is_testable",
+        "target_and_rhythm_should_remain_separate"
+      ]
+    },
+    {
+      "song_id": "score.newreal3.actual_proof",
+      "source": {
+        "book": "NewReal3.pdf",
+        "pages": [
+          1,
+          2
+        ]
+      },
+      "score_evidence": [
+        "medium_funk",
+        "light_piano_comping",
+        "vamp_till_cue",
+        "written_keyboard_comp",
+        "written_bass_part",
+        "NC",
+        "mixed_meter",
+        "solo_on_A",
+        "coda_navigation"
+      ],
+      "linear_findings": [
+        "NC_must_not_invent_scale",
+        "meter_context_needed",
+        "written_part_gate_needed",
+        "vamp_recurrence_context_needed"
+      ]
+    },
+    {
+      "song_id": "score.newreal2.asa",
+      "source": {
+        "book": "NewReal2.pdf",
+        "pages": [
+          9,
+          10
+        ]
+      },
+      "score_evidence": [
+        "medium_funk",
+        "altered_dominant",
+        "written_bass_part",
+        "solo_on_ABC",
+        "repeated_functional_regions"
+      ],
+      "linear_findings": [
+        "altered_pitch_availability_must_be_explicit",
+        "written_line_comparator_should_use_abstract_features"
+      ]
+    }
+  ],
+  "priority_requirements": [
+    "target_arrival_horizon",
+    "meter_aware_route_timing",
+    "written_part_gate",
+    "recurrence_vamp_context"
+  ],
+  "comparator_features": [
+    "route_family",
+    "structural_target_class",
+    "interval_motion_class",
+    "chromatic_vs_field_motion",
+    "contour",
+    "harmonic_boundary_timing",
+    "phrase_section_role",
+    "confidence",
+    "provenance"
+  ]
+}
