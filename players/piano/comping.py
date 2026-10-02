@@ -23,6 +23,8 @@ from .policy import (
     PianoPolicyEvaluator,
     PianoRealizationCandidate,
 )
+from .interaction import PianoInteractionState
+from .narrative import evaluate_narrative_bias
 
 
 class InteractionRole(str, Enum):
@@ -151,6 +153,7 @@ class PianoCompingEvaluator:
         musical_context: MusicalContextVector,
         state: PianoCompingState,
         harmonic_affordance: HarmonicAffordance | None = None,
+        interaction_state: PianoInteractionState | None = None,
     ) -> PianoCompingScore:
         candidate.validate()
         comping_context.validate()
@@ -282,6 +285,13 @@ class PianoCompingEvaluator:
                     "sparse gesture supports release intention",
                 )
 
+        if interaction_state is not None:
+            narrative = evaluate_narrative_bias(candidate, interaction_state)
+            score += narrative.total
+            for key, value in narrative.components.items():
+                components[f"narrative:{key}"] = components.get(f"narrative:{key}", 0.0) + value
+            reasons.extend(narrative.reasons)
+
         if harmonic_affordance is not None:
             if (
                 candidate.harmonic_affordance_id is not None
@@ -312,6 +322,7 @@ class PianoCompingEvaluator:
         musical_context: MusicalContextVector,
         state: PianoCompingState,
         harmonic_affordance: HarmonicAffordance | None = None,
+        interaction_state: PianoInteractionState | None = None,
     ) -> PianoCompingScore:
         if not candidates:
             raise ValueError("no comping candidates")
@@ -323,6 +334,7 @@ class PianoCompingEvaluator:
                     musical_context,
                     state,
                     harmonic_affordance,
+                    interaction_state,
                 )
                 for candidate in candidates
             ),
@@ -338,6 +350,7 @@ def perform_one_comping_action(
     musical_context: MusicalContextVector,
     state: PianoCompingState,
     harmonic_affordance: HarmonicAffordance | None = None,
+    interaction_state: PianoInteractionState | None = None,
 ) -> PianoCompingScore:
     """Commit exactly one immediate comping decision, sounding or silent."""
 
@@ -348,6 +361,7 @@ def perform_one_comping_action(
         musical_context,
         state,
         harmonic_affordance,
+        interaction_state,
     )
     state.commit(chosen.candidate)
     return chosen
