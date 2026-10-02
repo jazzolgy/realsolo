@@ -114,3 +114,16 @@ Do not duplicate Bill Evans source observations inside players/piano. If Piano
 research discovers a potentially Bill Evans-specific musical behavior, send it
 back to the Legend research layer for evidence/provenance validation before
 promoting it as a legend prior.
+
+
+## Boundary with Shared Solo Grammar
+
+Bill Evans does not own general solo methodology.
+
+Motif development, repetition/variation, fragmentation, rhythmic displacement,
+space, register/density trajectory, future-harmony targeting, call/response,
+and hybrid memory use belong to Shared Solo Grammar.
+
+Bill Evans Intelligence stores evidence for **how Bill Evans uses those shared
+operations**, including his conditional harmonic, rhythmic, melodic, and trio
+interaction tendencies.
