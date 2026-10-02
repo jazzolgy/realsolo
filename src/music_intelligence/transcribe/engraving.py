@@ -1,0 +1,243 @@
+"""Engraving intent separated from logical notation semantics.
+
+Sibelius-style engraving decisions such as stem direction, beaming,
+cross-staff positioning and optical spacing belong here rather than in the
+logical score event.  The same logical score can therefore be rendered under
+multiple engraving profiles without changing musical meaning.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from enum import Enum
+from fractions import Fraction
+from typing import Mapping
+
+from .score import ReadableScore, ScoreEvent
+
+
+class StemDirection(str, Enum):
+    AUTO = "auto"
+    UP = "up"
+    DOWN = "down"
+    NONE = "none"
+
+
+class BeamState(str, Enum):
+    NONE = "none"
+    BEGIN = "begin"
+    CONTINUE = "continue"
+    END = "end"
+
+
+class TupletBracketMode(str, Enum):
+    AUTO = "auto"
+    SHOW = "show"
+    HIDE = "hide"
+
+
+class VerticalPlacement(str, Enum):
+    AUTO = "auto"
+    ABOVE = "above"
+    BELOW = "below"
+
+
+@dataclass(frozen=True)
+class EngravingProfile:
+    """Global house-style-like engraving preferences."""
+
+    optical_note_spacing: bool = True
+    magnetic_layout: bool = True
+    apply_voice_position_rules_to_cross_staff: bool = True
+    apply_tie_rules_to_cross_staff: bool = True
+    hide_cross_staff_bar_rests: bool = True
+    default_tuplet_bracket: TupletBracketMode = TupletBracketMode.AUTO
+    minimum_note_spacing: float = 1.0
+
+    def validate(self) -> None:
+        if self.minimum_note_spacing <= 0:
+            raise ValueError("minimum_note_spacing must be positive")
+
+
+@dataclass(frozen=True)
+class EngravingIntent:
+    """Visual/engraving decisions for one logical score event."""
+
+    event_id: str
+    stem_direction: StemDirection = StemDirection.AUTO
+    beam_state: BeamState = BeamState.NONE
+    beam_group_id: str | None = None
+    cross_staff_target: str | None = None
+    tie_placement: VerticalPlacement = VerticalPlacement.AUTO
+    tuplet_placement: VerticalPlacement = VerticalPlacement.AUTO
+    tuplet_bracket: TupletBracketMode = TupletBracketMode.AUTO
+    horizontal_spacing_weight: float = 1.0
+    collision_priority: float = 0.5
+    hide_default_bar_rest: bool = False
+    reasons: tuple[str, ...] = ()
+    provenance: tuple[str, ...] = ()
+    metadata: Mapping[str, str] = field(default_factory=dict)
+
+    def validate(self) -> None:
+        if not self.event_id:
+            raise ValueError("engraving intent requires event_id")
+        if self.beam_state is BeamState.NONE and self.beam_group_id is not None:
+            raise ValueError("beam_group_id requires a non-NONE beam state")
+        if self.beam_state is not BeamState.NONE and not self.beam_group_id:
+            raise ValueError("beamed event requires beam_group_id")
+        if self.horizontal_spacing_weight <= 0:
+            raise ValueError("horizontal_spacing_weight must be positive")
+        if not 0.0 <= self.collision_priority <= 1.0:
+            raise ValueError("collision_priority must be within 0..1")
+
+
+@dataclass(frozen=True)
+class EngravingPlan:
+    score_id: str
+    profile: EngravingProfile = EngravingProfile()
+    intents: tuple[EngravingIntent, ...] = ()
+
+    def validate(self, score: ReadableScore | None = None) -> None:
+        if not self.score_id:
+            raise ValueError("engraving plan requires score_id")
+        self.profile.validate()
+        ids: set[str] = set()
+        for intent in self.intents:
+            intent.validate()
+            if intent.event_id in ids:
+                raise ValueError("duplicate engraving intent for event")
+            ids.add(intent.event_id)
+        if score is not None:
+            score.validate()
+            if score.score_id != self.score_id:
+                raise ValueError("engraving plan belongs to another score")
+            score_ids = {
+                event.event_id
+                for part in score.parts
+                for event in part.events
+            }
+            unknown = ids - score_ids
+            if unknown:
+                raise ValueError(f"engraving plan references unknown events: {sorted(unknown)}")
+
+    def for_event(self, event_id: str) -> EngravingIntent | None:
+        for intent in self.intents:
+            if intent.event_id == event_id:
+                return intent
+        return None
+
+
+def voice_stem_directions(events: tuple[ScoreEvent, ...]) -> dict[str, StemDirection]:
+    """Assign conventional opposing stems only when independent voices overlap.
+
+    This is engraving logic, not musical voice inference.  Existing voice_ids
+    are treated as already-decided logical voices.
+    """
+
+    by_staff_onset: dict[tuple[str, Fraction], list[ScoreEvent]] = {}
+    for event in events:
+        by_staff_onset.setdefault((event.staff_id, event.span.onset), []).append(event)
+
+    directions: dict[str, StemDirection] = {}
+    for simultaneous in by_staff_onset.values():
+        voices = sorted({event.voice_id for event in simultaneous})
+        if len(voices) <= 1:
+            for event in simultaneous:
+                directions.setdefault(event.event_id, StemDirection.AUTO)
+            continue
+
+        # Stable convention: first logical voice up, second down. Additional
+        # voices alternate rather than changing their musical identity.
+        voice_direction = {
+            voice: (StemDirection.UP if index % 2 == 0 else StemDirection.DOWN)
+            for index, voice in enumerate(voices)
+        }
+        for event in simultaneous:
+            directions[event.event_id] = voice_direction[event.voice_id]
+
+    return directions
+
+
+def beam_group_intents(
+    events: tuple[ScoreEvent, ...],
+    *,
+    beat_group: Fraction = Fraction(1, 1),
+) -> dict[str, tuple[BeamState, str | None]]:
+    """Group short notes by beat-domain grouping instead of raw timestamps."""
+
+    if beat_group <= 0:
+        raise ValueError("beat_group must be positive")
+
+    groups: dict[tuple[str, str, int], list[ScoreEvent]] = {}
+    for event in events:
+        # Quarter-note beat or shorter values are eligible for initial beaming.
+        if event.span.duration > Fraction(1, 2):
+            continue
+        bucket = int(event.span.onset // beat_group)
+        groups.setdefault((event.staff_id, event.voice_id, bucket), []).append(event)
+
+    result: dict[str, tuple[BeamState, str | None]] = {
+        event.event_id: (BeamState.NONE, None) for event in events
+    }
+    for (staff_id, voice_id, bucket), group in groups.items():
+        group.sort(key=lambda e: (e.span.onset, e.event_id))
+        if len(group) < 2:
+            continue
+        group_id = f"beam:{staff_id}:{voice_id}:{bucket}"
+        for index, event in enumerate(group):
+            if index == 0:
+                state = BeamState.BEGIN
+            elif index == len(group) - 1:
+                state = BeamState.END
+            else:
+                state = BeamState.CONTINUE
+            result[event.event_id] = (state, group_id)
+
+    return result
+
+
+def build_default_engraving_plan(
+    score: ReadableScore,
+    *,
+    profile: EngravingProfile = EngravingProfile(),
+) -> EngravingPlan:
+    """Build a deterministic initial engraving plan from logical score content."""
+
+    score.validate()
+    profile.validate()
+    all_events = tuple(event for part in score.parts for event in part.events)
+    stem_map = voice_stem_directions(all_events)
+    beam_map = beam_group_intents(all_events)
+
+    intents: list[EngravingIntent] = []
+    for event in all_events:
+        beam_state, beam_group_id = beam_map[event.event_id]
+        cross_staff = None
+        # Cross-staff movement must be requested explicitly in logical metadata
+        # later; the default plan never invents one.
+        reasons: list[str] = []
+        if stem_map[event.event_id] is not StemDirection.AUTO:
+            reasons.append("opposing stems separate simultaneous logical voices")
+        if beam_state is not BeamState.NONE:
+            reasons.append("beam group follows score-beat grouping")
+
+        intent = EngravingIntent(
+            event_id=event.event_id,
+            stem_direction=stem_map[event.event_id],
+            beam_state=beam_state,
+            beam_group_id=beam_group_id,
+            cross_staff_target=cross_staff,
+            tuplet_bracket=profile.default_tuplet_bracket,
+            horizontal_spacing_weight=max(
+                profile.minimum_note_spacing,
+                1.15 if event.tuplet is not None else 1.0,
+            ),
+            collision_priority=.75 if event.articulations or event.markings else .5,
+            reasons=tuple(reasons),
+            provenance=("transcribe:engraving-plan:v1",),
+        )
+        intent.validate()
+        intents.append(intent)
+
+    plan = EngravingPlan(score.score_id, profile, tuple(intents))
+    plan.validate(score)
+    return plan
