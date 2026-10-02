@@ -49,8 +49,13 @@ def pattern_gesture_now(
     tolerance_beats: float = 0.04,
 ) -> DrumGesture | None:
     """Realize only the current slice of one stored source pattern."""
+    position = (
+        context.pattern_phase_beats
+        if context.pattern_phase_beats is not None
+        else context.position_in_bar_beats
+    )
     if "swing" in pattern.tags and "ride" in pattern.tags:
-        phase = context.position_in_bar_beats % pattern.length_beats
+        phase = position % pattern.length_beats
         selected = tuple(
             hit
             for hit in pattern.hits
@@ -60,7 +65,7 @@ def pattern_gesture_now(
     else:
         selected = hits_at_current_position(
             pattern,
-            context.position_in_bar_beats,
+            position,
             tolerance_beats=tolerance_beats,
         )
 
