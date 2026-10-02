@@ -18,6 +18,7 @@ from players.drums import (
     TimeFeel,
     perform_one_gesture,
 )
+from music_intelligence.legends.scott_lafaro import SCOTT_LAFARO_PROFILE_VIEW
 from music_intelligence.harmony import (
     HarmonicEvidence,
     HarmonicFrame,
@@ -137,6 +138,12 @@ class Stage1BassNativeDecider:
         )
         requested_mode = str(context.get("bass_mode", "walking")).lower()
         mode = BassMode.SOLO if requested_mode == "solo" else BassMode.WALKING
+        requested_legend = str(context.get("bass_legend", "")).strip().lower()
+        legend_profile = (
+            SCOTT_LAFARO_PROFILE_VIEW
+            if requested_legend in {"scott_lafaro", "lafaro"}
+            else None
+        )
 
         self.runner.tempo_bpm = tempo
         if bool(context.get("bass_ghost_only", False)):
@@ -207,6 +214,7 @@ class Stage1BassNativeDecider:
                 else signals.phrase_progress
             ),
             directive=directive,
+            legend_profile=legend_profile,
         ))
 
         event = result.candidate.event
@@ -266,6 +274,10 @@ class Stage1BassNativeDecider:
                     result.solo_plan.family.value
                     if result.solo_plan is not None else ""
                 ),
+                "legend_id": (
+                    legend_profile.legend_id
+                    if legend_profile is not None else ""
+                ),
             },
         )
 
@@ -302,6 +314,7 @@ class Stage1BassNativeDecider:
                 directive.interaction.value,
                 result.phrase_intent.kind.value,
                 result.solo_plan.operation.value if result.solo_plan else "none",
+                legend_profile.legend_id if legend_profile is not None else "generic",
             }),
             provenance=(
                 "stage1_bass_native",
