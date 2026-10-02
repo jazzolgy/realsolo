@@ -34,6 +34,11 @@ from .interaction import (
 )
 from .narrative import evaluate_narrative_bias
 from .variation import GestureSignature, VariationContext, evaluate_variation
+from .ensemble_response import (
+    EnsembleResponseObservation,
+    GestureResponseRecord,
+    evaluate_response_bias,
+)
 
 
 class InteractionRole(str, Enum):
@@ -143,6 +148,7 @@ class PianoCompingState:
     silence_streak: int = 0
     last_section_energy: float | None = None
     recent_signatures: list[GestureSignature] = field(default_factory=list)
+    recent_responses: list[GestureResponseRecord] = field(default_factory=list)
 
     @staticmethod
     def _estimate_density(candidate: PianoCompingCandidate) -> PianoDensity:
@@ -210,6 +216,19 @@ class PianoCompingState:
         if section_energy is not None:
             self.last_section_energy = section_energy
         self.committed.append(candidate)
+
+    def record_ensemble_response(
+        self,
+        observation: EnsembleResponseObservation,
+    ) -> None:
+        observation.validate()
+        if not self.recent_signatures:
+            raise ValueError("cannot attribute ensemble response without a committed gesture")
+        self.recent_responses.append(
+            GestureResponseRecord(self.recent_signatures[-1], observation)
+        )
+        if len(self.recent_responses) > 8:
+            del self.recent_responses[:-8]
 
     def interaction_state_from_context(
         self,
@@ -484,6 +503,17 @@ class PianoCompingEvaluator:
                     score, components, reasons, "release_fit", 0.10,
                     "sparse gesture supports release intention",
                 )
+
+        response_bias = evaluate_response_bias(
+            candidate,
+            state.recent_responses,
+        )
+        score += response_bias.total
+        for key, value in response_bias.components.items():
+            components[f"ensemble_response:{key}"] = components.get(
+                f"ensemble_response:{key}", 0.0
+            ) + value
+        reasons.extend(response_bias.reasons)
 
         variation = evaluate_variation(
             candidate,
