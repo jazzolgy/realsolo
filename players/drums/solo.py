@@ -17,6 +17,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
+from .legend_adapter import (
+    DrumLegendProjection,
+    DrumVocabularyIntent,
+    legend_gesture_adjustment,
+    vocabulary_gesture_adjustment,
+)
 from .model import (
     DrumGesture,
     DrumHit,
@@ -211,7 +217,7 @@ def _statement_gesture(
         voice_index += state.statements
     elif development is SoloDevelopment.CONTRAST:
         voice_index += 2
-    elif development in {SoloDevelopment.CLIMAX if hasattr(SoloDevelopment, "CLIMAX") else SoloDevelopment.STATE}:
+    elif development in {SoloDevelopment.RECAP, SoloDevelopment.RESOLVE}:
         voice_index += 3
 
     voice = _voice_for_orchestration(voice_index, plan.intensity)
@@ -279,6 +285,9 @@ def build_solo_candidates(
     plan: DrumSoloPlan,
     context: DrummerRuntimeContext,
     state: DrumSoloState,
+    *,
+    legend: DrumLegendProjection | None = None,
+    vocabulary_intents: tuple[DrumVocabularyIntent, ...] = (),
 ) -> tuple[SoloCandidate, ...]:
     """Build immediate solo gestures and score phrase-development alternatives."""
     plan.validate()
@@ -384,6 +393,16 @@ def build_solo_candidates(
             score += 0.30
             reasons.append(("release_reentry_arc", 0.30))
 
+        if legend is not None:
+            delta, parts = legend_gesture_adjustment(gesture, legend)
+            score += delta
+            reasons.extend(parts)
+
+        if vocabulary_intents:
+            delta, parts = vocabulary_gesture_adjustment(gesture, vocabulary_intents)
+            score += delta
+            reasons.extend(parts)
+
         candidates.append(SoloCandidate(gesture, development, score, tuple(reasons)))
 
     return tuple(candidates)
@@ -393,9 +412,18 @@ def perform_one_solo_gesture(
     plan: DrumSoloPlan,
     context: DrummerRuntimeContext,
     state: DrumSoloState,
+    *,
+    legend: DrumLegendProjection | None = None,
+    vocabulary_intents: tuple[DrumVocabularyIntent, ...] = (),
 ) -> SoloCandidate:
     """Choose and commit one solo gesture, then caller must listen/re-plan."""
-    candidates = build_solo_candidates(plan, context, state)
+    candidates = build_solo_candidates(
+        plan,
+        context,
+        state,
+        legend=legend,
+        vocabulary_intents=vocabulary_intents,
+    )
     chosen = max(candidates, key=lambda c: c.score)
     state.observe(chosen.gesture, chosen.development)
     return chosen
