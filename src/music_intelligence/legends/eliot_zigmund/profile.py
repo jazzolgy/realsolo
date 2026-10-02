@@ -14,8 +14,9 @@ ELIOT_ZIGMUND_PROFILE = LegendProfile(
     source_count=1,
     tendencies=(),
     notes=(
-        "One source-grounded drum-solo vocabulary set is available; "
-        "do not infer broad style tendencies from a single recording."
+        "One source-grounded drum-solo observation set exists, but its first "
+        "IOI cells were demoted after robustness testing. Active runtime "
+        "vocabulary remains empty pending stronger evidence."
     ),
 )
 
