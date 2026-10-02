@@ -27,7 +27,7 @@ FULL_ASSETS = {
         "license": "CC0-1.0",
     },
 }
-GITHUB_RAW = "https://raw.githubusercontent.com/{repo}/master/{path}"
+GITHUB_RAW = "https://raw.githubusercontent.com/{repo}/{ref}/{path}"
 
 _LITE_BASS_ANCHORS = {
     "eb1": 27, "gb1": 30, "a1": 33, "c2": 36,
@@ -86,10 +86,119 @@ def _sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def _download_raw(repo: str, remote_path: str, local_path: Path) -> None:
+def _download_raw(repo: str, remote_path: str, local_path: Path, *, ref: str = "master") -> None:
     if local_path.exists() and local_path.stat().st_size > 0:
         return
-    _download(GITHUB_RAW.format(repo=repo, path=remote_path), local_path)
+    _download(GITHUB_RAW.format(repo=repo, ref=ref, path=remote_path), local_path)
+
+
+def _read_raw_text(repo: str, remote_path: str, *, ref: str = "master") -> str:
+    url = GITHUB_RAW.format(repo=repo, ref=ref, path=remote_path)
+    req = urllib.request.Request(url, headers={"User-Agent": "RealSolo/asset-installer"})
+    with urllib.request.urlopen(req) as src:
+        return src.read().decode("utf-8")
+
+
+def _parse_osiris_mapping(text: str, *, lovel: int, hivel: int) -> list[dict]:
+    regions: list[dict] = []
+    current: dict[str, str] | None = None
+    token_re = re.compile(r"([A-Za-z0-9_]+)=([^\\s]+)")
+    for raw in text.splitlines():
+        line = raw.split("//", 1)[0].strip()
+        if not line:
+            continue
+        if line.startswith("<region>"):
+            current = {}
+            regions.append(current)
+            line = line[len("<region>"):].strip()
+        if current is None:
+            continue
+        for key, value in token_re.findall(line):
+            current[key] = value
+
+    out = []
+    for row in regions:
+        sample = row.get("sample")
+        if not sample:
+            continue
+        lokey = int(row.get("lokey", row.get("key", 0)))
+        hikey = int(row.get("hikey", row.get("key", 127)))
+        center = int(row.get("pitch_keycenter", (lokey + hikey) // 2))
+        # Osiris mapping is included from Programs/*.sfz, so ../UC/... points
+        # to the repository-root UC/... folder.
+        remote = sample.replace("\\", "/")
+        while remote.startswith("../"):
+            remote = remote[3:]
+        out.append({
+            "remote": remote,
+            "lokey": lokey,
+            "hikey": hikey,
+            "lovel": lovel,
+            "hivel": hivel,
+            "pitch_keycenter": center,
+            "rr": 1,
+        })
+    return out
+
+
+def _thin_regions(rows: list[dict], target: int) -> list[dict]:
+    if target >= len(rows):
+        return rows
+    if target <= 1:
+        return [rows[len(rows) // 2]]
+    indexes = sorted({round(i * (len(rows) - 1) / (target - 1)) for i in range(target)})
+    selected = [rows[i] for i in indexes]
+    for i, row in enumerate(selected):
+        prev_center = selected[i - 1]["pitch_keycenter"] if i else 20
+        next_center = selected[i + 1]["pitch_keycenter"] if i + 1 < len(selected) else 109
+        row = dict(row)
+        row["lokey"] = 21 if i == 0 else (prev_center + row["pitch_keycenter"]) // 2 + 1
+        row["hikey"] = 108 if i + 1 == len(selected) else (row["pitch_keycenter"] + next_center) // 2
+        selected[i] = row
+    return selected
+
+
+def _osiris_regions(profile: str) -> list[dict]:
+    paths = (
+        ("Programs/modules/mappings/uc_micb_vl1_map.sfz", 1, 63),
+        ("Programs/modules/mappings/uc_micb_vl2_map.sfz", 64, 127),
+    )
+    layers = [
+        _parse_osiris_mapping(
+            _read_raw_text("sfzinstruments/Osiris_Piano", path, ref="main"),
+            lovel=lo,
+            hivel=hi,
+        )
+        for path, lo, hi in paths
+    ]
+    if profile == "full":
+        return layers[0] + layers[1]
+    if profile == "lite":
+        return _thin_regions(layers[0], 16) + _thin_regions(layers[1], 16)
+    # Mini favors one medium/strong layer and sparse anchors.
+    mini = _thin_regions(layers[1], 8)
+    return [{**row, "lovel": 1, "hivel": 127} for row in mini]
+
+
+def _install_osiris(profile: str) -> list[dict]:
+    rows = _osiris_regions(profile)
+    root = ASSET_ROOT / profile / "osiris_piano"
+    for row in rows:
+        remote = row["remote"]
+        local = root / Path(remote).name
+        _download_raw(
+            "sfzinstruments/Osiris_Piano",
+            remote,
+            local,
+            ref="main",
+        )
+    return [
+        {
+            **{k: v for k, v in row.items() if k != "remote"},
+            "sample": f"{profile}/osiris_piano/{Path(row['remote']).name}",
+        }
+        for row in rows
+    ]
 
 
 def _ranges(anchors: dict[str, int], low_floor: int = 21, high_ceiling: int = 55):
@@ -102,7 +211,7 @@ def _ranges(anchors: dict[str, int], low_floor: int = 21, high_ceiling: int = 55
     return out
 
 
-def _sampled_manifest(profile: str, anchors: dict[str, int], layers, rrs, drum_files) -> dict:
+def _sampled_manifest(profile: str, anchors: dict[str, int], layers, rrs, drum_files, piano_regions=None) -> dict:
     bass_regions = []
     for name, center, low, high in _ranges(anchors):
         for layer, lovel, hivel in layers:
@@ -128,6 +237,11 @@ def _sampled_manifest(profile: str, anchors: dict[str, int], layers, rrs, drum_f
         "version": 3,
         "profile": profile,
         "packs": {
+            "piano": {
+                "id": f"osiris_piano_{profile}",
+                "license": "CC0-1.0",
+                "regions": list(piano_regions or ()),
+            },
             "bass": {
                 "id": f"karoryfer_meatbass_{profile}",
                 "license": "CC0-1.0",
@@ -181,7 +295,8 @@ def _install_sampled_profile(profile: str) -> Path:
                 drum_root / Path(remote).name,
             )
 
-    manifest = _sampled_manifest(profile, anchors, layers, rrs, drum_files)
+    piano_regions = _install_osiris(profile)
+    manifest = _sampled_manifest(profile, anchors, layers, rrs, drum_files, piano_regions)
     path = ASSET_ROOT / f"realsolo_manifest_{profile}.json"
     path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     size = sum(p.stat().st_size for p in (ASSET_ROOT / profile).rglob("*") if p.is_file())
@@ -294,6 +409,12 @@ def install_full_assets() -> Path:
                 zf.extractall(dest)
 
     manifest = _build_full_manifest(ASSET_ROOT)
+    piano_regions = _install_osiris("full")
+    manifest["packs"]["piano"] = {
+        "id": "osiris_piano_full",
+        "license": "CC0-1.0",
+        "regions": piano_regions,
+    }
     path = ASSET_ROOT / "realsolo_manifest_full.json"
     path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     activate_profile("full")
