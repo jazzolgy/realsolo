@@ -82,3 +82,35 @@ No Player package should own Bill Evans-specific data.
 Raw copyrighted/private recordings and scorebooks are not committed to the
 public repository. Store manifests, provenance, observations, aggregate results,
 and public-safe derived data only.
+
+
+## Workstream ownership
+
+To avoid duplicated Bill Evans work, use this split:
+
+### Legend / shared research owns
+- repeated listening across the full source set
+- score-position alignment
+- trio foreground/background role analysis
+- Piano RH/LH role labels at the musical-intention level
+- Bass and Drums role interaction
+- Bill Evans-specific tendencies and vocabulary provenance
+- deciding whether a recurring behavior stays Legend-specific or may be promoted to Shared Trio Grammar
+
+### Piano Player owns
+- piano-specific realization of shared/legend intentions
+- hand distribution and playable RH/LH execution
+- voicing realization details
+- register realization inside piano constraints
+- pedal, touch, articulation, and physical feasibility
+- piano candidate generation/ranking and immediate commit behavior
+
+### Handoff rule
+
+Legend research may say **what role/intention Bill Evans evidence supports in this
+context**. Piano decides **how a piano can realize that intention now**.
+
+Do not duplicate Bill Evans source observations inside players/piano. If Piano
+research discovers a potentially Bill Evans-specific musical behavior, send it
+back to the Legend research layer for evidence/provenance validation before
+promoting it as a legend prior.
