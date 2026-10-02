@@ -8,24 +8,19 @@
       "title": "Along Came Betty",
       "source_book_id": "scorebook.newreal.2",
       "page": 8,
-      "study_track": "walking_comparator",
+      "study_track": "walking_instruction",
       "style": "medium swing",
       "observations": {
         "explicit_instruction": "bass walks",
-        "section_role": "D section written walking-bass comparison region",
-        "pulse_surface": "predominantly quarter-note walking support",
-        "motion_features": [
-          "stepwise connection",
-          "chromatic connective motion",
-          "structural chord-tone arrivals",
-          "low-register continuity"
-        ],
+        "section_role": "D section carries an explicit bass-walk instruction",
+        "verified_written_bass_staff": false,
         "comparison_use": [
-          "root occupancy",
-          "scalar motion",
-          "chromatic approach",
-          "register trajectory",
-          "direction reversal"
+          "evidence-to-action causal test",
+          "walking mode pressure",
+          "section-aware bass-role change"
+        ],
+        "exclude_from": [
+          "written-part note comparator until a dedicated bass staff/source is verified"
         ]
       },
       "confidence": 0.97,
@@ -33,7 +28,7 @@
         "NewReal2.pdf:p8",
         "vision-reviewed"
       ],
-      "measurement_status": "qualitative_only",
+      "measurement_status": "instruction_only",
       "numeric_prior_ready": false
     },
     {
