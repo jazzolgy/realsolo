@@ -55,12 +55,15 @@ class DrumHit:
     velocity: int
     microtiming_ms: float = 0.0
     articulation: str = "normal"
+    onset_offset_beats: float = 0.0
 
     def validate(self) -> None:
         if not 1 <= self.velocity <= 127:
             raise ValueError("velocity must be within MIDI range 1..127")
         if abs(self.microtiming_ms) > 80:
             raise ValueError("microtiming_ms is a local expressive offset, not future scheduling")
+        if abs(self.onset_offset_beats) > 1.0:
+            raise ValueError("onset_offset_beats must remain a local immediate offset")
 
 
 @dataclass(frozen=True)
