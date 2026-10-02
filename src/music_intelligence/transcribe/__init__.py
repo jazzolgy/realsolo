@@ -86,7 +86,9 @@ from .engraving import (
     VerticalPlacement,
     beam_group_intents,
     build_default_engraving_plan,
+    cross_staff_tie_placement,
     meter_beam_group,
+    tuplet_group_placement,
     voice_stem_directions,
 )
 from .layout import (
@@ -164,7 +166,9 @@ __all__ = [
     "VerticalPlacement",
     "beam_group_intents",
     "build_default_engraving_plan",
+    "cross_staff_tie_placement",
     "meter_beam_group",
+    "tuplet_group_placement",
     "voice_stem_directions",
     "LayoutAction",
     "LayoutActionKind",
