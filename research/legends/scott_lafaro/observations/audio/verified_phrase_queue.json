@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "scott_lafaro",
+  "status": "annotation_queue",
+  "policy": "No musical feature is prefilled until heard/transcribed with sufficient confidence.",
+  "tracks": [
+    {
+      "track_id": "BE-011",
+      "title": "Alice In Wonderland",
+      "track_start_s": 3388,
+      "track_end_s": 3809,
+      "duration_s": 421,
+      "source_identity": "The Complete Village Vanguard Recordings, 1961",
+      "score_anchor": {
+        "file": "Realbk1.pdf",
+        "page": 12,
+        "status": "visual_verified"
+      },
+      "personnel_status": "verified",
+      "source_separation_status": "mixed_audio",
+      "tasks": [
+        "identify head/solo/out-head form boundaries",
+        "locate bass foreground and high-register phrase windows",
+        "annotate motif transformation and rhythmic displacement",
+        "compare 3/4 pulse-floor behavior against phrase-level freedom"
+      ]
+    },
+    {
+      "track_id": "BE-012",
+      "title": "How Deep Is The Ocean",
+      "track_start_s": 3809,
+      "track_end_s": 4023,
+      "duration_s": 214,
+      "source_identity": "Explorations",
+      "score_anchor": {
+        "file": "RealBk3.pdf",
+        "page": 115,
+        "status": "indexed_not_yet_visual_verified"
+      },
+      "personnel_status": "verified",
+      "source_separation_status": "mixed_audio",
+      "tasks": [
+        "identify solo/foreground phrase windows",
+        "annotate note-body and space",
+        "track motif continuity across harmony changes",
+        "mark delayed resolution vs explicit harmonic targeting"
+      ]
+    },
+    {
+      "track_id": "BE-015",
+      "title": "Israel",
+      "track_start_s": 4603,
+      "track_end_s": 4976,
+      "duration_s": 373,
+      "source_identity": "Explorations",
+      "score_anchor": {
+        "file": "Realbk1.pdf",
+        "page": 240,
+        "status": "visual_verified"
+      },
+      "personnel_status": "verified",
+      "source_separation_status": "mixed_audio",
+      "tasks": [
+        "map structural arrivals and repeated identity",
+        "separate productive repetition from template repetition",
+        "annotate register excursions and interval leaps",
+        "track piano/drum response around bass phrase endings"
+      ]
+    }
+  ]
+}
