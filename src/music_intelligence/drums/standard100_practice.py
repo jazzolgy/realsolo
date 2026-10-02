@@ -333,6 +333,33 @@ def _section_end_bars(chart: StandardChart) -> frozenset[int]:
     return frozenset(ends)
 
 
+def _initial_phrase_memory_for_pass(pass_index: int) -> BebopPhraseMemory:
+    """Synthetic drummer-history condition for deterministic interaction drills."""
+    mode = pass_index % 4
+    if mode == 1:
+        # Rising soloist after the drummer has already spoken actively: COAST.
+        return BebopPhraseMemory(
+            recent_comp_density=0.72,
+            bars_since_last_statement=0.25,
+            recent_response_count=4,
+            recent_non_response_count=0,
+        )
+    if mode == 3:
+        # Dense/opening alternation starts from an already conversational state.
+        return BebopPhraseMemory(
+            recent_comp_density=0.62,
+            bars_since_last_statement=0.5,
+            recent_response_count=3,
+            recent_non_response_count=1,
+        )
+    return BebopPhraseMemory(
+        recent_comp_density=0.18,
+        bars_since_last_statement=1.25,
+        recent_response_count=0,
+        recent_non_response_count=2,
+    )
+
+
 def _exercise_state(pass_index: int, bar: int, bars: int) -> SoloistEnergyProjection:
     """Deterministic training overlay, explicitly not chart metadata."""
     phase = bar / max(1, bars - 1)
@@ -474,6 +501,7 @@ def practice_chart(
     )
 
     for pass_index in range(passes):
+        phrase_memory = _initial_phrase_memory_for_pass(pass_index)
         for bar in range(bars):
             form_position = bar / max(1, bars - 1)
             source_boundary = bar in section_ends or bar == bars - 1
