@@ -1,0 +1,150 @@
+{
+  "schema_version": "0.1",
+  "analysis_id": "bill_evans_compilation_1000_pass_v0_1",
+  "source_duration_seconds": 7717.956,
+  "total_passes": 1000,
+  "window_seconds": 10,
+  "source_limitation": "Stereo mix; no instrument-stem attribution.",
+  "evidence_taxonomy": [
+    "EVANS_OBSERVED",
+    "EVANS_ANALYST_INTERPRETATION",
+    "EVANS_STABLE_TENDENCY",
+    "EVANS_CONTEXTUAL_TENDENCY",
+    "CROSS_PIANIST_CONFIRMED",
+    "GENERIC_PIANO_CANDIDATE"
+  ],
+  "representative_tracks": {
+    "Waltz For Debby": {
+      "passes": 48,
+      "dynamic_cv": 0.4571,
+      "onset_change": 0.0711,
+      "low_activity": 0.0677,
+      "periodicity": 0.3023,
+      "phase_onset": {
+        "early": 0.06,
+        "middle": 0.0744,
+        "late": 0.0853
+      }
+    },
+    "Autumn Leaves": {
+      "passes": 44,
+      "dynamic_cv": 0.4598,
+      "onset_change": 0.0796,
+      "low_activity": 0.099,
+      "periodicity": 0.2992,
+      "clusters": {
+        "0": 0.091,
+        "1": 0.773,
+        "3": 0.091,
+        "4": 0.045
+      }
+    },
+    "Blue In Green": {
+      "passes": 42,
+      "dynamic_cv": 0.7064,
+      "onset_change": 0.0626,
+      "low_activity": 0.1065,
+      "periodicity": 0.514,
+      "clusters": {
+        "1": 0.071,
+        "2": 0.024,
+        "3": 0.833,
+        "4": 0.071
+      },
+      "phase_onset": {
+        "early": 0.0499,
+        "middle": 0.0689,
+        "late": 0.0587
+      },
+      "phase_low_activity": {
+        "early": 0.0965,
+        "middle": 0.104,
+        "late": 0.1529
+      }
+    },
+    "Alice In Wonderland": {
+      "passes": 48,
+      "dynamic_cv": 0.4131,
+      "onset_change": 0.0704,
+      "low_activity": 0.0514,
+      "periodicity": 0.2559,
+      "clusters": {
+        "0": 0.312,
+        "1": 0.521,
+        "3": 0.042,
+        "4": 0.125
+      },
+      "phase_onset": {
+        "early": 0.0644,
+        "middle": 0.0808,
+        "late": 0.0658
+      }
+    },
+    "How Deep Is The Ocean": {
+      "passes": 35,
+      "dynamic_cv": 0.5607,
+      "onset_change": 0.0611,
+      "low_activity": 0.0902,
+      "periodicity": 0.3957,
+      "clusters": {
+        "0": 0.086,
+        "1": 0.114,
+        "2": 0.029,
+        "3": 0.057,
+        "4": 0.714
+      }
+    },
+    "Peri's Scope": {
+      "passes": 33,
+      "dynamic_cv": 0.5287,
+      "onset_change": 0.0815,
+      "low_activity": 0.0802,
+      "periodicity": 0.297,
+      "clusters": {
+        "1": 0.879,
+        "3": 0.121
+      }
+    },
+    "Come Rain or Come Shine": {
+      "passes": 34,
+      "dynamic_cv": 0.5824,
+      "onset_change": 0.0642,
+      "low_activity": 0.1103,
+      "periodicity": 0.4125,
+      "clusters": {
+        "1": 0.265,
+        "2": 0.029,
+        "3": 0.529,
+        "4": 0.176
+      },
+      "phase_onset": {
+        "early": 0.0621,
+        "middle": 0.0724,
+        "late": 0.0575
+      }
+    },
+    "Nardis": {
+      "passes": 44,
+      "dynamic_cv": 0.7047,
+      "onset_change": 0.0785,
+      "low_activity": 0.1441,
+      "periodicity": 0.4051,
+      "phase_onset": {
+        "early": 0.082,
+        "middle": 0.0963,
+        "late": 0.0596
+      }
+    }
+  },
+  "implementation_links": [
+    "players/piano/lh_texture.py",
+    "players/piano/lh_voice_leading.py",
+    "players/piano/rh_lh_interaction.py",
+    "players/piano/texture_control.py"
+  ],
+  "non_conclusions": [
+    "Multiple Evans tracks do not by themselves establish a generic jazz-piano rule.",
+    "Stereo texture clusters are not direct piano/bass/drum stem labels.",
+    "Macro arcs are capabilities, not a fixed Evans formula."
+  ]
+}
