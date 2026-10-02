@@ -1,7 +1,7 @@
 """Pattern-corpus adapter for online drummer decisions."""
 from __future__ import annotations
 
-from .model import DrumGesture, DrumHit, DrummerRuntimeContext, DrumVoice, Limb
+from .model import DrumGesture, DrumHit, DrummerRuntimeContext, DrummerSoftPlan, DrumVoice, Limb
 from .pattern_corpus import StoredDrumPattern, hits_at_current_position, patterns_with_tags
 from .timing import tempo_conditioned_swing_prior
 
@@ -84,19 +84,40 @@ def pattern_gesture_now(
     return gesture
 
 
+def _style_matches(pattern: StoredDrumPattern, plan: DrummerSoftPlan) -> bool:
+    """Require at least one musically identifying style tag to match.
+
+    Functional tags such as fill/setup/ride do not count as style identity.
+    """
+    non_style = {
+        "ride", "time_playing", "swing", "pedal_hihat", "2_and_4",
+        "fill", "setup", "upbeat_figure", "triplet", "sixteenth",
+    }
+    pattern_styles = set(pattern.tags) - non_style
+    if not pattern_styles:
+        return True
+    return bool(pattern_styles & set(plan.style_tags))
+
+
 def source_pattern_candidates(
+    plan: DrummerSoftPlan,
     context: DrummerRuntimeContext,
 ) -> tuple[DrumGesture, ...]:
-    """Return source-derived gestures relevant to the current instant."""
+    """Return source-derived gestures relevant to style and current instant."""
+    plan.validate()
     candidates: list[DrumGesture] = []
 
-    for pattern in patterns_with_tags("jazz", "ride"):
+    for pattern in patterns_with_tags("ride"):
+        if not _style_matches(pattern, plan):
+            continue
         gesture = pattern_gesture_now(pattern, context)
         if gesture is not None:
             candidates.append(gesture)
 
     if context.phrase_position >= 0.82 or context.section_transition:
         for pattern in patterns_with_tags("setup"):
+            if not _style_matches(pattern, plan):
+                continue
             gesture = pattern_gesture_now(pattern, context)
             if gesture is not None:
                 candidates.append(gesture)
