@@ -37,6 +37,7 @@ from .bebop_runtime import (
     perform_one_bebop_gesture,
     score_bebop_gesture,
 )
+from .calibration import BebopCalibrationTelemetry
 from .chorus_memory import BebopChorusMemory, chorus_gesture_adjustment
 from .comping_phrase import (
     CommittedSnareEvent,
@@ -179,6 +180,7 @@ __all__ = [
     "build_bebop_candidates",
     "perform_one_bebop_gesture",
     "score_bebop_gesture",
+    "BebopCalibrationTelemetry",
     "BebopChorusMemory",
     "chorus_gesture_adjustment",
     "CommittedSnareEvent",
