@@ -7,6 +7,7 @@ from urllib.parse import parse_qs, urlparse
 
 from .chart import ChartBar, SongChart
 from .harmony_display import transpose_chord
+from .stage1_music import Stage1Soloist, accompaniment_frame
 
 WEB_ROOT = Path(__file__).with_name("web")
 
@@ -51,12 +52,62 @@ def chart_payload(chart: SongChart, *, transpose: int = 0) -> dict:
 
 class Stage1Handler(SimpleHTTPRequestHandler):
     chart = demo_chart()
+    soloist = Stage1Soloist()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(WEB_ROOT), **kwargs)
 
     def do_GET(self):
         parsed = urlparse(self.path)
+        if parsed.path == "/api/reset-solo":
+            self.soloist.reset()
+            body = b'{"ok": true}'
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
+        if parsed.path == "/api/accompaniment":
+            query = parse_qs(parsed.query)
+            chord = query.get("chord", ["Cmaj7"])[0]
+            try:
+                beat = int(query.get("beat", ["0"])[0]) % 4
+            except ValueError:
+                beat = 0
+            body = json.dumps(accompaniment_frame(chord, beat)).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
+        if parsed.path == "/api/solo-event":
+            query = parse_qs(parsed.query)
+            chord = query.get("chord", ["Cmaj7"])[0]
+            next_chord = query.get("next_chord", [""])[0]
+            try:
+                beat_in_bar = float(query.get("beat_in_bar", ["0"])[0])
+                phrase_step = int(query.get("phrase_step", ["0"])[0])
+            except ValueError:
+                beat_in_bar, phrase_step = 0.0, 0
+            body = json.dumps(
+                self.soloist.choose(
+                    chord,
+                    next_chord,
+                    beat_in_bar=beat_in_bar,
+                    phrase_step=phrase_step,
+                )
+            ).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
         if parsed.path == "/api/chart":
             query = parse_qs(parsed.query)
             try:
