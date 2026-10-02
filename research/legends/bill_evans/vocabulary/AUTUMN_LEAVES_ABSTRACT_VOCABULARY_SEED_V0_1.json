@@ -1,0 +1,182 @@
+{
+  "schema_version": "0.1",
+  "vocabulary_set_id": "evans.autumn_leaves.take1.abstract_seed.v0_1",
+  "recording_id": "bill_evans_portrait_in_jazz_autumn_leaves_take1",
+  "alignment_ref": "research/legends/bill_evans/observations/alignment/AUTUMN_LEAVES_TAKE1_ALIGNMENT_V0_1.json",
+  "boundary": "Abstract operations only; no full literal solo sequence.",
+  "items": [
+    {
+      "vocabulary_id": "BE-AL-ENTRY-001",
+      "source_location": {
+        "chorus": 3,
+        "bars": "29-32",
+        "track_seconds": [
+          120,
+          123.628
+        ]
+      },
+      "domains": [
+        "phrase_entrance",
+        "form_awareness",
+        "ensemble_interaction"
+      ],
+      "context_tags": [
+        "bass_foreground_handoff",
+        "late_form",
+        "swing"
+      ],
+      "operation": "late_form_pickup_into_next_full_chorus",
+      "musical_features": {
+        "entrance": "pickup/break rather than square bar-1 restart",
+        "target_function": "next-form structural arrival",
+        "phrase_position": "late C section into new chorus",
+        "interaction": "takes foreground from bass through overlap/transition"
+      },
+      "candidate_uses": [
+        "abstracted_pattern",
+        "hybrid_composition"
+      ],
+      "confidence": 0.82,
+      "provenance": [
+        "audio_form_alignment",
+        "published_take1_piano_solo_entry_2m00s"
+      ]
+    },
+    {
+      "vocabulary_id": "BE-AL-A1-002",
+      "source_location": {
+        "chorus": 4,
+        "bars": "1-10",
+        "track_seconds": [
+          123.628,
+          135.258
+        ]
+      },
+      "domains": [
+        "linear_connection",
+        "harmony_target_selection",
+        "interval_leap_grammar",
+        "rhythm_subdivision"
+      ],
+      "context_tags": [
+        "piano_solo",
+        "first_full_solo_chorus",
+        "A_section"
+      ],
+      "operation": "arpeggiated_structural_line_with_compact_leaps",
+      "musical_features": {
+        "motion": "arpeggiation plus thirds/fourths",
+        "subdivision": "eighth-note driven",
+        "harmony_relation": "mode/chord-field aware",
+        "color": "extension tones used as line material",
+        "target_behavior": "structural harmony remains audible"
+      },
+      "candidate_uses": [
+        "abstracted_pattern",
+        "adapted_lick",
+        "hybrid_composition"
+      ],
+      "confidence": 0.78,
+      "provenance": [
+        "published_analysis_mm1_10",
+        "audio_score_alignment"
+      ]
+    },
+    {
+      "vocabulary_id": "BE-AL-A2-003",
+      "source_location": {
+        "chorus": 4,
+        "bars": "11-18",
+        "track_seconds": [
+          136.421,
+          145.725
+        ]
+      },
+      "domains": [
+        "motif_development",
+        "repetition_variation",
+        "linear_connection",
+        "rhythm_subdivision"
+      ],
+      "context_tags": [
+        "piano_solo",
+        "developing_phrase"
+      ],
+      "operation": "increase_subdivision_and_chromatic_connection_on_return",
+      "musical_features": {
+        "development": "initial ideas return in altered form",
+        "subdivision": "sixteenth-note activity increases",
+        "chromaticism": "chromatic passing links existing line material",
+        "rhythmic_variation": "greater than opening phrase",
+        "phrase_logic": "variation rather than unrelated replacement"
+      },
+      "candidate_uses": [
+        "abstracted_pattern",
+        "hybrid_composition"
+      ],
+      "confidence": 0.84,
+      "provenance": [
+        "published_analysis_mm11_18",
+        "evans_archive_motivic_development_rhythmic_displacement"
+      ]
+    },
+    {
+      "vocabulary_id": "BE-AL-MOTIF-004",
+      "source_location": {
+        "scope": "solo-level"
+      },
+      "domains": [
+        "motif_development",
+        "repetition_variation"
+      ],
+      "context_tags": [
+        "piano_solo",
+        "swing"
+      ],
+      "operation": "develop_existing_motif_before_inventing_unrelated_material",
+      "musical_features": {
+        "memory": "retain rhythmic/contour identity",
+        "variation": "displace, extend, sequence or reharmonically adapt",
+        "constraint": "do not freeze exact future notes"
+      },
+      "candidate_uses": [
+        "fragment_recall",
+        "abstracted_pattern",
+        "hybrid_composition"
+      ],
+      "confidence": 0.73,
+      "provenance": [
+        "Bill_Evans_Archive_motivic_development_rhythmic_displacement"
+      ]
+    },
+    {
+      "vocabulary_id": "BE-AL-RHYTHM-005",
+      "source_location": {
+        "scope": "solo-level"
+      },
+      "domains": [
+        "rhythm_subdivision",
+        "microtiming_swing",
+        "phrase_entrance"
+      ],
+      "context_tags": [
+        "piano_solo",
+        "swing"
+      ],
+      "operation": "rhythmic_displacement_as_phrase_development",
+      "musical_features": {
+        "principle": "move or re-accent remembered material rather than only change pitches",
+        "relation_to_motif": "rhythm can transform motif identity while preserving recognizability"
+      },
+      "candidate_uses": [
+        "abstracted_pattern",
+        "hybrid_composition"
+      ],
+      "confidence": 0.72,
+      "provenance": [
+        "Bill_Evans_Archive_rhythmic_displacement",
+        "published_Autumn_Leaves_analysis"
+      ]
+    }
+  ]
+}
