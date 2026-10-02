@@ -157,7 +157,7 @@ def _target_preservation(p: ReharmonizationProposal) -> float:
 
     if p.substitute.root_pc is not None:
         # Dominant-like approach: fifth-down or semitone-down target relation.
-        fifth_target = (p.substitute.root_pc - 5) % 12
+        fifth_target = (p.substitute.root_pc + 5) % 12
         half_target = (p.substitute.root_pc - 1) % 12
         if intended in {fifth_target, half_target}:
             return .90
