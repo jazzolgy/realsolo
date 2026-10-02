@@ -82,11 +82,9 @@ def test_partial_variation_can_score_above_exact_repeat():
     original = candidates[0]
     state.commit(original, section_energy=0.6)
 
-    varied = next(
-        c for c in candidates
-        if c.role == original.role
-        and c.realization.event.source_family == original.realization.event.source_family
-        and c.tags != original.tags
+    varied = replace(
+        original,
+        tags=frozenset(set(original.tags) | {"rhythm:offbeat"}),
     )
 
     exact_score = evaluate_variation(
@@ -148,11 +146,9 @@ def test_motif_continuity_can_reward_same_family_role_with_changed_realization()
     original = candidates[0]
     state.commit(original, section_energy=0.7)
 
-    varied = next(
-        c for c in candidates
-        if c.role == original.role
-        and c.realization.event.source_family == original.realization.event.source_family
-        and c.tags != original.tags
+    varied = replace(
+        original,
+        tags=frozenset(set(original.tags) | {"register:higher"}),
     )
 
     score = evaluate_variation(
@@ -197,10 +193,9 @@ def test_comping_evaluator_uses_recent_signature_memory():
     original = candidates[0]
     state.commit(original, section_energy=0.6)
 
-    varied = next(
-        c for c in candidates
-        if c.tags != original.tags
-        and c.realization.event.source_family == original.realization.event.source_family
+    varied = replace(
+        original,
+        tags=frozenset(set(original.tags) | {"rhythm:offbeat"}),
     )
 
     ev = PianoCompingEvaluator()
