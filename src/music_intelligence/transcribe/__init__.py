@@ -8,6 +8,16 @@ It must not contain player generation policy or duplicate Shared Core harmony /
 ensemble reasoning.
 """
 
+from .chord_chart import (
+    BarlineStyle,
+    ChartMeasure,
+    ChordChange,
+    ChordChart,
+    ChordChartPosition,
+    ChordSymbol,
+    NavigationMark,
+    chart_position,
+)
 from .events import (
     CommittedPerformanceEvent,
     ConfidenceBundle,
@@ -142,6 +152,14 @@ from .projection import (
 )
 
 __all__ = [
+    "BarlineStyle",
+    "ChartMeasure",
+    "ChordChange",
+    "ChordChart",
+    "ChordChartPosition",
+    "ChordSymbol",
+    "NavigationMark",
+    "chart_position",
     "CommittedPerformanceEvent",
     "ConfidenceBundle",
     "EventAlternative",
