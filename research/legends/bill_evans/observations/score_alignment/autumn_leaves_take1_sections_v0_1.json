@@ -1,0 +1,179 @@
+{
+  "schema_version": "0.1",
+  "legend_id": "bill_evans",
+  "track_id": "BE-003",
+  "recording_id": "portrait_in_jazz_autumn_leaves_take1_stereo",
+  "form": {
+    "bars": 32,
+    "sections": [
+      "A1",
+      "A2",
+      "B",
+      "C"
+    ],
+    "quarter_tempo_estimate": 206.7
+  },
+  "score_anchors": [
+    {
+      "file": "NewReal1.pdf",
+      "page": 12,
+      "verified": true
+    },
+    {
+      "file": "Realbk1.pdf",
+      "page": 36,
+      "verified": true
+    }
+  ],
+  "sections": [
+    {
+      "id": "head_A1",
+      "role": "head",
+      "bars": "1-8",
+      "time_s": [
+        8,
+        17.5
+      ],
+      "confidence": 0.88,
+      "evidence": [
+        "piano_rh_melody_foreground",
+        "free_score_relative_rhythm",
+        "bass_syncopated_nonwalking_time_figure",
+        "light_swing_drums"
+      ],
+      "open_questions": [
+        "LH_attack_map",
+        "RH_exact_microtiming"
+      ]
+    },
+    {
+      "id": "head_A2",
+      "role": "head",
+      "bars": "9-16",
+      "time_s": [
+        17.5,
+        27
+      ],
+      "confidence": 0.82,
+      "evidence": [
+        "piano_rh_melody_foreground",
+        "free_score_relative_rhythm",
+        "bass_syncopated_nonwalking_time_figure"
+      ],
+      "open_questions": [
+        "LH_texture_by_bar",
+        "bass_to_walk_transition_exact_bar"
+      ]
+    },
+    {
+      "id": "head_B",
+      "role": "head",
+      "bars": "17-24",
+      "time_s": [
+        27,
+        36.5
+      ],
+      "confidence": 0.9,
+      "evidence": [
+        "piano_rh_melody_foreground",
+        "bass_moves_toward_standard_walking",
+        "drums_light_swing_support"
+      ],
+      "open_questions": [
+        "RH_phrase_end_offsets",
+        "LH_voice_leading"
+      ]
+    },
+    {
+      "id": "head_C",
+      "role": "head",
+      "bars": "25-32",
+      "time_s": [
+        36.5,
+        46
+      ],
+      "confidence": 0.78,
+      "evidence": [
+        "head_completion",
+        "transition_toward_bass_foreground"
+      ],
+      "open_questions": [
+        "exact_break_timing",
+        "ending_voicing_texture"
+      ]
+    },
+    {
+      "id": "piano_solo_1_A1",
+      "role": "piano_solo",
+      "bars": "1-8",
+      "time_s": [
+        120,
+        129.5
+      ],
+      "confidence": 0.86,
+      "evidence": [
+        "structural_descending_framework",
+        "framework_elaborated_by_neighbor_encircling_delay_arpeggiation_prefix",
+        "arpeggiated_chord_line_behavior",
+        "chromaticism",
+        "rhythmic_fluency"
+      ],
+      "open_questions": [
+        "LH_rhythm_exact",
+        "target_tone_map",
+        "motif_operation_sequence"
+      ]
+    },
+    {
+      "id": "piano_solo_1_A2",
+      "role": "piano_solo",
+      "bars": "9-16",
+      "time_s": [
+        129.5,
+        139
+      ],
+      "confidence": 0.55,
+      "evidence": [
+        "piano_foreground_continues"
+      ],
+      "open_questions": [
+        "detailed_transcription_alignment"
+      ]
+    },
+    {
+      "id": "piano_solo_1_B",
+      "role": "piano_solo",
+      "bars": "17-24",
+      "time_s": [
+        139,
+        148.5
+      ],
+      "confidence": 0.55,
+      "evidence": [
+        "piano_foreground_continues"
+      ],
+      "open_questions": [
+        "detailed_transcription_alignment"
+      ]
+    },
+    {
+      "id": "piano_solo_1_C",
+      "role": "piano_solo",
+      "bars": "25-32",
+      "time_s": [
+        148.5,
+        158
+      ],
+      "confidence": 0.55,
+      "evidence": [
+        "piano_foreground_continues",
+        "chorus_boundary_approach"
+      ],
+      "open_questions": [
+        "phrase_ending_type",
+        "next_chorus_link"
+      ]
+    }
+  ],
+  "methodology_note": "Time windows are score/tempo aligned navigation windows. They are not sample-accurate note transcriptions. Unsupported bar-level claims remain open_questions."
+}
