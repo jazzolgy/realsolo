@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1",
+  "source": {
+    "title": "Jazz Piano Voicings — Transcribed Comping from Volume 60 Freddie Hubbard",
+    "performers": [
+      "Dan Haerle",
+      "Mark Levine"
+    ],
+    "role": "observational_transcription_evidence"
+  },
+  "evidence_labels": [
+    "TRANSCRIPTION_OBSERVED",
+    "DESIGN_INFERENCE",
+    "OPEN"
+  ],
+  "pieces": [
+    {
+      "title": "Little Sunflower",
+      "pianist": "Mark Levine",
+      "pages": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "transcription_observed": [
+        "long repeated D-minor/modal harmonic field",
+        "sustained sonorities alternate with short chord attacks",
+        "rests remain part of the texture",
+        "repeated rhythmic cells occur without becoming the only realization",
+        "later excerpt shows denser block-like activity and thicker texture",
+        "register and voicing size change within recurring harmony"
+      ],
+      "design_inference": {
+        "harmonic_stability": "high",
+        "pattern_consistency": "medium",
+        "texture_trajectory": "developing",
+        "key_hypothesis": "static harmony can support changing accompaniment narrative"
+      }
+    },
+    {
+      "title": "Gibraltar",
+      "pianist": "Dan Haerle",
+      "pages": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "transcription_observed": [
+        "repeated G-minor/C7 environment",
+        "recognizable recurring rhythmic placements across harmonic cycles",
+        "pattern identity persists while exact realization varies",
+        "later sections alternate sparse attacks, held sonorities, repeated short cells and denser blocks",
+        "rests continue to appear inside active comping"
+      ],
+      "design_inference": {
+        "harmonic_stability": "high",
+        "pattern_consistency": "high",
+        "variation_within_pattern": "high",
+        "key_hypothesis": "pattern consistency and variation pressure must be independent controls"
+      }
+    },
+    {
+      "title": "Crisis",
+      "pianist": "Dan Haerle",
+      "pages": [
+        36,
+        37,
+        38,
+        39,
+        40,
+        41
+      ],
+      "transcription_observed": [
+        "faster-changing harmonic environment than Gibraltar",
+        "sustained support alternates with short punctuation and rests",
+        "compact and wider sonorities both appear",
+        "linear/chromatic motion appears between harmonic events",
+        "texture changes around formal and harmonic boundaries"
+      ],
+      "design_inference": {
+        "harmonic_stability": "lower",
+        "pattern_consistency": "lower_than_Gibraltar",
+        "form_harmony_coupling": "stronger",
+        "key_hypothesis": "continuity policy should depend on harmonic/form context"
+      }
+    }
+  ],
+  "cross_piece_hypotheses": [
+    {
+      "id": "FH-H1",
+      "statement": "same harmony can support multiple piano actions",
+      "status": "TRANSCRIPTION_OBSERVED"
+    },
+    {
+      "id": "FH-H2",
+      "statement": "repetition may function as groove/form identity rather than mechanical redundancy",
+      "status": "TRANSCRIPTION_OBSERVED"
+    },
+    {
+      "id": "FH-H3",
+      "statement": "variation pressure and pattern consistency should be independently represented",
+      "status": "DESIGN_INFERENCE",
+      "implementation": "pattern_consistency_strength"
+    },
+    {
+      "id": "FH-H4",
+      "statement": "harmonic stability/rate of change should influence continuity policy",
+      "status": "DESIGN_INFERENCE"
+    }
+  ],
+  "cautions": [
+    "No literal phrase or voicing sequence should be memorized as a future template.",
+    "Qualitative labels are not exact statistical measurements.",
+    "Audio and expert review are needed before calibrating numeric weights."
+  ]
+}
