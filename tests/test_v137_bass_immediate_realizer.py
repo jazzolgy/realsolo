@@ -44,6 +44,17 @@ def test_inferred_harmony_has_precedence_without_reimplementing_harmony():
     assert roots[0].target_pitch_class == 2
 
 
+def test_shared_pitch_evidence_prevents_false_perfect_fifth():
+    frame = HarmonicFrame(
+        expected=ev(HarmonySource.EXPECTED, 2, "Dm7b5", {0, 2, 5, 8}),
+    )
+    items = generate_immediate_bass_candidates(frame, BassContext())
+    assert not any(
+        x.harmonic_role is BassHarmonicRole.FIFTH and x.target_pitch_class == 9
+        for x in items
+    )
+
+
 def test_late_measure_can_prepare_next_harmony_but_not_a_future_line():
     frame = HarmonicFrame(
         expected=ev(HarmonySource.EXPECTED, 2, "Dm7", {0, 2, 5, 9}),
