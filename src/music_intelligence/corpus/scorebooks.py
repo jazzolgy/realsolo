@@ -315,16 +315,9 @@ SEED_SONG_LOCATORS: tuple[ScorebookSongLocator, ...] = (
                 ("scorebook:newreal2:p8", "vision-reviewed"),
             ),
             ScoreEvidence(
-                ScoreEvidenceKind.WRITTEN_BASS_PART,
-                "written walking bass line in section D",
-                .98,
-                8,
-                ("scorebook:newreal2:p8", "vision-reviewed"),
-            ),
-            ScoreEvidence(
                 ScoreEvidenceKind.SECTION_ROLE,
-                "D: written walking-bass comparison region",
-                .96,
+                "D: explicit bass-walk instruction region; no dedicated written bass staff verified",
+                .99,
                 8,
                 ("scorebook:newreal2:p8", "vision-reviewed"),
             ),
