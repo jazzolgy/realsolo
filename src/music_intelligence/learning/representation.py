@@ -20,6 +20,9 @@ class LearningDomain(str, Enum):
     ENSEMBLE_INTERACTION = "ensemble_interaction"
     EXPRESSION = "expression"
     FORM_TENSION = "form_tension"
+    STYLE = "style"
+    GENRE = "genre"
+    RHYTHM_GROOVE = "rhythm_groove"
 
 
 @dataclass(frozen=True)
