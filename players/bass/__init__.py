@@ -20,6 +20,7 @@ from .practice_curriculum import (
 from .scorebook_evidence import (
     BassScoreEvidenceDirective,
     BassWrittenPartPrior,
+    derive_bass_score_context,
     derive_bass_score_evidence,
     evidence_candidate_score,
 )
@@ -128,6 +129,7 @@ __all__ = [
     "compare_bass_lines",
     "choose_immediate_bass_action",
     "curriculum_feature_weights",
+    "derive_bass_score_context",
     "derive_bass_score_evidence",
     "evidence_candidate_score",
     "evaluate_practice_results",
