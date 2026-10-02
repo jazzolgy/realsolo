@@ -288,3 +288,94 @@ def test_response_memory_is_bounded_and_contains_no_future_plan():
     assert len(state.recent_responses) == 8
     assert all(not hasattr(x, "future_actions") for x in state.recent_responses)
     assert all(not hasattr(x, "future_sequence") for x in state.recent_responses)
+
+
+def test_coarse_context_transition_detects_density_increase_with_low_attribution():
+    state = PianoCompingState()
+    before = PianoCompingContext(
+        soloist_activity=0.3,
+        phrase_boundary_probability=0.2,
+        available_space_beats=0.0,
+        ensemble_density=0.3,
+        section_energy=0.5,
+    )
+    gesture = first_sounding(before, state)
+    state.commit(gesture, section_energy=0.5)
+
+    after = PianoCompingContext(
+        soloist_activity=0.35,
+        phrase_boundary_probability=0.25,
+        available_space_beats=0.0,
+        ensemble_density=0.7,
+        section_energy=0.6,
+    )
+    observations = state.observe_context_transition(before, after)
+    assert any(x.response_type is ResponseType.DENSITY_INCREASE for x in observations)
+    assert all(x.attribution_confidence == pytest.approx(0.25) for x in observations)
+
+
+def test_coarse_context_transition_detects_space_opening():
+    state = PianoCompingState()
+    before = PianoCompingContext(
+        soloist_activity=0.6,
+        phrase_boundary_probability=0.2,
+        available_space_beats=0.0,
+        ensemble_density=0.5,
+    )
+    gesture = first_sounding(before, state)
+    state.commit(gesture, section_energy=0.5)
+
+    after = PianoCompingContext(
+        soloist_activity=0.2,
+        phrase_boundary_probability=0.85,
+        available_space_beats=1.0,
+        ensemble_density=0.35,
+    )
+    observations = state.observe_context_transition(before, after)
+    assert any(x.response_type is ResponseType.SPACE_OPENED for x in observations)
+
+
+def test_coarse_transition_does_not_invent_rhythmic_echo_from_scalar_context():
+    state = PianoCompingState()
+    before = PianoCompingContext(
+        soloist_activity=0.3,
+        ensemble_density=0.4,
+    )
+    gesture = first_sounding(before, state)
+    state.commit(gesture, section_energy=0.5)
+
+    after = PianoCompingContext(
+        soloist_activity=0.3,
+        ensemble_density=0.4,
+    )
+    observations = state.observe_context_transition(before, after)
+    assert not any(x.response_type is ResponseType.RHYTHMIC_ECHO for x in observations)
+
+
+def test_context_transition_observations_feed_next_tick_bias():
+    state = PianoCompingState()
+    before = PianoCompingContext(
+        soloist_activity=0.3,
+        ensemble_density=0.3,
+        section_energy=0.5,
+    )
+    gesture = first_sounding(before, state)
+    state.commit(gesture, section_energy=0.5)
+
+    after = PianoCompingContext(
+        soloist_activity=0.35,
+        ensemble_density=0.75,
+        section_energy=0.6,
+    )
+    state.observe_context_transition(
+        before,
+        after,
+        attribution_confidence=0.5,
+    )
+
+    silence = next(
+        c for c in slate(after, state).candidates
+        if c.action_type is CompingActionType.SILENCE
+    )
+    score = evaluate_response_bias(silence, state.recent_responses)
+    assert score.components.get("density_recovery", 0) > 0
