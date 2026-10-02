@@ -107,3 +107,53 @@ def rhythmic_intents_for_candidate(
         )
 
     return tuple(out)
+
+
+from dataclasses import replace
+
+
+def apply_rhythmic_intent(
+    candidate: PianoCompingCandidate,
+    intent: PianoRhythmicIntent,
+) -> PianoCompingCandidate:
+    """Apply one immediate rhythmic interpretation without changing pitch content."""
+    intent.validate()
+    candidate.validate()
+    if candidate.realization is None:
+        raise ValueError("cannot apply sounding rhythmic intent to silence")
+
+    old_event = candidate.realization.event
+    new_duration = max(0.0625, candidate.duration_beats * intent.duration_scale)
+    new_event = replace(
+        old_event,
+        duration_beats=new_duration,
+        onset_offset_beats=old_event.onset_offset_beats + intent.onset_offset_beats,
+        annotations={
+            **dict(old_event.annotations),
+            "rhythmic_placement": intent.placement.value,
+        },
+    )
+    new_realization = replace(candidate.realization, event=new_event)
+    return replace(
+        candidate,
+        duration_beats=new_duration,
+        realization=new_realization,
+        tags=frozenset(set(candidate.tags) | {f"rhythm:{intent.placement.value}"}),
+    )
+
+
+def expand_rhythmic_variants(
+    candidate: PianoCompingCandidate,
+    *,
+    phrase_boundary_probability: float,
+    available_space_beats: float,
+    drummer_activity: float,
+) -> tuple[PianoCompingCandidate, ...]:
+    """Expand one sounding candidate into plural immediate timing variants."""
+    intents = rhythmic_intents_for_candidate(
+        candidate,
+        phrase_boundary_probability=phrase_boundary_probability,
+        available_space_beats=available_space_beats,
+        drummer_activity=drummer_activity,
+    )
+    return tuple(apply_rhythmic_intent(candidate, intent) for intent in intents)
