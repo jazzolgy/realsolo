@@ -200,3 +200,50 @@ def expand_candidate_set_expressively(
         )
         out.extend(variants or (candidate,))
     return PianoCompingCandidateSet(tuple(out))
+
+
+def build_immediate_performance_candidates(
+    request: PianoVoicingRequest,
+    context: PianoCompingContext,
+    interaction_state,
+    harmonic_affordance: HarmonicAffordance | None = None,
+    *,
+    include_rhythm: bool = True,
+    include_expression: bool = True,
+    max_candidates: int = 128,
+) -> PianoCompingCandidateSet:
+    """Build a bounded one-tick candidate slate.
+
+    Pipeline:
+      harmonic material -> voicing/role -> rhythmic placement -> expression
+
+    Every result is still one immediate gesture. The cap prevents combinatorial
+    explosion and is not a musical ranking of future actions.
+    """
+    if max_candidates < 1:
+        raise ValueError("max_candidates must be positive")
+    interaction_state.validate()
+
+    slate = build_contextual_comping_candidates(
+        request,
+        context,
+        harmonic_affordance,
+    )
+    if include_rhythm:
+        slate = expand_candidate_set_rhythmically(slate, context)
+    if include_expression:
+        slate = expand_candidate_set_expressively(
+            slate,
+            context,
+            interaction_state,
+        )
+
+    if len(slate.candidates) <= max_candidates:
+        return slate
+
+    # Preserve silence first, then keep a diverse prefix of sounding candidates.
+    silent = list(slate.silent)
+    sounding = list(slate.sounding)
+    budget = max(0, max_candidates - len(silent))
+    kept = tuple(silent + sounding[:budget])
+    return PianoCompingCandidateSet(kept)
