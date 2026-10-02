@@ -25,6 +25,11 @@ from .bass_coupling import (
     project_bass_pulse,
 )
 from music_intelligence.reasoning.ensemble_state import EnsembleState
+from .ride_continuity import (
+    RideContinuityMemory,
+    build_ride_candidates,
+    score_ride_surface_gesture,
+)
 from .model import (
     DrumGesture,
     DrumHit,
@@ -49,12 +54,14 @@ class BebopRuntimeProjection:
     soloist: SoloistEnergyProjection
     phrase_memory: BebopPhraseMemory
     bass: BassPulseProjection | None = None
+    ride_memory: RideContinuityMemory = RideContinuityMemory()
 
     def validate(self) -> None:
         self.soloist.validate()
         self.phrase_memory.validate()
         if self.bass is not None:
             self.bass.validate()
+        self.ride_memory.validate()
 
     @classmethod
     def from_ensemble_state(
@@ -69,6 +76,7 @@ class BebopRuntimeProjection:
             soloist=soloist,
             phrase_memory=phrase_memory,
             bass=project_bass_pulse(ensemble_state),
+            ride_memory=RideContinuityMemory(),
         )
 
 
@@ -147,12 +155,59 @@ def build_bebop_candidates(
     context.validate()
     projection.validate()
 
+    interaction = infer_bebop_interaction_state(
+        projection.soloist,
+        projection.phrase_memory,
+        drummer_energy=plan.energy,
+        phrase_position=context.phrase_position,
+        section_transition=context.section_transition,
+    )
+
     generic = list(build_immediate_candidates(plan, context))
+
+    # Replace the generic canonical ride-time gesture with a bebop continuity
+    # surface. Keep any simultaneous non-ride anchor (e.g. pedal hi-hat 2&4).
+    canonical_time = next(
+        (
+            g for g in generic
+            if g.role is GestureRole.TIME
+            and "timekeeping" in g.tags
+            and "source_pattern" not in g.tags
+        ),
+        None,
+    )
+    auxiliary_hits: tuple[DrumHit, ...] = ()
+    if canonical_time is not None:
+        auxiliary_hits = tuple(
+            h for h in canonical_time.hits if h.voice is not DrumVoice.RIDE
+        )
+        generic.remove(canonical_time)
+
+    for ride_candidate in build_ride_candidates(
+        plan,
+        context,
+        interaction.state,
+        projection.ride_memory,
+        bass=projection.bass,
+    ):
+        combined = DrumGesture(
+            hits=ride_candidate.gesture.hits + auxiliary_hits,
+            role=ride_candidate.gesture.role,
+            tags=ride_candidate.gesture.tags,
+            confidence=ride_candidate.gesture.confidence,
+            provenance=ride_candidate.gesture.provenance,
+        )
+        combined.validate()
+        generic.append(combined)
+
     generic.append(_intentional_non_response_candidate())
 
-    # Extract the current time layer from a generic time gesture and offer a
-    # very quiet bass-floor version as a separate musical intention.
-    time_gesture = next((g for g in generic if g.role is GestureRole.TIME), None)
+    # Offer a very quiet bass-floor version only on top of a currently clear
+    # time-bearing gesture; never manufacture future pulse events.
+    time_gesture = next(
+        (g for g in generic if g.role is GestureRole.TIME and g.hits),
+        None,
+    )
     if time_gesture is not None:
         floor = _quiet_bass_floor_candidate(time_gesture.hits, plan)
         if floor is not None:
@@ -206,6 +261,19 @@ def score_bebop_gesture(
         v = 0.28 * profile.ride_time_salience.value
         score += v
         components.append(("bebop_ride_salience", v))
+
+    if "ride_continuity" in gesture.tags:
+        v = score_ride_surface_gesture(
+            gesture,
+            plan,
+            context,
+            interaction.state,
+            projection.ride_memory,
+            bass=projection.bass,
+            profile=profile,
+        )
+        score += v
+        components.append(("ride_surface_continuity", v))
 
     if "intentional_non_response" in gesture.tags:
         if comp_intent is BebopCompIntent.INTENTIONAL_NON_RESPONSE:
