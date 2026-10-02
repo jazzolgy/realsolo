@@ -12,6 +12,7 @@ from .chord_chart import (
     BarlineStyle,
     ChordChart,
     ChordChartPosition,
+    EnharmonicPolicy,
     MeasureRepeatKind,
     NavigationMark,
     resolved_measure_chords,
@@ -67,7 +68,7 @@ def _active_chord_index(
     measure_number: int,
     beat: Fraction,
 ) -> int | None:
-    chords = resolved_measure_chords(chart, measure_number)
+    chords = resolved_measure_chords(display_chart, measure_number)
     active: int | None = None
     for index, change in enumerate(chords):
         if change.beat <= beat:
@@ -83,10 +84,19 @@ def build_chord_chart_render_model(
     position: ChordChartPosition | None = None,
     measures_per_row: int = 4,
     transpose_semitones: int = 0,
+    enharmonic_policy: EnharmonicPolicy | None = None,
 ) -> ChordChartRenderModel:
     """Project a chart into rows/cells suitable for any UI renderer."""
 
     chart.validate()
+    display_chart = (
+        chart.transpose(
+            transpose_semitones,
+            enharmonic_policy=enharmonic_policy,
+        )
+        if transpose_semitones
+        else chart
+    )
     if measures_per_row <= 0:
         raise ValueError("measures_per_row must be positive")
 
@@ -104,7 +114,7 @@ def build_chord_chart_render_model(
 
     measure_cells: list[MeasureRenderCell] = []
     for measure in chart.measures:
-        resolved = resolved_measure_chords(chart, measure.number)
+        resolved = resolved_measure_chords(display_chart, measure.number)
         is_active_measure = (
             position is not None and measure.number == position.measure_number
         )
@@ -153,12 +163,18 @@ def build_chord_chart_render_model(
         current_measure_number=position.measure_number if position else None,
         current_beat=position.beat if position else None,
         current_chord_label=(
-            position.active_chord.display()
+            position.active_chord.transpose(
+                transpose_semitones,
+                enharmonic_policy=enharmonic_policy,
+            ).display()
             if position is not None and position.active_chord is not None
             else None
         ),
         next_chord_label=(
-            position.next_chord.display()
+            position.next_chord.transpose(
+                transpose_semitones,
+                enharmonic_policy=enharmonic_policy,
+            ).display()
             if position is not None and position.next_chord is not None
             else None
         ),
