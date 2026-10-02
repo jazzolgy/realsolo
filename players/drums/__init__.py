@@ -64,6 +64,16 @@ from .standard100_practice import (
     standard100_root,
 )
 from .comping import CompingPropensity, comping_propensity
+from .legend_adapter import (
+    DRUM_LEGEND_DOMAINS,
+    DrumLegendFeature,
+    DrumLegendProjection,
+    DrumVocabularyIntent,
+    drum_vocabulary_intent,
+    legend_gesture_adjustment,
+    project_legend_views,
+    vocabulary_reuse_bias,
+)
 from .model import (
     DrumGesture,
     DrumHit,
@@ -189,6 +199,14 @@ __all__ = [
     "practice_chart",
     "practice_standard100",
     "standard100_root",
+    "DRUM_LEGEND_DOMAINS",
+    "DrumLegendFeature",
+    "DrumLegendProjection",
+    "DrumVocabularyIntent",
+    "drum_vocabulary_intent",
+    "legend_gesture_adjustment",
+    "project_legend_views",
+    "vocabulary_reuse_bias",
     "CompingPropensity",
     "comping_propensity",
     "DrumGesture",
