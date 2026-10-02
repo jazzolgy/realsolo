@@ -183,7 +183,7 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                     articulation=tuple(decision.get("articulation", ())),
                     instrument_role="tenor_sax",
                     breath_before_beats=0.18 if decision.get("breath_before") else 0.0,
-                    attack_scale=0.55 if decision.get("soften_attack") else 1.0,
+                    attack_scale=float(decision.get("attack_scale", 1.0)),
                     release_shape=decision.get("release_shape", "normal"),
                     source=decision["source_family"] or "core_immediate",
                 ).to_dict()
