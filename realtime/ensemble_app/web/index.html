@@ -119,11 +119,13 @@ if(ev.gesture)renderGesture(ev.gesture,when,beatDur);
 function renderGesture(gesture,when,beatDur){
 if(!gesture)return;
 (gesture.voices||[]).forEach(function(v){
-var t=when+((v.onset_offset_beats||0)+(v.breath_before_beats||0))*beatDur,d=Math.max(.03,(v.duration_beats||.5)*beatDur),role=v.instrument_role||"solo";
+var controls=v.expression_controls||{};
+var breathBeats=("breath_before_beats" in controls)?Number(controls.breath_before_beats||0):(v.breath_before_beats||0);
+var t=when+((v.onset_offset_beats||0)+breathBeats)*beatDur,d=Math.max(.03,(v.duration_beats||.5)*beatDur),role=v.instrument_role||"solo";
 if(role==="bass"&&approvedSamples&&approvedSamples.ready){approvedSamples.bass(v.pitch_midi,v.velocity||88,t,d,v.articulation||[]);}
 else if(role==="piano"&&approvedSamples&&approvedSamples.ready){approvedSamples.piano(v.pitch_midi,v.velocity||72,t,d);}
-else if((role==="solo"||role==="solo_sax"||role==="tenor_sax")&&approvedSamples&&approvedSamples.ready){approvedSamples.solo("tenor_sax",v.pitch_midi,v.velocity||82,t,d,v.articulation||[],{attack_scale:v.attack_scale||1,release_shape:v.release_shape||"normal"});}
-else if((role==="solo_trumpet"||role==="trumpet")&&approvedSamples&&approvedSamples.ready){approvedSamples.solo("trumpet",v.pitch_midi,v.velocity||82,t,d,v.articulation||[],{attack_scale:v.attack_scale||1,release_shape:v.release_shape||"normal"});}
+else if((role==="solo"||role==="solo_sax"||role==="tenor_sax")&&approvedSamples&&approvedSamples.ready){approvedSamples.solo("tenor_sax",v.pitch_midi,v.velocity||82,t,d,v.articulation||[],Object.assign({attack_scale:v.attack_scale||1,release_shape:v.release_shape||"normal"},controls));}
+else if((role==="solo_trumpet"||role==="trumpet")&&approvedSamples&&approvedSamples.ready){approvedSamples.solo("trumpet",v.pitch_midi,v.velocity||82,t,d,v.articulation||[],Object.assign({attack_scale:v.attack_scale||1,release_shape:v.release_shape||"normal"},controls));}
 else if(sampleReady()){
 if(role==="bass")sampler.bass(v.pitch_midi,v.velocity||88,t,d,v.articulation||[]);
 else if(role==="piano")sampler.piano(v.pitch_midi,v.velocity||72,t,d);
