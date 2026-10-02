@@ -21,7 +21,6 @@ from .spelling import (
 )
 
 
-@dataclass(frozen=True)
 def dynamic_marking_from_level(level: float | None) -> str | None:
     """Convert normalized performed loudness intent to a readable dynamic.
 
