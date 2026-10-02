@@ -104,8 +104,16 @@ def evaluate_variation(
     similarity = current.similarity(last)
 
     if similarity >= 0.999:
-        penalty = -0.16 * context.variation_pressure
-        add("exact_repetition", penalty, "exact recent gesture repetition is mechanically redundant")
+        lay_out_repeat = current.role == "lay_out" and current.family is None
+        scale = 0.25 if lay_out_repeat else 1.0
+        penalty = -0.16 * context.variation_pressure * scale
+        add(
+            "exact_repetition",
+            penalty,
+            "repeated lay-out is only lightly penalized because continued space can be intentional"
+            if lay_out_repeat
+            else "exact recent gesture repetition is mechanically redundant",
+        )
     elif similarity >= 0.66:
         penalty = -0.07 * context.variation_pressure
         add("high_similarity", penalty, "highly similar recent gesture receives mild variation pressure")
@@ -136,7 +144,7 @@ def evaluate_variation(
 
     # Strong variation pressure after repeated same signatures in recent memory.
     exact_count = sum(1 for sig in recent[-3:] if current.similarity(sig) >= 0.999)
-    if exact_count >= 2:
+    if exact_count >= 2 and not (current.role == "lay_out" and current.family is None):
         add(
             "repetition_streak",
             -0.10 * context.variation_pressure * exact_count,
