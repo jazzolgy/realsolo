@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "scott_lafaro",
+  "source_id": "be_playlist_project_audio",
+  "verified_tracks": [
+    {
+      "track_id": "BE-011",
+      "title": "Alice In Wonderland",
+      "start_s": 3388,
+      "end_s": 3809,
+      "source_identity": "The Complete Village Vanguard Recordings, 1961",
+      "personnel": [
+        "Bill Evans - piano",
+        "Scott LaFaro - bass",
+        "Paul Motian - drums"
+      ],
+      "identity_basis": [
+        "project-owner track title explicitly names The Complete Village Vanguard Recordings, 1961",
+        "Concord/AllMusic personnel verification"
+      ],
+      "promotion_status": "eligible_for_phrase_observation"
+    },
+    {
+      "track_id": "BE-012",
+      "title": "How Deep Is The Ocean",
+      "start_s": 3809,
+      "end_s": 4023,
+      "source_identity": "Explorations",
+      "personnel": [
+        "Bill Evans - piano",
+        "Scott LaFaro - bass",
+        "Paul Motian - drums"
+      ],
+      "identity_basis": [
+        "project-owner track title explicitly names Explorations",
+        "Concord personnel verification"
+      ],
+      "promotion_status": "eligible_for_phrase_observation"
+    },
+    {
+      "track_id": "BE-015",
+      "title": "Israel",
+      "start_s": 4603,
+      "end_s": 4976,
+      "source_identity": "Explorations",
+      "personnel": [
+        "Bill Evans - piano",
+        "Scott LaFaro - bass",
+        "Paul Motian - drums"
+      ],
+      "identity_basis": [
+        "project-owner track title explicitly names Explorations",
+        "Concord personnel verification"
+      ],
+      "promotion_status": "eligible_for_phrase_observation"
+    }
+  ],
+  "withheld_candidates": [
+    {
+      "track_id": "BE-001",
+      "title": "Waltz For Debby",
+      "reason": "compilation title does not independently identify the exact master/take"
+    },
+    {
+      "track_id": "BE-002",
+      "title": "My Foolish Heart",
+      "reason": "compilation title does not independently identify the exact master/take"
+    }
+  ]
+}
