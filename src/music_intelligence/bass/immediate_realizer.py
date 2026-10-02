@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from math import inf
 
 from music_intelligence.harmony.jazz_harmony_core import HarmonicFrame, build_basic_affordances
 from music_intelligence.harmony.voice_leading import (
@@ -146,7 +145,7 @@ def generate_immediate_bass_candidates(
     """
     frame.validate()
     ctx.validate()
-    build_basic_affordances(frame)  # enforce/consume the shared harmony contract
+    build_basic_affordances(frame)  # validates shared harmonic semantics/affordances
 
     root_pc = _active_root_pc(frame)
     if root_pc is None:
@@ -164,13 +163,24 @@ def generate_immediate_bass_candidates(
         raw.append((root_pc, BassHarmonicRole.ROOT, root_weight, ("current harmonic anchor",)))
 
         fifth_pc = (root_pc + 7) % 12
-        raw.append((fifth_pc, BassHarmonicRole.FIFTH, 0.21, ("bass-specific root/fifth option",)))
+        if not pcs or fifth_pc in pcs:
+            raw.append((
+                fifth_pc,
+                BassHarmonicRole.FIFTH,
+                0.21,
+                ("shared evidence supports perfect-fifth option",),
+            ))
 
         if ctx.mode is BassMode.WALKING:
             for pc in sorted(pcs):
                 if pc in {root_pc, fifth_pc}:
                     continue
-                raw.append((pc, BassHarmonicRole.CHORD_TONE, 0.16, ("observed/shared chord-tone option",)))
+                raw.append((
+                    pc,
+                    BassHarmonicRole.CHORD_TONE,
+                    0.16,
+                    ("observed/shared chord-tone option",),
+                ))
 
     next_root = frame.next_expected.root_pc if frame.next_expected is not None else None
     late_measure = ctx.beat_in_measure >= ctx.meter_numerator - 1.0
@@ -205,7 +215,12 @@ def generate_immediate_bass_candidates(
             ensemble_space = -0.04
 
         tags = {"bass", ctx.mode.value, role.value}
-        if role in {BassHarmonicRole.ROOT, BassHarmonicRole.FIFTH, BassHarmonicRole.CHORD_TONE, BassHarmonicRole.PEDAL}:
+        if role in {
+            BassHarmonicRole.ROOT,
+            BassHarmonicRole.FIFTH,
+            BassHarmonicRole.CHORD_TONE,
+            BassHarmonicRole.PEDAL,
+        }:
             tags.add("chord_tone")
         if role in {BassHarmonicRole.CHROMATIC_APPROACH, BassHarmonicRole.ANTICIPATION}:
             tags.add("directed_target")
