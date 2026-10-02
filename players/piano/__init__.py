@@ -5,6 +5,11 @@ polyphonic evaluation come from Core. This package owns piano-specific
 realization, comping, and interaction policy.
 """
 
+from .bebop_phrase_space import (
+    BebopPhraseSpaceEvidence,
+    PhraseSpaceType,
+    classify_phrase_space,
+)
 from .solo import (
     PianoSoloContext,
     PianoSoloEvaluator,
@@ -117,6 +122,9 @@ __all__ = [
     "PianoActionScore",
     "PianoPerformanceState",
     "PianoPolicyEvaluator",
+    "BebopPhraseSpaceEvidence",
+    "PhraseSpaceType",
+    "classify_phrase_space",
     "PianoSoloContext",
     "PianoSoloEvaluator",
     "PianoSoloState",
