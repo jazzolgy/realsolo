@@ -18,6 +18,7 @@ from .comping import (
 )
 from .voicing import (
     PianoVoicingRequest,
+    generate_extended_voicing_families,
     generate_rootless_voicings,
     generate_shell_voicings,
 )
@@ -111,6 +112,41 @@ def build_contextual_comping_candidates(
                     realization=realization,
                     harmonic_affordance_id=affordance_id,
                     tags=frozenset({"rootless", "build", "candidate_factory"}),
+                )
+            )
+
+    static_or_modal = False
+    if harmonic_affordance is not None:
+        tags = set(harmonic_affordance.context_tags)
+        static_or_modal = bool(
+            {"modal", "static_harmony", "sustained_harmony", "pedal"} & tags
+        )
+
+    if static_or_modal:
+        for realization in generate_extended_voicing_families(request):
+            family = realization.event.source_family.removeprefix("piano_")
+            if family in {"quartal", "inverted_quartal", "mixed"}:
+                role = InteractionRole.BUILD if context.section_energy >= 0.55 else InteractionRole.ANCHOR
+                action = (
+                    CompingActionType.SUSTAINED_SUPPORT
+                    if role is InteractionRole.BUILD
+                    else CompingActionType.PUNCTUATION
+                )
+            elif family == "octave":
+                role = InteractionRole.PUNCTUATE if context.section_energy >= 0.6 else InteractionRole.SUPPORT
+                action = CompingActionType.PUNCTUATION
+            else:
+                role = InteractionRole.SUPPORT
+                action = CompingActionType.SUSTAINED_SUPPORT
+
+            out.append(
+                PianoCompingCandidate(
+                    action_type=action,
+                    role=role,
+                    duration_beats=max(request.duration_beats, 0.5),
+                    realization=realization,
+                    harmonic_affordance_id=affordance_id,
+                    tags=frozenset({family, "extended_family", "candidate_factory"}),
                 )
             )
 
