@@ -1,0 +1,158 @@
+{
+  "schema_version": "0.1",
+  "alignment_id": "evans.autumn_leaves.portrait_in_jazz.take1.v0_1",
+  "source": {
+    "compilation_file": "Bill Evans compilation uploaded to project",
+    "compilation_track_start_seconds": 708,
+    "track_title": "Autumn Leaves",
+    "recording_context": "Bill Evans Trio / Portrait in Jazz",
+    "duration_seconds": 361
+  },
+  "score_refs": [
+    {
+      "book": "NewReal1",
+      "page": 12,
+      "source": "master_index.xlsx"
+    },
+    {
+      "book": "Realbk1",
+      "page": 36,
+      "source": "master_index.xlsx"
+    }
+  ],
+  "form": {
+    "bars": 32,
+    "sections": [
+      {
+        "name": "A1",
+        "bars": "1-8"
+      },
+      {
+        "name": "A2",
+        "bars": "9-16"
+      },
+      {
+        "name": "B",
+        "bars": "17-24"
+      },
+      {
+        "name": "C",
+        "bars": "25-32"
+      }
+    ]
+  },
+  "audio_alignment": {
+    "estimated_first_form_start_seconds": 11.98,
+    "estimated_bar_duration_seconds": 1.163,
+    "estimated_chorus_duration_seconds": 37.216,
+    "implied_quarter_bpm": 206.36,
+    "harmonic_recurrence_seconds": 37.1,
+    "confidence": 0.82,
+    "method": [
+      "chroma recurrence lag search",
+      "lead-sheet harmonic template fit",
+      "cross-check against published piano-solo entry timestamp"
+    ]
+  },
+  "structural_anchors": [
+    {
+      "label": "intro",
+      "track_seconds": [
+        0,
+        11.98
+      ],
+      "confidence": 0.72,
+      "note": "Audio-derived pre-form region; exact intro bar count not yet note-aligned."
+    },
+    {
+      "label": "head_in_full_form_candidate",
+      "track_seconds": [
+        11.98,
+        49.196
+      ],
+      "chorus_grid": 1,
+      "confidence": 0.8
+    },
+    {
+      "label": "bass_foreground_candidate",
+      "track_seconds": [
+        49.196,
+        120
+      ],
+      "chorus_grid": "2 through chorus 3 bar 28",
+      "confidence": 0.74,
+      "note": "Role supported by published descriptions of bass-first solo order; exact take-specific transition remains under verification."
+    },
+    {
+      "label": "piano_solo_entry_hint",
+      "track_seconds": [
+        120,
+        123.628
+      ],
+      "chorus_grid": "chorus 3 bars 29-32",
+      "confidence": 0.88,
+      "note": "Published transcription source places piano solo start at 2:00; on the audio-derived grid this behaves like a break/pickup into the next full chorus."
+    },
+    {
+      "label": "first_full_piano_solo_chorus_candidate",
+      "track_seconds": [
+        123.628,
+        160.844
+      ],
+      "chorus_grid": 4,
+      "confidence": 0.82
+    },
+    {
+      "label": "second_full_piano_solo_chorus_candidate",
+      "track_seconds": [
+        160.844,
+        198.06
+      ],
+      "chorus_grid": 5,
+      "confidence": 0.82
+    }
+  ],
+  "bar_harmony": [
+    "Cm7",
+    "F7",
+    "BbMaj7",
+    "EbMaj7",
+    "Am7b5",
+    "D7",
+    "Gm",
+    "Gm",
+    "Cm7",
+    "F7",
+    "BbMaj7",
+    "EbMaj7",
+    "Am7b5",
+    "D7",
+    "Gm",
+    "Gm",
+    "Am7b5",
+    "D7",
+    "Gm",
+    "Gm",
+    "Cm7",
+    "F7",
+    "BbMaj7",
+    "EbMaj7",
+    "Am7b5",
+    "D7",
+    "Gm/C7",
+    "Fm7/Bb7",
+    "EbMaj7",
+    "Am7b5/D7alt",
+    "Gm",
+    "G7"
+  ],
+  "copyright_boundary": "No melody transcription or full solo note sequence is stored in this alignment record.",
+  "provenance": [
+    "project:master_index.xlsx",
+    "project:NewReal1.pdf:p12",
+    "project:Realbk1.pdf:p36",
+    "project:Bill Evans compilation:11:48-17:49",
+    "web:PianoGroove Take 1 piano solo starts 2m00s",
+    "web:Portrait in Jazz discography / 6:01 track duration"
+  ]
+}
