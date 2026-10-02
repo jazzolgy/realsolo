@@ -533,3 +533,94 @@ Player layers own:
 - actor attribution can remain unknown;
 - observation contains no future action or exact notes;
 - same evidence can be interpreted differently by different instrument policies.
+
+
+## CR-006 — Shared turn-taking × harmonic/form interaction context
+
+### Status
+
+Requested from player/piano after combining Parker-derived turn-taking morphology with
+the existing Shared Harmony Core. Current implementation is a piano-side adapter.
+
+### Requested Core capability
+
+Allow already-observed turn-taking evidence to be referenced alongside the current
+harmonic/form state without collapsing the two evidence streams.
+
+Useful shared fields:
+
+- turn-taking episode type / confidence
+- phrase-position / boundary pressure
+- current harmonic direction or action family
+- anticipation strength
+- resolution strength
+- stability / color-field strength
+- provenance for each evidence source
+- actor-attribution confidence
+
+The shared layer should not prescribe instrument-specific actions.
+
+### Musical reason
+
+The same observed foreground handoff can have different musical meaning depending on
+where it occurs:
+
+- stable harmonic field;
+- dominant/resolution pressure;
+- known upcoming harmony;
+- phrase/cadence boundary.
+
+A pianist, saxophonist, guitarist, or drummer may react differently to the same
+ensemble morphology because of harmonic/form location.
+
+### Evidence separation
+
+Do not infer harmony from the Parker audio morphology.
+
+The current experiment keeps:
+
+1. audio-observed turn-taking morphology;
+2. Shared Harmony Core state;
+3. instrument-local policy interpretation
+
+as separate layers.
+
+### Current piano-side experiment
+
+`players/piano/bebop_harmonic_turn.py` currently derives provisional phases:
+
+- `STABLE_FIELD`
+- `DIRECTED_RESOLUTION`
+- `ANTICIPATORY`
+- `FORM_BOUNDARY`
+- `AMBIGUOUS`
+
+using only existing Core fields/action options.
+
+Piano Solo currently interprets those phases as soft immediate biases for:
+
+- connective/color development in stable fields;
+- guide-tone / directed resolution under resolution pressure;
+- pickup / anticipation when future harmony is known;
+- phrase/texture reset near form boundaries.
+
+Piano Comping currently interprets them as soft immediate biases for:
+
+- compact directed support;
+- anticipated punctuation;
+- form-boundary space;
+- release-boundary alignment.
+
+These mappings are player policy, not proposed shared rules.
+
+### Runtime invariant
+
+The shared context must contain no:
+
+- future exact notes;
+- fixed future phrase;
+- scheduled lick;
+- deterministic next action.
+
+It only describes the current relation between observed interaction and harmonic/form
+context.
