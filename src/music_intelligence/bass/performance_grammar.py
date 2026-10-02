@@ -17,6 +17,7 @@ class MetricRole(str, Enum):
     CONTINUATION = "continuation"
     PREPARATION = "preparation"
     TWO_FEEL_ANCHOR = "two_feel_anchor"
+    TWO_FEEL_DIRECTION = "two_feel_direction"
     PEDAL_ANCHOR = "pedal_anchor"
 
 
@@ -102,6 +103,8 @@ def metric_role(ctx: BassGrammarContext) -> MetricRole:
     if ctx.pedal:
         return MetricRole.PEDAL_ANCHOR
     if ctx.two_feel:
+        if ctx.beat_in_measure >= ctx.meter_numerator / 2.0:
+            return MetricRole.TWO_FEEL_DIRECTION
         return MetricRole.TWO_FEEL_ANCHOR
     if ctx.walking and ctx.beat_in_measure >= ctx.meter_numerator - 1.0:
         return MetricRole.PREPARATION
@@ -152,6 +155,17 @@ def evaluate_bass_grammar(
         elif motion_strategy is MotionStrategy.CHORDAL:
             score += .04
             reasons.append("two-feel chordal support")
+
+    elif role is MetricRole.TWO_FEEL_DIRECTION:
+        if target_strategy is TargetStrategy.CURRENT_ROOT:
+            score -= .03
+            reasons.append("second two-feel pulse should not default to another root")
+        elif motion_strategy is MotionStrategy.CHORDAL:
+            score += .11
+            reasons.append("second two-feel pulse carries chordal direction")
+        elif motion_strategy is MotionStrategy.DIRECT_ANTICIPATION:
+            score += .07
+            reasons.append("second two-feel pulse may prepare known next harmony")
 
     elif role is MetricRole.PEDAL_ANCHOR:
         if motion_strategy is MotionStrategy.PEDAL:
