@@ -10,6 +10,11 @@ from .performance_expression import (
     BassExpressionProfile,
     realize_bass_expression,
 )
+from .sequential_runner import (
+    BassSequentialRunner,
+    BassStepInput,
+    BassStepResult,
+)
 from .render_projection import (
     BassRenderEvent,
     project_bass_candidate_to_render_event,
@@ -52,6 +57,9 @@ __all__ = [
     "BassPerformanceMemory",
     "BassPerformanceSnapshot",
     "BassRenderEvent",
+    "BassSequentialRunner",
+    "BassStepInput",
+    "BassStepResult",
     "ArticulationIntent",
     "BassActionCandidate",
     "BassContext",
