@@ -651,3 +651,157 @@ The piano-side research adapter now distinguishes:
 
 These classify an **already observed** episode and contain no prediction of the next
 phrase.
+
+
+## Pass 11 — Whole-album turn-taking morphology scan
+
+A streaming whole-album analysis was run at 8 kHz mono using non-overlapping 250 ms
+blocks.
+
+For every block, simple reproducible proxies were computed:
+
+- 60–500 Hz spectral energy: low support proxy;
+- 500–2500 Hz spectral energy: foreground/mid-band proxy;
+- broadband positive spectral flux: attack/activity proxy.
+
+Candidate handoff durations of:
+
+- 0.75 s
+- 1.0 s
+- 1.5 s
+- 2.0 s
+
+were tested.
+
+A candidate required:
+
+- foreground during/pre <= 0.45;
+- foreground post/during >= 2.0.
+
+Candidates within four seconds of a stronger candidate were suppressed so that one
+local episode would not be counted repeatedly.
+
+The strongest 200 non-overlapping candidates were retained for morphology inspection.
+
+### AUDIO-OBSERVED
+
+Among those **detector-selected top 200 candidates**:
+
+- 152 = `SUPPORTED_HANDOFF_REENTRY`
+- 43 = `COLLECTIVE_RELEASE_REENTRY`
+- 5 = `AMBIGUOUS`
+
+These counts are **not prevalence estimates for the album**. They depend on:
+
+- the detector thresholds;
+- the candidate-duration set;
+- non-maximum suppression;
+- the top-200 cap;
+- mixed-signal spectral proxies.
+
+They do show that the supported-handoff morphology is not limited to the handful of
+manually selected regions examined earlier.
+
+### Morphology medians
+
+#### Supported handoff + re-entry (n=152)
+
+- foreground handoff/pre: ~0.171
+- low support handoff/pre: ~0.912
+- attack support handoff/pre: ~0.521
+- foreground post/handoff: ~9.16
+
+Interpretation:
+
+```
+foreground thins strongly
+while at least one support layer remains substantial
+then foreground activity re-enters strongly
+```
+
+#### Collective release + re-entry (n=43)
+
+- foreground handoff/pre: ~0.105
+- low support handoff/pre: ~0.438
+- attack support handoff/pre: ~0.252
+- foreground post/handoff: ~11.61
+
+Interpretation:
+
+```
+foreground and support both thin
+then foreground activity re-enters strongly
+```
+
+### Strong detector-selected examples
+
+Supported-handoff examples include candidate starts near:
+
+- 472.25 s
+- 1120.50 s
+- 1157.50 s
+- 1314.50 s
+- 1329.50 s
+- 1355.25 s
+- 1376.00 s
+- 1386.00 s
+- 2000.75 s
+- 2019.50 s
+- 2046.25 s
+- 2248.00 s
+- 2393.75 s
+- 2587.00 s
+- 2676.00 s
+- 3210.75 s
+- 3317.25 s
+- 3685.75 s
+- 4017.00 s
+- 4064.75 s
+- 5421.75 s
+- 5495.00 s
+
+Again, these are detector-selected activity morphologies, not instrument-attributed
+transcriptions.
+
+### AUDIO-INFERRED
+
+The compilation contains repeated short-term activity structures compatible with:
+
+1. foreground handoff while accompaniment continues;
+2. collective release followed by re-entry.
+
+The evidence is now stronger for treating this distinction as a recurring bebop
+ensemble phenomenon in the uploaded source.
+
+### DESIGN-INFERENCE
+
+RealSolo should preserve two separate response logics:
+
+#### Supported handoff
+
+Potential immediate choices include:
+
+- maintain space;
+- brief punctuation;
+- light pickup / anticipation;
+- continuation after re-entry;
+- avoid automatic dense filling.
+
+#### Collective release
+
+Potential immediate choices include:
+
+- let the release breathe;
+- start a new directed phrase after evidence of re-entry;
+- reset texture / role;
+- avoid assuming accompaniment should continue unchanged.
+
+### Important limitation
+
+This analysis still does not prove:
+
+- which source is Parker;
+- which support source is piano, bass, or drums;
+- that one player intentionally caused another player's action.
+
+The result supports **ensemble morphology**, not actor-level causality.
