@@ -1,0 +1,510 @@
+{
+  "schema_version": "0.1",
+  "source": {
+    "path_hint": "Charlie Parker Greatest Hits Full Album - The Best Songs Of Charlie Parker.mp3",
+    "duration_seconds": 6448.056,
+    "analysis_basis": "uploaded project audio"
+  },
+  "evidence_labels": [
+    "AUDIO_OBSERVED",
+    "AUDIO_INFERRED",
+    "PROFILE_CROSSCHECK",
+    "DESIGN_INFERENCE",
+    "OPEN"
+  ],
+  "clear_silence_boundaries_seconds": [
+    [
+      178.352,
+      181.421
+    ],
+    [
+      359.277,
+      362.714
+    ],
+    [
+      527.393,
+      530.971
+    ],
+    [
+      739.897,
+      744.214
+    ],
+    [
+      923.69,
+      936.407
+    ],
+    [
+      2444.246,
+      2450.94
+    ],
+    [
+      2847.048,
+      2855.045
+    ],
+    [
+      3138.086,
+      3141.954
+    ],
+    [
+      3702.26,
+      3708.418
+    ],
+    [
+      3895.042,
+      3899.321
+    ],
+    [
+      4628.733,
+      4632.531
+    ],
+    [
+      4806.299,
+      4814.237
+    ],
+    [
+      5176.761,
+      5182.006
+    ],
+    [
+      5357.246,
+      5364.638
+    ],
+    [
+      6059.531,
+      6066.622
+    ],
+    [
+      6249.068,
+      6256.738
+    ],
+    [
+      6441.573,
+      6448.056
+    ]
+  ],
+  "early_segment_features": [
+    {
+      "segment": 1,
+      "interval_seconds": [
+        0,
+        179.886
+      ],
+      "tempo_proxy": 107.7,
+      "onsets_per_sec": 3.868,
+      "harmonic_percussive_ratio": 1.184,
+      "activity_cv_10s": 0.205
+    },
+    {
+      "segment": 2,
+      "interval_seconds": [
+        179.886,
+        360.995
+      ],
+      "tempo_proxy": 117.5,
+      "onsets_per_sec": 2.289,
+      "harmonic_percussive_ratio": 0.952,
+      "activity_cv_10s": 0.15
+    },
+    {
+      "segment": 3,
+      "interval_seconds": [
+        360.995,
+        529.182
+      ],
+      "tempo_proxy": 117.5,
+      "onsets_per_sec": 1.835,
+      "harmonic_percussive_ratio": 1.917,
+      "activity_cv_10s": 0.534
+    },
+    {
+      "segment": 4,
+      "interval_seconds": [
+        529.182,
+        742.055
+      ],
+      "tempo_proxy": 129.2,
+      "onsets_per_sec": 3.101,
+      "harmonic_percussive_ratio": 1.367,
+      "activity_cv_10s": 0.396
+    },
+    {
+      "segment": 5,
+      "interval_seconds": [
+        742.055,
+        930.049
+      ],
+      "tempo_proxy": 99.4,
+      "onsets_per_sec": 3.828,
+      "harmonic_percussive_ratio": 1.539,
+      "activity_cv_10s": 0.269
+    },
+    {
+      "segment": 6,
+      "interval_seconds": [
+        930.049,
+        1111.672
+      ],
+      "tempo_proxy": 107.7,
+      "onsets_per_sec": 3.958,
+      "harmonic_percussive_ratio": 1.067,
+      "activity_cv_10s": 0.179
+    }
+  ],
+  "representative_windows": [
+    {
+      "id": "A",
+      "interval_seconds": [
+        45,
+        90
+      ],
+      "tempo_proxy": 101.3,
+      "onsets_per_sec": 4.8,
+      "median_onsets_per_beat": 3,
+      "harmonic_percussive_ratio": 2.033,
+      "chroma_change_mean": 0.07
+    },
+    {
+      "id": "B",
+      "interval_seconds": [
+        390,
+        435
+      ],
+      "tempo_proxy": 143.6,
+      "onsets_per_sec": 1.22,
+      "median_onsets_per_beat": 0,
+      "harmonic_percussive_ratio": 2.858,
+      "chroma_change_mean": 0.062
+    },
+    {
+      "id": "C",
+      "interval_seconds": [
+        600,
+        645
+      ],
+      "tempo_proxy": 136,
+      "onsets_per_sec": 2.27,
+      "median_onsets_per_beat": 1,
+      "harmonic_percussive_ratio": 2.393,
+      "chroma_change_mean": 0.08
+    },
+    {
+      "id": "D",
+      "interval_seconds": [
+        980,
+        1025
+      ],
+      "tempo_proxy": 105.5,
+      "onsets_per_sec": 5,
+      "median_onsets_per_beat": 3,
+      "harmonic_percussive_ratio": 1.763,
+      "chroma_change_mean": 0.079
+    }
+  ],
+  "audio_observed_hypotheses": [
+    {
+      "id": "PA-H1",
+      "statement": "Bebop pulse speed and salient event density are separable.",
+      "status": "AUDIO_OBSERVED"
+    },
+    {
+      "id": "PA-H2",
+      "statement": "The compilation contains materially different density and harmonic/percussive textures.",
+      "status": "AUDIO_OBSERVED"
+    },
+    {
+      "id": "PA-H3",
+      "statement": "Piano-role attribution requires transcription/stem corroboration before promotion.",
+      "status": "OPEN"
+    }
+  ],
+  "analysis_failures": [
+    {
+      "method": "Demucs selected-clip source separation",
+      "result": "not completed",
+      "reason": "pretrained model weights unavailable in offline runtime"
+    }
+  ],
+  "next_annotation_targets": [
+    "phrase_space_windows",
+    "ensemble_density_transitions",
+    "likely_comping_handoff_regions",
+    "Parker_activity_vs_accompaniment_density",
+    "transcription_crosscheck"
+  ],
+  "non_copying_rule": "Learn conditional behavior; do not store or replay literal future Parker phrases.",
+  "phrase_space_morphology": [
+    {
+      "interval": [
+        397.75,
+        398.75
+      ],
+      "rms_low_pre": 0.648,
+      "rms_low_post": 0.313,
+      "flux_low_pre": 1.257,
+      "flux_low_post": 1.224,
+      "harmonic_low_pre": 0.543,
+      "percussive_low_pre": 1.118,
+      "label": "quiet_active_candidate"
+    },
+    {
+      "interval": [
+        428.75,
+        429.75
+      ],
+      "rms_low_pre": 0.682,
+      "rms_low_post": 0.354,
+      "flux_low_pre": 0.96,
+      "flux_low_post": 1.011,
+      "harmonic_low_pre": 0.598,
+      "percussive_low_pre": 1.506,
+      "label": "quiet_active_candidate"
+    },
+    {
+      "interval": [
+        433,
+        435.25
+      ],
+      "rms_low_pre": 0.582,
+      "rms_low_post": 0.414,
+      "flux_low_pre": 1.181,
+      "flux_low_post": 0.991,
+      "harmonic_low_pre": 0.528,
+      "percussive_low_pre": 0.821,
+      "label": "quiet_active_candidate"
+    },
+    {
+      "interval": [
+        1308,
+        1310.75
+      ],
+      "rms_low_pre": 0.563,
+      "rms_low_post": 0.366,
+      "flux_low_pre": 1.024,
+      "flux_low_post": 1.27,
+      "harmonic_low_pre": 0.482,
+      "percussive_low_pre": 0.824,
+      "label": "quiet_active_candidate"
+    },
+    {
+      "interval": [
+        1313.25,
+        1315.5
+      ],
+      "rms_low_pre": 0.456,
+      "rms_low_post": 0.22,
+      "flux_low_pre": 0.899,
+      "flux_low_post": 0.771,
+      "harmonic_low_pre": 0.425,
+      "percussive_low_pre": 0.587,
+      "label": "strong_release_candidate"
+    },
+    {
+      "interval": [
+        1355.25,
+        1356.75
+      ],
+      "rms_low_pre": 0.374,
+      "rms_low_post": 0.178,
+      "flux_low_pre": 1.093,
+      "flux_low_post": 1.088,
+      "harmonic_low_pre": 0.397,
+      "percussive_low_pre": 0.302,
+      "label": "quiet_active_deep_energy_drop"
+    },
+    {
+      "interval": [
+        1365.75,
+        1367
+      ],
+      "rms_low_pre": 0.616,
+      "rms_low_post": 0.151,
+      "flux_low_pre": 1.085,
+      "flux_low_post": 0.895,
+      "harmonic_low_pre": 0.393,
+      "percussive_low_pre": 1.749,
+      "label": "percussive_carried_space"
+    },
+    {
+      "interval": [
+        1386.25,
+        1387.5
+      ],
+      "rms_low_pre": 0.461,
+      "rms_low_post": 0.23,
+      "flux_low_pre": 0.887,
+      "flux_low_post": 1.201,
+      "harmonic_low_pre": 0.519,
+      "percussive_low_pre": 0.393,
+      "label": "quiet_active_candidate"
+    },
+    {
+      "interval": [
+        1549.25,
+        1551.5
+      ],
+      "rms_low_pre": 0.497,
+      "rms_low_post": 0.228,
+      "flux_low_pre": 1.155,
+      "flux_low_post": 1.053,
+      "harmonic_low_pre": 0.488,
+      "percussive_low_pre": 0.557,
+      "label": "quiet_active_candidate"
+    },
+    {
+      "interval": [
+        2008,
+        2010.75
+      ],
+      "rms_low_pre": 0.313,
+      "rms_low_post": 0.189,
+      "flux_low_pre": 0.721,
+      "flux_low_post": 0.759,
+      "harmonic_low_pre": 0.307,
+      "percussive_low_pre": 0.299,
+      "label": "deep_release_candidate"
+    }
+  ],
+  "new_design_hypotheses": [
+    {
+      "id": "PA-H4",
+      "statement": "Phrase space should distinguish energy reduction from attack reduction.",
+      "status": "DESIGN_INFERENCE"
+    },
+    {
+      "id": "PA-H5",
+      "statement": "Some phrase-space windows preserve strong percussive support while harmonic energy thins.",
+      "status": "AUDIO_OBSERVED"
+    },
+    {
+      "id": "PA-H6",
+      "statement": "Piano re-entry can use rhythmic pickup/anticipation when percussive support carries the space.",
+      "status": "DESIGN_INFERENCE"
+    }
+  ],
+  "turn_taking_fixed_window_probe": [
+    {
+      "start": 428.75,
+      "foreground_during_pre": 0.867,
+      "low_support_during_pre": 1.194,
+      "attack_during_pre": 0.974,
+      "foreground_post_during": 1.158,
+      "label": "AMBIGUOUS"
+    },
+    {
+      "start": 433,
+      "foreground_during_pre": 0.179,
+      "low_support_during_pre": 0.811,
+      "attack_during_pre": 0.381,
+      "foreground_post_during": 4.87,
+      "label": "SUPPORTED_HANDOFF_REENTRY"
+    },
+    {
+      "start": 1308,
+      "foreground_during_pre": 0.138,
+      "low_support_during_pre": 0.649,
+      "attack_during_pre": 0.727,
+      "foreground_post_during": 6.392,
+      "label": "SUPPORTED_HANDOFF_REENTRY"
+    },
+    {
+      "start": 1313.25,
+      "foreground_during_pre": 0.133,
+      "low_support_during_pre": 0.877,
+      "attack_during_pre": 0.482,
+      "foreground_post_during": 12.023,
+      "label": "SUPPORTED_HANDOFF_REENTRY"
+    },
+    {
+      "start": 1355.25,
+      "foreground_during_pre": 0.771,
+      "low_support_during_pre": 1.023,
+      "attack_during_pre": 0.816,
+      "foreground_post_during": 4.189,
+      "label": "AMBIGUOUS"
+    },
+    {
+      "start": 1365.75,
+      "foreground_during_pre": 2.06,
+      "low_support_during_pre": 0.73,
+      "attack_during_pre": 1.792,
+      "foreground_post_during": 0.859,
+      "label": "FOREGROUND_CONTINUES_FIXED_WINDOW"
+    },
+    {
+      "start": 1386.25,
+      "foreground_during_pre": 0.538,
+      "low_support_during_pre": 1.211,
+      "attack_during_pre": 0.756,
+      "foreground_post_during": 1.734,
+      "label": "AMBIGUOUS"
+    },
+    {
+      "start": 1549.25,
+      "foreground_during_pre": 0.247,
+      "low_support_during_pre": 0.517,
+      "attack_during_pre": 0.451,
+      "foreground_post_during": 9.694,
+      "label": "COLLECTIVE_RELEASE_REENTRY"
+    },
+    {
+      "start": 2008,
+      "foreground_during_pre": 0.192,
+      "low_support_during_pre": 0.382,
+      "attack_during_pre": 0.236,
+      "foreground_post_during": 5.413,
+      "label": "COLLECTIVE_RELEASE_REENTRY"
+    }
+  ],
+  "methodological_findings": [
+    {
+      "id": "PA-M1",
+      "statement": "Turn-taking classification can change when a fixed handoff window includes part of the re-entry.",
+      "implication": "Prefer boundary-aligned variable-duration handoff intervals in runtime."
+    }
+  ],
+  "whole_album_turn_taking_scan": {
+    "method": {
+      "sample_rate_hz": 8000,
+      "block_seconds": 0.25,
+      "foreground_band_hz": [
+        500,
+        2500
+      ],
+      "low_support_band_hz": [
+        60,
+        500
+      ],
+      "attack_proxy": "broadband_positive_spectral_flux",
+      "candidate_durations_seconds": [
+        0.75,
+        1,
+        1.5,
+        2
+      ],
+      "foreground_drop_threshold": 0.45,
+      "reentry_threshold": 2,
+      "nonmax_suppression_seconds": 4,
+      "retained_candidates": 200
+    },
+    "counts": {
+      "SUPPORTED_HANDOFF_REENTRY": 152,
+      "COLLECTIVE_RELEASE_REENTRY": 43,
+      "AMBIGUOUS": 5
+    },
+    "medians": {
+      "SUPPORTED_HANDOFF_REENTRY": {
+        "foreground_during_pre": 0.171,
+        "low_support_during_pre": 0.912,
+        "attack_support_during_pre": 0.521,
+        "foreground_post_during": 9.16
+      },
+      "COLLECTIVE_RELEASE_REENTRY": {
+        "foreground_during_pre": 0.105,
+        "low_support_during_pre": 0.438,
+        "attack_support_during_pre": 0.252,
+        "foreground_post_during": 11.61
+      }
+    },
+    "caution": "Detector-selected top-200 morphology sample; not an album-wide prevalence estimate or actor-level transcription."
+  }
+}
