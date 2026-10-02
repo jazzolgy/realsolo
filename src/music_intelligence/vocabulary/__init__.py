@@ -5,6 +5,7 @@ from .affinity import (
     source_instrument_affinity,
     vocabulary_affinity,
 )
+from .usage_policy import VocabularyUseScore, vocabulary_use_score
 from .retrieval import (
     VocabularyRankingBreakdown,
     rank_vocabulary_items,
@@ -17,6 +18,8 @@ __all__ = [
     "dimension_affinity",
     "source_instrument_affinity",
     "vocabulary_affinity",
+    "VocabularyUseScore",
+    "vocabulary_use_score",
     "score_vocabulary_item",
     "rank_vocabulary_items",
 ]
