@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Mapping, Sequence
 
+ExpressionValue = float | int | str | bool
+
 
 @dataclass(frozen=True, slots=True)
 class RenderVoice:
@@ -17,6 +19,7 @@ class RenderVoice:
     breath_before_beats: float = 0.0
     attack_scale: float = 1.0
     release_shape: str = "normal"
+    expression_controls: Mapping[str, ExpressionValue] = field(default_factory=dict)
 
     def validate(self) -> None:
         if not 0 <= self.pitch_midi <= 127:
@@ -29,6 +32,11 @@ class RenderVoice:
             raise ValueError("breath_before_beats cannot be negative")
         if self.attack_scale <= 0:
             raise ValueError("attack_scale must be positive")
+        for key, value in self.expression_controls.items():
+            if not key or not isinstance(key, str):
+                raise ValueError("expression control keys must be non-empty strings")
+            if not isinstance(value, (bool, int, float, str)):
+                raise ValueError("expression control values must be JSON scalar values")
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,6 +68,7 @@ class RenderGesture:
                 "breath_before_beats": v.breath_before_beats,
                 "attack_scale": v.attack_scale,
                 "release_shape": v.release_shape,
+                "expression_controls": dict(v.expression_controls),
             }
 
         return {
@@ -114,6 +123,7 @@ def monophonic_solo_gesture(
     breath_before_beats: float = 0.0,
     attack_scale: float = 1.0,
     release_shape: str = "normal",
+    expression_controls: Mapping[str, ExpressionValue] | None = None,
     source: str = "core_immediate",
 ) -> RenderGesture:
     return RenderGesture(
@@ -128,6 +138,7 @@ def monophonic_solo_gesture(
                 breath_before_beats=breath_before_beats,
                 attack_scale=attack_scale,
                 release_shape=release_shape,
+                expression_controls=dict(expression_controls or {}),
             ),
         ),
         source=source,
