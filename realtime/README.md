@@ -48,3 +48,24 @@ Current UI:
 - user role / AI role switching
 
 Final accompaniment/solo sound generation is the next Stage-1 milestone.
+
+
+## Sample-based sound
+
+Stage 1 now supports a browser SoundFont sampler using SpessaSynth 4.3.14.
+The oscillator engine remains only as a fallback/diagnostic path.
+
+1. Start Stage 1.
+2. In the UI choose an `.sf2`, `.sf3`, `.sfogg`, or `.dls` bank.
+3. Playback switches to sample-based GM channels:
+   - channel 1: acoustic grand piano
+   - channel 2: acoustic bass
+   - channel 3: tenor sax (temporary AI-solo voice)
+   - channel 10: drums
+
+SoundFont content is not committed to this repository yet. Product-distributed
+sample banks must have an explicitly reviewed redistribution license. This keeps
+the playback architecture independent from the content license.
+
+SpessaSynth is pinned to 4.3.14 in the web adapter so the JS module and
+AudioWorklet processor stay version-matched.

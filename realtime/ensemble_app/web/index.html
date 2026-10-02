@@ -34,6 +34,14 @@ h1{margin:0;font-size:clamp(25px,4vw,38px);letter-spacing:-.03em}.sub{color:#9ba
 <label class="control">Tempo<input id="tempo" class="tempo" type="number" min="40" max="320" value="120"></label>
 <label class="control">Transpose<select id="transpose" class="small"></select></label>
 <label class="control">Choruses<input id="choruses" class="small" type="number" min="1" max="20" value="3"></label>
+<label class="control">Sound
+<select id="soundMode">
+<option value="sampler">SoundFont sampler</option>
+<option value="oscillator">Oscillator fallback</option>
+</select></label>
+<label class="control">SoundFont
+<input id="soundfont" type="file" accept=".sf2,.sf3,.sfogg,.dls">
+</label>
 <button id="play" type="button">Play</button><button id="stop" type="button">Stop</button>
 </div></header>
 <section class="status" aria-live="polite">
@@ -44,23 +52,39 @@ h1{margin:0;font-size:clamp(25px,4vw,38px);letter-spacing:-.03em}.sub{color:#9ba
 </section>
 <section class="chart" id="chart" aria-label="Chord chart"></section>
 <div class="footer"><span>Chart transport is the Stage-1 clock. Microphone interaction is added in Stage 2.</span><span id="stateText">Stopped</span></div>
-<div class="footer"><span id="audioText">Audio engine: idle</span><span>Prototype synthesis · musical policy remains one-event-at-a-time</span></div>
+<div class="footer"><span id="audioText">Audio engine: oscillator fallback</span><span id="bankText">Load an SF2/SF3/DLS bank for sample playback</span></div>
+<script type="module" src="/soundfont_engine.js"></script>
 </main>
 <script>
 (function(){
 var els={
 title:document.querySelector("#title"),chart:document.querySelector("#chart"),role:document.querySelector("#role"),tempo:document.querySelector("#tempo"),
 transpose:document.querySelector("#transpose"),choruses:document.querySelector("#choruses"),play:document.querySelector("#play"),stop:document.querySelector("#stop"),
-aiRole:document.querySelector("#aiRole"),position:document.querySelector("#position"),currentChord:document.querySelector("#currentChord"),chorus:document.querySelector("#chorus"),stateText:document.querySelector("#stateText"),audioText:document.querySelector("#audioText")
+aiRole:document.querySelector("#aiRole"),position:document.querySelector("#position"),currentChord:document.querySelector("#currentChord"),chorus:document.querySelector("#chorus"),stateText:document.querySelector("#stateText"),audioText:document.querySelector("#audioText"),
+soundMode:document.querySelector("#soundMode"),soundfont:document.querySelector("#soundfont"),bankText:document.querySelector("#bankText")
 };
-var audioCtx=null,master=null,nextAudioBeat=0,lastScheduledBeat=-1,soloStep=0;
+var audioCtx=null,master=null,sampler=null,lastScheduledBeat=-1,soloStep=0;
 for(var i=-12;i<=12;i++){var opt=document.createElement("option");opt.value=String(i);opt.textContent=i===0?"0":(i>0?"+"+i:String(i));els.transpose.appendChild(opt);}
 var chart=null,playing=false,startedAt=0,offsetBeats=0,raf=0;
 function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
 function ensureAudio(){
 if(!audioCtx){audioCtx=new (window.AudioContext||window.webkitAudioContext)();master=audioCtx.createGain();master.gain.value=.22;master.connect(audioCtx.destination);}
-if(audioCtx.state==="suspended")audioCtx.resume();els.audioText.textContent="Audio engine: active";
+if(audioCtx.state==="suspended")audioCtx.resume();
+els.audioText.textContent=sampler&&sampler.ready?"Audio engine: SoundFont sampler":"Audio engine: oscillator fallback";
 }
+async function loadSoundFont(file){
+ensureAudio();
+if(!window.RealSoloSoundFontEngine)throw new Error("SoundFont module is still loading.");
+if(!sampler)sampler=new window.RealSoloSoundFontEngine(audioCtx);
+els.bankText.textContent="Loading "+file.name+"…";
+var buf=await file.arrayBuffer();
+await sampler.load(buf,file.name);
+els.soundMode.value="sampler";
+els.audioText.textContent="Audio engine: SoundFont sampler";
+els.bankText.textContent=file.name+" · sample playback ready";
+}
+function sampleReady(){return els.soundMode.value==="sampler"&&sampler&&sampler.ready;}
+
 function midiHz(n){return 440*Math.pow(2,(n-69)/12);}
 function tone(midi,when,dur,type,gain){
 if(!audioCtx)return;var osc=audioCtx.createOscillator(),g=audioCtx.createGain();osc.type=type||"sine";osc.frequency.value=midiHz(midi);
@@ -73,11 +97,11 @@ for(var i=0;i<len;i++)data[i]=Math.random()*2-1;var src=audioCtx.createBufferSou
 }
 async function playAccompaniment(chord,beatIndex,when,beatDur){
 try{var r=await fetch("/api/accompaniment?chord="+encodeURIComponent(chord)+"&beat="+beatIndex);var frame=await r.json();
-frame.bass.forEach(function(n){tone(n,when,beatDur*.82,"sine",.09);});
-frame.comp.forEach(function(n){tone(n,when+.025,beatDur*.58,"triangle",.035);});
-if(frame.drums.ride)noiseHit(when,Math.min(.08,beatDur*.18),.018);
-if(frame.drums.hat)noiseHit(when+.01,Math.min(.04,beatDur*.1),.03);
-if(frame.drums.kick)tone(36,when,.11,"sine",.055);
+frame.bass.forEach(function(n){if(sampleReady())sampler.bass(n,92,when,beatDur*.82);else tone(n,when,beatDur*.82,"sine",.09);});
+frame.comp.forEach(function(n){if(sampleReady())sampler.piano(n,68,when+.025,beatDur*.58);else tone(n,when+.025,beatDur*.58,"triangle",.035);});
+if(frame.drums.ride){if(sampleReady())sampler.drum(51,58,when,.11);else noiseHit(when,Math.min(.08,beatDur*.18),.018);}
+if(frame.drums.hat){if(sampleReady())sampler.drum(42,70,when+.01,.06);else noiseHit(when+.01,Math.min(.04,beatDur*.1),.03);}
+if(frame.drums.kick){if(sampleReady())sampler.drum(36,76,when,.1);else tone(36,when,.11,"sine",.055);}
 }catch(e){els.audioText.textContent="Audio error: "+e.message;}
 }
 async function playSolo(chord,nextChord,beatInBar,when,beatDur){
@@ -85,11 +109,11 @@ try{
 var rhythmReq=fetch("/api/accompaniment?chord="+encodeURIComponent(chord)+"&beat="+Math.floor(beatInBar));
 var url="/api/solo-event?chord="+encodeURIComponent(chord)+"&next_chord="+encodeURIComponent(nextChord)+"&beat_in_bar="+beatInBar+"&phrase_step="+soloStep++;
 var soloReq=fetch(url);var both=await Promise.all([rhythmReq,soloReq]);var frame=await both[0].json();var ev=await both[1].json();
-frame.bass.forEach(function(n){tone(n,when,beatDur*.82,"sine",.075);});
-if(frame.drums.ride)noiseHit(when,Math.min(.08,beatDur*.18),.016);
-if(frame.drums.hat)noiseHit(when+.01,Math.min(.04,beatDur*.1),.025);
-if(frame.drums.kick)tone(36,when,.11,"sine",.045);
-if(ev.pitch!==null)tone(ev.pitch,when,Math.max(.08,ev.duration_beats*beatDur),"sawtooth",.045);
+frame.bass.forEach(function(n){if(sampleReady())sampler.bass(n,88,when,beatDur*.82);else tone(n,when,beatDur*.82,"sine",.075);});
+if(frame.drums.ride){if(sampleReady())sampler.drum(51,56,when,.11);else noiseHit(when,Math.min(.08,beatDur*.18),.016);}
+if(frame.drums.hat){if(sampleReady())sampler.drum(42,66,when+.01,.06);else noiseHit(when+.01,Math.min(.04,beatDur*.1),.025);}
+if(frame.drums.kick){if(sampleReady())sampler.drum(36,72,when,.1);else tone(36,when,.11,"sine",.045);}
+if(ev.pitch!==null){var dur=Math.max(.08,ev.duration_beats*beatDur);if(sampleReady())sampler.solo(ev.pitch,82,when,dur);else tone(ev.pitch,when,dur,"sawtooth",.045);}
 }catch(e){els.audioText.textContent="Solo error: "+e.message;}
 }
 function nextChordAt(barIndex,beatInBar){
@@ -135,9 +159,12 @@ els.play.addEventListener("click",function(){
 if(!chart)return;if(playing){offsetBeats=currentBeat(performance.now());playing=false;cancelAnimationFrame(raf);els.play.textContent="Resume";els.stateText.textContent="Paused";}
 else{ensureAudio();startedAt=performance.now();lastScheduledBeat=Math.floor(offsetBeats)-1;playing=true;els.play.textContent="Pause";els.stateText.textContent=els.role.value==="comper"?"Playing · AI soloist":"Playing · AI accompaniment";raf=requestAnimationFrame(render);}
 });
-els.stop.addEventListener("click",function(){playing=false;cancelAnimationFrame(raf);offsetBeats=0;lastScheduledBeat=-1;soloStep=0;fetch("/api/reset-solo");els.play.textContent="Play";els.stateText.textContent="Stopped";render(0);});
+els.stop.addEventListener("click",function(){playing=false;cancelAnimationFrame(raf);offsetBeats=0;lastScheduledBeat=-1;soloStep=0;if(sampler&&sampler.ready)sampler.panic();fetch("/api/reset-solo");els.play.textContent="Play";els.stateText.textContent="Stopped";render(0);});
 els.role.addEventListener("change",function(){render(performance.now());});els.choruses.addEventListener("change",function(){render(performance.now());});
-els.transpose.addEventListener("change",loadChart);els.tempo.addEventListener("change",function(){els.tempo.value=String(clamp(Number(els.tempo.value)||120,40,320));});
+els.transpose.addEventListener("change",loadChart);
+els.soundfont.addEventListener("change",function(){var f=els.soundfont.files&&els.soundfont.files[0];if(f)loadSoundFont(f).catch(function(err){els.bankText.textContent="SoundFont error: "+err.message;els.soundMode.value="oscillator";});});
+els.soundMode.addEventListener("change",function(){if(els.soundMode.value==="sampler"&&!sampleReady()){els.bankText.textContent="Choose an SF2/SF3/DLS file first.";els.soundMode.value="oscillator";}});
+els.tempo.addEventListener("change",function(){els.tempo.value=String(clamp(Number(els.tempo.value)||120,40,320));});
 loadChart().catch(function(err){els.stateText.textContent="Chart load error: "+err.message;});
 })();
 </script>
