@@ -44,6 +44,22 @@ class VocabularyUseType(str, Enum):
     HYBRID_COMPOSITION = "hybrid_composition"
 
 
+class VocabularyDimension(str, Enum):
+    """Instrument-neutral dimensions that may transfer across players."""
+
+    PITCH_INTERVAL = "pitch_interval"
+    RHYTHM = "rhythm"
+    CONTOUR = "contour"
+    ACCENT = "accent"
+    DENSITY_ARC = "density_arc"
+    PHRASE_SHAPE = "phrase_shape"
+    TENSION_RELEASE = "tension_release"
+    TARGET_BEHAVIOR = "target_behavior"
+    INTERACTION_ROLE = "interaction_role"
+    ARTICULATION = "articulation"
+    REGISTER_TRAJECTORY = "register_trajectory"
+
+
 @dataclass(frozen=True)
 class VocabularyQuery:
     legend_id: str
@@ -54,6 +70,8 @@ class VocabularyQuery:
     phrase_position: str = ""
     context_tags: frozenset[str] = frozenset()
     allowed_uses: frozenset[VocabularyUseType] = frozenset(VocabularyUseType)
+    required_dimensions: frozenset[VocabularyDimension] = frozenset()
+    target_instrument: str = ""
     limit: int = 16
 
 
@@ -80,6 +98,9 @@ class VocabularyMemoryItem:
     articulation: str = ""
     register: str = ""
     tension_curve: str = ""
+    source_instrument: str = ""
+    dimensions: frozenset[VocabularyDimension] = frozenset()
+    transferable_to: frozenset[str] = frozenset()
     domains: frozenset[LegendDomain] = frozenset()
     context_tags: frozenset[str] = frozenset()
     candidate_uses: frozenset[VocabularyUseType] = frozenset(VocabularyUseType)
@@ -98,6 +119,10 @@ class VocabularyMemoryItem:
             raise ValueError("vocabulary_id and source_id are required")
         if not self.candidate_uses:
             raise ValueError("candidate_uses may not be empty")
+        if self.transferable_to and self.source_instrument in self.transferable_to:
+            # This is valid, but keep the field semantic explicit: it lists allowed
+            # consumers, not ownership.
+            pass
         for value, name in (
             (self.literal_similarity, "literal_similarity"),
             (self.structural_similarity, "structural_similarity"),
