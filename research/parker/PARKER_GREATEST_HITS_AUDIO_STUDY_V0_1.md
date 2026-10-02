@@ -406,3 +406,66 @@ The raw evidence is ensemble-level.
 
 `actor_attribution_confidence` therefore defaults to zero until stronger evidence is
 available.
+
+
+## Pass 8 — Harmonic vs percussive persistence inside phrase space
+
+The same ten selected phrase-space candidates were analyzed with HPSS
+(harmonic/percussive source decomposition). This is **not instrument separation**:
+the percussive component is not equivalent to an isolated drum stem.
+
+### AUDIO-OBSERVED
+
+Several low-energy regions preserve or even increase the percussive component relative
+to the preceding second while harmonic energy falls.
+
+Examples:
+
+| Region (s) | Harmonic low/pre | Percussive low/pre | Harmonic low/post | Percussive low/post |
+| --- | ---: | ---: | ---: | ---: |
+| 397.75–398.75 | 0.54 | 1.12 | 0.33 | 0.22 |
+| 428.75–429.75 | 0.60 | 1.51 | 0.48 | 0.25 |
+| 1308.00–1310.75 | 0.48 | 0.82 | 0.28 | 0.96 |
+| 1365.75–1367.00 | 0.39 | 1.75 | 0.11 | 0.25 |
+| 2008.00–2010.75 | 0.31 | 0.30 | 0.16 | 0.25 |
+
+The 397.75, 428.75, and 1365.75 s candidates are particularly important:
+the harmonic component becomes much thinner while percussive activity remains strong.
+
+The 2008–2011 s candidate is different: both harmonic and percussive components reduce
+substantially.
+
+### AUDIO-INFERRED
+
+Some bebop phrase-space windows therefore appear better described as:
+
+```
+melodic/harmonic thinning
+while a pulse/attack layer remains active
+```
+
+rather than:
+
+```
+the entire ensemble stops
+```
+
+The mix alone does not identify whether the persistent percussive component is drums,
+bass attack, piano attack, recording artifact, or a combination. Actor attribution
+remains open.
+
+### DESIGN-INFERENCE
+
+Phrase-space evidence now preserves separate:
+
+- `harmonic_support`
+- `percussive_support`
+
+For piano solo policy:
+
+- quiet-active space with strong percussive support does not need to be filled;
+- if the pianist re-enters, an anticipation/pickup/syncopated entry may fit better than
+  a heavy downbeat restart;
+- deep release with weak percussive support permits a more explicit phrase reset.
+
+This is an ensemble-interaction prior, not a Parker lick rule.
