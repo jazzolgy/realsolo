@@ -91,7 +91,7 @@ export class RealSoloApprovedSampleEngine {
     return "sustain";
   }
 
-  async _playSolo(row, midi, velocity, when, duration, articulation) {
+  async _playSolo(row, midi, velocity, when, duration, articulation, family) {
     if (!row) return false;
     const buffer = await this._buffer(row.sample);
     const src = this.context.createBufferSource();
@@ -119,12 +119,12 @@ export class RealSoloApprovedSampleEngine {
       if (tags.has("fall")) {
         const fallStart = Math.max(start, end - Math.min(.18, duration * .3));
         src.detune.setValueAtTime(0, fallStart);
-        src.detune.exponentialRampToValueAtTime(-280, end);
+        src.detune.linearRampToValueAtTime(-280, end);
       }
     }
 
     let vibrato = null, vibratoDepth = null;
-    if (tags.has("vibrato") && src.detune) {
+    if (tags.has("vibrato") && family !== "vibrato" && src.detune) {
       vibrato = this.context.createOscillator();
       vibratoDepth = this.context.createGain();
       vibrato.frequency.value = 5.2;
@@ -150,7 +150,7 @@ export class RealSoloApprovedSampleEngine {
     const family = this._soloFamily(pack, articulation);
     const rows = pack.articulations[family] || pack.articulations.sustain || [];
     const selected = this._select(rows, midi, velocity, key + ":" + family);
-    return this._playSolo(selected, midi, velocity, when, duration, articulation);
+    return this._playSolo(selected, midi, velocity, when, duration, articulation, family);
   }
 
   async bass(midi, velocity, when, duration, articulation = []) {
