@@ -121,7 +121,7 @@ if(!gesture)return;
 var t=when+(v.onset_offset_beats||0)*beatDur,d=Math.max(.03,(v.duration_beats||.5)*beatDur),role=v.instrument_role||"solo";
 if(role==="bass"&&approvedSamples&&approvedSamples.ready){approvedSamples.bass(v.pitch_midi,v.velocity||88,t,d);}
 else if(sampleReady()){
-if(role==="bass")sampler.bass(v.pitch_midi,v.velocity||88,t,d);
+if(role==="bass")sampler.bass(v.pitch_midi,v.velocity||88,t,d,v.articulation||[]);
 else if(role==="piano")sampler.piano(v.pitch_midi,v.velocity||72,t,d);
 else sampler.solo(v.pitch_midi,v.velocity||82,t,d);
 }else{
