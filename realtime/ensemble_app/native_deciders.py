@@ -32,6 +32,7 @@ from players.piano import (
 )
 
 from .player_contract import RenderGesture, RenderVoice
+from .native_trio_players import Stage1BassNativeDecider
 from .trio_adapters import NativeImmediateResult
 
 
@@ -79,102 +80,24 @@ def _soloist_activity(snapshot) -> float:
 
 @dataclass
 class BassNativeDecider:
-    memory: BassPerformanceMemory = field(default_factory=BassPerformanceMemory)
+    """Compatibility facade over the canonical sequential Bass player.
+
+    Realtime must not own a second bass musical policy.  The legacy class name
+    remains for callers/tests, while all decisions delegate to the canonical
+    Stage1BassNativeDecider / players.bass.BassSequentialRunner path.
+    """
+
     mode: BassMode = BassMode.WALKING
+    delegate: Stage1BassNativeDecider = field(default_factory=Stage1BassNativeDecider)
+
+    @property
+    def memory(self):
+        return self.delegate.runner.memory
 
     def __call__(self, context: Mapping[str, object]) -> NativeImmediateResult | None:
-        frame = context.get("harmonic_frame")
-        if frame is None:
-            return None
-
-        snapshot = context["ensemble_snapshot"]
-        directive = context["interaction_directive"]
-        memory_snapshot = self.memory.snapshot()
-        beat = float(snapshot.transport.beat) % snapshot.transport.meter_numerator
-
-        interaction = choose_bass_interaction_intent(BassInteractionContext(
-            directive=directive,
-            memory=memory_snapshot,
-            phrase_boundary=_latest_other_phrase_maturity(snapshot, "bass") >= .82,
-            form_boundary=snapshot.transport.form_position >= .96,
-            next_harmony_known=getattr(frame, "next_expected", None) is not None,
-            soloist_phrase_ending=_latest_other_phrase_maturity(snapshot, "bass") >= .72,
-            drum_fill_active=any(
-                i.player_id == "drums" and i.interaction.value in {"setup", "answer", "build"}
-                for i in snapshot.intents
-            ),
-            piano_fill_active=any(
-                i.player_id == "piano" and i.interaction.value in {"answer", "build", "punctuate"}
-                for i in snapshot.intents
-            ),
-        ))
-
-        previous = memory_snapshot.previous_pitch_midi
-        bctx = BassContext(
-            mode=self.mode,
-            beat_in_measure=beat,
-            meter_numerator=snapshot.transport.meter_numerator,
-            previous_pitch_midi=previous,
-            previous_motion_semitones=memory_snapshot.previous_interval_semitones,
-            ensemble_activity=snapshot.ensemble_density,
-            memory_snapshot=memory_snapshot,
-            interaction_decision=interaction,
-        )
-        chosen = choose_immediate_bass_action(frame, bctx)
-        if chosen.event.pitch_midi is None:
-            return None
-
-        expr = chosen.expression
-        velocity = int(round(42 + 72 * expr.accent))
-        duration = chosen.event.duration_beats * expr.sounding_length_ratio
-        onset = chosen.event.onset_offset_beats + _ms_to_beats(
-            expr.microtiming_ms, snapshot.transport.tempo_bpm
-        )
-        gesture = RenderGesture(
-            role="bass",
-            voices=(RenderVoice(
-                chosen.event.pitch_midi,
-                max(1, min(127, velocity)),
-                max(.08, duration),
-                onset,
-                articulation=(expr.articulation.value,),
-                instrument_role="bass",
-            ),),
-            source="player/bass:immediate_realizer",
-            tags=tuple(sorted(set(chosen.event.tags) | {
-                chosen.harmonic_role.value,
-                interaction.intent.value,
-            })),
-            annotations={
-                "bass_score": f"{chosen.score:.4f}",
-                "harmonic_role": chosen.harmonic_role.value,
-            },
-        )
-
-        self.memory.commit(BassCommittedAction(
-            event=chosen.event,
-            accent=expr.accent,
-            sounding_length_ratio=expr.sounding_length_ratio,
-            articulation=expr.articulation,
-            interaction_role=interaction.intent.value,
-        ))
-
-        density = max(.15, min(.8, .45 + interaction.density_delta))
-        energy = max(.15, min(.9, .45 + expr.accent * .35))
-        return NativeImmediateResult(
-            gesture=gesture,
-            density=density,
-            energy=energy,
-            tension=min(1.0, float(getattr(frame, "tension", .5))),
-            leadership=.08,
-            phrase_maturity=0.0,
-            tags=frozenset({
-                "walking_bass" if self.mode is BassMode.WALKING else self.mode.value,
-                interaction.intent.value,
-                chosen.harmonic_role.value,
-            }),
-            provenance=("bass_immediate_realizer",),
-        )
+        forwarded = dict(context)
+        forwarded.setdefault("bass_mode", self.mode.value)
+        return self.delegate(forwarded)
 
 
 @dataclass
