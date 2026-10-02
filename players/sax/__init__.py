@@ -1,3 +1,5 @@
+from .legend_context import SaxLegendContext, SaxMemoryIntention
+from .physical import SaxPhysicalAssessment, SaxPhysicalConstraints, assess_sax_transition
 from .articulation import SoloArticulation
 from .arc import (
     SaxArcContext,
@@ -17,6 +19,11 @@ from .phrase import (
 )
 
 __all__ = [
+    "SaxLegendContext",
+    "SaxMemoryIntention",
+    "SaxPhysicalAssessment",
+    "SaxPhysicalConstraints",
+    "assess_sax_transition",
     "SoloArticulation",
     "SaxArcContext",
     "SaxArcDecision",
