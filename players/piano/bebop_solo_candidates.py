@@ -9,6 +9,7 @@ from typing import Iterable
 
 from music_intelligence.harmony.scale_linear_core import LinearConnectionAffordance
 from music_intelligence.reasoning.legend_style_core import CandidateEvent
+from music_intelligence.reasoning.solo_grammar import SoloDevelopmentOperation
 
 from .bebop_phrase_intent import (
     BebopEntryMode,
@@ -141,6 +142,12 @@ def generate_immediate_bebop_candidates(
             tags |= {"anticipation","next_harmony_target"}
 
         onset=0.0
+        tags.add(f"solo_method:{intent.solo_method.value}")
+        if intent.solo_method is SoloDevelopmentOperation.DISPLACE:
+            onset += 0.125
+            tags.add("rhythmic_displacement")
+        if intent.solo_method is SoloDevelopmentOperation.ANSWER:
+            tags.add("response")
         if intent.entry_mode is BebopEntryMode.PICKUP:
             onset=-0.125
             tags |= {"pickup","syncopated_entry","anticipation"}
@@ -199,6 +206,19 @@ def generate_immediate_bebop_candidates(
                             tags=frozenset({"passing","connector"}),
                         )
                     )
+
+    if intent.solo_method is SoloDevelopmentOperation.ADD_SPACE:
+        events.append(
+            CandidateEvent(
+                None,
+                duration_beats,
+                tags=frozenset({
+                    "rest",
+                    "ensemble_space",
+                    "solo_method:add_space",
+                }),
+            )
+        )
 
     if intent.entry_mode is BebopEntryMode.HOLD_SPACE:
         events.append(
