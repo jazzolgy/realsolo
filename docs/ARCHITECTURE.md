@@ -92,3 +92,24 @@ SOURCE INSTRUMENT OBSERVATION
 -> target Player realization
 
 Do not copy source-instrument physical constraints into another Player.
+
+
+## Shared Solo Grammar
+
+General improvisation methodology is shared musical intelligence, not Legend
+ownership.
+
+Examples include motif statement/repetition/variation, fragmentation,
+sequence, rhythmic displacement, augmentation/diminution, register change,
+space, contrast, recap, resolution, future-harmony targeting, call/response,
+and tension/density-arc development.
+
+Legend research answers **how a specific musician tends to use these shared
+operations in context**. It must not redefine the operations as if they were
+owned by that musician.
+
+Drum-solo studies may contribute shared rhythmic/development operations.
+Parker studies may contribute melodic/linear priors. Bill Evans studies may
+contribute motif, harmony, rhythm, space, and interaction priors. Any Player
+may consume the transferable dimensions and realize them through its own
+instrument grammar.
