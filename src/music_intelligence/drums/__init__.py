@@ -11,6 +11,17 @@ from .model import (
     Limb,
     TimeFeel,
 )
+from .pattern_corpus import (
+    PATTERN_CORPUS,
+    PatternHit,
+    PatternUse,
+    SourceRights,
+    StoredDrumPattern,
+    get_pattern,
+    hits_at_current_position,
+    patterns_with_tags,
+)
+from .pattern_runtime import pattern_gesture_now, source_pattern_candidates
 from .online_drummer import (
     DrummerPerformanceMemory,
     ScoredDrumGesture,
@@ -37,6 +48,16 @@ __all__ = [
     "GestureRole",
     "Limb",
     "TimeFeel",
+    "PATTERN_CORPUS",
+    "PatternHit",
+    "PatternUse",
+    "SourceRights",
+    "StoredDrumPattern",
+    "get_pattern",
+    "hits_at_current_position",
+    "patterns_with_tags",
+    "pattern_gesture_now",
+    "source_pattern_candidates",
     "DrummerPerformanceMemory",
     "ScoredDrumGesture",
     "build_immediate_candidates",
