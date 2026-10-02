@@ -51,9 +51,7 @@ def test_beat_one_rewards_root_anchor():
 def test_repeated_note_pressure_is_soft_not_prohibition():
     loose = evaluate_bass_grammar(
         ctx=BassGrammarContext(
-            beat_in_measure=1.0,
-            previous_pitch_midi=40,
-            repeated_note_tolerance=1.0,
+            beat_in_measure=1.0, previous_pitch_midi=40, repeated_note_tolerance=1.0,
         ),
         candidate_pitch_midi=40,
         motion_strategy=MotionStrategy.CHORDAL,
@@ -61,9 +59,7 @@ def test_repeated_note_pressure_is_soft_not_prohibition():
     )
     strict = evaluate_bass_grammar(
         ctx=BassGrammarContext(
-            beat_in_measure=1.0,
-            previous_pitch_midi=40,
-            repeated_note_tolerance=0.0,
+            beat_in_measure=1.0, previous_pitch_midi=40, repeated_note_tolerance=0.0,
         ),
         candidate_pitch_midi=40,
         motion_strategy=MotionStrategy.CHORDAL,
@@ -75,8 +71,7 @@ def test_repeated_note_pressure_is_soft_not_prohibition():
 def test_register_intent_is_directional_preference_not_fixed_line():
     up = evaluate_bass_grammar(
         ctx=BassGrammarContext(
-            beat_in_measure=1.0,
-            previous_pitch_midi=40,
+            beat_in_measure=1.0, previous_pitch_midi=40,
             register_intent=RegisterIntent.ASCEND,
         ),
         candidate_pitch_midi=43,
@@ -85,8 +80,7 @@ def test_register_intent_is_directional_preference_not_fixed_line():
     )
     down = evaluate_bass_grammar(
         ctx=BassGrammarContext(
-            beat_in_measure=1.0,
-            previous_pitch_midi=40,
+            beat_in_measure=1.0, previous_pitch_midi=40,
             register_intent=RegisterIntent.ASCEND,
         ),
         candidate_pitch_midi=36,
@@ -94,3 +88,50 @@ def test_register_intent_is_directional_preference_not_fixed_line():
         target_strategy=TargetStrategy.CURRENT_CHORD_MEMBER,
     )
     assert up.score_delta > down.score_delta
+
+
+def test_two_feel_can_prefer_opposite_direction():
+    ctx = BassGrammarContext(
+        beat_in_measure=2.0,
+        walking=False,
+        two_feel=True,
+        previous_pitch_midi=43,
+        previous_motion_semitones=5,
+        contour_reversal_pressure=1.0,
+    )
+    down = evaluate_bass_grammar(
+        ctx=ctx,
+        candidate_pitch_midi=40,
+        motion_strategy=MotionStrategy.CHORDAL,
+        target_strategy=TargetStrategy.CURRENT_CHORD_MEMBER,
+    )
+    up = evaluate_bass_grammar(
+        ctx=ctx,
+        candidate_pitch_midi=47,
+        motion_strategy=MotionStrategy.CHORDAL,
+        target_strategy=TargetStrategy.CURRENT_CHORD_MEMBER,
+    )
+    assert down.score_delta > up.score_delta
+    assert "two-feel contour reversal" in down.reasons
+
+
+def test_stepwise_connection_gets_soft_bonus():
+    ctx = BassGrammarContext(
+        beat_in_measure=1.0,
+        previous_pitch_midi=40,
+        stepwise_preference=1.0,
+    )
+    step = evaluate_bass_grammar(
+        ctx=ctx,
+        candidate_pitch_midi=42,
+        motion_strategy=MotionStrategy.CHORDAL,
+        target_strategy=TargetStrategy.CURRENT_CHORD_MEMBER,
+    )
+    leap = evaluate_bass_grammar(
+        ctx=ctx,
+        candidate_pitch_midi=47,
+        motion_strategy=MotionStrategy.CHORDAL,
+        target_strategy=TargetStrategy.CURRENT_CHORD_MEMBER,
+    )
+    assert step.score_delta > leap.score_delta
+    assert "stepwise connection" in step.reasons
