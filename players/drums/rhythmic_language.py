@@ -10,6 +10,8 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from enum import Enum
 
+from music_intelligence.reasoning.motif import MotifIdentity
+
 from .model import DrumGesture, DrumHit, DrummerRuntimeContext, DrumVoice, GestureRole, Limb
 
 
@@ -156,6 +158,40 @@ def grouping_boundary_motif(
         orchestration_contour=contour,
         source=source,
         provenance=("drum_rhythmic_language", "source_grouping_boundary"),
+    )
+    motif.validate()
+    return motif
+
+
+def rhythmic_motif_from_shared(
+    identity: MotifIdentity,
+) -> RhythmicMotifIdentity:
+    """Project instrument-neutral Shared MotifIdentity into drum rhythm space."""
+    identity.validate()
+    if not identity.rhythm_schema:
+        return engineering_seed_motif()
+
+    iois = tuple(max(1, int(round(x))) for x in identity.rhythm_schema)
+    onsets = [0]
+    cursor = 0
+    for ioi in iois:
+        cursor += ioi
+        onsets.append(cursor)
+
+    cycle_units = cursor + 1
+    accents = identity.accent_shape
+    if len(accents) != len(onsets):
+        accents = tuple(0.72 if i == 0 else 0.62 for i in range(len(onsets)))
+
+    motif = RhythmicMotifIdentity(
+        motif_id=f"shared:{identity.motif_id}",
+        cycle_units=cycle_units,
+        onset_units=tuple(onsets),
+        subdivision="shared_relative_grid",
+        accent_vector=tuple(accents),
+        orchestration_contour=tuple(0 for _ in onsets),
+        source="shared_motif_identity",
+        provenance=identity.provenance + ("players_drums:rhythmic_projection",),
     )
     motif.validate()
     return motif
