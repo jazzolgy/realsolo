@@ -5,9 +5,12 @@ from music_intelligence.transcribe.engraving import (
     EngravingPlan,
     EngravingProfile,
     StemDirection,
+    VerticalPlacement,
+    beam_group_intents,
     build_default_engraving_plan,
+    tuplet_group_placement,
 )
-from music_intelligence.transcribe.notation import NotatedAtomKind, ScoreSpan
+from music_intelligence.transcribe.notation import NotatedAtomKind, ScoreSpan, TupletRatio
 from music_intelligence.transcribe.score import ScoreEvent, ScorePart, assemble_score
 from music_intelligence.transcribe.spelling import WrittenPitch
 
@@ -57,21 +60,23 @@ def test_simultaneous_independent_voices_receive_opposing_stem_intents():
     assert directions["lower"] is StemDirection.DOWN
 
 
-def test_short_notes_beam_by_score_beat_not_performance_microtiming():
+def test_four_four_eighths_beam_in_fours_by_default():
     score = score_with(
         (
             event("a", "voice1", Fraction(0)),
             event("b", "voice1", Fraction(1, 2)),
             event("c", "voice1", Fraction(1)),
+            event("d", "voice1", Fraction(3, 2)),
         )
     )
     plan = build_default_engraving_plan(score)
     by_id = {i.event_id: i for i in plan.intents}
 
     assert by_id["a"].beam_state is BeamState.BEGIN
-    assert by_id["b"].beam_state is BeamState.END
-    assert by_id["a"].beam_group_id == by_id["b"].beam_group_id
-    assert by_id["c"].beam_state is BeamState.NONE
+    assert by_id["b"].beam_state is BeamState.CONTINUE
+    assert by_id["c"].beam_state is BeamState.CONTINUE
+    assert by_id["d"].beam_state is BeamState.END
+    assert len({by_id[x].beam_group_id for x in ("a", "b", "c", "d")}) == 1
 
 
 def test_same_logical_score_can_have_different_engraving_profiles():
@@ -126,3 +131,100 @@ def test_compound_meter_beams_eighths_in_dotted_quarter_groups():
     assert by_id["c68"].beam_state is BeamState.END
     assert by_id["a68"].beam_group_id == by_id["c68"].beam_group_id
     assert by_id["d68"].beam_state is BeamState.NONE
+
+
+
+def test_beam_group_breaks_when_written_rhythm_changes():
+    events = (
+        event("r1", "voice1", Fraction(0), Fraction(1, 2)),
+        event("r2", "voice1", Fraction(1, 2), Fraction(1, 4)),
+        event("r3", "voice1", Fraction(3, 4), Fraction(1, 4)),
+        event("r4", "voice1", Fraction(1), Fraction(1, 2)),
+    )
+    result = beam_group_intents(events, beat_group=Fraction(2))
+
+    assert result["r1"] == (BeamState.NONE, None)
+    assert result["r2"][0] is BeamState.BEGIN
+    assert result["r3"][0] is BeamState.END
+    assert result["r4"] == (BeamState.NONE, None)
+
+
+def test_tuplet_position_can_use_whole_group_instead_of_first_note_only():
+    ratio = TupletRatio(3, 2)
+    low_first = ScoreEvent(
+        event_id="t1",
+        part_id="piano",
+        staff_id="piano:upper",
+        voice_id="voice1",
+        kind=NotatedAtomKind.NOTE,
+        span=ScoreSpan(Fraction(0), Fraction(1, 3)),
+        source_event_ids=("src:t1",),
+        written_pitch=WrittenPitch("C", 0, 4),
+        tuplet=ratio,
+    )
+    high_second = ScoreEvent(
+        event_id="t2",
+        part_id="piano",
+        staff_id="piano:upper",
+        voice_id="voice1",
+        kind=NotatedAtomKind.NOTE,
+        span=ScoreSpan(Fraction(1, 3), Fraction(1, 3)),
+        source_event_ids=("src:t2",),
+        written_pitch=WrittenPitch("C", 0, 6),
+        tuplet=ratio,
+    )
+    high_third = ScoreEvent(
+        event_id="t3",
+        part_id="piano",
+        staff_id="piano:upper",
+        voice_id="voice1",
+        kind=NotatedAtomKind.NOTE,
+        span=ScoreSpan(Fraction(2, 3), Fraction(1, 3)),
+        source_event_ids=("src:t3",),
+        written_pitch=WrittenPitch("G", 0, 5),
+        tuplet=ratio,
+    )
+
+    group_based = tuplet_group_placement(
+        (low_first, high_second, high_third),
+        position_as_if_all_notes_beamed=True,
+    )
+    first_note_based = tuplet_group_placement(
+        (low_first, high_second, high_third),
+        position_as_if_all_notes_beamed=False,
+    )
+
+    assert group_based["t1"] is VerticalPlacement.BELOW
+    assert first_note_based["t1"] is VerticalPlacement.ABOVE
+    assert group_based["t1"] == group_based["t2"] == group_based["t3"]
+
+
+def test_tuplet_can_be_separated_from_adjacent_notes_by_profile():
+    normal = event("n", "voice1", Fraction(0), Fraction(1, 2))
+    triplet = ScoreEvent(
+        event_id="trip",
+        part_id="piano",
+        staff_id="piano:upper",
+        voice_id="voice1",
+        kind=NotatedAtomKind.NOTE,
+        span=ScoreSpan(Fraction(1, 2), Fraction(1, 2)),
+        source_event_ids=("src:trip",),
+        written_pitch=WrittenPitch("D", 0, 4),
+        tuplet=TupletRatio(3, 2),
+    )
+
+    joined = beam_group_intents(
+        (normal, triplet),
+        beat_group=Fraction(2),
+        separate_tuplets_from_adjacent_notes=False,
+    )
+    separated = beam_group_intents(
+        (normal, triplet),
+        beat_group=Fraction(2),
+        separate_tuplets_from_adjacent_notes=True,
+    )
+
+    assert joined["n"][0] is BeamState.BEGIN
+    assert joined["trip"][0] is BeamState.END
+    assert separated["n"] == (BeamState.NONE, None)
+    assert separated["trip"] == (BeamState.NONE, None)
