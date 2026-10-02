@@ -16,6 +16,8 @@ _VOICE_TO_LIMB = {
     DrumVoice.HIGH_TOM: Limb.RIGHT_HAND,
     DrumVoice.MID_TOM: Limb.RIGHT_HAND,
     DrumVoice.FLOOR_TOM: Limb.LEFT_HAND,
+    DrumVoice.COWBELL: Limb.RIGHT_HAND,
+    DrumVoice.CLAVE: Limb.RIGHT_HAND,
 }
 
 
@@ -68,7 +70,7 @@ def pattern_gesture_now(
     hits = tuple(
         DrumHit(
             voice=h.voice,
-            limb=_VOICE_TO_LIMB[h.voice],
+            limb=h.limb or _VOICE_TO_LIMB[h.voice],
             velocity=_velocity(h.velocity_class),
             articulation=h.articulation,
         )
@@ -113,6 +115,14 @@ def source_pattern_candidates(
         gesture = pattern_gesture_now(pattern, context)
         if gesture is not None:
             candidates.append(gesture)
+
+    if "afro_cuban" in plan.style_tags:
+        for pattern in patterns_with_tags("clave"):
+            if not _style_matches(pattern, plan):
+                continue
+            gesture = pattern_gesture_now(pattern, context)
+            if gesture is not None:
+                candidates.append(gesture)
 
     if context.phrase_position >= 0.82 or context.section_transition:
         for pattern in patterns_with_tags("setup"):
