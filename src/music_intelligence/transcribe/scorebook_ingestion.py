@@ -20,6 +20,7 @@ from .chord_chart import (
     ChordChange,
     ChordChart,
     ChordSymbol,
+    EnharmonicPolicy,
     NavigationMark,
 )
 
@@ -43,11 +44,15 @@ class ObservedChord:
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError("confidence must be within 0..1")
         ChordSymbol(
-            self.root_pc,
-            self.quality,
-            self.bass_pc,
-            self.no_chord,
-            self.preferred_sharps,
+            root_pc=self.root_pc,
+            quality=self.quality,
+            bass_pc=self.bass_pc,
+            no_chord=self.no_chord,
+            enharmonic_policy=(
+                EnharmonicPolicy.PREFER_SHARPS
+                if self.preferred_sharps
+                else EnharmonicPolicy.AUTO
+            ),
         ).validate()
 
 
@@ -163,7 +168,11 @@ def compile_scorebook_observation(
                     quality=x.quality,
                     bass_pc=x.bass_pc,
                     no_chord=x.no_chord,
-                    preferred_sharps=x.preferred_sharps,
+                    enharmonic_policy=(
+                        EnharmonicPolicy.PREFER_SHARPS
+                        if x.preferred_sharps
+                        else EnharmonicPolicy.AUTO
+                    ),
                 ),
             )
             for x in sorted(by_measure[meta.number], key=lambda x: x.beat)
