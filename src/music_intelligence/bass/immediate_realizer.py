@@ -255,6 +255,14 @@ def _interaction_memory_score(
                 score -= .045
                 reasons.append("repeated bar-level walking template")
 
+        directed = {"chromatic_approach", "anticipation"}
+        recent_directed = sum(
+            x in directed for x in memory.recent_harmonic_roles[-8:]
+        )
+        if role.value in directed and recent_directed >= 2:
+            score -= .10
+            reasons.append("recent approach budget already used")
+
     if (
         memory.consecutive_direction_count >= 3
         and memory.previous_interval_semitones not in (None, 0)
@@ -267,6 +275,16 @@ def _interaction_memory_score(
         else:
             score += .05
             reasons.append("contour recovery")
+    elif (
+        ctx.mode is BassMode.WALKING
+        and memory.consecutive_direction_count >= 2
+        and memory.previous_interval_semitones not in (None, 0)
+        and delta not in (None, 0)
+    ):
+        same_direction = (memory.previous_interval_semitones > 0) == (delta > 0)
+        if same_direction:
+            score -= .025
+            reasons.append("soft contour-fatigue pressure")
 
     if decision is not None:
         intent = decision.intent
