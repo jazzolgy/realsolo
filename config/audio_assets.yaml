@@ -26,6 +26,18 @@ assets:
       - "Multiple mic positions"
       - "Map ride/hat/snare/kick articulations in renderer"
 
+  - id: osiris_piano
+    role: piano
+    name: Osiris Piano
+    license: CC0-1.0
+    status: approved
+    source: https://github.com/sfzinstruments/Osiris_Piano
+    bundle_default_candidate: true
+    notes:
+      - "CC0 acoustic piano candidate from Versilian Studios / Karoryfer ecosystem"
+      - "Multiple microphone sets and sustain/non-sustain sample groups"
+      - "Preferred open-license replacement candidate for Salamander in RealSolo default bundles"
+
   - id: salamander_grand_v3
     role: piano
     name: Salamander Grand Piano V3
