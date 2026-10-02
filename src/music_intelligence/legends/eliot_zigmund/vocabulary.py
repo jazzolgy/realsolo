@@ -135,7 +135,6 @@ ELIOT_ZIGMUND_PROVISIONAL_VOCABULARY = (
 )
 
 
-@dataclass(frozen=True)
 # Active runtime vocabulary remains empty until the provisional cells survive
 # independent-source or manually verified drum evidence.
 ELIOT_ZIGMUND_VOCABULARY: tuple[VocabularyMemoryItem, ...] = ()
