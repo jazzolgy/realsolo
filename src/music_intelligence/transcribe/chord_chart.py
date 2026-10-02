@@ -128,7 +128,7 @@ def parse_chord_symbol(label: str) -> ChordSymbol:
         return ChordSymbol(None, no_chord=True)
 
     match = re.fullmatch(
-        r"([A-G](?:#|b)?)(.*?)(?:/([A-G](?:#|b)?))?",
+        r"([A-G](?:#|b)?)([^/]*)(?:/([A-G](?:#|b)?))?",
         text,
     )
     if match is None:
