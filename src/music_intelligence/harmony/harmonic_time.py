@@ -175,7 +175,7 @@ def infer_local_key(e: TonicizationEvidence) -> LocalKeyHypothesis:
 
     dominant_support = .0
     if e.dominant_root_pc is not None:
-        expected = (e.dominant_root_pc - 5) % 12
+        expected = (e.dominant_root_pc + 5) % 12
         if expected == e.tonic_pc:
             dominant_support = .75
         else:
