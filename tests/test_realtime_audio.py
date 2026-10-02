@@ -42,3 +42,12 @@ def test_audio_and_midi_can_share_one_ensemble_state():
     state = engine.ingest(MidiObservation(1.1, ObservationKind.NOTE_ON, note=60, velocity=90))
     assert state.input_mode == "hybrid"
     assert 60 in state.active_notes
+
+
+def test_clock_tick_does_not_turn_audio_session_into_hybrid():
+    ext = AudioFeatureExtractor(sample_rate=48000)
+    bridge = CoreImmediateBridge(DiagnosticResponseFactory(), OnlineMusicalEvaluator(), PerformanceMemory())
+    engine = EnsembleEngine(bridge, lambda _: None, clock=lambda: 0.0)
+    engine.ingest(ext.process(sine(220.0), 1.0))
+    state = engine.tick(1.1)
+    assert state.input_mode == "audio"
