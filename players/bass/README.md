@@ -86,3 +86,36 @@ These sources are treated as pedagogical/performance evidence, not universal law
 - bass-specific LegendProfile corpus
 - acoustic/electric physical-performance models
 - style-conditioned articulation / ghost-note policy
+
+
+### v1.46 — Bebop interaction grammar + performance memory
+
+The bass player now keeps a causal local memory of what it has actually played:
+
+- recent pitch / interval history
+- consecutive stepwise momentum
+- consecutive one-direction motion
+- phrase register center / slope
+- recent accent / density / ghost count
+- local complexity estimate
+
+Shared EnsembleState / InteractionScheduler remain authoritative for
+instrument-neutral coordination. Bass maps those directives into bass-specific
+intentions:
+
+- Anchor / Propel / Connect / Yield / Answer
+- Fill / Build / Release / Reset / Hold
+
+Important policy:
+
+- soloist phrase ending creates a response **opportunity**, not an automatic fill
+- if drums or piano already occupy the response window, bass yields
+- accumulated bass complexity creates a Hold/Simplify obligation
+- 3+ same-direction / stepwise events create contour or register-recovery pressure
+- form boundaries favor orientation/reset rather than decorative continuation
+- immediate realization consumes the memory/interaction decision as soft scoring;
+  future exact bass notes are still never frozen
+
+The next slice should add performed note length, accent intent and microtiming
+as first-class realization parameters, then connect those parameters to live
+drum/piano/soloist evidence.
