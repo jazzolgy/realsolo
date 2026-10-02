@@ -1,0 +1,33 @@
+{
+  "study_id": "zigmund_cell_robustness_v2",
+  "purpose": "retest previously promoted 2-3-1 / 1-3-2 / 3-1-2 cells against detector and track variation",
+  "method": {
+    "window_seconds": 25,
+    "settings": 12,
+    "detector_deltas": [0.08, 0.11, 0.14, 0.17],
+    "base_grid_quantiles": [0.45, 0.60, 0.75],
+    "analysis_note": "full-mix transient proxy; preemphasis; no isolated drum stem"
+  },
+  "windows": [
+    {"tune": "Without a Song", "track_seconds": [402, 427], "role": "documented drum-solo neighborhood"},
+    {"tune": "B Minor Waltz", "track_seconds": [80, 105], "role": "comparison window"},
+    {"tune": "You Must Believe in Spring", "track_seconds": [150, 175], "role": "comparison window"},
+    {"tune": "Gary's Theme", "track_seconds": [110, 135], "role": "comparison window"},
+    {"tune": "The Peacocks", "track_seconds": [160, 185], "role": "comparison window"}
+  ],
+  "without_a_song_results": {
+    "2-3-1": {"mean_rate": 0.0033, "top10_fraction": 0.167},
+    "1-3-2": {"mean_rate": 0.0019, "top10_fraction": 0.167},
+    "3-1-2": {"mean_rate": 0.0009, "top10_fraction": 0.0},
+    "1-1-1": {"mean_rate": 0.4786, "top10_fraction": 1.0},
+    "1-1-2": {"mean_rate": 0.1069, "top10_fraction": 1.0},
+    "2-1-1": {"mean_rate": 0.1146, "top10_fraction": 1.0}
+  },
+  "cross_track_conclusion": [
+    "The previously promoted 2-3-1 / 1-3-2 / 3-1-2 cells are detector-sensitive and low-frequency.",
+    "They should not currently be treated as Eliot Zigmund signature or stable vocabulary.",
+    "1-1-1 / 1-1-2 / 2-1-1 are much more robust in the transient proxy, but are too generic to promote as legend-specific language without drum-isolated or manually verified evidence."
+  ],
+  "action": "demote previous cells to provisional research evidence; remove from active runtime index",
+  "confidence": 0.93
+}
