@@ -469,3 +469,97 @@ For piano solo policy:
 - deep release with weak percussive support permits a more explicit phrase reset.
 
 This is an ensemble-interaction prior, not a Parker lick rule.
+
+
+## Pass 9 — Foreground/support complementarity around selected breath regions
+
+A further focused pass compared three proxies around selected candidate regions:
+
+- upper harmonic activity / flux as a **foreground melodic proxy**;
+- low harmonic energy as a **low harmonic support proxy**;
+- HPSS percussive energy as a **percussive support proxy**.
+
+These remain mixed-signal proxies, not isolated instrument stems.
+
+### AUDIO-OBSERVED
+
+Selected examples:
+
+| Region start (s) | Foreground during/pre | Low harmonic support during/pre | Percussive support during/pre | Foreground post/during |
+| --- | ---: | ---: | ---: | ---: |
+| 428.75 | 0.47 | 0.98 | 1.04 | 5.79 |
+| 433.00 | 0.18 | 0.79 | 0.44 | 2.81 |
+| 1308.00 | 0.07 | 0.51 | 0.72 | 5.03 |
+| 1313.25 | 0.08 | 0.95 | 0.58 | 10.79 |
+| 1355.25 | 0.08 | 0.75 | 0.42 | 35.04 |
+| 1365.75 | 0.11 | 0.53 | 1.30 | 21.04 |
+| 1386.25 | 0.18 | 0.90 | 1.00 | 6.21 |
+| 1549.25 | 0.33 | 0.46 | 0.47 | 7.50 |
+| 2008.00 | 0.17 | 0.30 | 0.68 | 3.10 |
+
+### AUDIO-OBSERVED pattern
+
+There are at least two recurring morphological possibilities in this sample:
+
+#### Foreground handoff
+
+Foreground activity drops strongly while one or more support proxies remain relatively
+high.
+
+Strong examples include:
+
+- 1313.25 s: foreground ~8% of pre, low harmonic support ~95%;
+- 1365.75 s: foreground ~11%, percussive support ~130%;
+- 1386.25 s: foreground ~18%, low harmonic ~90%, percussive ~100%.
+
+#### Collective release
+
+Foreground and support layers both thin substantially.
+
+The 2008.00 s region is the clearest selected example:
+foreground ~17%, low harmonic support ~30%, percussive support ~68%.
+
+### AUDIO-INFERRED
+
+These patterns are consistent with a bebop ensemble distinction between:
+
+```
+foreground voice backs away
+while rhythm/harmony continues
+```
+
+and:
+
+```
+the ensemble collectively releases
+```
+
+The audio mix does not identify whether the foreground proxy is always Parker, nor
+which instrument supplies the persistent support.
+
+### DESIGN-INFERENCE
+
+RealSolo now represents this distinction experimentally as:
+
+- `FOREGROUND_HANDOFF`
+- `COLLECTIVE_RELEASE`
+- `COLLECTIVE_BUILD`
+- `NONE`
+
+in `players/piano/bebop_complementarity.py`.
+
+Piano-solo consequences:
+
+- foreground handoff can remain open;
+- active support can favor a light pickup/anticipation rather than a dense restart;
+- dense runs can be penalized if they erase an already-supported handoff;
+- collective release can frame a new directed phrase entry, but still need not be filled.
+
+Piano-comping consequences:
+
+- if accompaniment support already carries a foreground handoff, lay-out or brief
+  punctuation can be preferable to sustained harmonic filling;
+- collective release can be preserved rather than overwritten by immediate sustained
+  comping.
+
+This is ensemble-interaction grammar, not a literal Parker phrase rule.
