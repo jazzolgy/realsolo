@@ -69,6 +69,7 @@ from .bebop_harmonic_turn import BebopHarmonicTurnContext
 from .bebop_harmonic_turn_comping import (
     evaluate_bebop_harmonic_turn_comping_bias,
 )
+from .ensemble_role import PianoEnsembleMode
 
 
 class InteractionRole(str, Enum):
@@ -114,6 +115,7 @@ class PianoCompingContext:
     harmonic_turn: BebopHarmonicTurnContext = field(
         default_factory=BebopHarmonicTurnContext
     )
+    ensemble_mode: PianoEnsembleMode = PianoEnsembleMode.EXTERNAL_MELODY_SUPPORT
     time_feel: str = "swing"
 
     def validate(self) -> None:
@@ -422,6 +424,34 @@ class PianoCompingEvaluator:
             score += piano_score.total
             components.update(piano_score.components)
             reasons.extend(piano_score.reasons)
+
+            hands = dict(candidate.realization.hand_assignment)
+            piano_foreground = comping_context.ensemble_mode in {
+                PianoEnsembleMode.PIANO_HEAD_TRIO,
+                PianoEnsembleMode.PIANO_SOLO_TRIO,
+            }
+            if piano_foreground:
+                # In a piano-led trio the RH owns melody/solo foreground. Comping
+                # should normally be a LH function; RH chordal occupation competes
+                # with the line unless explicitly realized as a two-hand texture.
+                if any(hand == "RH" for hand in hands.values()):
+                    score = self._add(
+                        score, components, reasons,
+                        "foreground_hand_contract", -0.34,
+                        "RH is reserved for melody/solo foreground in piano-led trio mode",
+                    )
+                elif hands and all(hand == "LH" for hand in hands.values()):
+                    score = self._add(
+                        score, components, reasons,
+                        "left_hand_comping_fit", 0.12,
+                        "LH-only comping supports RH foreground ownership",
+                    )
+                if candidate.action_type is CompingActionType.SUSTAINED_SUPPORT:
+                    score = self._add(
+                        score, components, reasons,
+                        "foreground_sustain_restraint", -0.05,
+                        "continuous LH sustain can make piano-trio solo texture too static",
+                    )
 
             event = candidate.realization.event
             if harmonic_reasoning is not None:
