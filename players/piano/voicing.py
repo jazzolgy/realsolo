@@ -220,6 +220,33 @@ def generate_rootless_voicings(request: PianoVoicingRequest) -> tuple[PianoReali
     return tuple(variants[:10])
 
 
+def generate_root_anchor_voicings(
+    request: PianoVoicingRequest,
+) -> tuple[PianoRealizationCandidate, ...]:
+    """Generate a sparse root-only structural anchor.
+
+    This is intentionally rare policy material. Piano does not decide whether the
+    root is harmonically correct; it only realizes an explicit Core-resolved root.
+    """
+    request.validate()
+    root = _role_pcs(request.material, "root")
+    if not root:
+        return ()
+    pitch = _nearest_in_range(
+        root[0],
+        48,
+        request.low_midi,
+        min(request.high_midi, 60),
+    )
+    return (
+        _event_from_roles(
+            request,
+            (("root", pitch),),
+            family="root_anchor",
+        ),
+    )
+
+
 def generate_minimal_voicing_families(
     request: PianoVoicingRequest,
 ) -> tuple[PianoRealizationCandidate, ...]:
