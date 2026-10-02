@@ -1,6 +1,7 @@
 # Piano Player
 
-AI Pianist workstream. Shared harmony/phrase/ensemble reasoning must come from Core.
+AI Pianist workstream. Shared harmony/phrase/ensemble reasoning and shared
+polyphonic sonority semantics come from Core.
 
 ## Runtime contract
 
@@ -8,24 +9,29 @@ The pianist follows the project-wide online improvisation rule:
 
 **Plan intention, not notes.**
 
-The shared Core may provide form, harmony, phrase, narrative, memory, ensemble state,
-and soft plans. The piano layer owns only piano-specific realization.
+The shared Core provides form, harmony, phrase, narrative, memory, ensemble state,
+soft plans, `PolyphonicEventCandidate`, `VoiceEvent`, and generic polyphonic
+evaluation. The piano layer owns only piano-specific realization.
 
 Current piano-specific implementation:
 
-- polyphonic `PianoVoicingCandidate`
-- piano-local performance state
-- immediate voicing/comping candidate evaluation
-- voice-leading preference
-- ensemble-space / density interaction policy
-- call-and-response and anticipation tags
-- tension-sensitive color handling
-- commit exactly one immediately playable piano action, then listen/re-plan
+- `PianoRealizationCandidate` wraps one shared Core polyphonic gesture
+- acoustic-piano range validation
+- piano hand assignment
+- pedal mode
+- touch metadata
+- piano-specific feasibility penalties layered on top of Core evaluation
+- staggered per-voice onsets are preserved as one musical gesture
+- commit exactly one immediate piano realization, then listen/re-plan
 
 ## Boundary with Core
 
-Do not duplicate or fork shared harmony, phrase, form, narrative, memory, ensemble,
-or legend reasoning here.
+Core owns generic sonority, voice identity, spacing, register, doubling,
+top/bass relations, generic voice-leading, orchestration semantics, and shared
+polyphonic online evaluation.
 
-If the piano workstream requires a shared representation or Core contract change,
-document it first in `CORE_CHANGE_REQUEST.md`.
+Piano owns hand distribution, playable range, pedal, touch, physical feasibility,
+and piano-specific voicing/comping grammar.
+
+If future piano work reveals another genuinely shared musical concept, document it
+first in `CORE_CHANGE_REQUEST.md` rather than duplicating it locally.
