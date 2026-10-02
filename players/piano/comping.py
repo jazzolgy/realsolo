@@ -66,6 +66,7 @@ class PianoCompingContext:
     ensemble_density: float = 0.5
     recent_piano_density: float = 0.0
     section_energy: float = 0.5
+    soloist_register_midi: float | None = None
     time_feel: str = "swing"
 
     def validate(self) -> None:
@@ -83,6 +84,8 @@ class PianoCompingContext:
                 raise ValueError(f"{name} must be within 0..1")
         if self.available_space_beats < 0:
             raise ValueError("available_space_beats cannot be negative")
+        if self.soloist_register_midi is not None and not 0 <= self.soloist_register_midi <= 127:
+            raise ValueError("soloist_register_midi must be within MIDI range")
 
 
 @dataclass(frozen=True)
