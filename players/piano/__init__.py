@@ -16,9 +16,15 @@ from .interaction import EnergyDirection, PhraseSpaceWindow, PianoDensity, Piano
 from .voicing import (
     PianoVoicingRequest,
     ResolvedHarmonicMaterial,
+    generate_extended_voicing_families,
+    generate_inverted_quartal_voicings,
     generate_minimal_voicing_families,
+    generate_mixed_voicings,
+    generate_octave_voicings,
+    generate_quartal_voicings,
     generate_rootless_voicings,
     generate_shell_voicings,
+    generate_tertian_voicings,
 )
 from .planner import PianoCompingCandidateSet, build_contextual_comping_candidates
 from .comping import (
@@ -52,9 +58,15 @@ __all__ = [
     "PianoInteractionState",
     "PianoVoicingRequest",
     "ResolvedHarmonicMaterial",
+    "generate_extended_voicing_families",
+    "generate_inverted_quartal_voicings",
     "generate_minimal_voicing_families",
+    "generate_mixed_voicings",
+    "generate_octave_voicings",
+    "generate_quartal_voicings",
     "generate_rootless_voicings",
     "generate_shell_voicings",
+    "generate_tertian_voicings",
     "PianoCompingCandidateSet",
     "build_contextual_comping_candidates",
 ]
