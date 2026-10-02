@@ -9,7 +9,8 @@ from .chart import ChartBar, SongChart
 from .asset_installer import ASSET_ROOT
 from .harmony_display import transpose_chord
 from .stage1_music import Stage1Soloist
-from .player_contract import monophonic_solo_gesture
+from .player_contract import monophonic_solo_gesture, apply_shared_groove_to_render_gesture
+from music_intelligence.reasoning.groove_context import GrooveFeel, build_groove_context
 from .player_provider import current_stage1_provider_status
 from .stage1_trio import Stage1TrioRuntime
 
@@ -54,6 +55,22 @@ def chart_payload(chart: SongChart, *, transpose: int = 0) -> dict:
     }
 
 
+def groove_payload(tempo_bpm: float) -> dict:
+    groove=build_groove_context(
+        GrooveFeel.SWING,
+        tempo_bpm=tempo_bpm,
+        grammar_id="swing.eighth_triplet_feel",
+        subdivision_hint="swing_eighth",
+        provenance=("stage1_web_groove_query",),
+    )
+    return {
+        "feel": groove.feel.value,
+        "swing_ratio": groove.effective_swing_ratio,
+        "offbeat_fraction": groove.swing_offbeat_fraction,
+        "grammar_id": groove.grammar_id,
+    }
+
+
 class Stage1Handler(SimpleHTTPRequestHandler):
     chart = demo_chart()
     soloist = Stage1Soloist()
@@ -83,6 +100,20 @@ class Stage1Handler(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(data)
             return
+        if parsed.path == "/api/groove":
+            query=parse_qs(parsed.query)
+            try:
+                tempo=max(40.0,min(360.0,float(query.get("tempo",[str(self.chart.tempo_bpm)])[0])))
+            except ValueError:
+                tempo=self.chart.tempo_bpm
+            body=json.dumps(groove_payload(tempo)).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type","application/json; charset=utf-8")
+            self.send_header("Content-Length",str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
         if parsed.path == "/api/player-status":
             body = json.dumps(
                 [status.to_dict() for status in current_stage1_provider_status()]
@@ -117,6 +148,12 @@ class Stage1Handler(SimpleHTTPRequestHandler):
             except ValueError:
                 beat, bar_index, tempo_bpm, chorus = 0.0, 0, self.chart.tempo_bpm, 0
 
+            players_raw=query.get("players",[""])[0].strip()
+            active_player_ids=(
+                frozenset(x.strip() for x in players_raw.split(",") if x.strip())
+                if players_raw else None
+            )
+
             bar = self.chart.bars[bar_index]
             result = self.trio.decide(
                 chord,
@@ -127,6 +164,7 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                 tempo_bpm=tempo_bpm,
                 section=bar.section or "",
                 chorus=chorus,
+                active_player_ids=active_player_ids,
             )
 
             combined = {
@@ -146,9 +184,53 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                 combined["tags"].extend(payload["tags"])
                 combined["annotations"].update(payload["annotations"])
 
+            swing_subbeat = None
+            groove=self.trio.state.groove
+            if (
+                active_player_ids is None
+                and groove is not None
+                and groove.feel.value in {"swing","shuffle"}
+                and abs(beat-round(beat)) < 1e-6
+                and int(round(beat)) % 2 == 1
+            ):
+                offbeat=groove.swing_offbeat_fraction
+                sub=self.trio.decide(
+                    chord,
+                    next_chord,
+                    beat_in_bar=(beat+offbeat) % self.chart.beats_per_bar,
+                    bar_index=bar_index,
+                    total_bars=len(self.chart.bars),
+                    tempo_bpm=tempo_bpm,
+                    section=bar.section or "",
+                    chorus=chorus,
+                    active_player_ids=frozenset({"drums"}),
+                )
+                sub_combined={
+                    "role":"drums",
+                    "voices":[],
+                    "drum_hits":[],
+                    "source":"native_trio_runtime:shared_swing_subbeat",
+                    "tags":[],
+                    "annotations":{
+                        "snapshot_generation":str(sub.snapshot_generation),
+                        "shared_subbeat":"true",
+                    },
+                }
+                for gesture in sub.gestures:
+                    payload=gesture.to_dict()
+                    sub_combined["voices"].extend(payload["voices"])
+                    sub_combined["drum_hits"].extend(payload["drum_hits"])
+                    sub_combined["tags"].extend(payload["tags"])
+                    sub_combined["annotations"].update(payload["annotations"])
+                swing_subbeat={
+                    "offset_beats":offbeat,
+                    "gesture":sub_combined,
+                }
+
             body = json.dumps(
                 {
                     "gesture": combined,
+                    "swing_subbeat": swing_subbeat,
                     "players": [d.player_id for d in result.decisions],
                     "skipped": list(result.skipped_player_ids),
                 }
@@ -175,8 +257,9 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                 beat_in_bar=beat_in_bar,
                 phrase_step=phrase_step,
             )
-            gesture = (
-                monophonic_solo_gesture(
+            gesture = None
+            if decision["pitch"] is not None:
+                raw_gesture=monophonic_solo_gesture(
                     decision["pitch"],
                     decision["duration_beats"],
                     velocity=decision.get("velocity", 82),
@@ -186,10 +269,12 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                     attack_scale=float(decision.get("attack_scale", 1.0)),
                     release_shape=decision.get("release_shape", "normal"),
                     source=decision["source_family"] or "core_immediate",
+                )
+                gesture=apply_shared_groove_to_render_gesture(
+                    raw_gesture,
+                    anchor_beat=beat_in_bar,
+                    groove=self.trio.state.groove,
                 ).to_dict()
-                if decision["pitch"] is not None
-                else None
-            )
             body = json.dumps(
                 {
                     **decision,

@@ -127,6 +127,7 @@ class Stage1TrioRuntime:
         section: str = "",
         chorus: int = 0,
         bass_solo: bool = False,
+        active_player_ids: frozenset[str] | None = None,
     ):
         form_position = 0.0 if total_bars <= 1 else bar_index / max(1, total_bars - 1)
         phrase_position = ((bar_index % 4) + beat_in_bar / 4.0) / 4.0
@@ -156,7 +157,11 @@ class Stage1TrioRuntime:
                     if not bass_solo and p.player_id == "bass"
                     else p.role
                 ),
-                p.active,
+                (
+                    p.player_id in active_player_ids
+                    if active_player_ids is not None
+                    else True
+                ),
             )
             for p in self.state.players
         )
