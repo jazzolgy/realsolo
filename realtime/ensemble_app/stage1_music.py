@@ -168,6 +168,7 @@ class Stage1Soloist:
             chord_symbol=chord_symbol,
             metric_position=(beat_in_bar % 4.0) / 4.0,
             phrase_maturity=min(1.0, (phrase_step % 8) / 7.0),
+            tension=0.55 if "7" in chord_symbol and "maj7" not in chord_symbol.lower() else 0.28,
             recent_large_leaps=(
                 1
                 if len(self.memory.committed) >= 2
