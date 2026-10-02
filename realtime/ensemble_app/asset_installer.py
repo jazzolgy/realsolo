@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 import shutil
 import tempfile
+import tarfile
 import urllib.request
 import zipfile
 
@@ -201,6 +202,137 @@ def _install_osiris(profile: str) -> list[dict]:
     ]
 
 
+
+_FREEPATS_TENOR = {
+    "full": "https://freepats.zenvoid.org/Reed/TenorSaxophone/TenorSaxophone-SFZ%2BFLAC-20200717.tar.gz",
+    "lite": "https://freepats.zenvoid.org/Reed/TenorSaxophone/TenorSaxophone-small-SFZ%2BFLAC-20200717.tar.gz",
+    "mini": "https://freepats.zenvoid.org/Reed/TenorSaxophone/TenorSaxophone-small-SFZ%2BFLAC-20200717.tar.gz",
+}
+
+_TRUMPET_ANCHORS = {
+    "F2": 41, "A2": 45, "C3": 48, "Ds3": 51, "F3": 53,
+    "G3": 55, "As3": 58, "D4": 62, "F4": 65, "A4": 69, "C5": 72,
+}
+
+
+def _freepats_tenor_regions(profile: str) -> list[dict]:
+    url = _FREEPATS_TENOR[profile]
+    with tempfile.TemporaryDirectory(prefix="realsolo-tenor-") as td:
+        temp = Path(td)
+        archive = temp / "tenor.tar.gz"
+        _download(url, archive)
+        with tarfile.open(archive, "r:gz") as tf:
+            tf.extractall(temp / "extract")
+        sfzs = list((temp / "extract").rglob("*.sfz"))
+        if not sfzs:
+            raise RuntimeError("FreePats tenor sax archive contains no SFZ mapping")
+        sfz = max(
+            sfzs,
+            key=lambda p: (
+                "tenor" in p.name.lower(),
+                "sax" in p.name.lower(),
+                p.stat().st_size,
+            ),
+        )
+        rows = _parse_simple_sfz(sfz)
+        if profile == "mini":
+            rows = _thin_regions(rows, min(8, len(rows)))
+
+        root = ASSET_ROOT / profile / "freepats_tenor_sax"
+        normalized: list[dict] = []
+        for i, row in enumerate(rows):
+            source = Path(row["sample_path"])
+            if not source.is_file():
+                continue
+            local_name = f"{i:03d}_{source.name}"
+            target = root / local_name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+            normalized.append({
+                **{k: v for k, v in row.items() if k != "sample_path"},
+                "sample": f"{profile}/freepats_tenor_sax/{local_name}",
+            })
+        if not normalized:
+            raise RuntimeError("FreePats tenor sax mapping resolved no audio samples")
+        return normalized
+
+
+def _trumpet_filename(family: str, note: str, velocity: int, rr: int = 1) -> str:
+    display = note.replace("Ds", "D#").replace("As", "A#")
+    return f"Sum_SHTrumpet_{family}_{display}_v{velocity}_rr{rr}.wav"
+
+
+def _trumpet_profile_spec(profile: str) -> dict[str, tuple[tuple[str, ...], tuple[int, ...], tuple[int, ...]]]:
+    if profile == "full":
+        return {
+            "sustain": (("F2","A2","C3","Ds3","G3","As3","D4","F4","A4","C5"), (1,3), (1,)),
+            "vibrato": (("F2","A2","C3","Ds3","F3","G3","As3","D4","F4","A4","C5"), (1,2), (1,)),
+            "short": (("F2","A2","C3","Ds3","F3","G3","As3","D4","F4","A4","C5"), (1,2,3), (1,2)),
+        }
+    if profile == "lite":
+        anchors = ("F2","C3","G3","D4","A4","C5")
+        return {
+            "sustain": (anchors, (1,3), (1,)),
+            "vibrato": (anchors, (1,2), (1,)),
+            "short": (anchors, (2,), (1,2)),
+        }
+    anchors = ("A2","C3","G3","D4","A4")
+    return {
+        "sustain": (anchors, (3,), (1,)),
+        "short": (anchors, (2,), (1,)),
+    }
+
+
+def _trumpet_remote_family(family: str) -> str:
+    return {"sustain": "sus", "vibrato": "susvib", "short": "stac"}[family]
+
+
+def _install_trumpet(profile: str) -> dict[str, list[dict]]:
+    root = ASSET_ROOT / profile / "vsco_trumpet"
+    articulations: dict[str, list[dict]] = {}
+    for family, (notes, velocities, rrs) in _trumpet_profile_spec(profile).items():
+        remote_family = _trumpet_remote_family(family)
+        centers = [(note, _TRUMPET_ANCHORS[note]) for note in notes]
+        regions: list[dict] = []
+        for idx, (note, center) in enumerate(centers):
+            previous = centers[idx - 1][1] if idx else center - 5
+            following = centers[idx + 1][1] if idx + 1 < len(centers) else center + 5
+            lokey = max(34, center - 3 if idx == 0 else (previous + center) // 2 + 1)
+            hikey = min(76, center + 3 if idx + 1 == len(centers) else (center + following) // 2)
+            for vi, vel in enumerate(velocities):
+                lovel = 1 if vi == 0 else int(round(1 + vi * 127 / len(velocities)))
+                hivel = 127 if vi + 1 == len(velocities) else int(round((vi + 1) * 127 / len(velocities)))
+                for rr in rrs:
+                    filename = _trumpet_filename(remote_family, note, vel, rr)
+                    remote = f"Brass/Trumpet/{remote_family}/{filename}"
+                    target = root / filename
+                    _download_raw("sgossner/VSCO-2-CE", remote, target, ref="master")
+                    regions.append({
+                        "sample": f"{profile}/vsco_trumpet/{filename}",
+                        "lokey": lokey, "hikey": hikey,
+                        "lovel": lovel, "hivel": hivel,
+                        "pitch_keycenter": center, "rr": rr,
+                    })
+        articulations[family] = regions
+    return articulations
+
+
+def _install_solo_assets(profile: str) -> tuple[dict, dict]:
+    sax = {
+        "id": f"freepats_tenor_sax_{profile}",
+        "instrument": "tenor_sax",
+        "license": "CC0-1.0",
+        "articulations": {"sustain": _freepats_tenor_regions(profile)},
+    }
+    trumpet = {
+        "id": f"vsco2ce_trumpet_{profile}",
+        "instrument": "trumpet",
+        "license": "CC0-1.0",
+        "articulations": _install_trumpet(profile),
+    }
+    return sax, trumpet
+
+
 def _ranges(anchors: dict[str, int], low_floor: int = 21, high_ceiling: int = 55):
     items = list(anchors.items())
     out = []
@@ -211,7 +343,7 @@ def _ranges(anchors: dict[str, int], low_floor: int = 21, high_ceiling: int = 55
     return out
 
 
-def _sampled_manifest(profile: str, anchors: dict[str, int], layers, rrs, drum_files, piano_regions=None) -> dict:
+def _sampled_manifest(profile: str, anchors: dict[str, int], layers, rrs, drum_files, piano_regions=None, solo_sax=None, solo_trumpet=None) -> dict:
     bass_regions = []
     for name, center, low, high in _ranges(anchors):
         for layer, lovel, hivel in layers:
@@ -237,6 +369,8 @@ def _sampled_manifest(profile: str, anchors: dict[str, int], layers, rrs, drum_f
         "version": 3,
         "profile": profile,
         "packs": {
+            "solo_sax": solo_sax or {},
+            "solo_trumpet": solo_trumpet or {},
             "piano": {
                 "id": f"osiris_piano_{profile}",
                 "license": "CC0-1.0",
@@ -296,7 +430,11 @@ def _install_sampled_profile(profile: str) -> Path:
             )
 
     piano_regions = _install_osiris(profile)
-    manifest = _sampled_manifest(profile, anchors, layers, rrs, drum_files, piano_regions)
+    solo_sax, solo_trumpet = _install_solo_assets(profile)
+    manifest = _sampled_manifest(
+        profile, anchors, layers, rrs, drum_files, piano_regions,
+        solo_sax, solo_trumpet
+    )
     path = ASSET_ROOT / f"realsolo_manifest_{profile}.json"
     path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     size = sum(p.stat().st_size for p in (ASSET_ROOT / profile).rglob("*") if p.is_file())
@@ -410,6 +548,9 @@ def install_full_assets() -> Path:
 
     manifest = _build_full_manifest(ASSET_ROOT)
     piano_regions = _install_osiris("full")
+    solo_sax, solo_trumpet = _install_solo_assets("full")
+    manifest["packs"]["solo_sax"] = solo_sax
+    manifest["packs"]["solo_trumpet"] = solo_trumpet
     manifest["packs"]["piano"] = {
         "id": "osiris_piano_full",
         "license": "CC0-1.0",
