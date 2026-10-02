@@ -22,6 +22,8 @@ from music_intelligence.reasoning.online_improviser import (
     SoftPlan,
 )
 
+from .bebop_phrase_space import BebopPhraseSpaceEvidence, PhraseSpaceType
+
 
 def default_bebop_legend_blend() -> LegendBlend:
     return LegendBlend(((PARKER_ONLINE_PROFILE, 1.0),))
@@ -35,6 +37,9 @@ class PianoSoloContext:
     left_hand_comping_activity: float = 0.35
     ensemble_density: float = 0.5
     creativity_strength: float = 0.6
+    phrase_space: BebopPhraseSpaceEvidence = field(
+        default_factory=BebopPhraseSpaceEvidence
+    )
 
     def validate(self) -> None:
         if not 21 <= self.right_hand_low_midi <= 108:
@@ -51,6 +56,7 @@ class PianoSoloContext:
             value = getattr(self, name)
             if not 0.0 <= value <= 1.0:
                 raise ValueError(f"{name} must be within 0..1")
+        self.phrase_space.validate()
 
 
 @dataclass
@@ -133,6 +139,41 @@ class PianoSoloEvaluator:
             components["undirected_chromaticism"] = -0.08
             score -= 0.08
             reasons.append("chromatic color lacks an audible target or return path")
+
+        space = context.phrase_space
+        if space.space_type is PhraseSpaceType.QUIET_ACTIVE:
+            weight = space.confidence * max(space.energy_drop, 0.25)
+            if candidate.pitch_midi is None or "rest" in tags:
+                v = 0.08 * weight
+                score += v
+                components["quiet_active_space"] = v
+                reasons.append("quiet-active phrase space can remain open")
+            if "dense_run" in tags:
+                v = -0.06 * weight
+                score += v
+                components["quiet_active_density"] = v
+                reasons.append("dense run may erase quiet-active ensemble space")
+
+        elif space.space_type is PhraseSpaceType.DEEP_RELEASE:
+            weight = space.confidence * max(space.energy_drop, 0.5)
+            if {"phrase_entry", "pickup", "anticipation"} & tags:
+                v = 0.10 * weight
+                score += v
+                components["deep_release_reentry"] = v
+                reasons.append("deep release creates a clear re-entry opportunity")
+            if (
+                space.reentry_contrast >= 0.35
+                and {"directed_target", "resolution_path"} & tags
+            ):
+                v = 0.07 * weight
+                score += v
+                components["reentry_direction"] = v
+                reasons.append("strong post-space contrast favors a directed re-entry")
+            if candidate.pitch_midi is None and space.reentry_contrast < 0.25:
+                v = 0.04 * weight
+                score += v
+                components["deep_release_hold_space"] = v
+                reasons.append("deep release need not be filled immediately")
 
         return CandidateScore(candidate, score, components, tuple(reasons))
 
