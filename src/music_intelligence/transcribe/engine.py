@@ -22,6 +22,11 @@ from .chord_chart_viewport import (
     ChordChartViewportConfig,
     build_chord_chart_viewport,
 )
+from .dynamics import (
+    DynamicTrajectoryCandidate,
+    infer_dynamic_trajectory,
+    score_spanner_from_dynamic_trajectory,
+)
 from .engraving import EngravingPlan, EngravingProfile, build_default_engraving_plan
 from .events import CommittedPerformanceEvent
 from .instrument_profiles import InstrumentProfile, resolve_instrument_profile
@@ -29,7 +34,7 @@ from .instrument_rules import InstrumentNotationDirective
 from .musicxml import score_to_musicxml
 from .projection import EventProjectionResult, project_pitched_event
 from .quality import ScoreQualityReport, audit_score_for_performance
-from .score import ReadableScore
+from .score import ReadableScore, ScoreEvent, ScoreSpanner
 from .spelling import PitchSpellingContext
 
 
@@ -102,6 +107,27 @@ class NotationEngine:
         return chart.transpose(
             semitones,
             enharmonic_policy=enharmonic_policy,
+        )
+
+    def dynamic_trajectory(
+        self,
+        events: tuple[CommittedPerformanceEvent, ...],
+    ) -> DynamicTrajectoryCandidate:
+        return infer_dynamic_trajectory(events)
+
+    def dynamic_spanner(
+        self,
+        candidate: DynamicTrajectoryCandidate,
+        *,
+        part_id: str,
+        score_events: tuple[ScoreEvent, ...],
+        spanner_id: str | None = None,
+    ) -> ScoreSpanner | None:
+        return score_spanner_from_dynamic_trajectory(
+            candidate,
+            part_id=part_id,
+            score_events=score_events,
+            spanner_id=spanner_id,
         )
 
     def engraving_plan(self, score: ReadableScore) -> EngravingPlan:
