@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from music_intelligence.reasoning.legend_style_core import CandidateEvent
 from music_intelligence.reasoning.solo_candidates import SoloCandidateSpec
 from music_intelligence.reasoning.solo_expression import SoloExpressionIntent
+from music_intelligence.reasoning.groove_context import GrooveTemporalContext, groove_timing_offset_beats
 from .solo_expression import PianoSoloExpression,realize_piano_solo_expression
 
 @dataclass(frozen=True)
@@ -13,9 +14,12 @@ class PianoSoloRealizerContext:
     anchor_midi:int=72
     hand:str="RH"
     previous_pitch_midi:int|None=None
+    beat_position_beats:float=0.0
+    groove:GrooveTemporalContext|None=None
     def validate(self)->None:
         if not 21<=self.low_midi<self.high_midi<=108: raise ValueError("invalid piano solo register")
         if self.hand not in {"LH","RH"}: raise ValueError("hand must be LH or RH")
+        if self.groove is not None: self.groove.validate()
 
 @dataclass(frozen=True)
 class PianoSoloRealization:
@@ -34,11 +38,13 @@ class PianoSoloRealizer:
         candidate.validate(); expression.validate(); context.validate()
         px=realize_piano_solo_expression(expression)
         pitch=None if candidate.pitch_class is None else _nearest(candidate.pitch_class,context)
+        groove_offset=groove_timing_offset_beats(context.beat_position_beats+candidate.onset_offset_beats,context.groove)
+        groove_tag=f"groove:{context.groove.feel.value}" if context.groove is not None else "groove:player_default"
         event=CandidateEvent(
             pitch,
             candidate.duration_beats*px.sustain_ratio,
-            onset_offset_beats=candidate.onset_offset_beats+px.timing_offset_beats,
-            tags=frozenset(set(candidate.tags)|set(px.tags)|{"piano_solo",f"hand:{context.hand}",f"touch:{px.touch}",f"pedal:{px.pedal}"}),
+            onset_offset_beats=candidate.onset_offset_beats+px.timing_offset_beats+groove_offset,
+            tags=frozenset(set(candidate.tags)|set(px.tags)|{"piano_solo",groove_tag,f"hand:{context.hand}",f"touch:{px.touch}",f"pedal:{px.pedal}"}),
             source_family=f"piano:{candidate.source_family}",
         )
         return PianoSoloRealization(event,context.hand,px)
