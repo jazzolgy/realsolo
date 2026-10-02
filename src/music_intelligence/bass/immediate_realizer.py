@@ -1,9 +1,7 @@
 """Bass-specific immediate-action realization.
 
-This module consumes Shared Core harmony and voice-leading intelligence plus the
-bass-specific Performance Grammar. It does not implement a separate jazz-harmony
-theory and never precomposes a future bass line. Each call generates candidates
-for the next immediate bass action only.
+Consumes Shared Core harmony/voice-leading plus bass Performance Grammar.
+No separate bass harmony engine and no frozen future line.
 """
 from __future__ import annotations
 
@@ -52,10 +50,13 @@ class BassContext:
     beat_in_measure: float = 0.0
     meter_numerator: int = 4
     previous_pitch_midi: int | None = None
+    previous_motion_semitones: int | None = None
     register_low_midi: int = 28
     register_high_midi: int = 55
     register_intent: RegisterIntent = RegisterIntent.STABLE
     repeated_note_tolerance: float = 0.35
+    stepwise_preference: float = 0.45
+    contour_reversal_pressure: float = 0.45
     ensemble_activity: float = 0.5
 
     def validate(self) -> None:
@@ -67,10 +68,14 @@ class BassContext:
             raise ValueError("invalid bass register")
         if self.previous_pitch_midi is not None and not 0 <= self.previous_pitch_midi <= 127:
             raise ValueError("previous_pitch_midi must be in MIDI range")
-        if not 0.0 <= self.repeated_note_tolerance <= 1.0:
-            raise ValueError("repeated_note_tolerance must be within 0..1")
-        if not 0.0 <= self.ensemble_activity <= 1.0:
-            raise ValueError("ensemble_activity must be within 0..1")
+        for name, value in (
+            ("repeated_note_tolerance", self.repeated_note_tolerance),
+            ("stepwise_preference", self.stepwise_preference),
+            ("contour_reversal_pressure", self.contour_reversal_pressure),
+            ("ensemble_activity", self.ensemble_activity),
+        ):
+            if not 0.0 <= value <= 1.0:
+                raise ValueError(f"{name} must be within 0..1")
 
 
 @dataclass(frozen=True)
@@ -98,23 +103,36 @@ def _active_pitch_classes(frame: HarmonicFrame) -> frozenset[int]:
     return frozenset({root}) if root is not None else frozenset()
 
 
-def _nearest_pitch_for_pc(pc: int, ctx: BassContext) -> int:
+def _pitch_realizations_for_pc(pc: int, ctx: BassContext) -> tuple[int, ...]:
     options = [
         p for p in range(ctx.register_low_midi, ctx.register_high_midi + 1)
         if p % 12 == pc % 12
     ]
     if not options:
         raise ValueError("register contains no realization for requested pitch class")
+
     target = ctx.previous_pitch_midi
     if target is None:
         target = (ctx.register_low_midi + ctx.register_high_midi) / 2
-    return min(options, key=lambda p: (abs(p - target), p))
+        ordered = sorted(options, key=lambda p: (abs(p - target), p))
+        return tuple(ordered[:2])
+
+    # Keep the nearest realization and, when available, one on the opposite side.
+    nearest = min(options, key=lambda p: (abs(p - target), p))
+    below = [p for p in options if p < target]
+    above = [p for p in options if p > target]
+    selected = [nearest]
+    if below:
+        selected.append(max(below))
+    if above:
+        selected.append(min(above))
+
+    # Preserve order while removing duplicates.
+    return tuple(dict.fromkeys(selected))
 
 
 def _duration_for_mode(mode: BassMode) -> float:
-    if mode is BassMode.TWO_FEEL:
-        return 2.0
-    return 1.0
+    return 2.0 if mode is BassMode.TWO_FEEL else 1.0
 
 
 def _voice_role_for(candidate: BassHarmonicRole) -> TargetRole:
@@ -127,9 +145,7 @@ def _voice_role_for(candidate: BassHarmonicRole) -> TargetRole:
     return TargetRole.UNKNOWN
 
 
-def _grammar_mapping(
-    role: BassHarmonicRole,
-) -> tuple[MotionStrategy, TargetStrategy]:
+def _grammar_mapping(role: BassHarmonicRole) -> tuple[MotionStrategy, TargetStrategy]:
     if role is BassHarmonicRole.ROOT:
         return MotionStrategy.CHORDAL, TargetStrategy.CURRENT_ROOT
     if role in {BassHarmonicRole.FIFTH, BassHarmonicRole.CHORD_TONE}:
@@ -173,8 +189,11 @@ def _grammar_context(ctx: BassContext) -> BassGrammarContext:
         two_feel=ctx.mode is BassMode.TWO_FEEL,
         pedal=ctx.mode is BassMode.PEDAL,
         previous_pitch_midi=ctx.previous_pitch_midi,
+        previous_motion_semitones=ctx.previous_motion_semitones,
         register_intent=ctx.register_intent,
         repeated_note_tolerance=ctx.repeated_note_tolerance,
+        stepwise_preference=ctx.stepwise_preference,
+        contour_reversal_pressure=ctx.contour_reversal_pressure,
         ensemble_activity=ctx.ensemble_activity,
     )
 
@@ -183,14 +202,9 @@ def generate_immediate_bass_candidates(
     frame: HarmonicFrame,
     ctx: BassContext,
 ) -> tuple[BassActionCandidate, ...]:
-    """Generate candidates for one immediate bass action.
-
-    Future harmony may influence an approach/anticipation candidate, but this
-    function never returns a fixed multi-note line.
-    """
     frame.validate()
     ctx.validate()
-    build_basic_affordances(frame)  # validates shared harmonic semantics/affordances
+    build_basic_affordances(frame)
 
     root_pc = _active_root_pc(frame)
     if root_pc is None:
@@ -207,23 +221,17 @@ def generate_immediate_bass_candidates(
 
         fifth_pc = (root_pc + 7) % 12
         if not pcs or fifth_pc in pcs:
-            raw.append((
-                fifth_pc,
-                BassHarmonicRole.FIFTH,
-                0.16,
-                ("shared evidence supports perfect-fifth option",),
-            ))
+            raw.append((fifth_pc, BassHarmonicRole.FIFTH, 0.16,
+                        ("shared evidence supports perfect-fifth option",)))
 
-        if ctx.mode is BassMode.WALKING:
+        # Two-feel should not be reduced to root-up-fifth. Other shared chord
+        # members are legitimate immediate support choices.
+        if ctx.mode in {BassMode.WALKING, BassMode.TWO_FEEL}:
             for pc in sorted(pcs):
                 if pc in {root_pc, fifth_pc}:
                     continue
-                raw.append((
-                    pc,
-                    BassHarmonicRole.CHORD_TONE,
-                    0.14,
-                    ("shared current-harmony pitch-class option",),
-                ))
+                raw.append((pc, BassHarmonicRole.CHORD_TONE, 0.14,
+                            ("shared current-harmony pitch-class option",)))
 
     next_root = frame.next_expected.root_pc if frame.next_expected is not None else None
     late_measure = ctx.beat_in_measure >= ctx.meter_numerator - 1.0
@@ -238,69 +246,60 @@ def generate_immediate_bass_candidates(
         ))
 
     candidates: list[BassActionCandidate] = []
-    seen: set[tuple[int, BassHarmonicRole]] = set()
+    seen: set[tuple[int, BassHarmonicRole, int]] = set()
     grammar_ctx = _grammar_context(ctx)
 
     for pc, role, base, reasons in raw:
-        key = (pc % 12, role)
-        if key in seen:
-            continue
-        seen.add(key)
+        for pitch in _pitch_realizations_for_pc(pc, ctx):
+            key = (pc % 12, role, pitch)
+            if key in seen:
+                continue
+            seen.add(key)
 
-        pitch = _nearest_pitch_for_pc(pc, ctx)
-        vl = _shared_voice_leading_score(ctx.previous_pitch_midi, pitch, role)
-        motion_strategy, target_strategy = _grammar_mapping(role)
-        grammar = evaluate_bass_grammar(
-            ctx=grammar_ctx,
-            candidate_pitch_midi=pitch,
-            motion_strategy=motion_strategy,
-            target_strategy=target_strategy,
-        )
+            vl = _shared_voice_leading_score(ctx.previous_pitch_midi, pitch, role)
+            motion_strategy, target_strategy = _grammar_mapping(role)
+            grammar = evaluate_bass_grammar(
+                ctx=grammar_ctx,
+                candidate_pitch_midi=pitch,
+                motion_strategy=motion_strategy,
+                target_strategy=target_strategy,
+            )
 
-        motion_penalty = 0.0
-        if ctx.previous_pitch_midi is not None:
-            leap = abs(pitch - ctx.previous_pitch_midi)
-            if leap > 7:
-                motion_penalty = 0.035 * (leap - 7)
+            motion_penalty = 0.0
+            if ctx.previous_pitch_midi is not None:
+                leap = abs(pitch - ctx.previous_pitch_midi)
+                if leap > 7:
+                    motion_penalty = 0.035 * (leap - 7)
 
-        tags = {
-            "bass",
-            ctx.mode.value,
-            role.value,
-            grammar.metric_role.value,
-            grammar.groove_relation.value,
-            grammar.articulation_intent.value,
-        }
-        if role in {
-            BassHarmonicRole.ROOT,
-            BassHarmonicRole.FIFTH,
-            BassHarmonicRole.CHORD_TONE,
-            BassHarmonicRole.PEDAL,
-        }:
-            tags.add("chord_tone")
-        if role in {BassHarmonicRole.CHROMATIC_APPROACH, BassHarmonicRole.ANTICIPATION}:
-            tags.add("directed_target")
-        if role is BassHarmonicRole.ANTICIPATION:
-            tags.add("anticipation")
+            tags = {
+                "bass", ctx.mode.value, role.value,
+                grammar.metric_role.value, grammar.groove_relation.value,
+                grammar.articulation_intent.value,
+            }
+            if role in {
+                BassHarmonicRole.ROOT, BassHarmonicRole.FIFTH,
+                BassHarmonicRole.CHORD_TONE, BassHarmonicRole.PEDAL,
+            }:
+                tags.add("chord_tone")
+            if role in {BassHarmonicRole.CHROMATIC_APPROACH, BassHarmonicRole.ANTICIPATION}:
+                tags.add("directed_target")
+            if role is BassHarmonicRole.ANTICIPATION:
+                tags.add("anticipation")
 
-        score = base + vl + grammar.score_delta - motion_penalty
-        candidates.append(BassActionCandidate(
-            event=CandidateEvent(
-                pitch_midi=pitch,
-                duration_beats=duration,
-                tags=frozenset(tags),
-                source_family="bass_immediate_realization",
-            ),
-            harmonic_role=role,
-            target_pitch_class=pc % 12,
-            score=score,
-            grammar=grammar,
-            reasons=(
-                reasons
-                + grammar.reasons
-                + (f"shared voice-leading={vl:.3f}",)
-            ),
-        ))
+            score = base + vl + grammar.score_delta - motion_penalty
+            candidates.append(BassActionCandidate(
+                event=CandidateEvent(
+                    pitch_midi=pitch,
+                    duration_beats=duration,
+                    tags=frozenset(tags),
+                    source_family="bass_immediate_realization",
+                ),
+                harmonic_role=role,
+                target_pitch_class=pc % 12,
+                score=score,
+                grammar=grammar,
+                reasons=reasons + grammar.reasons + (f"shared voice-leading={vl:.3f}",),
+            ))
 
     return tuple(sorted(candidates, key=lambda x: x.score, reverse=True))
 
