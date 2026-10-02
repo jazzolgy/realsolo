@@ -624,3 +624,149 @@ The shared context must contain no:
 
 It only describes the current relation between observed interaction and harmonic/form
 context.
+
+
+## CR-007 — Shared Scale/Linear scorebook-practice feedback
+
+### Status
+
+Requested from player/piano after the first cross-book practice batch using the nine
+uploaded Real/New Real/Vocal/Christmas collections.
+
+Piano now consumes v1.54 Shared Scale/Linear affordances through an instrument-local
+register adapter. This request concerns additional **shared context**, not Piano
+candidate semantics.
+
+### Evidence source
+
+Derived abstract evidence only. No complete copyrighted melody is stored.
+
+Representative scorebook contexts include:
+
+- even-8th dense harmonic motion;
+- medium swing with dense functional changes;
+- Afro sections with interlude / solo break;
+- half-time rock -> Bossa -> rock feel changes;
+- two-feel -> in-four -> back-to-two changes;
+- medium-rock repeated rhythm-section writing;
+- functional ballad / standard material.
+
+Detailed batch record:
+
+- `research/linear_scale/SCOREBOOK_PRACTICE_BATCH_001.md`
+- `research/linear_scale/scorebook_practice_batch_001.json`
+
+### Finding 1 — keep ScaleField evidence-driven
+
+The current v1.54 decision is supported by scorebook practice:
+
+- do not infer a compulsory seven-note scale from chord suffix alone;
+- explicit local-key / harmonic evidence may expand the contextual field;
+- ambiguous or modern score evidence should remain plural/incomplete when necessary.
+
+No change requested here.
+
+### Finding 2 — route weighting needs feel / section hooks
+
+The same legal pitch-class route can have very different musical plausibility under:
+
+- two feel;
+- in four;
+- half-time rock;
+- Bossa;
+- Afro;
+- straight-8th ballad;
+- vamp;
+- head;
+- solo;
+- interlude;
+- solo break.
+
+Requested shared context or hook:
+
+- `feel_change`
+- `section_role`
+- form/boundary state
+
+Core need not prescribe a player action. It should make this evidence available to
+route evaluation and provenance.
+
+### Finding 3 — expose harmonic-rhythm horizon
+
+Requested shared concepts:
+
+- `beats_to_harmonic_change`
+- `harmonic_rhythm_density`
+- `target_arrival_horizon`
+
+Musical reason:
+
+A chromatic approach/enclosure intention has different plausibility when the target is
+an eighth-note away versus several bars away.
+
+The fields must not schedule exact future notes.
+
+### Finding 4 — enclosure needs bounded abstract state
+
+v1.54 correctly exposes `ENCLOSURE` as an intention, but its immediate first-step
+pitch classes currently overlap a generic chromatic approach.
+
+Requested future shared representation may include:
+
+- active route kind;
+- target pitch class;
+- route stage / sides remaining;
+- resolution debt;
+- start time;
+- confidence/provenance.
+
+It must **not** store a frozen future pitch sequence.
+
+This will also fit the newer Legend Vocabulary architecture: an enclosure can be
+triggered by Shared Bebop grammar, a remembered fragment, or a Legend vocabulary item
+while still using the same shared route state.
+
+### Finding 5 — preserve ingestion provenance/confidence
+
+When Scorebook Ingestion Layer is connected, linear-route evidence should preserve:
+
+- source/book ID;
+- page span / evidence locator;
+- harmonic parse confidence;
+- feel/section parse confidence;
+- provenance.
+
+A low-confidence score reading should never become a high-confidence route rule.
+
+### Current Piano boundary
+
+`players/piano/shared_linear_adapter.py` now realizes Core route pitch classes in a
+piano register.
+
+Shared Core owns:
+
+- route identity;
+- immediate pitch classes;
+- target pitch classes;
+- tension/resolution semantics.
+
+Piano owns:
+
+- octave/register;
+- physical range;
+- touch/articulation;
+- coordination with left-hand comping.
+
+When shared affordances are supplied, Piano does not independently invent
+approach/neighbor/passing route semantics. The former local path is retained only as
+compatibility fallback.
+
+### Tests required for future Core changes
+
+- feel/section evidence changes route weighting without changing raw harmonic identity;
+- harmonic-rhythm horizon affects approach/enclosure confidence;
+- enclosure state contains no future exact note sequence;
+- low-confidence score evidence cannot promote a high-confidence route without new
+  supporting evidence;
+- existing v1.54 no-invented-scale behavior remains unchanged;
+- all instrument consumers can reuse the same shared fields.
