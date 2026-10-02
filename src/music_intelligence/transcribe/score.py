@@ -142,3 +142,29 @@ def extract_individual_part(score: ReadableScore, part_id: str) -> ReadableScore
         meter_denominator=score.meter_denominator,
         provenance=score.provenance + ("transcribe:individual-part",),
     )
+
+
+# Explicit terminology for the post-Sibelius engraving split.
+# Backward-compatible names remain available while downstream code migrates.
+LogicalScoreEvent = ScoreEvent
+LogicalScorePart = ScorePart
+LogicalScore = ReadableScore
+
+
+def assemble_logical_score(
+    *,
+    score_id: str,
+    title: str,
+    parts: tuple[LogicalScorePart, ...],
+    meter_numerator: int = 4,
+    meter_denominator: int = 4,
+    provenance: tuple[str, ...] = (),
+) -> LogicalScore:
+    return assemble_score(
+        score_id=score_id,
+        title=title,
+        parts=parts,
+        meter_numerator=meter_numerator,
+        meter_denominator=meter_denominator,
+        provenance=provenance + ("transcribe:logical-score",),
+    )
