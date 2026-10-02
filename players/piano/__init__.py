@@ -5,6 +5,15 @@ polyphonic evaluation come from Core. This package owns piano-specific
 realization, comping, and interaction policy.
 """
 
+from .bebop_complementarity import (
+    EnsembleBreathType,
+    EnsembleComplementarityEvidence,
+    classify_ensemble_complementarity,
+)
+from .bebop_comping_breath import (
+    BebopBreathCompingBias,
+    evaluate_bebop_breath_comping_bias,
+)
 from .bebop_phrase_space import (
     BebopPhraseSpaceEvidence,
     PhraseSpaceType,
@@ -122,6 +131,11 @@ __all__ = [
     "PianoActionScore",
     "PianoPerformanceState",
     "PianoPolicyEvaluator",
+    "EnsembleBreathType",
+    "EnsembleComplementarityEvidence",
+    "classify_ensemble_complementarity",
+    "BebopBreathCompingBias",
+    "evaluate_bebop_breath_comping_bias",
     "BebopPhraseSpaceEvidence",
     "PhraseSpaceType",
     "classify_phrase_space",
