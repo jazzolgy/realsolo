@@ -28,7 +28,6 @@ def test_close_approach_gets_bebop_support():
     context = PianoSoloContext(
         musical=MusicalContextVector(
             phrase_maturity=0.4,
-            previous_pitch_midi=62,
         )
     )
     plain = CandidateEvent(63, 0.5, tags=frozenset({"chord_tone"}))
