@@ -50,3 +50,19 @@ from .standard_charts import (
     register_standard_100,
     standard_100_corpus_items,
 )
+
+from .scorebooks import (
+    SCOREBOOK_SPECS,
+    SEED_SONG_LOCATORS,
+    ScoreEvidence,
+    ScoreEvidenceKind,
+    ScoreIngestStatus,
+    ScorebookFamily,
+    ScorebookSongLocator,
+    ScorebookSpec,
+    ingestion_queue,
+    register_scorebooks,
+    scorebook_corpus_items,
+    songs_for_book,
+    validate_song_locators,
+)
