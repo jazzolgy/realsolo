@@ -13,6 +13,7 @@ from .extractors import (
 from .style import build_style_artifact
 from .genre import build_genre_artifact
 from .groove import build_groove_artifact
+from .groove_grammar import GrooveGrammar, DEFAULT_GROOVE_GRAMMARS, best_matching_grammars, groove_similarity
 from .store import LearningStore
 from .engine import LearningFeedback,LearningPriorView,SharedLearningEngine
 from .pipeline import (
@@ -37,6 +38,10 @@ __all__ = [
     "build_style_artifact",
     "build_genre_artifact",
     "build_groove_artifact",
+    "GrooveGrammar",
+    "DEFAULT_GROOVE_GRAMMARS",
+    "best_matching_grammars",
+    "groove_similarity",
     "LearningStore",
     "LearningFeedback",
     "LearningPriorView",
