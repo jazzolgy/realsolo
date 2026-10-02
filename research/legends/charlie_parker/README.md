@@ -70,3 +70,16 @@ transition cost belong to players/sax/.
 
 Raw private/copyrighted source audio, books, and transcriptions are not copied
 into the public repository.
+
+
+## Boundary with Shared Solo Grammar
+
+Charlie Parker does not own general solo methodology.
+
+Motif development, repetition/variation, phrase entrance/ending, tension and
+release, rhythmic displacement, space, contour development, future-harmony
+targeting, quotation/adaptation, and hybrid composition are shared
+improvisation operations.
+
+Parker Intelligence stores evidence for **which of those operations Parker
+favored, in what context, with what melodic/rhythmic/harmonic tendencies**.
