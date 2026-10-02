@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Abstract written-bass evidence only; no literal copyrighted note sequences.",
+  "studies": [
+    {
+      "study_id": "scorebook.newreal2.along_came_betty.p8",
+      "song_id": "score.newreal2.along_came_betty",
+      "title": "Along Came Betty",
+      "source_book_id": "scorebook.newreal.2",
+      "page": 8,
+      "study_track": "walking_comparator",
+      "style": "medium swing",
+      "observations": {
+        "explicit_instruction": "bass walks",
+        "section_role": "D section written walking-bass comparison region",
+        "pulse_surface": "predominantly quarter-note walking support",
+        "motion_features": [
+          "stepwise connection",
+          "chromatic connective motion",
+          "structural chord-tone arrivals",
+          "low-register continuity"
+        ],
+        "comparison_use": [
+          "root occupancy",
+          "scalar motion",
+          "chromatic approach",
+          "register trajectory",
+          "direction reversal"
+        ]
+      },
+      "confidence": 0.97,
+      "provenance": [
+        "NewReal2.pdf:p8",
+        "vision-reviewed"
+      ]
+    },
+    {
+      "study_id": "scorebook.newreal2.asa_bass.p10",
+      "song_id": "score.newreal2.asa",
+      "title": "Asa (The Zoo Blues)",
+      "source_book_id": "scorebook.newreal.2",
+      "page": 10,
+      "study_track": "funk_written_part",
+      "style": "medium funk",
+      "observations": {
+        "part_role": "dedicated bass part",
+        "pulse_surface": "syncopated eighth/sixteenth-note funk surface",
+        "motion_features": [
+          "riff and cell repetition",
+          "rests and syncopated attacks",
+          "register displacement",
+          "groove-oriented articulation"
+        ],
+        "comparison_use": [
+          "rhythmic-cell recurrence",
+          "onset density",
+          "register trajectory",
+          "repetition/variation"
+        ],
+        "exclude_from": [
+          "walking-bass target distribution"
+        ]
+      },
+      "confidence": 0.98,
+      "provenance": [
+        "NewReal2.pdf:p10",
+        "vision-reviewed"
+      ]
+    },
+    {
+      "study_id": "scorebook.newreal3.actual_proof_bass.p2",
+      "song_id": "score.newreal3.actual_proof",
+      "title": "Actual Proof",
+      "source_book_id": "scorebook.newreal.3",
+      "page": 2,
+      "study_track": "interpretive_funk",
+      "style": "medium funk",
+      "observations": {
+        "part_role": "dedicated bass part with interpretive instruction",
+        "written_part_policy": "bass line freely interpreted except last two bars of A are played every chorus",
+        "section_role": "A last two bars recurring anchor; remaining bass material interpretive",
+        "motion_features": [
+          "syncopated sixteenth-note motion",
+          "register changes",
+          "recurrent anchor material",
+          "free-interpretation regions"
+        ],
+        "comparison_use": [
+          "fixed-vs-free section behavior",
+          "register trajectory",
+          "rhythmic density",
+          "repetition/variation"
+        ],
+        "exclude_from": [
+          "literal full-page imitation"
+        ]
+      },
+      "confidence": 0.99,
+      "provenance": [
+        "NewReal3.pdf:p2",
+        "vision-reviewed"
+      ]
+    }
+  ]
+}
