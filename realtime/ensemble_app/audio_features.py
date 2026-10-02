@@ -83,31 +83,42 @@ class AudioFeatureExtractor:
         if rms < self.min_onset_rms * 0.6:
             return None, 0.0
         np = _np()
-        # Downsample cheaply for a bounded autocorrelation search.
-        decim = max(1, self.sample_rate // 12000)
-        y = x[::decim]
-        sr = self.sample_rate / decim
-        if y.size < 64:
+        if x.size < 128:
             return None, 0.0
 
-        min_lag = max(2, int(sr / self.max_pitch_hz))
-        max_lag = min(y.size // 2, int(sr / self.min_pitch_hz))
-        if max_lag <= min_lag:
+        # Baseline monophonic evidence: dominant spectral peak with quadratic
+        # interpolation. This avoids the strong subharmonic ambiguity of raw
+        # autocorrelation while remaining causal and cheap enough for the
+        # development harness. Polyphonic/learned pitch models can replace it.
+        window = np.hanning(x.size).astype(np.float32)
+        spectrum = np.abs(np.fft.rfft(x * window))
+        freqs = np.fft.rfftfreq(x.size, 1.0 / self.sample_rate)
+        mask = (freqs >= self.min_pitch_hz) & (freqs <= self.max_pitch_hz)
+        indexes = np.flatnonzero(mask)
+        if indexes.size < 3:
             return None, 0.0
 
-        y = y - float(np.mean(y))
-        energy = float(np.dot(y, y)) + 1e-9
-        best_lag = None
-        best = -1.0
-        for lag in range(min_lag, max_lag + 1):
-            a = y[:-lag]
-            b = y[lag:]
-            denom = float(np.sqrt(np.dot(a, a) * np.dot(b, b))) + 1e-9
-            score = float(np.dot(a, b) / denom)
-            if score > best:
-                best = score
-                best_lag = lag
+        local = spectrum[indexes]
+        rel = int(np.argmax(local))
+        k = int(indexes[rel])
+        peak = float(spectrum[k])
+        if peak <= 1e-9:
+            return None, 0.0
 
-        if best_lag is None or best < 0.35:
-            return None, max(0.0, best)
-        return float(sr / best_lag), min(1.0, max(0.0, best))
+        # Quadratic interpolation around the FFT bin.
+        delta = 0.0
+        if 0 < k < len(spectrum) - 1:
+            a = float(spectrum[k - 1])
+            b = float(spectrum[k])
+            g = float(spectrum[k + 1])
+            denom = a - 2.0 * b + g
+            if abs(denom) > 1e-12:
+                delta = 0.5 * (a - g) / denom
+                delta = max(-0.5, min(0.5, delta))
+
+        pitch_hz = (k + delta) * self.sample_rate / x.size
+        floor = float(np.median(local)) + 1e-9
+        confidence = peak / (peak + 8.0 * floor)
+        if confidence < 0.35:
+            return None, confidence
+        return float(pitch_hz), min(1.0, max(0.0, confidence))
