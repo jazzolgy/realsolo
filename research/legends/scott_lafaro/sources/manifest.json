@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "scott_lafaro",
+  "handling": "private_sources_not_committed",
+  "sources": [
+    {
+      "source_id": "be_playlist_project_audio",
+      "type": "audio_compilation",
+      "status": "private_project_source",
+      "path_hint": "owner-supplied Bill Evans compilation",
+      "intended_use": [
+        "verified LaFaro phrase study",
+        "score/form alignment",
+        "motif abstraction"
+      ],
+      "note": "Only tracks with separately verified master/personnel identity may be promoted as LaFaro evidence."
+    }
+  ]
+}
