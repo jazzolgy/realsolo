@@ -563,3 +563,91 @@ Piano-comping consequences:
   comping.
 
 This is ensemble-interaction grammar, not a literal Parker phrase rule.
+
+
+## Pass 10 — Fixed-window turn-taking episode probe
+
+Nine selected candidate regions were re-analyzed with a fixed temporal morphology:
+
+```
+3 s pre
++ 2 s candidate handoff
++ 3 s post
+```
+
+The proxies in this pass were intentionally simple and reproducible:
+
+- 500–2500 Hz spectral energy as a mid-band foreground proxy;
+- 60–500 Hz energy as a low harmonic/support proxy;
+- broadband positive spectral flux as an attack/activity proxy.
+
+### AUDIO-OBSERVED
+
+| Region start (s) | Foreground handoff/pre | Low support handoff/pre | Attack handoff/pre | Foreground post/handoff | Provisional morphology |
+| --- | ---: | ---: | ---: | ---: | --- |
+| 428.75 | 0.87 | 1.19 | 0.97 | 1.16 | ambiguous / weak handoff |
+| 433.00 | 0.18 | 0.81 | 0.38 | 4.87 | supported handoff + re-entry |
+| 1308.00 | 0.14 | 0.65 | 0.73 | 6.39 | supported handoff + re-entry |
+| 1313.25 | 0.13 | 0.88 | 0.48 | 12.02 | supported handoff + strong re-entry |
+| 1355.25 | 0.77 | 1.02 | 0.82 | 4.19 | ambiguous / transition mixed into window |
+| 1365.75 | 2.06 | 0.73 | 1.79 | 0.86 | foreground continues in fixed 2-s window |
+| 1386.25 | 0.54 | 1.21 | 0.76 | 1.73 | ambiguous |
+| 1549.25 | 0.25 | 0.52 | 0.45 | 9.69 | collective-release-like + re-entry |
+| 2008.00 | 0.19 | 0.38 | 0.24 | 5.41 | strong collective release + re-entry |
+
+### AUDIO-OBSERVED / methodological caution
+
+The fixed-window result at **1365.75 s** differs from the earlier boundary-aligned
+low-activity analysis.
+
+Earlier, the detected low-activity interval itself showed very low foreground/harmonic
+energy while percussive support remained strong.
+
+When the handoff window is forcibly extended to two seconds, later re-entry activity is
+mixed into the same window and the foreground ratio rises above 2.0.
+
+This means:
+
+```
+fixed-duration window
+!=
+true handoff interval
+```
+
+for some episodes.
+
+### DESIGN-INFERENCE
+
+Runtime turn-taking analysis should prefer **boundary-aligned phrase-space intervals**
+over arbitrary fixed handoff durations.
+
+Recommended morphology:
+
+```
+pre context
+-> detected handoff interval (variable duration)
+-> detected re-entry / post context
+```
+
+rather than:
+
+```
+pre 3 s
+-> always 2 s handoff
+-> post 3 s
+```
+
+Fixed windows remain useful for offline comparison and regression tests, but should not
+be treated as the primary musical segmentation model.
+
+### Experimental episode types
+
+The piano-side research adapter now distinguishes:
+
+- `SUPPORTED_HANDOFF_REENTRY`
+- `COLLECTIVE_RELEASE_REENTRY`
+- `FOREGROUND_CONTINUES`
+- `AMBIGUOUS`
+
+These classify an **already observed** episode and contain no prediction of the next
+phrase.
