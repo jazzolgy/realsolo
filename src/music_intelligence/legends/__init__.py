@@ -8,6 +8,7 @@ from .interfaces import (
     VocabularyProvider,
     VocabularyUseType,
 )
+from .mixture import ContextualLegendMixture, LegendViewWeight
 
 __all__ = [
     "LegendDomain",
@@ -16,4 +17,6 @@ __all__ = [
     "VocabularyQuery",
     "VocabularyProvider",
     "VocabularyUseType",
+    "ContextualLegendMixture",
+    "LegendViewWeight",
 ]
