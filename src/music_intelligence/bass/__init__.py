@@ -1,5 +1,18 @@
 """AI Bassist instrument-specific realization layer."""
 
+from .interaction_grammar import (
+    BassInteractionContext,
+    BassInteractionDecision,
+    BassInteractionIntent,
+    choose_bass_interaction_intent,
+)
+from .performance_memory import (
+    BassArticulation,
+    BassCommittedAction,
+    BassPerformanceMemory,
+    BassPerformanceSnapshot,
+)
+
 from .performance_grammar import (
     ArticulationIntent,
     BassGrammarContext,
@@ -22,6 +35,13 @@ from .immediate_realizer import (
 )
 
 __all__ = [
+    "BassArticulation",
+    "BassCommittedAction",
+    "BassInteractionContext",
+    "BassInteractionDecision",
+    "BassInteractionIntent",
+    "BassPerformanceMemory",
+    "BassPerformanceSnapshot",
     "ArticulationIntent",
     "BassActionCandidate",
     "BassContext",
@@ -34,6 +54,7 @@ __all__ = [
     "MotionStrategy",
     "RegisterIntent",
     "TargetStrategy",
+    "choose_bass_interaction_intent",
     "choose_immediate_bass_action",
     "evaluate_bass_grammar",
     "generate_immediate_bass_candidates",
