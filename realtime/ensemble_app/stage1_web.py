@@ -179,6 +179,9 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                 monophonic_solo_gesture(
                     decision["pitch"],
                     decision["duration_beats"],
+                    velocity=decision.get("velocity", 82),
+                    articulation=tuple(decision.get("articulation", ())),
+                    instrument_role="tenor_sax",
                     source=decision["source_family"] or "core_immediate",
                 ).to_dict()
                 if decision["pitch"] is not None
