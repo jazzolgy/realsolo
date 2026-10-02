@@ -22,6 +22,13 @@ from .chord_chart import (
     parse_chord_symbol,
     resolved_measure_chords,
 )
+from .chord_chart_render import (
+    ChordChartRenderModel,
+    ChordChartRenderRow,
+    ChordRenderCell,
+    MeasureRenderCell,
+    build_chord_chart_render_model,
+)
 from .chord_chart_quality import (
     ChartIssueSeverity,
     ChordChartAudit,
@@ -174,6 +181,11 @@ __all__ = [
     "chart_position",
     "parse_chord_symbol",
     "resolved_measure_chords",
+    "ChordChartRenderModel",
+    "ChordChartRenderRow",
+    "ChordRenderCell",
+    "MeasureRenderCell",
+    "build_chord_chart_render_model",
     "ChartIssueSeverity",
     "ChordChartAudit",
     "ChordChartIssue",
