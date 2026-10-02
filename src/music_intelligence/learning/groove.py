@@ -8,6 +8,7 @@ from hashlib import sha256
 from statistics import mean
 
 from .representation import LearningArtifact, LearningDomain, StructuralPerformanceData
+from .groove_grammar import best_matching_grammars
 
 
 def _slot(position: float, cycle_beats: float, subdivisions_per_beat: int) -> int:
@@ -72,6 +73,12 @@ def build_groove_artifact(
         if a.instrument and b.instrument and a.instrument!=b.instrument:
             lock_gaps.append(min(1.0,abs(b.onset_beats-a.onset_beats)))
 
+    matches=best_matching_grammars(
+        density_profile,
+        cycle_beats=cycle_beats,
+        subdivisions_per_beat=subdivisions_per_beat,
+        limit=3,
+    )
     features={
         "genre_label":data.metadata.get("genre_label",""),
         "rhythm_label":data.metadata.get("rhythm_label",""),
@@ -86,6 +93,9 @@ def build_groove_artifact(
         "instrument_event_counts":tuple(sorted(instrument_counts.items())),
         "meter":data.meter,
         "tempo_bpm":round(data.tempo_bpm,3) if data.tempo_bpm is not None else 0.0,
+        "groove_matches":tuple((g.grammar_id,round(score,4)) for g,score in matches),
+        "best_groove_grammar":matches[0][0].grammar_id if matches else "",
+        "best_groove_score":round(matches[0][1],4) if matches else 0.0,
     }
     payload=str(features)
     digest=sha256(payload.encode()).hexdigest()[:16]
