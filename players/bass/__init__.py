@@ -17,6 +17,15 @@ from .practice_curriculum import (
     bebop_walking_practice_curriculum,
     curriculum_feature_weights,
 )
+from .scorebook_practice import (
+    BassPracticeMetrics as ScorebookBassPracticeMetrics,
+    BassPracticePassResult,
+    BassPracticePulse,
+    BassPracticeSession,
+    BassPracticeSong,
+    evaluate_practice_results,
+    run_scorebook_practice,
+)
 from .sequential_runner import (
     BassSequentialRunner,
     BassStepInput,
@@ -66,6 +75,10 @@ __all__ = [
     "BassPracticeEvaluation",
     "BassPracticeExercise",
     "BassPracticeLevel",
+    "BassPracticePassResult",
+    "BassPracticePulse",
+    "BassPracticeSession",
+    "BassPracticeSong",
     "BassRenderEvent",
     "BassSequentialRunner",
     "BassStepInput",
@@ -86,9 +99,11 @@ __all__ = [
     "choose_bass_interaction_intent",
     "choose_immediate_bass_action",
     "curriculum_feature_weights",
+    "evaluate_practice_results",
     "evaluate_bass_grammar",
     "generate_immediate_bass_candidates",
     "realize_bass_expression",
     "project_bass_candidate_to_render_event",
+    "run_scorebook_practice",
     "metric_role",
 ]
