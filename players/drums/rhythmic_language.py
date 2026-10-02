@@ -124,6 +124,43 @@ def motif_from_committed_events(
     return motif
 
 
+def grouping_boundary_motif(
+    *,
+    motif_id: str,
+    grouping: tuple[int, ...],
+    subdivision: str,
+    source: str,
+) -> RhythmicMotifIdentity:
+    """Convert source-supported grouping lengths into boundary-only identity.
+
+    This deliberately stores group boundaries, not the copyrighted note content
+    that may have appeared inside each group.
+    """
+    if not grouping or any(x <= 0 for x in grouping):
+        raise ValueError("grouping must contain positive units")
+    cycle_units = sum(grouping)
+    onsets: list[int] = []
+    cursor = 0
+    for size in grouping:
+        onsets.append(cursor)
+        cursor += size
+
+    accents = tuple(0.82 if i == 0 else 0.62 for i in range(len(onsets)))
+    contour = tuple(i for i in range(len(onsets)))
+    motif = RhythmicMotifIdentity(
+        motif_id=motif_id,
+        cycle_units=cycle_units,
+        onset_units=tuple(onsets),
+        subdivision=subdivision,
+        accent_vector=accents,
+        orchestration_contour=contour,
+        source=source,
+        provenance=("drum_rhythmic_language", "source_grouping_boundary"),
+    )
+    motif.validate()
+    return motif
+
+
 def engineering_seed_motif() -> RhythmicMotifIdentity:
     """Small non-legend engineering seed used until executed material exists."""
     motif = RhythmicMotifIdentity(
