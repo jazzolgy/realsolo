@@ -67,10 +67,11 @@ def test_drum_assignment_routes_to_drum_hits():
     assert gesture.drum_hits[0].pitch_midi == 51
 
 
-def test_player_status_is_explicit_about_fallback_boundary():
+def test_player_status_reports_native_trio_runtime():
     from realtime.ensemble_app.player_provider import current_stage1_provider_status
 
     states = {x.role: x.to_dict() for x in current_stage1_provider_status()}
-    assert states["piano"]["source"] == "player/piano"
-    assert states["bass"]["source"] == "player/bass"
-    assert states["drums"]["source"] == "player/drums"
+    for role in ("piano", "bass", "drums"):
+        assert states[role]["state"] == "core_player"
+        assert role in states[role]["source"]
+        assert "native trio runtime" in states[role]["source"]
