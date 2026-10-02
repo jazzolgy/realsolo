@@ -1,13 +1,14 @@
 """Online AI Drummer vertical slice.
 
 The policy chooses exactly one immediate gesture, then the caller must listen
-and call again.  Canonical swing placement is evaluated at the current clock
+and call again.  Swing placement is tempo-conditioned at the current clock
 position; no future bar is rendered or cached here.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from .comping import comping_propensity
 from .model import (
     DrumGesture,
     DrumHit,
@@ -17,6 +18,11 @@ from .model import (
     GestureRole,
     Limb,
     TimeFeel,
+)
+from .timing import (
+    bounded_timing_offset_ms,
+    is_ride_anchor,
+    tempo_conditioned_swing_prior,
 )
 
 
@@ -36,11 +42,6 @@ class DrummerPerformanceMemory:
         self.committed.append(gesture)
 
 
-def _swing_slot(position_in_bar_beats: float) -> int:
-    """Return current triplet-grid slot inside a two-beat swing cell (0..5)."""
-    return int(round(position_in_bar_beats * 3.0)) % 6
-
-
 def _base_time_hits(
     plan: DrummerSoftPlan,
     context: DrummerRuntimeContext,
@@ -48,16 +49,21 @@ def _base_time_hits(
     if plan.feel is not TimeFeel.SWING:
         return ()
 
-    slot = _swing_slot(context.position_in_bar_beats)
+    prior = tempo_conditioned_swing_prior(context.tempo_bpm)
     hits: list[DrumHit] = []
 
-    # "ding-ding-da-ding" as an online rule: only the current slot is emitted.
-    if slot in {0, 3, 5}:
+    # Online realization: evaluate only whether *this instant* is a ride anchor.
+    if is_ride_anchor(context.position_in_bar_beats, prior):
         hits.append(DrumHit(
             DrumVoice.RIDE,
             Limb.RIGHT_HAND,
             velocity=plan.ride_velocity,
-            microtiming_ms=plan.microtiming_bias_ms,
+            microtiming_ms=bounded_timing_offset_ms(
+                plan.microtiming_bias_ms,
+                prior.ride_bias_ms,
+                plan.expressive_timing_offset_ms,
+                prior,
+            ),
             articulation="tip",
         ))
 
@@ -68,7 +74,12 @@ def _base_time_hits(
             DrumVoice.CLOSED_HIHAT,
             Limb.LEFT_FOOT,
             velocity=max(35, plan.ride_velocity - 18),
-            microtiming_ms=plan.microtiming_bias_ms,
+            microtiming_ms=bounded_timing_offset_ms(
+                plan.microtiming_bias_ms,
+                prior.pedal_hihat_relative_ms,
+                plan.expressive_timing_offset_ms,
+                prior,
+            ),
             articulation="chick",
         ))
     return tuple(hits)
@@ -82,6 +93,8 @@ def build_immediate_candidates(
     plan.validate()
     context.validate()
     base_hits = _base_time_hits(plan, context)
+    prop = comping_propensity(plan, context)
+    prior = tempo_conditioned_swing_prior(context.tempo_bpm)
     out: list[DrumGesture] = []
 
     if base_hits:
@@ -93,30 +106,41 @@ def build_immediate_candidates(
     else:
         out.append(DrumGesture(role=GestureRole.SPACE, tags=frozenset({"time_space"})))
 
-    # Comping is an alternative realization of this instant, not a future pattern.
+    # Snare and bass drum are independent candidate families.  Neither implies
+    # the other, and neither is generated as a pre-written comping pattern.
     used = {h.limb for h in base_hits}
-    if Limb.LEFT_HAND not in used:
+    if Limb.LEFT_HAND not in used and prop.snare > 0.12:
         out.append(DrumGesture(
             hits=base_hits + (
                 DrumHit(
                     DrumVoice.SNARE,
                     Limb.LEFT_HAND,
                     velocity=int(44 + 32 * plan.energy),
-                    microtiming_ms=plan.microtiming_bias_ms + 4.0,
+                    microtiming_ms=bounded_timing_offset_ms(
+                        plan.microtiming_bias_ms,
+                        prior.snare_relative_ms,
+                        plan.expressive_timing_offset_ms,
+                        prior,
+                    ),
                     articulation="comp",
                 ),
             ),
             role=GestureRole.COMP,
             tags=frozenset({"timekeeping", "snare_comp"}),
         ))
-    if Limb.RIGHT_FOOT not in used:
+    if Limb.RIGHT_FOOT not in used and prop.bass_drum > 0.12:
         out.append(DrumGesture(
             hits=base_hits + (
                 DrumHit(
                     DrumVoice.BASS_DRUM,
                     Limb.RIGHT_FOOT,
                     velocity=int(40 + 34 * plan.energy),
-                    microtiming_ms=plan.microtiming_bias_ms,
+                    microtiming_ms=bounded_timing_offset_ms(
+                        plan.microtiming_bias_ms,
+                        0.0,
+                        plan.expressive_timing_offset_ms,
+                        prior,
+                    ),
                     articulation="feather_or_comp",
                 ),
             ),
@@ -161,6 +185,7 @@ def score_gesture(
 ) -> ScoredDrumGesture:
     score = 0.0
     comp: list[tuple[str, float]] = []
+    prop = comping_propensity(plan, context)
 
     if gesture.role is GestureRole.TIME:
         v = 0.48 + 0.18 * (1.0 - abs(plan.energy - context.energy_target))
@@ -168,17 +193,23 @@ def score_gesture(
         comp.append(("time_stability", v))
 
     if gesture.role is GestureRole.SPACE:
-        v = 0.10 + 0.30 * context.ensemble_activity + 0.15 * context.soloist_activity
+        v = 0.10 + 0.55 * prop.space
         score += v
         comp.append(("ensemble_space", v))
 
     if gesture.role is GestureRole.COMP:
-        v = 0.18 + 0.28 * plan.comping_density
-        score += v
-        comp.append(("comping_density", v))
+        tags = gesture.tags
+        if "snare_comp" in tags:
+            v = 0.12 + 0.42 * prop.snare
+            score += v
+            comp.append(("snare_comping_prior", v))
+        if "bass_drum_comp" in tags:
+            v = 0.10 + 0.38 * prop.bass_drum
+            score += v
+            comp.append(("bass_drum_comping_prior", v))
 
         # Leave more room when the rest of the ensemble is already dense.
-        v = 0.18 * (1.0 - context.ensemble_activity)
+        v = 0.16 * (1.0 - context.ensemble_activity)
         score += v
         comp.append(("activity_headroom", v))
 
