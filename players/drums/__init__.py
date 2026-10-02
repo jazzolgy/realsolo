@@ -73,6 +73,7 @@ from .legend_adapter import (
     legend_gesture_adjustment,
     project_legend_views,
     vocabulary_reuse_bias,
+    vocabulary_gesture_adjustment,
 )
 from .model import (
     DrumGesture,
@@ -207,6 +208,7 @@ __all__ = [
     "legend_gesture_adjustment",
     "project_legend_views",
     "vocabulary_reuse_bias",
+    "vocabulary_gesture_adjustment",
     "CompingPropensity",
     "comping_propensity",
     "DrumGesture",
