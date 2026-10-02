@@ -96,6 +96,8 @@ class PianoCompingContext:
     """Piano-local experimental projection of currently perceived ensemble state."""
 
     soloist_activity: float = 0.5
+    piano_foreground_activity: float = 0.0
+    piano_foreground_register_midi: float | None = None
     phrase_boundary_probability: float = 0.0
     available_space_beats: float = 0.0
     bass_activity: float = 0.5
@@ -121,6 +123,7 @@ class PianoCompingContext:
     def validate(self) -> None:
         for name in (
             "soloist_activity",
+            "piano_foreground_activity",
             "phrase_boundary_probability",
             "bass_activity",
             "drummer_activity",
@@ -141,6 +144,11 @@ class PianoCompingContext:
             raise ValueError("available_space_beats cannot be negative")
         if self.soloist_register_midi is not None and not 0 <= self.soloist_register_midi <= 127:
             raise ValueError("soloist_register_midi must be within MIDI range")
+        if (
+            self.piano_foreground_register_midi is not None
+            and not 0 <= self.piano_foreground_register_midi <= 127
+        ):
+            raise ValueError("piano_foreground_register_midi must be within MIDI range")
         self.role_occupancy.validate()
         self.harmonic_turn.validate()
 
@@ -379,7 +387,16 @@ class PianoCompingEvaluator:
         reasons: list[str] = []
         piano_score: PianoActionScore | None = None
 
-        busy_solo = comping_context.soloist_activity >= 0.72
+        foreground_activity = comping_context.soloist_activity
+        if comping_context.ensemble_mode in {
+            PianoEnsembleMode.PIANO_HEAD_TRIO,
+            PianoEnsembleMode.PIANO_SOLO_TRIO,
+        }:
+            foreground_activity = max(
+                foreground_activity,
+                comping_context.piano_foreground_activity,
+            )
+        busy_solo = foreground_activity >= 0.72
         phrase_open = comping_context.phrase_boundary_probability >= 0.65
         useful_space = comping_context.available_space_beats >= 0.5
         crowded = comping_context.ensemble_density >= 0.72
