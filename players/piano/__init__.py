@@ -12,6 +12,11 @@ from .ensemble_role import (
     PianoHandRolePlan,
     derive_piano_hand_role_plan,
 )
+from .rh_lh_interaction import (
+    RHLHInteractionBias,
+    RHLHRelation,
+    evaluate_rh_lh_interaction,
+)
 from .lh_texture import (
     LHTextureBias,
     LHTextureClass,
@@ -196,6 +201,9 @@ __all__ = [
     "PianoHandFunction",
     "PianoHandRolePlan",
     "derive_piano_hand_role_plan",
+    "RHLHInteractionBias",
+    "RHLHRelation",
+    "evaluate_rh_lh_interaction",
     "LHTextureBias",
     "LHTextureClass",
     "classify_lh_texture",
