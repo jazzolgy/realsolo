@@ -1,8 +1,8 @@
-"""Charlie Parker vocabulary memory interface.
+"""Bill Evans vocabulary memory interface.
 
-Stored licks, motifs, fragments, cliches, and quotations are legitimate jazz
-memory. The public repository may contain metadata/derived evidence while literal
-payloads can remain in the private corpus when source rights require it.
+Literal phrases, voicings, motifs, rhythmic cells, comping fragments, and other
+memory items are allowed once they are source-grounded and provenance-tagged.
+The index starts empty until observations are promoted.
 """
 from __future__ import annotations
 from dataclasses import dataclass
@@ -11,11 +11,11 @@ from music_intelligence.legends.interfaces import VocabularyMemoryItem, Vocabula
 
 
 @dataclass(frozen=True)
-class ParkerVocabularyIndex:
+class BillEvansVocabularyIndex:
     items: tuple[VocabularyMemoryItem, ...] = ()
 
     def query(self, request: VocabularyQuery) -> tuple[VocabularyMemoryItem, ...]:
-        if request.legend_id != "charlie_parker" or request.limit <= 0:
+        if request.legend_id != "bill_evans" or request.limit <= 0:
             return ()
 
         ranked: list[tuple[float, VocabularyMemoryItem]] = []
@@ -57,4 +57,4 @@ class ParkerVocabularyIndex:
         return tuple(item for _, item in ranked[: request.limit])
 
 
-PARKER_VOCABULARY_INDEX = ParkerVocabularyIndex()
+BILL_EVANS_VOCABULARY_INDEX = BillEvansVocabularyIndex()
