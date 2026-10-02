@@ -61,6 +61,26 @@ from .reharmonization import (
     make_substitute_dominant_proposal,
     tritone_substitute_root,
 )
+from .harmonic_time import (
+    CadenceStrength,
+    HarmonicRhythmSummary,
+    HarmonicSpan,
+    KeyRegionStrength,
+    LocalKeyHypothesis,
+    TonicizationEvidence,
+    infer_local_key,
+    key_of_the_moment_score,
+    summarize_harmonic_rhythm,
+)
+from .hypothesis_engine import (
+    ConfidenceVector,
+    EvidenceChannel,
+    HarmonicHypothesis,
+    HarmonicInterpretationSet,
+    RankedHypothesis,
+    merge_human_correction,
+    rank_harmonic_hypotheses,
+)
 
 __all__ = [
     "HarmonicAffordance",
@@ -112,4 +132,20 @@ __all__ = [
     "assess_reharmonization",
     "make_substitute_dominant_proposal",
     "tritone_substitute_root",
+    "CadenceStrength",
+    "HarmonicRhythmSummary",
+    "HarmonicSpan",
+    "KeyRegionStrength",
+    "LocalKeyHypothesis",
+    "TonicizationEvidence",
+    "infer_local_key",
+    "key_of_the_moment_score",
+    "summarize_harmonic_rhythm",
+    "ConfidenceVector",
+    "EvidenceChannel",
+    "HarmonicHypothesis",
+    "HarmonicInterpretationSet",
+    "RankedHypothesis",
+    "merge_human_correction",
+    "rank_harmonic_hypotheses",
 ]
