@@ -73,6 +73,7 @@ from .ensemble_role import PianoEnsembleMode
 from .lh_texture import evaluate_lh_texture_bias
 from .lh_voice_leading import evaluate_lh_voice_leading
 from .rh_lh_interaction import evaluate_rh_lh_interaction
+from .texture_control import PianoTextureIntent, evaluate_texture_intent
 
 
 class InteractionRole(str, Enum):
@@ -120,6 +121,7 @@ class PianoCompingContext:
     creativity_strength: float = 0.55
     creativity_coherence_floor: float = 0.30
     tension_preference: float = 0.62
+    texture_intent: PianoTextureIntent = field(default_factory=PianoTextureIntent)
     role_occupancy: CompingRoleOccupancy = field(default_factory=CompingRoleOccupancy)
     harmonic_turn: BebopHarmonicTurnContext = field(
         default_factory=BebopHarmonicTurnContext
@@ -165,6 +167,7 @@ class PianoCompingContext:
             and not 0 <= self.piano_foreground_register_midi <= 127
         ):
             raise ValueError("piano_foreground_register_midi must be within MIDI range")
+        self.texture_intent.validate()
         self.role_occupancy.validate()
         self.harmonic_turn.validate()
 
@@ -512,6 +515,15 @@ class PianoCompingEvaluator:
             for key, value in rh_lh_bias.components.items():
                 components[key] = components.get(key,0.0) + value
             reasons.extend(rh_lh_bias.reasons)
+
+            texture_intent_bias = evaluate_texture_intent(
+                candidate,
+                comping_context.texture_intent,
+            )
+            score += texture_intent_bias.score_delta
+            for key, value in texture_intent_bias.components.items():
+                components[key] = components.get(key,0.0) + value
+            reasons.extend(texture_intent_bias.reasons)
 
             event = candidate.realization.event
             if harmonic_reasoning is not None:
