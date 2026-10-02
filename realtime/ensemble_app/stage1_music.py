@@ -13,7 +13,12 @@ from music_intelligence.reasoning.online_improviser import (
     SoftPlan,
     perform_one_event,
 )
-from players.sax import SaxExpressionContext, choose_sax_expression
+from players.sax import (
+    SaxExpressionContext,
+    SaxPhraseContext,
+    SaxPhraseMemory,
+    choose_sax_expression,
+)
 
 ROOTS = {
     "C": 0, "C#": 1, "Db": 1, "D": 2, "D#": 3, "Eb": 3,
@@ -100,10 +105,12 @@ class Stage1Soloist:
         self.evaluator = OnlineMusicalEvaluator()
         self.memory = PerformanceMemory()
         self.previous_pitch: int | None = None
+        self.phrase_memory = SaxPhraseMemory()
 
     def reset(self) -> None:
         self.memory = PerformanceMemory()
         self.previous_pitch = None
+        self.phrase_memory.reset()
 
     def choose(
         self,
@@ -179,6 +186,19 @@ class Stage1Soloist:
         previous_pitch = self.previous_pitch
         phrase_maturity = context.phrase_maturity
         tension = context.tension
+        phrase_context = (
+            SaxPhraseContext(
+                pitch_midi=event.pitch_midi,
+                previous_pitch_midi=previous_pitch,
+                duration_beats=event.duration_beats,
+                beat_in_bar=beat_in_bar,
+                phrase_maturity=phrase_maturity,
+                source_family=event.source_family,
+            )
+            if event.pitch_midi is not None
+            else None
+        )
+        phrase = self.phrase_memory.decide(phrase_context) if phrase_context is not None else None
         expression = (
             choose_sax_expression(
                 SaxExpressionContext(
@@ -193,12 +213,21 @@ class Stage1Soloist:
             if event.pitch_midi is not None
             else None
         )
+        if phrase_context is not None and phrase is not None:
+            self.phrase_memory.commit(phrase_context, phrase)
         self.previous_pitch = event.pitch_midi
+        articulation = list(expression.tags) if expression is not None else []
+        if phrase is not None and phrase.connect_legato and "legato" not in articulation:
+            articulation.append("legato")
         return {
             "pitch": event.pitch_midi,
             "duration_beats": event.duration_beats,
             "velocity": expression.velocity if expression is not None else 82,
-            "articulation": list(expression.tags) if expression is not None else [],
+            "articulation": articulation,
+            "breath_before": phrase.breath_before if phrase is not None else False,
+            "soften_attack": phrase.soften_attack if phrase is not None else False,
+            "release_shape": phrase.release_shape if phrase is not None else "normal",
+            "phrase_reasons": list(phrase.reason) if phrase is not None else [],
             "expression_reasons": list(expression.reason) if expression is not None else [],
             "reasons": list(chosen.reasons),
             "source_family": event.source_family,
