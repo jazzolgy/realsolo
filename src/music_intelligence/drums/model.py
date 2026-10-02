@@ -94,6 +94,8 @@ class DrummerSoftPlan:
     energy: float = 0.5
     comping_density: float = 0.35
     interaction_intent: str = "support"
+    style_tags: frozenset[str] = frozenset({"jazz", "bop"})
+    pattern_reuse: float = 0.45
     ride_velocity: int = 76
     microtiming_bias_ms: float = 0.0
     expressive_timing_offset_ms: float = 0.0
@@ -104,6 +106,8 @@ class DrummerSoftPlan:
             raise ValueError("energy must be within 0..1")
         if not 0.0 <= self.comping_density <= 1.0:
             raise ValueError("comping_density must be within 0..1")
+        if not 0.0 <= self.pattern_reuse <= 1.0:
+            raise ValueError("pattern_reuse must be within 0..1")
         if not 1 <= self.ride_velocity <= 127:
             raise ValueError("ride_velocity must be within MIDI range 1..127")
         if abs(self.microtiming_bias_ms) > 50:
