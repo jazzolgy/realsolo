@@ -344,3 +344,113 @@ The harmonic-turn context contains:
 - no precomposed multi-beat solution.
 
 It only changes the relative plausibility of the **next immediate event**.
+
+
+## Executable bebop solo slice
+
+The current piano branch now contains a minimal executable path from ensemble/harmonic
+context to one committed solo event.
+
+### Runtime composition
+
+```
+observed turn-taking
++ ensemble complementarity
++ Shared Core harmonic/form context
+        ↓
+BebopPhraseIntent
+        ↓
+immediate candidate generation
+        ↓
+Parker-prior + piano-local evaluation
+        ↓
+commit exactly one event
+        ↓
+listen / update / re-plan
+```
+
+### BebopPhraseIntent
+
+The phrase-intention layer may retain only soft directional information such as:
+
+- entry mode:
+  - continue
+  - pickup
+  - new phrase
+  - hold space
+- target mode:
+  - guide tone
+  - next harmony
+  - directed resolution
+  - color
+  - open
+- density direction:
+  - sparse
+  - stable
+  - build
+  - release
+- connector family candidates:
+  - passing
+  - neighbor
+  - close approach
+  - anticipation
+  - directed target / resolution path
+  - motif continuation
+
+It does not retain an exact future note sequence.
+
+### Immediate candidate generator
+
+`players/piano/bebop_solo_candidates.py` receives already-resolved harmonic role
+pitch classes.
+
+It does not parse chord symbols or independently derive harmony.
+
+Current immediate candidate families include:
+
+- current-harmony structural tones;
+- guide tones;
+- next-harmony structural targets when anticipation is active;
+- chromatic close-approach candidates around structural targets;
+- local neighbor / passing candidates around the previously performed note;
+- rest / ensemble-space candidates when density or release intention calls for them.
+
+Only one event is selected and committed per runtime tick.
+
+### Current limitation
+
+This is still a **minimal bebop generator**, not a finished Parker grammar.
+
+Not yet represented at high resolution:
+
+- multi-step enclosure state;
+- chromatic approach chains over several committed ticks;
+- phrase contour memory beyond local context;
+- explicit rhythmic-cell development;
+- delayed resolution debt across multiple melodic events;
+- ornament/articulation detail;
+- high-resolution Parker phrase-ending grammar.
+
+These should be added as bounded state / intention memory, not precomposed exact phrases.
+
+### Non-copying / improvisation invariant
+
+Parker recordings and transcriptions may inform:
+
+- target preference;
+- connector-family preference;
+- rhythmic placement;
+- density;
+- contour;
+- ensemble response;
+- phrase-space behavior.
+
+They must not become a library of exact phrases scheduled into the future.
+
+The runtime contract remains:
+
+```
+one current candidate set
+-> one current event
+-> listen again
+```
