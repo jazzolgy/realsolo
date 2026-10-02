@@ -63,3 +63,32 @@ Cross-legend comparison must separate:
 4. LegendProfile
 5. RecordingContextProfile
 6. Current Ensemble State
+
+
+## Cross-instrument musical memory
+
+Legend vocabulary is not owned by the source instrument.
+
+An observed solo idea may be decomposed into transferable musical dimensions:
+pitch/interval, rhythm, contour, accent, density arc, phrase shape,
+tension/release, target behavior, interaction role, articulation, and register
+trajectory.
+
+Examples:
+- Bill Evans piano rhythm/contour may become Sax or Bass material.
+- Charlie Parker interval/target behavior may become Piano material.
+- Drum-solo rhythm, accent and density arcs may become Piano/Sax/Bass phrase
+  material with newly generated pitches.
+- A pitched-source phrase may contribute only rhythm or phrase shape to Drums.
+
+`source_instrument` records provenance, not ownership. Players request the
+dimensions they can use and apply their own physical/instrument grammar at
+realization time.
+
+Promotion rule:
+SOURCE INSTRUMENT OBSERVATION
+-> INSTRUMENT-NEUTRAL MUSICAL DIMENSIONS
+-> Legend Vocabulary / Shared Memory
+-> target Player realization
+
+Do not copy source-instrument physical constraints into another Player.
