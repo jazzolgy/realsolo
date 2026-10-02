@@ -51,6 +51,10 @@ export class RealSoloApprovedSampleEngine {
     src.connect(gain);
     gain.connect(this.context.destination);
     const start = Math.max(this.context.currentTime + 0.005, when);
+    if (src.detune && hints.pitch_bend_cents) {
+      const bend = Math.max(-400, Math.min(400, Number(hints.pitch_bend_cents) || 0));
+      src.detune.setValueAtTime((src.detune.value || 0) + bend, start);
+    }
     src.start(start);
     if (pitched && duration) {
       gain.gain.setValueAtTime(gain.gain.value, start + Math.max(.03, duration - .04));
@@ -112,6 +116,8 @@ export class RealSoloApprovedSampleEngine {
     const effectiveDuration = connected ? duration * 1.08 : duration;
     const end = start + Math.max(.08, effectiveDuration);
     const attackScale = Math.max(.2, Math.min(1.5, hints.attack_scale || 1));
+    const expression = Math.max(0, Math.min(1.25, hints.expression ?? 1));
+    level *= expression;
     const tongued = tags.has("tongued");
     const attackTime = tongued
       ? Math.max(.003, .007 / attackScale)
@@ -143,9 +149,10 @@ export class RealSoloApprovedSampleEngine {
     if (tags.has("vibrato") && family !== "vibrato" && src.detune) {
       vibrato = this.context.createOscillator();
       vibratoDepth = this.context.createGain();
-      vibrato.frequency.value = 5.2;
+      vibrato.frequency.value = Math.max(2.0, Math.min(9.0, hints.vibrato_rate_hz || 5.2));
       vibratoDepth.gain.setValueAtTime(0, start);
-      vibratoDepth.gain.linearRampToValueAtTime(14, start + Math.min(.35, duration * .45));
+      const depth = Math.max(0, Math.min(1, hints.vibrato_depth ?? 0.55));
+      vibratoDepth.gain.linearRampToValueAtTime(4 + 20 * depth, start + Math.min(.35, duration * .45));
       vibrato.connect(vibratoDepth);
       vibratoDepth.connect(src.detune);
       vibrato.start(start);
