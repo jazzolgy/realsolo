@@ -17,6 +17,11 @@ from .chord_chart import (
 )
 from .chord_chart_quality import ChordChartAudit, audit_chord_chart
 from .chord_chart_render import ChordChartRenderModel, build_chord_chart_render_model
+from .chord_chart_viewport import (
+    ChordChartViewport,
+    ChordChartViewportConfig,
+    build_chord_chart_viewport,
+)
 from .engraving import EngravingPlan, EngravingProfile, build_default_engraving_plan
 from .events import CommittedPerformanceEvent
 from .instrument_profiles import InstrumentProfile, resolve_instrument_profile
@@ -124,6 +129,21 @@ class NotationEngine:
             position=position,
             measures_per_row=measures_per_row,
             transpose_semitones=transpose_semitones,
+        )
+
+    def chart_viewport(
+        self,
+        model: ChordChartRenderModel,
+        *,
+        config: ChordChartViewportConfig = ChordChartViewportConfig(),
+        previous: ChordChartViewport | None = None,
+        previous_section: str | None = None,
+    ) -> ChordChartViewport:
+        return build_chord_chart_viewport(
+            model,
+            config=config,
+            previous=previous,
+            previous_section=previous_section,
         )
 
     def musicxml(
