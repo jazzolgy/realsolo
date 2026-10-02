@@ -5,6 +5,13 @@ polyphonic evaluation come from Core. This package owns piano-specific
 realization, comping, and interaction policy.
 """
 
+from .solo import (
+    PianoSoloContext,
+    PianoSoloEvaluator,
+    PianoSoloState,
+    default_bebop_legend_blend,
+    perform_one_piano_solo_event,
+)
 from .policy import (
     PianoActionScore,
     PianoPerformanceState,
@@ -35,6 +42,39 @@ from .planner import (
 )
 from .narrative import NarrativeBiasScore, evaluate_narrative_bias
 from .variation import GestureSignature, VariationContext, VariationScore, evaluate_variation
+from .harmonic_creativity import (
+    HarmonicCreativeFreedom,
+    adapt_continuity_profile_for_harmony,
+    adapt_creativity_context_for_harmony,
+    assess_harmonic_creative_freedom,
+)
+from .harmonic_semantics import annotate_harmonic_semantics, harmonic_semantic_tags
+from .creative_continuity import (
+    CreativityContext,
+    CreativeContinuityScore,
+    DimensionContinuityProfile,
+    evaluate_creative_continuity,
+    profile_from_harmonic_context,
+)
+from .harmonic_continuity import (
+    HarmonicContinuityFeatures,
+    HarmonicContinuityMemory,
+    HarmonicFingerprint,
+    estimate_harmonic_continuity,
+)
+from .role_occupancy import (
+    CompingPriority,
+    CompingRoleOccupancy,
+    RoleOccupancyBias,
+    evaluate_role_occupancy_bias,
+)
+from .interaction_episode import (
+    EpisodeBias,
+    InteractionEpisode,
+    InteractionEpisodeType,
+    evaluate_episode_bias,
+    infer_interaction_episode,
+)
 from .ensemble_response import (
     EnsembleActor,
     EnsembleResponseBias,
@@ -61,6 +101,7 @@ from .rhythm import (
     expand_rhythmic_variants,
     rhythmic_intents_for_candidate,
 )
+from .constraint_evaluator import ConstraintAwarePianoCompingEvaluator
 from .comping import (
     CompingActionType,
     InteractionRole,
@@ -76,6 +117,11 @@ __all__ = [
     "PianoActionScore",
     "PianoPerformanceState",
     "PianoPolicyEvaluator",
+    "PianoSoloContext",
+    "PianoSoloEvaluator",
+    "PianoSoloState",
+    "default_bebop_legend_blend",
+    "perform_one_piano_solo_event",
     "PianoRealizationCandidate",
     "perform_one_piano_action",
     "CompingActionType",
@@ -83,6 +129,7 @@ __all__ = [
     "PianoCompingCandidate",
     "PianoCompingContext",
     "PianoCompingEvaluator",
+    "ConstraintAwarePianoCompingEvaluator",
     "PianoCompingScore",
     "PianoCompingState",
     "perform_one_comping_action",
@@ -119,6 +166,30 @@ __all__ = [
     "ResponseType",
     "evaluate_response_bias",
     "infer_coarse_responses",
+    "EpisodeBias",
+    "InteractionEpisode",
+    "InteractionEpisodeType",
+    "evaluate_episode_bias",
+    "infer_interaction_episode",
+    "CompingPriority",
+    "CompingRoleOccupancy",
+    "RoleOccupancyBias",
+    "evaluate_role_occupancy_bias",
+    "HarmonicContinuityFeatures",
+    "HarmonicContinuityMemory",
+    "HarmonicFingerprint",
+    "estimate_harmonic_continuity",
+    "CreativityContext",
+    "CreativeContinuityScore",
+    "DimensionContinuityProfile",
+    "evaluate_creative_continuity",
+    "profile_from_harmonic_context",
+    "HarmonicCreativeFreedom",
+    "adapt_continuity_profile_for_harmony",
+    "adapt_creativity_context_for_harmony",
+    "assess_harmonic_creative_freedom",
+    "annotate_harmonic_semantics",
+    "harmonic_semantic_tags",
     "PianoRhythmicIntent",
     "RhythmicPlacement",
     "apply_rhythmic_intent",
