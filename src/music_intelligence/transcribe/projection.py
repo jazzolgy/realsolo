@@ -11,6 +11,7 @@ from .allocation import (
 )
 from .events import CommittedPerformanceEvent
 from .instrument_rules import InstrumentNotationDirective
+from .instrument_profiles import TranspositionSpec
 from .notation import NotationCandidate, NotationIntent, choose_preferred_candidate
 from .pipeline import basic_rhythm_candidates, notation_intent_from_event
 from .score import ScoreEvent
@@ -62,6 +63,7 @@ def project_pitched_event(
     staffs: tuple[StaffProfile, ...],
     spelling_context: PitchSpellingContext = PitchSpellingContext(),
     directive: InstrumentNotationDirective | None = None,
+    transposition: TranspositionSpec = TranspositionSpec(),
     meter_numerator: int = 4,
     meter_denominator: int = 4,
 ) -> EventProjectionResult:
@@ -91,7 +93,18 @@ def project_pitched_event(
         raise ValueError("event notation intent produced no score candidate")
     preferred_rhythm = choose_preferred_candidate(rhythms)
 
-    spellings = spelling_candidates(event.pitch, spelling_context)
+    # Performance evidence is sounding pitch; notation for a transposing
+    # instrument must be spelled at written pitch.  MusicXML's transpose
+    # element separately tells playback/renderers how written pitch sounds.
+    written_offset = -transposition.chromatic_semitones - 12 * transposition.octave_change
+    spelling_pitch = event.pitch
+    if written_offset:
+        spelling_pitch = type(event.pitch)(
+            nominal_midi=event.pitch.nominal_midi + written_offset,
+            cents_offset=event.pitch.cents_offset,
+            confidence=event.pitch.confidence,
+        )
+    spellings = spelling_candidates(spelling_pitch, spelling_context)
     preferred_pitch = spellings[0]
 
     allocations = allocation_candidates(
