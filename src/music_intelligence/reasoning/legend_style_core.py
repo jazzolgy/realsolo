@@ -1,7 +1,13 @@
-"""v1.30 scalable legend-style intelligence."""
+"""v1.30 scalable legend-style intelligence.
+
+The Music Intelligence Core must not be bound to any single musician. This
+module provides generic style/legend abstractions that can be populated from
+Parker now and other master musicians later.
+"""
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Mapping, Sequence
+
 
 @dataclass(frozen=True)
 class MusicalContextVector:
@@ -16,9 +22,14 @@ class MusicalContextVector:
     recent_chord_identity_strength: float = 0.5
     ensemble_activity: float = 0.5
     next_harmony: str = ""
+    previous_pitch_midi: int | None = None
+    previous_interval_semitones: int | None = None
+    recent_pitches: tuple[int, ...] = ()
+
 
 @dataclass(frozen=True)
 class StyleTendency:
+    """A contextual preference, not a deterministic rule or literal lick."""
     tendency_id: str
     feature: str
     context_tags: frozenset[str] = frozenset()
@@ -26,6 +37,7 @@ class StyleTendency:
     confidence: float = 1.0
     provenance: tuple[str, ...] = ()
     note: str = ""
+
 
 @dataclass(frozen=True)
 class LegendProfile:
@@ -43,6 +55,7 @@ class LegendProfile:
             out.setdefault(t.feature, []).append(t)
         return {k: tuple(v) for k, v in out.items()}
 
+
 @dataclass(frozen=True)
 class CandidateEvent:
     pitch_midi: int | None
@@ -51,6 +64,7 @@ class CandidateEvent:
     tags: frozenset[str] = frozenset()
     source_family: str = "generated"
 
+
 @dataclass(frozen=True)
 class CandidateScore:
     candidate: CandidateEvent
@@ -58,8 +72,10 @@ class CandidateScore:
     components: Mapping[str, float] = field(default_factory=dict)
     reasons: tuple[str, ...] = ()
 
+
 @dataclass(frozen=True)
 class LegendBlend:
+    """Weighted style policies. Weights modify tendencies, never splice phrases."""
     profiles: tuple[tuple[LegendProfile, float], ...]
 
     def validate(self) -> None:
