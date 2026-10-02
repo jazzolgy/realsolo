@@ -136,3 +136,35 @@ without rewriting the underlying notation events.
 The long-term product target is not timestamp fidelity alone. Evaluation should
 include readable rhythm, voice separation, instrument notation, engraving and
 ultimately **Human Time to Final Score (HTFS)**.
+
+
+## Product scope guard
+
+This workstream is not attempting to become a full Sibelius-class engraving
+application. The product target is high-quality automatic transcription and
+AI-performance notation that a musician can rehearse or perform from with
+minimal cleanup.
+
+The priority is therefore:
+
+- readable rhythm / rests / ties / tuplets / beaming
+- practical voice and staff separation
+- enharmonic spelling and transposing-instrument correctness
+- clefs, dynamics, articulations and common technique markings
+- jazz + classical instrument profiles
+- part extraction and MusicXML interoperability
+- practical collision avoidance / spacing
+
+Exact publication geometry, font metrics, exhaustive page-layout controls and
+deep house-style customization are explicitly secondary.
+
+## Classical instrument readiness
+
+`instrument_profiles.py` now provides practical notation profiles for common
+strings, woodwinds and brass alongside piano, saxophone and drum set. Profiles
+carry normal staff count, clef(s), written-to-sounding transposition and
+advisory written range.
+
+`quality.py` provides a pre-performance audit that can flag staff/profile
+mismatches, advisory range issues and overly dense voice stacks without
+rejecting intentional professional writing.
