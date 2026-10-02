@@ -71,3 +71,28 @@ def test_big_band_plan_can_retrieve_big_band_setup():
     )
     candidates = source_pattern_candidates(plan, ctx)
     assert any("big_band" in g.tags for g in candidates)
+
+
+def test_plainfield_clave_patterns_are_stored_with_direction():
+    son32 = get_pattern("plainfield_son_clave_3_2")
+    son23 = get_pattern("plainfield_son_clave_2_3")
+    rumba32 = get_pattern("plainfield_rumba_clave_3_2")
+    assert len(son32.hits) == 5
+    assert "3_2" in son32.tags
+    assert "2_3" in son23.tags
+    assert "rumba_clave" in rumba32.tags
+
+
+def test_afro_cuban_plan_can_retrieve_clave_but_bop_plan_cannot():
+    from music_intelligence.drums.model import DrummerSoftPlan
+    from music_intelligence.drums.pattern_runtime import source_pattern_candidates
+
+    ctx = DrummerRuntimeContext(position_in_bar_beats=0.0)
+    latin = source_pattern_candidates(
+        DrummerSoftPlan(style_tags=frozenset({"afro_cuban"})), ctx
+    )
+    bop = source_pattern_candidates(
+        DrummerSoftPlan(style_tags=frozenset({"jazz", "bop"})), ctx
+    )
+    assert any("clave" in g.tags for g in latin)
+    assert all("clave" not in g.tags for g in bop)
