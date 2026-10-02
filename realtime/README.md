@@ -69,3 +69,16 @@ the playback architecture independent from the content license.
 
 SpessaSynth is pinned to 4.3.14 in the web adapter so the JS module and
 AudioWorklet processor stay version-matched.
+
+
+## Player integration boundary
+
+The app now renders a generic committed `RenderGesture` rather than depending
+directly on bass/drum/piano policy details.
+
+The local accompaniment generator is explicitly temporary. When
+`player/bass`, `player/drums`, and `player/piano` expose committed immediate
+actions, the realtime app should project those outputs into `RenderGesture`
+and remove the corresponding fallback policy.
+
+See `docs/PLAYER_APP_CONTRACT.md`.

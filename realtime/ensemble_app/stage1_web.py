@@ -8,6 +8,7 @@ from urllib.parse import parse_qs, urlparse
 from .chart import ChartBar, SongChart
 from .harmony_display import transpose_chord
 from .stage1_music import Stage1Soloist, accompaniment_frame
+from .player_contract import fallback_accompaniment_gesture, monophonic_solo_gesture
 
 WEB_ROOT = Path(__file__).with_name("web")
 
@@ -76,7 +77,13 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                 beat = int(query.get("beat", ["0"])[0]) % 4
             except ValueError:
                 beat = 0
-            body = json.dumps(accompaniment_frame(chord, beat)).encode("utf-8")
+            frame = accompaniment_frame(chord, beat)
+            body = json.dumps(
+                {
+                    "legacy": frame,
+                    "gesture": fallback_accompaniment_gesture(frame).to_dict(),
+                }
+            ).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
@@ -93,13 +100,26 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                 phrase_step = int(query.get("phrase_step", ["0"])[0])
             except ValueError:
                 beat_in_bar, phrase_step = 0.0, 0
+            decision = self.soloist.choose(
+                chord,
+                next_chord,
+                beat_in_bar=beat_in_bar,
+                phrase_step=phrase_step,
+            )
+            gesture = (
+                monophonic_solo_gesture(
+                    decision["pitch"],
+                    decision["duration_beats"],
+                    source=decision["source_family"] or "core_immediate",
+                ).to_dict()
+                if decision["pitch"] is not None
+                else None
+            )
             body = json.dumps(
-                self.soloist.choose(
-                    chord,
-                    next_chord,
-                    beat_in_bar=beat_in_bar,
-                    phrase_step=phrase_step,
-                )
+                {
+                    **decision,
+                    "gesture": gesture,
+                }
             ).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")

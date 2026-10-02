@@ -96,25 +96,35 @@ if(!audioCtx)return;var len=Math.max(32,Math.floor(audioCtx.sampleRate*dur)),buf
 for(var i=0;i<len;i++)data[i]=Math.random()*2-1;var src=audioCtx.createBufferSource(),g=audioCtx.createGain();src.buffer=buf;g.gain.setValueAtTime(gain||.035,when);g.gain.exponentialRampToValueAtTime(.0001,when+dur);src.connect(g);g.connect(master);src.start(when);
 }
 async function playAccompaniment(chord,beatIndex,when,beatDur){
-try{var r=await fetch("/api/accompaniment?chord="+encodeURIComponent(chord)+"&beat="+beatIndex);var frame=await r.json();
-frame.bass.forEach(function(n){if(sampleReady())sampler.bass(n,92,when,beatDur*.82);else tone(n,when,beatDur*.82,"sine",.09);});
-frame.comp.forEach(function(n){if(sampleReady())sampler.piano(n,68,when+.025,beatDur*.58);else tone(n,when+.025,beatDur*.58,"triangle",.035);});
-if(frame.drums.ride){if(sampleReady())sampler.drum(51,58,when,.11);else noiseHit(when,Math.min(.08,beatDur*.18),.018);}
-if(frame.drums.hat){if(sampleReady())sampler.drum(42,70,when+.01,.06);else noiseHit(when+.01,Math.min(.04,beatDur*.1),.03);}
-if(frame.drums.kick){if(sampleReady())sampler.drum(36,76,when,.1);else tone(36,when,.11,"sine",.055);}
+try{var r=await fetch("/api/accompaniment?chord="+encodeURIComponent(chord)+"&beat="+beatIndex);var payload=await r.json();renderGesture(payload.gesture,when,beatDur);
 }catch(e){els.audioText.textContent="Audio error: "+e.message;}
 }
 async function playSolo(chord,nextChord,beatInBar,when,beatDur){
 try{
 var rhythmReq=fetch("/api/accompaniment?chord="+encodeURIComponent(chord)+"&beat="+Math.floor(beatInBar));
 var url="/api/solo-event?chord="+encodeURIComponent(chord)+"&next_chord="+encodeURIComponent(nextChord)+"&beat_in_bar="+beatInBar+"&phrase_step="+soloStep++;
-var soloReq=fetch(url);var both=await Promise.all([rhythmReq,soloReq]);var frame=await both[0].json();var ev=await both[1].json();
-frame.bass.forEach(function(n){if(sampleReady())sampler.bass(n,88,when,beatDur*.82);else tone(n,when,beatDur*.82,"sine",.075);});
-if(frame.drums.ride){if(sampleReady())sampler.drum(51,56,when,.11);else noiseHit(when,Math.min(.08,beatDur*.18),.016);}
-if(frame.drums.hat){if(sampleReady())sampler.drum(42,66,when+.01,.06);else noiseHit(when+.01,Math.min(.04,beatDur*.1),.025);}
-if(frame.drums.kick){if(sampleReady())sampler.drum(36,72,when,.1);else tone(36,when,.11,"sine",.045);}
-if(ev.pitch!==null){var dur=Math.max(.08,ev.duration_beats*beatDur);if(sampleReady())sampler.solo(ev.pitch,82,when,dur);else tone(ev.pitch,when,dur,"sawtooth",.045);}
+var soloReq=fetch(url);var both=await Promise.all([rhythmReq,soloReq]);var rhythmPayload=await both[0].json();var ev=await both[1].json();
+var rhythmOnly=JSON.parse(JSON.stringify(rhythmPayload.gesture));rhythmOnly.voices=(rhythmOnly.voices||[]).filter(function(v){return v.instrument_role==="bass";});renderGesture(rhythmOnly,when,beatDur);
+if(ev.gesture)renderGesture(ev.gesture,when,beatDur);
 }catch(e){els.audioText.textContent="Solo error: "+e.message;}
+}
+function renderGesture(gesture,when,beatDur){
+if(!gesture)return;
+(gesture.voices||[]).forEach(function(v){
+var t=when+(v.onset_offset_beats||0)*beatDur,d=Math.max(.03,(v.duration_beats||.5)*beatDur),role=v.instrument_role||"solo";
+if(sampleReady()){
+if(role==="bass")sampler.bass(v.pitch_midi,v.velocity||88,t,d);
+else if(role==="piano")sampler.piano(v.pitch_midi,v.velocity||72,t,d);
+else sampler.solo(v.pitch_midi,v.velocity||82,t,d);
+}else{
+var type=role==="bass"?"sine":(role==="piano"?"triangle":"sawtooth");
+tone(v.pitch_midi,t,d,type,role==="bass"?.075:(role==="piano"?.035:.045));
+}
+});
+(gesture.drum_hits||[]).forEach(function(v){
+var t=when+(v.onset_offset_beats||0)*beatDur,d=Math.max(.03,(v.duration_beats||.1)*beatDur);
+if(sampleReady())sampler.drum(v.pitch_midi,v.velocity||70,t,d);else noiseHit(t,Math.min(.08,d),.025);
+});
 }
 function nextChordAt(barIndex,beatInBar){
 var chords=chart.bars[barIndex].chords;if(chords.length>1&&beatInBar<chart.beats_per_bar/2)return chords[1];
