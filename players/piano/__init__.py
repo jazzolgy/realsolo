@@ -5,6 +5,13 @@ polyphonic evaluation come from Core. This package owns piano-specific
 realization, comping, and interaction policy.
 """
 
+from .solo import (
+    PianoSoloContext,
+    PianoSoloEvaluator,
+    PianoSoloState,
+    default_bebop_legend_blend,
+    perform_one_piano_solo_event,
+)
 from .policy import (
     PianoActionScore,
     PianoPerformanceState,
@@ -110,6 +117,11 @@ __all__ = [
     "PianoActionScore",
     "PianoPerformanceState",
     "PianoPolicyEvaluator",
+    "PianoSoloContext",
+    "PianoSoloEvaluator",
+    "PianoSoloState",
+    "default_bebop_legend_blend",
+    "perform_one_piano_solo_event",
     "PianoRealizationCandidate",
     "perform_one_piano_action",
     "CompingActionType",
