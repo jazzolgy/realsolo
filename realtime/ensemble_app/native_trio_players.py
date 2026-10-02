@@ -138,12 +138,57 @@ class Stage1BassNativeDecider:
         requested_mode = str(context.get("bass_mode", "walking")).lower()
         mode = BassMode.SOLO if requested_mode == "solo" else BassMode.WALKING
 
+        self.runner.tempo_bpm = tempo
+        if bool(context.get("bass_ghost_only", False)):
+            ghost=self.runner.ghost_step(
+                beat_in_measure=beat % meter,
+                absolute_beat=float(ensemble.transport.beat),
+                mode=mode,
+                ensemble_activity=signals.ensemble_activity,
+                groove=ensemble.groove,
+            )
+            if not ghost.play:
+                return NativeImmediateResult(
+                    gesture=None,
+                    density=0.0,
+                    energy=.16,
+                    tension=.20,
+                    leadership=.0,
+                    tags=frozenset({"bass_ghost_space","walking","eighth_offbeat"}),
+                    provenance=("stage1_bass_native","player/bass:ghost_notes","space"),
+                )
+            gesture=RenderGesture(
+                role="bass",
+                voices=(RenderVoice(
+                    pitch_midi=ghost.physical_pitch_midi,
+                    velocity=ghost.velocity,
+                    duration_beats=ghost.sounding_duration_beats,
+                    onset_offset_beats=0.0,
+                    articulation=(ghost.articulation.value,"ghost_note","eighth_offbeat"),
+                    instrument_role="bass",
+                ),),
+                source="player/bass:walking_ghost",
+                tags=("bass_ghost_note","walking","eighth_offbeat",ghost.articulation.value),
+                annotations={
+                    "ghost_score":f"{ghost.score:.4f}",
+                    "rhythmic_value_beats":f"{ghost.rhythmic_value_beats:.3f}",
+                },
+            )
+            return NativeImmediateResult(
+                gesture=gesture,
+                density=.14,
+                energy=.24,
+                tension=.22,
+                leadership=.01,
+                tags=frozenset({"bass_ghost_note","walking","eighth_offbeat",ghost.articulation.value}),
+                provenance=("stage1_bass_native","player/bass:ghost_notes"),
+            )
+
         musical_context = context.get("musical_context")
         own_phrase_progress = getattr(musical_context, "phrase_maturity", None)
         if own_phrase_progress is None and "phrase_position" in context:
             own_phrase_progress = float(context["phrase_position"])
 
-        self.runner.tempo_bpm = tempo
         result = self.runner.step(BassStepInput(
             frame=harmonic_frame,
             mode=mode,
