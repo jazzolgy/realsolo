@@ -5,6 +5,11 @@ polyphonic evaluation come from Core. This package owns piano-specific
 realization, comping, and interaction policy.
 """
 
+from .bebop_turn_taking import (
+    BebopTurnTakingEvidence,
+    BebopTurnTakingType,
+    classify_bebop_turn_taking,
+)
 from .bebop_complementarity import (
     EnsembleBreathType,
     EnsembleComplementarityEvidence,
@@ -131,6 +136,9 @@ __all__ = [
     "PianoActionScore",
     "PianoPerformanceState",
     "PianoPolicyEvaluator",
+    "BebopTurnTakingEvidence",
+    "BebopTurnTakingType",
+    "classify_bebop_turn_taking",
     "EnsembleBreathType",
     "EnsembleComplementarityEvidence",
     "classify_ensemble_complementarity",
