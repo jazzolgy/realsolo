@@ -31,9 +31,12 @@ from .legend_adapter import (
     vocabulary_gesture_adjustment,
 )
 from .rhythmic_language import (
+    CommittedRhythmicEvent,
     RhythmicMotifIdentity,
     RhythmicTransform,
     engineering_seed_motif,
+    motif_from_committed_events,
+    motif_phase_unit,
     realize_motif_now,
     transform_motif,
 )
@@ -241,6 +244,7 @@ class DrumSoloState:
     last_development: SoloDevelopment | None = None
     motif_repetitions: int = 0
     motif_identity: RhythmicMotifIdentity | None = None
+    committed_rhythmic_events: tuple[CommittedRhythmicEvent, ...] = ()
 
     def observe(
         self,
@@ -248,6 +252,7 @@ class DrumSoloState:
         development: SoloDevelopment,
         *,
         motif_identity: RhythmicMotifIdentity | None = None,
+        context: DrummerRuntimeContext | None = None,
     ) -> None:
         self.gestures_committed += 1
         self.last_development = development
@@ -260,6 +265,43 @@ class DrumSoloState:
         if motif_identity is not None:
             motif_identity.validate()
             self.motif_identity = motif_identity
+
+        # Learn motif identity retrospectively from what was actually played.
+        # This replaces the engineering seed as soon as enough committed
+        # evidence exists; no unplayed future onset is added to memory.
+        if (
+            context is not None
+            and self.motif_identity is not None
+            and gesture.hits
+        ):
+            slot_by_voice = {
+                DrumVoice.SNARE: 0,
+                DrumVoice.HIGH_TOM: 1,
+                DrumVoice.MID_TOM: 2,
+                DrumVoice.FLOOR_TOM: 3,
+                DrumVoice.RIDE: 4,
+                DrumVoice.CRASH: 5,
+                DrumVoice.BASS_DRUM: 1,
+                DrumVoice.CLOSED_HIHAT: 0,
+                DrumVoice.OPEN_HIHAT: 1,
+                DrumVoice.COWBELL: 2,
+                DrumVoice.CLAVE: 0,
+            }
+            hit = gesture.hits[0]
+            event = CommittedRhythmicEvent(
+                unit=motif_phase_unit(context, self.motif_identity),
+                accent=max(0.0, min(1.0, hit.velocity / 127.0)),
+                orchestration_slot=slot_by_voice.get(hit.voice, 0),
+            )
+            history = (self.committed_rhythmic_events + (event,))[-8:]
+            self.committed_rhythmic_events = history
+            learned = motif_from_committed_events(
+                history,
+                cycle_units=self.motif_identity.cycle_units,
+                subdivision=self.motif_identity.subdivision,
+            )
+            if learned is not None:
+                self.motif_identity = learned
         if development is SoloDevelopment.REPEAT:
             self.motif_repetitions += 1
         elif development not in {SoloDevelopment.STATE, SoloDevelopment.RECAP}:
@@ -577,5 +619,6 @@ def perform_one_solo_gesture(
         chosen.gesture,
         chosen.development,
         motif_identity=chosen.motif_identity,
+        context=context,
     )
     return chosen
