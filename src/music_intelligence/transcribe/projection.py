@@ -22,6 +22,31 @@ from .spelling import (
 
 
 @dataclass(frozen=True)
+def dynamic_marking_from_level(level: float | None) -> str | None:
+    """Convert normalized performed loudness intent to a readable dynamic.
+
+    This is deliberately coarse: the score should communicate an actionable
+    dynamic level rather than encode continuous amplitude as notation.
+    """
+
+    if level is None:
+        return None
+    if not 0.0 <= level <= 1.0:
+        raise ValueError("dynamic level must be within 0..1")
+    if level < .15:
+        return "pp"
+    if level < .30:
+        return "p"
+    if level < .45:
+        return "mp"
+    if level < .62:
+        return "mf"
+    if level < .82:
+        return "f"
+    return "ff"
+
+
+@dataclass(frozen=True)
 class EventProjectionResult:
     intent: NotationIntent
     rhythm_candidates: tuple[NotationCandidate, ...]
@@ -101,6 +126,7 @@ def project_pitched_event(
             tie_from_previous=atom.tie_from_previous,
             tie_to_next=atom.tie_to_next,
             tuplet=atom.tuplet,
+            dynamic_marking=dynamic_marking_from_level(event.dynamic),
             articulations=articulations,
             markings=markings,
             confidence=preferred_rhythm.confidence,
