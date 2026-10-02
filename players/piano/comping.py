@@ -33,6 +33,7 @@ from .interaction import (
     infer_energy_direction,
 )
 from .narrative import evaluate_narrative_bias
+from .variation import GestureSignature, VariationContext, evaluate_variation
 
 
 class InteractionRole(str, Enum):
@@ -67,6 +68,9 @@ class PianoCompingContext:
     recent_piano_density: float = 0.0
     section_energy: float = 0.5
     soloist_register_midi: float | None = None
+    variation_pressure: float = 0.5
+    groove_lock_strength: float = 0.0
+    motif_continuity_strength: float = 0.0
     time_feel: str = "swing"
 
     def validate(self) -> None:
@@ -78,6 +82,9 @@ class PianoCompingContext:
             "ensemble_density",
             "recent_piano_density",
             "section_energy",
+            "variation_pressure",
+            "groove_lock_strength",
+            "motif_continuity_strength",
         ):
             value = getattr(self, name)
             if not 0.0 <= value <= 1.0:
@@ -135,6 +142,7 @@ class PianoCompingState:
     sounding_streak: int = 0
     silence_streak: int = 0
     last_section_energy: float | None = None
+    recent_signatures: list[GestureSignature] = field(default_factory=list)
 
     @staticmethod
     def _estimate_density(candidate: PianoCompingCandidate) -> PianoDensity:
@@ -196,6 +204,9 @@ class PianoCompingState:
             self.last_family = None
 
         self.last_role = candidate.role.value
+        self.recent_signatures.append(GestureSignature.from_candidate(candidate))
+        if len(self.recent_signatures) > 8:
+            del self.recent_signatures[:-8]
         if section_energy is not None:
             self.last_section_energy = section_energy
         self.committed.append(candidate)
@@ -473,6 +484,20 @@ class PianoCompingEvaluator:
                     score, components, reasons, "release_fit", 0.10,
                     "sparse gesture supports release intention",
                 )
+
+        variation = evaluate_variation(
+            candidate,
+            state.recent_signatures,
+            VariationContext(
+                variation_pressure=comping_context.variation_pressure,
+                groove_lock_strength=comping_context.groove_lock_strength,
+                motif_continuity_strength=comping_context.motif_continuity_strength,
+            ),
+        )
+        score += variation.total
+        for key, value in variation.components.items():
+            components[f"variation:{key}"] = components.get(f"variation:{key}", 0.0) + value
+        reasons.extend(variation.reasons)
 
         if interaction_state is not None:
             narrative = evaluate_narrative_bias(candidate, interaction_state)
