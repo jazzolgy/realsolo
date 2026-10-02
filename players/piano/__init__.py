@@ -94,6 +94,7 @@ from .rhythm import (
     expand_rhythmic_variants,
     rhythmic_intents_for_candidate,
 )
+from .constraint_evaluator import ConstraintAwarePianoCompingEvaluator
 from .comping import (
     CompingActionType,
     InteractionRole,
@@ -116,6 +117,7 @@ __all__ = [
     "PianoCompingCandidate",
     "PianoCompingContext",
     "PianoCompingEvaluator",
+    "ConstraintAwarePianoCompingEvaluator",
     "PianoCompingScore",
     "PianoCompingState",
     "perform_one_comping_action",
