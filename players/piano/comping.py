@@ -379,6 +379,64 @@ class PianoCompingEvaluator:
 
             family_tags = set(event.tags) | set(candidate.tags)
 
+            if interaction_state is not None:
+                if (
+                    interaction_state.energy_direction is EnergyDirection.UP
+                    and "register:higher" in family_tags
+                ):
+                    score = self._add(
+                        score, components, reasons, "register_energy_fit", 0.05,
+                        "higher register supports current rising-energy option",
+                    )
+                if (
+                    interaction_state.energy_direction is EnergyDirection.DOWN
+                    and "dynamic:soft" in family_tags
+                ):
+                    score = self._add(
+                        score, components, reasons, "dynamic_release_fit", 0.05,
+                        "soft dynamic supports falling-energy option",
+                    )
+
+            if busy_solo or crowded:
+                if "dynamic:soft" in family_tags:
+                    score = self._add(
+                        score, components, reasons, "dynamic_space_fit", 0.05,
+                        "soft dynamic reduces masking in a busy ensemble",
+                    )
+                if "dynamic:strong" in family_tags:
+                    score = self._add(
+                        score, components, reasons, "dynamic_masking", -0.07,
+                        "strong dynamic risks masking a busy ensemble",
+                    )
+
+            if candidate.role in {InteractionRole.PUNCTUATE, InteractionRole.ANCHOR}:
+                if "touch:percussive" in family_tags:
+                    score = self._add(
+                        score, components, reasons, "touch_role_fit", 0.04,
+                        "percussive touch supports punctuation/anchor definition",
+                    )
+
+            if candidate.role in {InteractionRole.SUPPORT, InteractionRole.RELEASE}:
+                if "touch:legato" in family_tags and not busy_solo:
+                    score = self._add(
+                        score, components, reasons, "touch_support_fit", 0.03,
+                        "legato touch supports sustained/releasing accompaniment",
+                    )
+
+            if comping_context.soloist_register_midi is not None:
+                center = sum(event.pitches_midi) / len(event.pitches_midi)
+                distance = abs(center - comping_context.soloist_register_midi)
+                if distance < 5:
+                    score = self._add(
+                        score, components, reasons, "register_collision", -0.08,
+                        "piano register closely overlaps soloist register",
+                    )
+                elif distance >= 12:
+                    score = self._add(
+                        score, components, reasons, "register_separation", 0.03,
+                        "piano register leaves clearer separation from soloist",
+                    )
+
             if candidate.role is InteractionRole.SUPPORT and "shell" in family_tags:
                 if busy_solo or comping_context.ensemble_density >= 0.6:
                     score = self._add(
