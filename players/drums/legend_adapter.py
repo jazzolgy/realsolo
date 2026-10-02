@@ -224,3 +224,94 @@ def legend_gesture_adjustment(
         add(DrumLegendFeature.ORCHESTRATION_MOBILITY, 0.20, "legend_orchestration")
 
     return score, tuple(parts)
+
+
+
+def vocabulary_gesture_adjustment(
+    gesture: DrumGesture,
+    intents: Iterable[DrumVocabularyIntent],
+) -> tuple[float, tuple[tuple[str, float], ...]]:
+    """Score current drum gesture against active shared vocabulary memories.
+
+    This compares semantic descriptors and use-family intent only. It never
+    reconstructs or schedules the stored literal phrase.
+    """
+    gesture.validate()
+    score = 0.0
+    parts: list[tuple[str, float]] = []
+    tag_text = " ".join(sorted(gesture.tags)).lower()
+    articulation_text = " ".join(hit.articulation for hit in gesture.hits).lower()
+    voices = {hit.voice for hit in gesture.hits}
+
+    for intent in intents:
+        intent.validate()
+        base = vocabulary_reuse_bias(intent)
+        fit = 0.0
+
+        # Descriptor matching is intentionally conservative and token-based.
+        descriptor_tokens = set(
+            (intent.rhythm_descriptor + " "
+             + intent.articulation_descriptor + " "
+             + intent.contour_descriptor).lower()
+            .replace("-", " ")
+            .replace("_", " ")
+            .split()
+        )
+        surface_tokens = set(
+            (tag_text + " " + articulation_text)
+            .replace("-", " ")
+            .replace("_", " ")
+            .split()
+        )
+        overlap = descriptor_tokens.intersection(surface_tokens)
+        if overlap:
+            fit += min(0.18, 0.04 * len(overlap))
+
+        if intent.use_type is VocabularyUseType.LITERAL_QUOTE:
+            # Literal quote is legal memory use, but only a gesture explicitly
+            # marked as a vocabulary quotation should receive a quote bonus.
+            if "literal_quote" in gesture.tags:
+                fit += 0.22
+            else:
+                fit -= 0.04
+        elif intent.use_type is VocabularyUseType.TRANSPOSED_LICK:
+            if gesture.tags.intersection({"displaced_return", "displace", "metric_illusion"}):
+                fit += 0.18
+        elif intent.use_type is VocabularyUseType.ADAPTED_LICK:
+            if gesture.tags.intersection({"variation", "orchestrated_motif", "comping_conversation"}):
+                fit += 0.16
+        elif intent.use_type is VocabularyUseType.FRAGMENT_RECALL:
+            if gesture.tags.intersection({"return", "repeat", "motif", "snare_phrase"}):
+                fit += 0.16
+        elif intent.use_type is VocabularyUseType.ABSTRACTED_PATTERN:
+            if gesture.tags.intersection({"ride_continuity", "timekeeping", "three_beat_cycle"}):
+                fit += 0.12
+        elif intent.use_type is VocabularyUseType.HYBRID_COMPOSITION:
+            if gesture.tags.intersection({
+                "variation", "displaced_return", "motif", "snare_phrase",
+                "ride_continuity", "drum_solo",
+            }):
+                fit += 0.20
+
+        # Orchestration descriptors may legitimately map onto current drum voices.
+        if "ride" in descriptor_tokens and DrumVoice.RIDE in voices:
+            fit += 0.08
+        if "snare" in descriptor_tokens and DrumVoice.SNARE in voices:
+            fit += 0.08
+        if "tom" in descriptor_tokens and voices.intersection({
+            DrumVoice.HIGH_TOM, DrumVoice.MID_TOM, DrumVoice.FLOOR_TOM,
+        }):
+            fit += 0.08
+        if "bass" in descriptor_tokens and DrumVoice.BASS_DRUM in voices:
+            fit += 0.08
+
+        contribution = (base + fit) * intent.confidence
+        # Prevent a large active-memory set from overwhelming current musical
+        # context. Vocabulary is one candidate source, not the decision maker.
+        contribution = max(-0.35, min(0.35, contribution))
+        if contribution:
+            score += contribution
+            parts.append((f"vocabulary:{intent.use_type.value}", contribution))
+
+    score = max(-0.55, min(0.55, score))
+    return score, tuple(parts)
