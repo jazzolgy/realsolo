@@ -6,6 +6,14 @@ from .interaction_grammar import (
     BassInteractionIntent,
     choose_bass_interaction_intent,
 )
+from .phrase_intent import (
+    BassPhraseContext,
+    BassPhraseDirection,
+    BassPhraseIntent,
+    BassPhraseIntentKind,
+    BassPhraseState,
+    choose_bass_phrase_intent,
+)
 from .performance_expression import (
     BassExpressionProfile,
     realize_bass_expression,
@@ -111,6 +119,11 @@ __all__ = [
     "BassPracticeEvaluation",
     "BassPracticeExercise",
     "BassPracticeLevel",
+    "BassPhraseContext",
+    "BassPhraseDirection",
+    "BassPhraseIntent",
+    "BassPhraseIntentKind",
+    "BassPhraseState",
     "BassScoreEvidenceDirective",
     "BassScorebookStudyDecision",
     "BassScorebookStudyTrack",
@@ -147,6 +160,7 @@ __all__ = [
     "bebop_walking_practice_curriculum",
     "analyze_bass_line",
     "choose_bass_interaction_intent",
+    "choose_bass_phrase_intent",
     "classify_scorebook_bass_study",
     "compare_bass_lines",
     "compare_partial_bass_profiles",
