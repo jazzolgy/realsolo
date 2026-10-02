@@ -1,3 +1,4 @@
+from dataclasses import replace
 from music_intelligence.reasoning.legend_style_core import MusicalContextVector
 from players.piano import (
     CompingActionType,
@@ -117,11 +118,18 @@ def test_trio_evaluator_prefers_lh_only_over_same_rh_occupied_candidate():
         if "lh_comping" in c.tags
         and all(hand=="LH" for _,hand in c.realization.hand_assignment)
     )
-    original=next(
-        c for c in slate.sounding
-        if c.realization is not None
-        and any(hand=="RH" for _,hand in c.realization.hand_assignment)
-        and c.action_type is lh.action_type
+    first_voice=lh.realization.hand_assignment[0][0]
+    rh_assignment=tuple(
+        (voice_id, "RH" if voice_id==first_voice else hand)
+        for voice_id,hand in lh.realization.hand_assignment
+    )
+    original=replace(
+        lh,
+        realization=replace(
+            lh.realization,
+            hand_assignment=rh_assignment,
+        ),
+        tags=frozenset(set(lh.tags)-{"lh_comping"}),
     )
     evaluator=PianoCompingEvaluator()
     state=PianoCompingState()
@@ -140,9 +148,9 @@ def test_repeated_rhythm_cell_gets_variation_pressure():
         tags=frozenset({"rhythm:on_beat","rhythm_cell:beat_short"})
 
     recent=[
-        GestureSignature("support","piano_shell","beat_short",None,None,None),
-        GestureSignature("support","piano_rootless","beat_short",None,None,None),
-        GestureSignature("support","piano_shell","beat_short",None,None,None),
+        GestureSignature("support","piano_shell","on_beat",None,None,None,"beat_short"),
+        GestureSignature("support","piano_rootless","on_beat",None,None,None,"beat_short"),
+        GestureSignature("support","piano_shell","on_beat",None,None,None,"beat_short"),
     ]
     score=evaluate_variation(
         DummyCandidate(),
