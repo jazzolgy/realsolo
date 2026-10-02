@@ -101,8 +101,9 @@ def project_pitched_event(
     if written_offset:
         spelling_pitch = type(event.pitch)(
             nominal_midi=event.pitch.nominal_midi + written_offset,
+            frequency_hz=event.pitch.frequency_hz,
             cents_offset=event.pitch.cents_offset,
-            confidence=event.pitch.confidence,
+            continuous_pitch_ref=event.pitch.continuous_pitch_ref,
         )
     spellings = spelling_candidates(spelling_pitch, spelling_context)
     preferred_pitch = spellings[0]
