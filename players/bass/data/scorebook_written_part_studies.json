@@ -32,7 +32,9 @@
       "provenance": [
         "NewReal2.pdf:p8",
         "vision-reviewed"
-      ]
+      ],
+      "measurement_status": "qualitative_only",
+      "numeric_prior_ready": false
     },
     {
       "study_id": "scorebook.newreal2.asa_bass.p10",
@@ -65,7 +67,9 @@
       "provenance": [
         "NewReal2.pdf:p10",
         "vision-reviewed"
-      ]
+      ],
+      "measurement_status": "qualitative_only",
+      "numeric_prior_ready": false
     },
     {
       "study_id": "scorebook.newreal3.actual_proof_bass.p2",
@@ -99,7 +103,9 @@
       "provenance": [
         "NewReal3.pdf:p2",
         "vision-reviewed"
-      ]
+      ],
+      "measurement_status": "qualitative_only",
+      "numeric_prior_ready": false
     }
   ]
 }
