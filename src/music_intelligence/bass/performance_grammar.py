@@ -1,20 +1,10 @@
-"""Bass Performance Grammar v0.1.
+"""Bass Performance Grammar v0.2.
 
 Instrument-specific decision semantics for immediate bass realization.
 
-This layer deliberately does not infer harmony, chord scales, form, or generic
-voice-leading. Those remain Shared Core responsibilities. It describes how a
-bass player may realize already-understood musical context as one immediate
-action.
-
-Source-grounded principles used in this baseline:
-- walking time centers a quarter-note pulse;
-- the final beat before a harmony change is a privileged preparation/approach
-  position;
-- chordal, scalar and chromatic movement are distinct line-building behaviors,
-  but scale membership must come from Shared Core rather than this module;
-- repeated notes, register direction and groove placement are bass realization
-  choices rather than harmony semantics.
+Shared Core still owns harmony, form, generic voice-leading, and ensemble meaning.
+This module only evaluates how an already-understood musical state can be realized
+by the bass right now.
 """
 from __future__ import annotations
 
@@ -72,8 +62,11 @@ class BassGrammarContext:
     two_feel: bool = False
     pedal: bool = False
     previous_pitch_midi: int | None = None
+    previous_motion_semitones: int | None = None
     register_intent: RegisterIntent = RegisterIntent.STABLE
     repeated_note_tolerance: float = 0.35
+    stepwise_preference: float = 0.45
+    contour_reversal_pressure: float = 0.45
     ensemble_activity: float = 0.5
 
     def validate(self) -> None:
@@ -83,10 +76,14 @@ class BassGrammarContext:
             raise ValueError("beat_in_measure must fall inside the current measure")
         if self.previous_pitch_midi is not None and not 0 <= self.previous_pitch_midi <= 127:
             raise ValueError("previous_pitch_midi must be in MIDI range")
-        if not 0.0 <= self.repeated_note_tolerance <= 1.0:
-            raise ValueError("repeated_note_tolerance must be within 0..1")
-        if not 0.0 <= self.ensemble_activity <= 1.0:
-            raise ValueError("ensemble_activity must be within 0..1")
+        for name, value in (
+            ("repeated_note_tolerance", self.repeated_note_tolerance),
+            ("stepwise_preference", self.stepwise_preference),
+            ("contour_reversal_pressure", self.contour_reversal_pressure),
+            ("ensemble_activity", self.ensemble_activity),
+        ):
+            if not 0.0 <= value <= 1.0:
+                raise ValueError(f"{name} must be within 0..1")
 
 
 @dataclass(frozen=True)
@@ -120,11 +117,7 @@ def evaluate_bass_grammar(
     motion_strategy: MotionStrategy,
     target_strategy: TargetStrategy,
 ) -> BassGrammarDecision:
-    """Evaluate one immediate candidate using bass-specific grammar.
-
-    This score is intentionally modest. Shared harmony/voice-leading and later
-    style/legend/ensemble policies are expected to contribute independently.
-    """
+    """Evaluate one immediate candidate using bass-specific soft grammar."""
     ctx.validate()
     if not 0 <= candidate_pitch_midi <= 127:
         raise ValueError("candidate_pitch_midi must be in MIDI range")
@@ -175,22 +168,44 @@ def evaluate_bass_grammar(
 
     if ctx.previous_pitch_midi is not None:
         delta = candidate_pitch_midi - ctx.previous_pitch_midi
+
         if delta == 0:
             penalty = .12 * (1.0 - ctx.repeated_note_tolerance)
             score -= penalty
             reasons.append("repeated-note pressure")
-        elif ctx.register_intent is RegisterIntent.ASCEND:
-            if delta > 0:
-                score += .05
-                reasons.append("supports ascending register trajectory")
-            else:
-                score -= .03
-        elif ctx.register_intent is RegisterIntent.DESCEND:
-            if delta < 0:
-                score += .05
-                reasons.append("supports descending register trajectory")
-            else:
-                score -= .03
+        else:
+            # Stepwise motion is a useful bass-line connector, but only a preference.
+            if abs(delta) <= 2:
+                bonus = .08 * ctx.stepwise_preference
+                score += bonus
+                reasons.append("stepwise connection")
+
+            # In two-feel, avoid repeatedly drawing the same up-only/down-only shape.
+            # If the previous movement had a direction, softly favor reversal.
+            if ctx.two_feel and ctx.previous_motion_semitones not in (None, 0):
+                previous_up = ctx.previous_motion_semitones > 0
+                current_up = delta > 0
+                if previous_up != current_up:
+                    bonus = .10 * ctx.contour_reversal_pressure
+                    score += bonus
+                    reasons.append("two-feel contour reversal")
+                else:
+                    penalty = .045 * ctx.contour_reversal_pressure
+                    score -= penalty
+                    reasons.append("two-feel same-direction pressure")
+
+            if ctx.register_intent is RegisterIntent.ASCEND:
+                if delta > 0:
+                    score += .05
+                    reasons.append("supports ascending register trajectory")
+                else:
+                    score -= .03
+            elif ctx.register_intent is RegisterIntent.DESCEND:
+                if delta < 0:
+                    score += .05
+                    reasons.append("supports descending register trajectory")
+                else:
+                    score -= .03
 
     if ctx.ensemble_activity > .82 and motion_strategy in {
         MotionStrategy.CHROMATIC_APPROACH,
