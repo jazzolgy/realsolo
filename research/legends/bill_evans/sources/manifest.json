@@ -14,7 +14,10 @@
         "trio role analysis",
         "score-position comparison",
         "vocabulary extraction"
-      ]
+      ],
+      "track_manifest": "research/legends/bill_evans/sources/playlist_tracks.json",
+      "track_count": 24,
+      "identity_status": "tracklist_supplied_by_project_owner"
     },
     {
       "source_id": "master_index_project",
