@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from typing import Mapping
 
 from players.bass import (
+    BassContext,
     BassMode,
     BassSequentialRunner,
     BassStepInput,
