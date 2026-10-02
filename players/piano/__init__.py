@@ -29,6 +29,7 @@ from .voicing import (
 from .planner import (
     PianoCompingCandidateSet,
     build_contextual_comping_candidates,
+    build_immediate_performance_candidates,
     expand_candidate_set_rhythmically,
     expand_candidate_set_expressively,
 )
@@ -91,6 +92,7 @@ __all__ = [
     "generate_tertian_voicings",
     "PianoCompingCandidateSet",
     "build_contextual_comping_candidates",
+    "build_immediate_performance_candidates",
     "expand_candidate_set_rhythmically",
     "NarrativeBiasScore",
     "evaluate_narrative_bias",
