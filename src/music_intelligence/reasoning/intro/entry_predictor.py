@@ -1,7 +1,7 @@
 """Shared prediction of intro-to-ensemble entry readiness."""
 from __future__ import annotations
 
-from .representation import EntryDecision, IntroMode, IntroObservation, IntroState, clamp01, with_generation
+from .representation import EntryAction, EntryDecision, IntroMode, IntroObservation, IntroState, clamp01, with_generation
 
 
 def _top_mode(state: IntroState) -> IntroMode:
@@ -79,7 +79,7 @@ def make_entry_decision(state: IntroState) -> EntryDecision:
     if state.ambiguity > 0.7:
         rationale.append("mode_ambiguous")
     return EntryDecision(
-        action=None,  # policy assigns the action
+        action=EntryAction.WAIT,  # policy assigns the final action
         readiness=state.entry_readiness,
         permission=state.entry_permission,
         confidence=state.join_confidence,
