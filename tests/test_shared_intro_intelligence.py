@@ -85,6 +85,16 @@ def test_vocal_count_in_can_reach_committed_entry():
             explicit_entry_cue_confidence=1.0,
             expected_head_harmony_match=1.0,
         ),
+        IntroObservation(
+            timestamp=1.5,
+            vocal_count_confidence=1.0,
+            iois_seconds=(0.5, 0.5, 0.5),
+            meter_hint=(4, 4),
+            beat_phase_hint=0.0,
+            phrase_boundary_confidence=1.0,
+            explicit_entry_cue_confidence=1.0,
+            expected_head_harmony_match=1.0,
+        ),
     ]
     for obs in observations:
         result = rt.tick(obs)
