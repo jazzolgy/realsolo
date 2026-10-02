@@ -38,6 +38,13 @@ Instrument-specific performance grammar must remain separate from shared musical
 
 ## Real-time layer
 
+### Ownership principle
+
+> **Realtime does not decide the music. Portable Core and Players decide the performance intention; Realtime executes that intention as sound on the mobile device accurately and with low latency.**
+
+Realtime therefore owns low-latency execution, scheduling, I/O, device/audio integration, and performance output. It must not independently invent instrument musical policy that belongs to Portable Core or Players.
+
+
 - `realtime/audio_input/`
 - `realtime/midi_input/`
 - `realtime/beat_form_tracker/`
