@@ -1,61 +1,29 @@
 # Realtime — Live Ensemble App
 
-The product target is **audio-first, MIDI-parallel**.
+RealSolo now has two product stages.
 
-RealSolo must be able to hear an ordinary acoustic performance through a phone,
-tablet, laptop or interface microphone. MIDI is valuable when available, but it
-must not be required for ensemble interaction.
+## Stage 1 — Chart + Playback
 
-## Input architecture
+No microphone is required.
 
-All live sources converge on the same realtime musical state:
+The user sees a chord chart and the app owns a deterministic chart transport:
+tempo, beat, bar, form, section and expected harmony.
 
-```
-phone / laptop / interface microphone
-    -> PCM audio frames
-    -> causal Audio Perception
-       - level / energy
-       - onset evidence
-       - pitch evidence
-       - later: polyphonic pitch, harmony, timbre, articulation
-    -> AudioObservation ┐
-                        ├-> Beat / Phrase / Cue -> EnsembleState -> Core
-MIDI controller --------┘
-```
+The user chooses a playing role:
+- **Soloist** -> RealSolo provides accompaniment.
+- **Comper** -> RealSolo provides the soloist.
 
-The current Python audio adapter is a development harness using PortAudio via
-`sounddevice`. The mobile product should implement the same contract natively
-(e.g. AVAudioEngine/Core Audio on iOS) and feed equivalent timestamped evidence
-to the shared runtime.
+This makes the first product useful before interactive listening is enabled.
 
-## Install for microphone + MIDI development
+## Stage 2 — Interactive Ensemble
 
-```bash
-pip install -e ".[dev,live]"
-realsolo-ensemble ports
-```
+The product target remains **audio-first**. The phone/tablet/laptop microphone
+listens to the real performance and updates the ensemble state so the AI can
+follow, respond and revise uncommitted intentions.
 
-Monitor a real acoustic instrument through the microphone:
+MIDI is optional and primarily useful for digital-instrument users, testing and
+development ground truth. It is not a required product workflow.
 
-```bash
-realsolo-ensemble monitor-audio --device 0
-```
-
-Closed-loop audio perception with MIDI sound output:
-
-```bash
-realsolo-ensemble probe-audio --device 0 --output "YOUR MIDI OUTPUT"
-```
-
-This probe is not final accompaniment intelligence. It proves the required
-closed loop: **hear acoustic performance -> derive evidence -> update ensemble
-state -> Core immediate decision -> output -> listen again**.
-
-The scheduler may cancel an unplayed future note after new evidence, but once a
-note-on has sounded its cleanup note-off is mandatory.
-
-## Development rule
-
-Do not move music policy into the audio front-end. Perception reports evidence
-and confidence; Music Intelligence Core decides what that evidence means in the
-current musical context.
+See:
+- `docs/PRODUCT_STAGES.md`
+- `docs/AUDIO_FIRST_RUNTIME.md`
