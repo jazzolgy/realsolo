@@ -1,0 +1,136 @@
+{
+  "schema_version": "0.1",
+  "source": {
+    "title": "Jim McNeely - The Art of Comping",
+    "materials": ["workbook", "6 listening tracks", "6 playalong tracks"],
+    "usage": "research annotation seed; not universal jazz-piano law"
+  },
+  "evidence_policy": {
+    "SOURCE_DERIVED": "supported directly by workbook structure/exercises/examples",
+    "AUDIO_METRIC": "automatic signal-analysis observation; not a listening judgment",
+    "DESIGN_INFERENCE": "RealSolo modeling proposal motivated by source evidence",
+    "OPEN": "requires further source/expert validation"
+  },
+  "audio_metrics": [
+    {"piece": "Blues For Wanda", "listening_duration_sec": 202.0, "playalong_duration_sec": 204.5, "estimated_bpm": 123.0},
+    {"piece": "Crossroads", "listening_duration_sec": 302.8, "playalong_duration_sec": 306.8, "estimated_bpm": 152.0},
+    {"piece": "'Round Midnight", "listening_duration_sec": 476.8, "playalong_duration_sec": 476.6, "estimated_bpm": 117.5},
+    {"piece": "Karita", "listening_duration_sec": 227.1, "playalong_duration_sec": 229.3, "estimated_bpm": 161.5},
+    {"piece": "Give and Take", "listening_duration_sec": 370.8, "playalong_duration_sec": 374.3, "estimated_bpm": 136.0},
+    {"piece": "Last Minute", "listening_duration_sec": 223.0, "playalong_duration_sec": 221.4, "estimated_bpm": 152.0}
+  ],
+  "piece_annotations": [
+    {
+      "piece": "Blues For Wanda",
+      "source_derived": [
+        "baseline blues context for comping interaction",
+        "vary rhythmic placement and duration",
+        "vary activity level and voicing size",
+        "practice substitutions and alternative voicings",
+        "leave space and react to solo/ensemble context"
+      ],
+      "candidate_roles": ["LAY_OUT", "SUPPORT", "ANCHOR", "PUNCTUATE", "ANSWER"],
+      "candidate_actions": ["SILENCE", "SPARSE_SUPPORT", "PUNCTUATION", "RESPONSE"],
+      "research_priority": "first context-to-action benchmark"
+    },
+    {
+      "piece": "Crossroads",
+      "source_derived": [
+        "chromatic upper-neighbor and half-step approach ideas",
+        "moving internal chromatic lines",
+        "ostinato-oriented rhythmic comping",
+        "vary voicing size and build energy",
+        "occasional fills and octave voicing examples"
+      ],
+      "candidate_roles": ["SUPPORT", "FILL", "BUILD", "PUNCTUATE"],
+      "candidate_actions": ["SPARSE_SUPPORT", "PUNCTUATION", "RESPONSE", "SUSTAINED_SUPPORT"],
+      "research_priority": "internal-motion and energy-development benchmark"
+    },
+    {
+      "piece": "'Round Midnight",
+      "source_derived": [
+        "ballad/rubato and double-time contexts coexist",
+        "longer voicings and pedal are explored",
+        "chromatic movement, passing/approach harmony and fills appear",
+        "accompaniment behavior changes with phrase space and solo context"
+      ],
+      "candidate_roles": ["SUPPORT", "LAY_OUT", "FILL", "RELEASE"],
+      "candidate_actions": ["SILENCE", "SUSTAINED_SUPPORT", "RESPONSE"],
+      "research_priority": "space-duration-pedal benchmark"
+    },
+    {
+      "piece": "Karita",
+      "source_derived": [
+        "Latin/bossa-related rhythmic identity",
+        "pattern order/placement is varied rather than mechanically repeated",
+        "larger voicings appear in later development",
+        "moving lines, embellishment, upper structures and octave voicings are explored"
+      ],
+      "candidate_roles": ["ANCHOR", "SUPPORT", "BUILD", "RELEASE"],
+      "candidate_actions": ["SPARSE_SUPPORT", "PUNCTUATION", "SUSTAINED_SUPPORT"],
+      "research_priority": "groove-schema versus literal-repeat benchmark"
+    },
+    {
+      "piece": "Give and Take",
+      "source_derived": [
+        "reciprocal ensemble behavior is foregrounded",
+        "voicing sizes vary",
+        "fills and dynamic interaction occur",
+        "texture changes with section and solo context"
+      ],
+      "candidate_roles": ["SUPPORT", "ANSWER", "FILL", "BUILD", "RELEASE"],
+      "candidate_actions": ["SILENCE", "SPARSE_SUPPORT", "PUNCTUATION", "RESPONSE"],
+      "research_priority": "interaction-role switching benchmark"
+    },
+    {
+      "piece": "Last Minute",
+      "source_derived": [
+        "fast/modal sustained-harmony context",
+        "quartal, inverted-quartal, tertian, combination and octave structures are compared",
+        "contrary motion, chromatic motion and neighbor-voicing practice appear",
+        "rhythmic and registral development create motion without frequent harmony change"
+      ],
+      "candidate_roles": ["ANCHOR", "BUILD", "RELEASE", "PUNCTUATE"],
+      "candidate_actions": ["SPARSE_SUPPORT", "PUNCTUATION", "SUSTAINED_SUPPORT"],
+      "research_priority": "voicing-family competition under static harmony"
+    }
+  ],
+  "cross_piece_hypotheses": [
+    {
+      "id": "H1",
+      "claim": "silence should compete directly with sounded gestures",
+      "evidence": "SOURCE_DERIVED",
+      "status": "implemented experimentally"
+    },
+    {
+      "id": "H2",
+      "claim": "same harmony can produce different comping actions under different phrase/ensemble context",
+      "evidence": "SOURCE_DERIVED + DESIGN_INFERENCE",
+      "status": "implemented experimentally"
+    },
+    {
+      "id": "H3",
+      "claim": "density is multidimensional rather than note-count only",
+      "evidence": "SOURCE_DERIVED + DESIGN_INFERENCE",
+      "status": "research model only"
+    },
+    {
+      "id": "H4",
+      "claim": "groove identity should be separable from literal rhythmic realization",
+      "evidence": "SOURCE_DERIVED + DESIGN_INFERENCE",
+      "status": "research model only"
+    },
+    {
+      "id": "H5",
+      "claim": "interaction roles should bias candidate selection rather than prescribe patterns",
+      "evidence": "DESIGN_INFERENCE",
+      "status": "provisional"
+    }
+  ],
+  "technical_cautions": [
+    "automatic BPM is a beat-tracking estimate and may reflect double-time/half-time ambiguity",
+    "Listening and Playalong files are structurally related but not safe to treat as phase-identical mixes",
+    "direct waveform subtraction must not be used as a clean piano stem assumption",
+    "fine-grained onset/touch labels require later listening/expert confirmation"
+  ]
+}
