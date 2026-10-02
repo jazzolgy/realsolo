@@ -1,7 +1,7 @@
 """Generic Legend Intelligence interfaces.
 
 Legend research, vocabulary memory, style grammar, and instrument realization are
-separate concerns.  Player packages consume these interfaces; they do not own a
+separate concerns. Player packages consume these interfaces; they do not own a
 specific legend profile.
 """
 from __future__ import annotations
@@ -49,6 +49,7 @@ class VocabularyQuery:
     legend_id: str
     domain: LegendDomain | None = None
     harmony_context: str = ""
+    harmonic_function: str = ""
     local_key: str = ""
     phrase_position: str = ""
     context_tags: frozenset[str] = frozenset()
@@ -79,6 +80,9 @@ class VocabularyMemoryItem:
     articulation: str = ""
     register: str = ""
     tension_curve: str = ""
+    domains: frozenset[LegendDomain] = frozenset()
+    context_tags: frozenset[str] = frozenset()
+    candidate_uses: frozenset[VocabularyUseType] = frozenset(VocabularyUseType)
     literal_representation_hash: str = ""
     normalized_pitch_rhythm_hash: str = ""
     literal_similarity: float | None = None
@@ -89,18 +93,39 @@ class VocabularyMemoryItem:
     confidence: float = 1.0
     provenance: tuple[str, ...] = ()
 
+    def validate(self) -> None:
+        if not self.vocabulary_id or not self.source_id:
+            raise ValueError("vocabulary_id and source_id are required")
+        if not self.candidate_uses:
+            raise ValueError("candidate_uses may not be empty")
+        for value, name in (
+            (self.literal_similarity, "literal_similarity"),
+            (self.structural_similarity, "structural_similarity"),
+        ):
+            if value is not None and not 0.0 <= value <= 1.0:
+                raise ValueError(f"{name} must be within 0..1")
+        if not 0.0 <= self.confidence <= 1.0:
+            raise ValueError("confidence must be within 0..1")
+        if self.usage_count < 0 or self.recent_usage_count < 0:
+            raise ValueError("usage counts may not be negative")
+
 
 @dataclass(frozen=True)
 class LegendProfileView:
-    """Context/query view over one legend profile.
+    """Context/query view over one legend's evidence profiles.
 
-    The view exposes conditional tendencies.  It does not expose future note
-    sequences and does not imply that the consuming instrument owns the legend.
+    profile remains the primary contextual profile for backward compatibility.
+    additional_profiles carries bounded score/statistical evidence. The view
+    never owns an instrument and never exposes a frozen future note sequence.
     """
 
     legend_id: str
     profile: LegendProfile
     domain_features: Mapping[LegendDomain, tuple[str, ...]]
+    additional_profiles: tuple[tuple[LegendProfile, float], ...] = ()
+
+    def weighted_profiles(self) -> tuple[tuple[LegendProfile, float], ...]:
+        return ((self.profile, 1.0),) + self.additional_profiles
 
     def tendencies(
         self,
@@ -110,17 +135,26 @@ class LegendProfileView:
     ) -> tuple[StyleTendency, ...]:
         tags = set(active_tags)
         allowed = None if domain is None else set(self.domain_features.get(domain, ()))
-        out = []
-        for tendency in self.profile.tendencies:
-            if allowed is not None and tendency.feature not in allowed:
-                continue
-            if tendency.context_tags and not tendency.context_tags.issubset(tags):
-                continue
-            out.append(tendency)
+        out: list[StyleTendency] = []
+        for profile, _weight in self.weighted_profiles():
+            for tendency in profile.tendencies:
+                if allowed is not None and tendency.feature not in allowed:
+                    continue
+                if tendency.context_tags and not tendency.context_tags.issubset(tags):
+                    continue
+                out.append(tendency)
         return tuple(out)
 
     def blend(self, weight: float = 1.0) -> LegendBlend:
-        return LegendBlend(((self.profile, weight),))
+        if weight < 0:
+            raise ValueError("legend weight cannot be negative")
+        return LegendBlend(tuple(
+            (profile, profile_weight * weight)
+            for profile, profile_weight in self.weighted_profiles()
+        ))
+
+    def coverage(self) -> Mapping[LegendDomain, int]:
+        return {domain: len(self.tendencies(domain=domain)) for domain in LegendDomain}
 
 
 class VocabularyProvider(Protocol):
