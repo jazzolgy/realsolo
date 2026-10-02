@@ -1,0 +1,49 @@
+{
+  "source_id": "bill_evans_without_a_song_1977",
+  "legend_id": "eliot_zigmund",
+  "recording_id": "bill_evans_without_a_song_1977",
+  "tune_id": "without_a_song",
+  "drummer": "Eliot Zigmund",
+  "analysis_basis": "user_provided_full_mix",
+  "track_start_seconds": 5368.0,
+  "documented_drum_solo_entry_track_seconds": 412.0,
+  "documented_drum_solo_entry_absolute_seconds": 5780.0,
+  "analysis_window_track_seconds": [402.0, 427.0],
+  "analysis_window_absolute_seconds": [5770.0, 5795.0],
+  "onset_method": "HPSS percussive onset envelope, short-window detection",
+  "estimated_base_grid_seconds": 0.1045,
+  "grid_interpretation": "approximate triplet-subdivision unit",
+  "implied_quarter_bpm_if_triplet_grid": 191.39,
+  "valid_ioi_count": 104,
+  "ioi_unit_distribution": {
+    "1": 0.279,
+    "2": 0.317,
+    "3": 0.337,
+    "4": 0.038,
+    "5": 0.019,
+    "6": 0.010
+  },
+  "top_3_interval_cells": [
+    {
+      "ioi_units": [2, 3, 1],
+      "occurrences": 12,
+      "mean_normalized_accent_vector": [0.638, 0.720, 0.613, 0.659]
+    },
+    {
+      "ioi_units": [1, 3, 2],
+      "occurrences": 11,
+      "mean_normalized_accent_vector": [0.662, 0.741, 0.757, 0.748]
+    },
+    {
+      "ioi_units": [3, 1, 2],
+      "occurrences": 9,
+      "mean_normalized_accent_vector": [0.812, 0.620, 0.555, 0.706]
+    }
+  ],
+  "confidence": 0.78,
+  "limitations": [
+    "full-mix rather than isolated drums",
+    "onset detector can include piano/bass attacks",
+    "cells are abstracted from repeated IOI patterns, not literal transcription"
+  ]
+}
