@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Mapping
 
 from music_intelligence.bass import (
@@ -79,7 +79,7 @@ def _soloist_activity(snapshot) -> float:
 
 @dataclass
 class BassNativeDecider:
-    memory: BassPerformanceMemory = BassPerformanceMemory()
+    memory: BassPerformanceMemory = field(default_factory=BassPerformanceMemory)
     mode: BassMode = BassMode.WALKING
 
     def __call__(self, context: Mapping[str, object]) -> NativeImmediateResult | None:
@@ -179,7 +179,7 @@ class BassNativeDecider:
 
 @dataclass
 class DrumsNativeDecider:
-    memory: DrummerPerformanceMemory = DrummerPerformanceMemory()
+    memory: DrummerPerformanceMemory = field(default_factory=DrummerPerformanceMemory)
     feel: TimeFeel = TimeFeel.SWING
 
     def __call__(self, context: Mapping[str, object]) -> NativeImmediateResult | None:
