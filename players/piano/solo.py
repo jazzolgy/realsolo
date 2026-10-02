@@ -39,6 +39,9 @@ class PianoSoloContext:
     right_hand_low_midi: int = 48
     right_hand_high_midi: int = 96
     left_hand_comping_activity: float = 0.35
+    left_hand_harmonic_coverage: float = 0.35
+    left_hand_rhythmic_coverage: float = 0.35
+    left_hand_register_top_midi: int | None = None
     ensemble_density: float = 0.5
     creativity_strength: float = 0.6
     phrase_space: BebopPhraseSpaceEvidence = field(
@@ -57,12 +60,19 @@ class PianoSoloContext:
             raise ValueError("right-hand range must be ascending")
         for name in (
             "left_hand_comping_activity",
+            "left_hand_harmonic_coverage",
+            "left_hand_rhythmic_coverage",
             "ensemble_density",
             "creativity_strength",
         ):
             value = getattr(self, name)
             if not 0.0 <= value <= 1.0:
                 raise ValueError(f"{name} must be within 0..1")
+        if (
+            self.left_hand_register_top_midi is not None
+            and not 21 <= self.left_hand_register_top_midi <= 108
+        ):
+            raise ValueError("left_hand_register_top_midi must be within MIDI range")
         self.phrase_space.validate()
         self.ensemble_complementarity.validate()
 
@@ -192,6 +202,41 @@ class PianoSoloEvaluator:
                 score += v
                 components["deep_release_hold_space"] = v
                 reasons.append("deep release need not be filled immediately")
+
+        if candidate.pitch_midi is not None:
+            if (
+                context.left_hand_register_top_midi is not None
+                and context.left_hand_comping_activity >= 0.55
+                and candidate.pitch_midi - context.left_hand_register_top_midi <= 5
+            ):
+                components["left_hand_register_collision"] = -0.10
+                score -= 0.10
+                reasons.append("right-hand solo crowds active left-hand register")
+
+            if context.left_hand_harmonic_coverage <= 0.25:
+                if {"chord_tone", "guide_tone", "harmonic_identity"} & tags:
+                    v = 0.06
+                    components["right_hand_harmonic_support"] = v
+                    score += v
+                    reasons.append(
+                        "right hand can clarify harmony when left-hand coverage is sparse"
+                    )
+            elif context.left_hand_harmonic_coverage >= 0.75:
+                if "harmonic_outline" in tags and "connector" not in tags:
+                    v = -0.05
+                    components["duplicate_harmonic_outline"] = v
+                    score += v
+                    reasons.append(
+                        "explicit right-hand outlining duplicates dense left-hand harmony"
+                    )
+
+            if context.left_hand_rhythmic_coverage >= 0.75 and "dense_run" in tags:
+                v = -0.06
+                components["left_hand_rhythmic_crowding"] = v
+                score += v
+                reasons.append(
+                    "dense right-hand run competes with active left-hand rhythmic coverage"
+                )
 
         complementarity = context.ensemble_complementarity
         if complementarity.breath_type is EnsembleBreathType.FOREGROUND_HANDOFF:
