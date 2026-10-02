@@ -24,12 +24,15 @@ from .scorebook_evidence import BassWrittenPartPrior
 class BassLineObservation:
     pitch_midi: int
     beat: float
+    duration_beats: float = 1.0
     harmonic_root_pc: int | None = None
     structural_pitch_classes: frozenset[int] = frozenset()
 
     def validate(self) -> None:
         if not 0 <= self.pitch_midi <= 127:
             raise ValueError("pitch_midi must be in MIDI range")
+        if self.duration_beats <= 0:
+            raise ValueError("duration_beats must be positive")
         if self.harmonic_root_pc is not None and not 0 <= self.harmonic_root_pc <= 11:
             raise ValueError("harmonic_root_pc must be in 0..11")
         if any(not 0 <= pc <= 11 for pc in self.structural_pitch_classes):
@@ -46,6 +49,9 @@ class BassLineAbstractProfile:
     enclosure_rate: float
     repeated_pitch_rate: float
     direction_reversal_rate: float
+    offbeat_onset_rate: float
+    short_subdivision_rate: float
+    quarter_floor_coverage: float
     register_center: float | None
     register_span: int
     register_slope: float
@@ -68,7 +74,8 @@ def analyze_bass_line(
 ) -> BassLineAbstractProfile:
     if not events:
         return BassLineAbstractProfile(
-            0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, None, 0, 0.0
+            0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, None, 0, 0.0
         )
     for event in events:
         event.validate()
@@ -130,6 +137,26 @@ def analyze_bass_line(
         if current_sign:
             previous_sign = current_sign
 
+    offbeats = sum(
+        abs(e.beat - round(e.beat)) > 1e-9
+        for e in events
+    )
+    short = sum(e.duration_beats < .75 for e in events)
+
+    # Approximate whether the line preserves a quarter-note time floor:
+    # each integer beat is considered covered when an event begins within
+    # +/- 1/8 note of that beat. This measures continuity without requiring
+    # every event to be a quarter note.
+    integer_beats = range(
+        int(min(e.beat for e in events)),
+        int(max(e.beat for e in events)) + 1,
+    )
+    covered = sum(
+        any(abs(e.beat - beat) <= .125 for e in events)
+        for beat in integer_beats
+    )
+    floor_count = len(tuple(integer_beats))
+
     center = sum(pitches) / len(pitches)
     span = max(pitches) - min(pitches)
     slope = (
@@ -146,6 +173,9 @@ def analyze_bass_line(
         enclosure_rate=enclosures / max(1, len(events) - 2),
         repeated_pitch_rate=repeats / max(1, len(intervals)),
         direction_reversal_rate=reversals / max(1, len(intervals)),
+        offbeat_onset_rate=offbeats / count,
+        short_subdivision_rate=short / count,
+        quarter_floor_coverage=covered / max(1, floor_count),
         register_center=center,
         register_span=span,
         register_slope=slope,
@@ -167,6 +197,9 @@ def compare_bass_lines(
         ("enclosure_rate", reference.enclosure_rate, generated.enclosure_rate, 1.0),
         ("repeated_pitch_rate", reference.repeated_pitch_rate, generated.repeated_pitch_rate, 1.0),
         ("direction_reversal_rate", reference.direction_reversal_rate, generated.direction_reversal_rate, 1.0),
+        ("offbeat_onset_rate", reference.offbeat_onset_rate, generated.offbeat_onset_rate, 1.0),
+        ("short_subdivision_rate", reference.short_subdivision_rate, generated.short_subdivision_rate, 1.0),
+        ("quarter_floor_coverage", reference.quarter_floor_coverage, generated.quarter_floor_coverage, 1.0),
         ("register_span", float(reference.register_span), float(generated.register_span), 12.0),
         ("register_slope", reference.register_slope, generated.register_slope, 4.0),
     )
