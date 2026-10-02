@@ -26,6 +26,8 @@ from .bebop_phrase_space import BebopPhraseSpaceEvidence, PhraseSpaceType
 from .bebop_complementarity import (
     EnsembleBreathType,
     EnsembleComplementarityEvidence,
+    SupportCarryMode,
+    support_carry_mode,
 )
 from .bebop_turn_taking import BebopTurnTakingEvidence, BebopTurnTakingType
 
@@ -254,6 +256,7 @@ class PianoSoloEvaluator:
         complementarity = context.ensemble_complementarity
         if complementarity.breath_type is EnsembleBreathType.FOREGROUND_HANDOFF:
             weight = complementarity.confidence * complementarity.foreground_drop
+            carry_mode = support_carry_mode(complementarity)
             if candidate.pitch_midi is None or "rest" in tags:
                 v = 0.07 * weight
                 score += v
@@ -273,6 +276,32 @@ class PianoSoloEvaluator:
                 score += v
                 components["foreground_handoff_overfill"] = v
                 reasons.append("dense run can overfill an already-supported handoff")
+            if carry_mode is SupportCarryMode.HARMONIC_CARRIED:
+                if "harmonic_outline" in tags:
+                    v = -0.05 * weight
+                    score += v
+                    components["harmonic_carried_avoid_outline"] = v
+                    reasons.append("harmonic support already carries the handoff; avoid duplicate outlining")
+                if {"pickup", "anticipation", "connector"} & tags:
+                    v = 0.04 * weight
+                    score += v
+                    components["harmonic_carried_melodic_response"] = v
+                    reasons.append("harmonic-carried space leaves room for a light melodic/rhythmic response")
+
+            elif carry_mode is SupportCarryMode.PERCUSSIVE_CARRIED:
+                if {"guide_tone", "harmonic_identity"} & tags:
+                    v = 0.04 * weight
+                    score += v
+                    components["percussive_carried_harmonic_support"] = v
+                    reasons.append("percussive-carried handoff can admit a thin harmonic anchor")
+
+            elif carry_mode is SupportCarryMode.MIXED_SUPPORT:
+                if candidate.pitch_midi is None or "rest" in tags:
+                    v = 0.05 * weight
+                    score += v
+                    components["mixed_support_preserve_space"] = v
+                    reasons.append("harmonic and percussive support already carry the handoff")
+
 
         elif complementarity.breath_type is EnsembleBreathType.COLLECTIVE_RELEASE:
             weight = complementarity.confidence * complementarity.foreground_drop
