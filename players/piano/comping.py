@@ -331,6 +331,8 @@ class PianoCompingEvaluator:
                     "gesture uses a likely phrase-space window",
                 )
 
+            rhythm_tags = {tag for tag in candidate.tags if tag.startswith("rhythm:")}
+
             if candidate.action_type is CompingActionType.PUNCTUATION:
                 if comping_context.drummer_activity >= 0.65:
                     score = self._add(
@@ -342,6 +344,35 @@ class PianoCompingEvaluator:
                         score, components, reasons, "punctuation_length", -0.08,
                         "long duration weakens punctuation character",
                     )
+                if comping_context.drummer_activity >= 0.65 and (
+                    "rhythm:anticipated" in rhythm_tags
+                    or "rhythm:offbeat" in rhythm_tags
+                ):
+                    score = self._add(
+                        score, components, reasons, "rhythmic_placement_fit", 0.05,
+                        "anticipated/offbeat punctuation fits active rhythmic dialogue",
+                    )
+
+            if (
+                candidate.role is InteractionRole.ANSWER
+                and phrase_open
+                and useful_space
+                and "rhythm:delayed" in rhythm_tags
+            ):
+                score = self._add(
+                    score, components, reasons, "delayed_answer_fit", 0.08,
+                    "delayed placement fits a phrase-space answer",
+                )
+
+            if (
+                candidate.action_type is CompingActionType.SUSTAINED_SUPPORT
+                and "rhythm:sustained" in rhythm_tags
+                and not busy_solo
+            ):
+                score = self._add(
+                    score, components, reasons, "sustained_support_fit", 0.04,
+                    "sustained placement fits available accompaniment space",
+                )
 
             family_tags = set(event.tags) | set(candidate.tags)
 
