@@ -567,3 +567,83 @@ Piano decides how permitted material is registrally/structurally realized.
 ```
 
 This boundary should remain intact after CR-002 is implemented.
+
+
+## 17. Variation versus continuity
+
+### SOURCE-DERIVED
+
+Across the workbook, repeated rhythmic identities, ostinato-like materials, groove
+figures, ensemble-response ideas, and recurring comping behaviors coexist with
+variation in register, voicing size, density, dynamics, and placement.
+
+Therefore the source does **not** support a rule such as:
+
+```
+never repeat the previous comping gesture
+```
+
+Nor does it support unrestricted literal repetition.
+
+### DESIGN INFERENCE
+
+RealSolo should distinguish:
+
+- exact mechanical repetition,
+- partial continuity,
+- groove continuity,
+- motif-like family/role continuity,
+- contextual variation pressure.
+
+Current experimental representation:
+
+```
+GestureSignature
+  role
+  family
+  rhythm
+  register
+  dynamic
+  touch
+
+VariationContext
+  variation_pressure
+  groove_lock_strength
+  motif_continuity_strength
+```
+
+Current policy:
+
+- exact repetition receives a penalty proportional to variation pressure;
+- highly similar repetition receives a smaller penalty;
+- partial continuity with meaningful change may receive a small positive bias;
+- the same rhythmic placement may be preserved when groove-lock strength is high;
+- the same family/role may be preserved when motif-continuity strength is high,
+  provided another realization dimension changes;
+- repetition streaks increase pressure to vary.
+
+These values are RealSolo heuristics and require later expert/source calibration.
+
+### Negative rule
+
+Variation intelligence must not generate a future chain of gestures.
+
+It compares the current candidate against bounded recent memory only:
+
+```
+recent performed gestures
+       ↓
+current candidate comparison
+       ↓
+immediate repetition / continuity bias
+       ↓
+commit one gesture
+       ↓
+update memory
+```
+
+This remains compatible with the project principle:
+
+```
+Plan intention, not notes.
+```
