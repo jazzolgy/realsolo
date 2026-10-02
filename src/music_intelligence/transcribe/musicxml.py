@@ -75,6 +75,7 @@ def _append_note(
     *,
     divisions: int,
     staff_number: int,
+    engraving: EngravingIntent | None = None,
 ) -> None:
     note = ET.SubElement(measure, "note")
     if event.kind is NotatedAtomKind.REST:
@@ -86,6 +87,12 @@ def _append_note(
     ET.SubElement(note, "duration").text = str(duration)
     ET.SubElement(note, "voice").text = event.voice_id
     ET.SubElement(note, "staff").text = str(staff_number)
+
+    if engraving is not None:
+        if engraving.stem_direction is not StemDirection.AUTO:
+            ET.SubElement(note, "stem").text = engraving.stem_direction.value
+        if engraving.beam_state is not BeamState.NONE:
+            ET.SubElement(note, "beam", {"number": "1"}).text = engraving.beam_state.value
 
     if event.tie_from_previous:
         ET.SubElement(note, "tie", {"type": "stop"})
@@ -182,11 +189,26 @@ def score_to_musicxml(score: ReadableScore) -> str:
                         ET.SubElement(forward, "duration").text = str(
                             int((event.span.onset - cursor) * divisions)
                         )
+                    engraving = (
+                        engraving_plan.for_event(event.event_id)
+                        if engraving_plan is not None
+                        else None
+                    )
+                    rendered_staff_id = (
+                        engraving.cross_staff_target
+                        if engraving is not None and engraving.cross_staff_target is not None
+                        else staff_id
+                    )
+                    if rendered_staff_id not in staff_numbers:
+                        raise ValueError(
+                            f"engraving cross_staff_target is not in part: {rendered_staff_id}"
+                        )
                     _append_note(
                         measure,
                         event,
                         divisions=divisions,
-                        staff_number=staff_numbers[staff_id],
+                        staff_number=staff_numbers[rendered_staff_id],
+                        engraving=engraving,
                     )
                     cursor = event.span.offset
                 previous_group_cursor = cursor
