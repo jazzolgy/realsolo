@@ -1,3 +1,4 @@
+from .articulation import SoloArticulation
 from .arc import (
     SaxArcContext,
     SaxArcDecision,
@@ -16,6 +17,7 @@ from .phrase import (
 )
 
 __all__ = [
+    "SoloArticulation",
     "SaxArcContext",
     "SaxArcDecision",
     "apply_sax_arc",
