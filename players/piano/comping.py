@@ -54,6 +54,11 @@ from .harmonic_continuity import (
     HarmonicContinuityFeatures,
     HarmonicContinuityMemory,
 )
+from .creative_continuity import (
+    CreativityContext,
+    evaluate_creative_continuity,
+    profile_from_harmonic_context,
+)
 
 
 class InteractionRole(str, Enum):
@@ -93,6 +98,8 @@ class PianoCompingContext:
     motif_continuity_strength: float = 0.0
     pattern_consistency_strength: float = 0.0
     auto_pattern_consistency: bool = True
+    creativity_strength: float = 0.55
+    creativity_coherence_floor: float = 0.30
     role_occupancy: CompingRoleOccupancy = field(default_factory=CompingRoleOccupancy)
     time_feel: str = "swing"
 
@@ -109,6 +116,8 @@ class PianoCompingContext:
             "groove_lock_strength",
             "motif_continuity_strength",
             "pattern_consistency_strength",
+            "creativity_strength",
+            "creativity_coherence_floor",
         ):
             value = getattr(self, name)
             if not 0.0 <= value <= 1.0:
@@ -563,6 +572,25 @@ class PianoCompingEvaluator:
                     score, components, reasons, "release_fit", 0.10,
                     "sparse gesture supports release intention",
                 )
+
+        previous_signature = (
+            state.recent_signatures[-1] if state.recent_signatures else None
+        )
+        creative_bias = evaluate_creative_continuity(
+            candidate,
+            previous_signature,
+            profile_from_harmonic_context(state.last_harmonic_continuity),
+            CreativityContext(
+                creativity_strength=comping_context.creativity_strength,
+                coherence_floor=comping_context.creativity_coherence_floor,
+            ),
+        )
+        score += creative_bias.total
+        for key, value in creative_bias.components.items():
+            components[f"creative_continuity:{key}"] = components.get(
+                f"creative_continuity:{key}", 0.0
+            ) + value
+        reasons.extend(creative_bias.reasons)
 
         occupancy_bias = evaluate_role_occupancy_bias(
             candidate,
