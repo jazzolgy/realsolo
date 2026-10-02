@@ -34,6 +34,12 @@ from .performance_memory import (
     BassCommittedAction,
     BassPerformanceMemory,
 )
+from .phrase_intent import (
+    BassPhraseContext,
+    BassPhraseIntent,
+    BassPhraseState,
+    choose_bass_phrase_intent,
+)
 from .scorebook_evidence import BassScoreEvidenceDirective
 from .render_projection import (
     BassRenderEvent,
@@ -54,6 +60,7 @@ class BassStepInput:
     piano_fill_active: bool = False
     low_register_conflict: bool = False
     ensemble_activity: float = 0.5
+    phrase_progress: float | None = None
     local_key_pitch_classes: frozenset[int] = frozenset()
     score_evidence: BassScoreEvidenceDirective = BassScoreEvidenceDirective()
     directive: InteractionDirective | None = None
@@ -65,6 +72,7 @@ class BassStepResult:
     candidate: BassActionCandidate
     interaction: BassInteractionDecision
     render_event: BassRenderEvent
+    phrase_intent: BassPhraseIntent
 
 
 @dataclass
@@ -73,6 +81,7 @@ class BassSequentialRunner:
     register_low_midi: int = 28
     register_high_midi: int = 52
     memory: BassPerformanceMemory = field(default_factory=BassPerformanceMemory)
+    phrase_state: BassPhraseState = field(default_factory=BassPhraseState)
 
     def step(self, item: BassStepInput) -> BassStepResult:
         if self.tempo_bpm <= 0:
@@ -93,6 +102,22 @@ class BassSequentialRunner:
             )
         )
 
+        phrase_intent = choose_bass_phrase_intent(
+            BassPhraseContext(
+                memory=snap,
+                interaction=interaction,
+                phrase_boundary=item.phrase_boundary,
+                form_boundary=item.form_boundary,
+                soloist_phrase_ending=item.soloist_phrase_ending,
+                phrase_progress=item.phrase_progress,
+                ensemble_activity=item.ensemble_activity,
+            ),
+            previous=self.phrase_state.current,
+            actions_under_previous=self.phrase_state.committed_under_intent,
+        )
+        if phrase_intent != self.phrase_state.current:
+            self.phrase_state.replace(phrase_intent)
+
         candidate = choose_immediate_bass_action(
             item.frame,
             BassContext(
@@ -107,6 +132,7 @@ class BassSequentialRunner:
                 interaction_decision=interaction,
                 local_key_pitch_classes=item.local_key_pitch_classes,
                 score_evidence=item.score_evidence,
+                phrase_intent=phrase_intent,
             ),
         )
         render = project_bass_candidate_to_render_event(
@@ -123,11 +149,13 @@ class BassSequentialRunner:
             harmonic_role=candidate.harmonic_role.value,
             metric_role=candidate.grammar.metric_role.value,
         ))
+        self.phrase_state.commit()
         return BassStepResult(
             absolute_beat=item.absolute_beat,
             candidate=candidate,
             interaction=interaction,
             render_event=render,
+            phrase_intent=phrase_intent,
         )
 
     def run(self, steps: tuple[BassStepInput, ...]) -> tuple[BassStepResult, ...]:
