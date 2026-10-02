@@ -34,6 +34,7 @@ from .performance_memory import (
     BassCommittedAction,
     BassPerformanceMemory,
 )
+from .scorebook_evidence import BassScoreEvidenceDirective
 from .render_projection import (
     BassRenderEvent,
     project_bass_candidate_to_render_event,
@@ -54,6 +55,7 @@ class BassStepInput:
     low_register_conflict: bool = False
     ensemble_activity: float = 0.5
     local_key_pitch_classes: frozenset[int] = frozenset()
+    score_evidence: BassScoreEvidenceDirective = BassScoreEvidenceDirective()
     directive: InteractionDirective | None = None
 
 
@@ -104,6 +106,7 @@ class BassSequentialRunner:
                 memory_snapshot=snap,
                 interaction_decision=interaction,
                 local_key_pitch_classes=item.local_key_pitch_classes,
+                score_evidence=item.score_evidence,
             ),
         )
         render = project_bass_candidate_to_render_event(
