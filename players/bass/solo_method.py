@@ -8,8 +8,10 @@ from music_intelligence.reasoning.solo_grammar import (
     SoloDevelopmentOperation,
     SoloMethodContext,
     SoloMethodOption,
+    apply_legend_solo_priors,
     shared_solo_method_options,
 )
+from music_intelligence.legends.interfaces import LegendProfileView
 from .phrase_intent import BassPhraseContext, BassPhraseIntent, BassPhraseIntentKind
 
 
@@ -29,6 +31,7 @@ def bass_shared_solo_options(
     *,
     recent_repetition_count: int = 0,
     future_harmony_available: bool = False,
+    legend_profile: LegendProfileView | None = None,
 ) -> tuple[SoloMethodOption, ...]:
     ctx.validate()
     interaction_role = ""
@@ -52,4 +55,9 @@ def bass_shared_solo_options(
         future_harmony_available=future_harmony_available,
         interaction_role=interaction_role,
     )
-    return shared_solo_method_options(shared, arc=_KIND_TO_ARC[intent.kind])
+    options = shared_solo_method_options(shared, arc=_KIND_TO_ARC[intent.kind])
+    return apply_legend_solo_priors(
+        options,
+        legend_profile,
+        active_tags=("solo", intent.kind.value),
+    )
