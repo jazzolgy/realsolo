@@ -25,7 +25,7 @@ class EnsembleStateStore:
         audio_pitch_hz = self.state.audio_pitch_hz
         audio_pitch_confidence = self.state.audio_pitch_confidence
 
-        if isinstance(obs, MidiObservation):
+        if isinstance(obs, MidiObservation) and obs.kind != ObservationKind.CLOCK_TICK:
             input_mode = "midi" if input_mode in ("unknown", "midi") else "hybrid"
             if obs.kind == ObservationKind.NOTE_ON and obs.note is not None and obs.velocity > 0:
                 notes.add(obs.note)
