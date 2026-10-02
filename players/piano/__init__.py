@@ -28,6 +28,13 @@ from .voicing import (
 )
 from .planner import PianoCompingCandidateSet, build_contextual_comping_candidates
 from .narrative import NarrativeBiasScore, evaluate_narrative_bias
+from .rhythm import (
+    PianoRhythmicIntent,
+    RhythmicPlacement,
+    apply_rhythmic_intent,
+    expand_rhythmic_variants,
+    rhythmic_intents_for_candidate,
+)
 from .comping import (
     CompingActionType,
     InteractionRole,
@@ -72,4 +79,9 @@ __all__ = [
     "build_contextual_comping_candidates",
     "NarrativeBiasScore",
     "evaluate_narrative_bias",
+    "PianoRhythmicIntent",
+    "RhythmicPlacement",
+    "apply_rhythmic_intent",
+    "expand_rhythmic_variants",
+    "rhythmic_intents_for_candidate",
 ]
