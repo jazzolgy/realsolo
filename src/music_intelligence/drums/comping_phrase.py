@@ -194,10 +194,13 @@ def build_snare_phrase_candidates(
         space_bias += 0.26
     if comp_intent is BebopCompIntent.INTENTIONAL_NON_RESPONSE:
         space_bias += 0.34
+    space_tags = {"bebop", "snare_phrase", "leave_space"}
+    if comp_intent is BebopCompIntent.INTENTIONAL_NON_RESPONSE:
+        space_tags.add("intentional_non_response")
     out.append(CompPhraseCandidate(
         DrumGesture(
             role=GestureRole.SPACE,
-            tags=frozenset({"bebop", "snare_phrase", "leave_space"}),
+            tags=frozenset(space_tags),
             provenance=("drum_player", "snare_phrase_engine"),
         ),
         CompPhraseAction.LEAVE_SPACE,
