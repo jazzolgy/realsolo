@@ -22,10 +22,10 @@ from music_intelligence.reasoning.polyphonic_online import (
 def make_voicing() -> PolyphonicEventCandidate:
     return PolyphonicEventCandidate(
         voices=(
-            VoiceEvent("bass", 48, harmonic_role="root", assignment=InstrumentAssignment(instrument_family="piano")),
-            VoiceEvent("tenor", 55, harmonic_role="5"),
-            VoiceEvent("alto", 59, harmonic_role="7"),
-            VoiceEvent("soprano", 64, harmonic_role="3", onset_offset_beats=.02),
+            VoiceEvent("bass", 48, onset_offset_beats=-.015, harmonic_role="root", assignment=InstrumentAssignment(instrument_family="piano")),
+            VoiceEvent("tenor", 55, onset_offset_beats=0.0, harmonic_role="5"),
+            VoiceEvent("alto", 59, onset_offset_beats=.01, harmonic_role="7"),
+            VoiceEvent("soprano", 64, onset_offset_beats=.025, harmonic_role="3"),
         ),
         duration_beats=1.0,
         tags=frozenset({"guide_tones"}),
@@ -54,11 +54,19 @@ def test_polyphonic_candidate_represents_order_register_spacing_and_assignments(
     assert v.voices[0].assignment.instrument_family == "piano"
 
 
-def test_voice_identity_and_order_survive_json_serialization():
+def test_polyphonic_gesture_can_have_staggered_voice_onsets():
+    v = make_voicing()
+    assert v.voice_onset_spread_beats == pytest.approx(.04)
+    assert [x.voice_id for x in v.voices_by_onset] == ["bass", "tenor", "alto", "soprano"]
+    assert len({x.onset_offset_beats for x in v.voices}) > 1
+
+
+def test_voice_identity_order_and_onsets_survive_json_serialization():
     original = make_voicing()
     payload = json.loads(json.dumps(original.to_dict()))
     restored = PolyphonicEventCandidate.from_dict(payload)
     assert [v.voice_id for v in restored.voices] == [v.voice_id for v in original.voices]
+    assert [v.onset_offset_beats for v in restored.voices] == [v.onset_offset_beats for v in original.voices]
     assert restored.pitches_midi == original.pitches_midi
     assert restored.doublings[0].voice_ids == ("bass", "soprano")
     assert restored.voice_leading[0].from_voice_id == "soprano"
@@ -74,7 +82,7 @@ def test_core_has_no_piano_range_or_hand_semantics():
     assert not hasattr(v, "right_hand")
 
 
-def test_polyphonic_commit_is_one_atomic_immediate_action():
+def test_polyphonic_commit_is_one_atomic_immediate_action_even_with_staggered_onsets():
     plan = SoftPlan(4, "support soloist", candidate_families=("sparse_shell",))
     memory = PolyphonicPerformanceMemory()
     result = perform_one_polyphonic_event(
@@ -86,6 +94,7 @@ def test_polyphonic_commit_is_one_atomic_immediate_action():
     )
     assert result.candidate is memory.committed[0]
     assert len(memory.committed) == 1
+    assert memory.committed[0].voice_onset_spread_beats > 0
 
 
 def test_soft_plan_still_cannot_freeze_future_notes_for_polyphony():
