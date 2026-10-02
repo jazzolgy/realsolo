@@ -161,6 +161,76 @@ def grouping_boundary_motif(
     return motif
 
 
+def motif_from_normalized_vocabulary(
+    *,
+    vocabulary_id: str,
+    source_id: str,
+    normalized_representation: str,
+    provenance: tuple[str, ...] = (),
+) -> RhythmicMotifIdentity | None:
+    """Convert a shared normalized IOI/accent representation into motif identity.
+
+    Expected format:
+    `ioi:2,3,1|accent:0.638,0.720,0.613,0.659`
+
+    This is an abstract memory representation, not a scheduled phrase.
+    """
+    if not normalized_representation:
+        return None
+    parts = {}
+    for part in normalized_representation.split("|"):
+        if ":" not in part:
+            continue
+        key, value = part.split(":", 1)
+        parts[key.strip()] = value.strip()
+    if "ioi" not in parts:
+        return None
+
+    try:
+        iois = tuple(int(x) for x in parts["ioi"].split(",") if x.strip())
+    except ValueError:
+        return None
+    if not iois or any(x <= 0 for x in iois):
+        return None
+
+    onsets = [0]
+    cursor = 0
+    for ioi in iois:
+        cursor += ioi
+        onsets.append(cursor)
+    cycle_units = cursor
+    # Last onset at cycle boundary belongs to next cycle; convert to in-cycle
+    # representation by using the preceding events plus boundary-aware final event
+    # just before wrap when necessary.
+    if onsets[-1] == cycle_units:
+        # Preserve N+1 event accent shape by increasing cycle one unit; this avoids
+        # collapsing the terminal event onto onset 0 while keeping relative IOIs.
+        cycle_units += 1
+
+    accent_text = parts.get("accent", "")
+    accents: tuple[float, ...]
+    try:
+        accents = tuple(float(x) for x in accent_text.split(",") if x.strip())
+    except ValueError:
+        accents = ()
+    if len(accents) != len(onsets):
+        accents = tuple(0.72 if i == 0 else 0.62 for i in range(len(onsets)))
+    accents = tuple(max(0.0, min(1.0, x)) for x in accents)
+
+    motif = RhythmicMotifIdentity(
+        motif_id=f"legend:{vocabulary_id}",
+        cycle_units=cycle_units,
+        onset_units=tuple(onsets),
+        subdivision="triplet_grid",
+        accent_vector=accents,
+        orchestration_contour=tuple(0 for _ in onsets),
+        source=f"shared_legend_vocabulary:{source_id}",
+        provenance=provenance + ("shared_legend_vocabulary",),
+    )
+    motif.validate()
+    return motif
+
+
 def engineering_seed_motif() -> RhythmicMotifIdentity:
     """Small non-legend engineering seed used until executed material exists."""
     motif = RhythmicMotifIdentity(
