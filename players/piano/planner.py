@@ -6,7 +6,7 @@ families/roles and lets context-sensitive evaluation choose among them.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from music_intelligence.harmony.jazz_harmony_core import HarmonicAffordance
 
@@ -18,6 +18,7 @@ from .comping import (
 )
 from .expression import expand_expression_variants
 from .candidate_diversity import select_diverse_candidates
+from .ensemble_role import PianoEnsembleMode
 from .harmonic_semantics import annotate_harmonic_semantics
 from .rhythm import expand_rhythmic_variants
 from .voicing import (
@@ -153,6 +154,36 @@ def build_contextual_comping_candidates(
                     tags=frozenset({family, "extended_family", "candidate_factory"}),
                 )
             )
+
+    if context.ensemble_mode in {
+        PianoEnsembleMode.PIANO_HEAD_TRIO,
+        PianoEnsembleMode.PIANO_SOLO_TRIO,
+    }:
+        # Add physically compact LH-only realizations so the evaluator has genuine
+        # accompaniment options while RH carries melody/solo foreground.
+        lh_foreground_variants: list[PianoCompingCandidate] = []
+        for candidate in out:
+            if candidate.realization is None:
+                continue
+            pitches=candidate.realization.event.pitches_midi
+            if not pitches:
+                continue
+            if max(pitches) <= 67 and (max(pitches)-min(pitches)) <= 16:
+                realization=replace(
+                    candidate.realization,
+                    hand_assignment=tuple(
+                        (voice.voice_id,"LH")
+                        for voice in candidate.realization.event.voices
+                    ),
+                )
+                lh_foreground_variants.append(
+                    replace(
+                        candidate,
+                        realization=realization,
+                        tags=frozenset(set(candidate.tags)|{"lh_comping","foreground_support"}),
+                    )
+                )
+        out.extend(lh_foreground_variants)
 
     return PianoCompingCandidateSet(tuple(out))
 
