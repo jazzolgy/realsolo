@@ -250,52 +250,74 @@ def _chart_from_mapping(data: dict[str, Any], source: Path) -> StandardChart:
     return chart
 
 
-def load_standard_chart(path: Path) -> StandardChart:
+def _mapping_list_from_json(data: Any) -> list[dict[str, Any]]:
+    if isinstance(data, dict):
+        for key in ("songs", "charts", "items", "standards", "tunes"):
+            value = data.get(key)
+            if isinstance(value, list) and all(isinstance(x, dict) for x in value):
+                return list(value)
+        return [data]
+    if isinstance(data, list) and all(isinstance(x, dict) for x in data):
+        return list(data)
+    raise ValueError("chart JSON must be an object or list of objects")
+
+
+def load_charts_from_file(path: Path) -> tuple[StandardChart, ...]:
     suffix = path.suffix.lower()
+    mappings: list[dict[str, Any]]
+
     if suffix == ".json":
         data = json.loads(path.read_text(encoding="utf-8"))
-        if isinstance(data, list):
-            if len(data) != 1 or not isinstance(data[0], dict):
-                raise ValueError(f"JSON file is not one chart mapping: {path}")
-            data = data[0]
-        if not isinstance(data, dict):
-            raise ValueError(f"JSON chart must be an object: {path}")
-        return _chart_from_mapping(data, path)
-
-    if suffix == ".jsonl":
+        mappings = _mapping_list_from_json(data)
+    elif suffix == ".jsonl":
         rows = [
             json.loads(line)
             for line in path.read_text(encoding="utf-8").splitlines()
             if line.strip()
         ]
-        if len(rows) != 1 or not isinstance(rows[0], dict):
-            raise ValueError(f"JSONL chart file must contain one object: {path}")
-        return _chart_from_mapping(rows[0], path)
-
-    if suffix == ".csv":
+        if not all(isinstance(row, dict) for row in rows):
+            raise ValueError(f"JSONL rows must be objects: {path}")
+        mappings = list(rows)
+    elif suffix == ".csv":
         with path.open("r", encoding="utf-8-sig", newline="") as handle:
-            rows = list(csv.DictReader(handle))
-        if len(rows) != 1:
-            raise ValueError(f"CSV chart file must contain one data row: {path}")
-        return _chart_from_mapping(dict(rows[0]), path)
+            mappings = [dict(row) for row in csv.DictReader(handle)]
+    else:
+        return (
+            StandardChart(
+                source_path=str(path),
+                title=path.stem,
+                parse_notes=(
+                    "opaque_text_format_not_interpreted",
+                    "bar_count_unknown",
+                    "meter_unknown",
+                    "tempo_unknown",
+                ),
+            ),
+        )
 
-    # Plain iReal/text formats are not guessed. We preserve only filename title
-    # until a source-specific parser is verified against the actual corpus.
-    return StandardChart(
-        source_path=str(path),
-        title=path.stem,
-        parse_notes=("opaque_text_format_not_interpreted", "bar_count_unknown", "meter_unknown", "tempo_unknown"),
-    )
+    charts: list[StandardChart] = []
+    for index, mapping in enumerate(mappings):
+        source = path if len(mappings) == 1 else Path(f"{path}#{index + 1}")
+        charts.append(_chart_from_mapping(mapping, source))
+    return tuple(charts)
+
+
+def load_standard_chart(path: Path) -> StandardChart:
+    """Backward-compatible helper for files that contain exactly one chart."""
+    charts = load_charts_from_file(path)
+    if len(charts) != 1:
+        raise ValueError(f"file contains {len(charts)} charts, not one: {path}")
+    return charts[0]
 
 
 def load_standard100(root: str | Path | None = None) -> tuple[StandardChart, ...]:
     charts: list[StandardChart] = []
     for path in discover_standard100_files(root):
         try:
-            charts.append(load_standard_chart(path))
+            charts.extend(load_charts_from_file(path))
         except (ValueError, json.JSONDecodeError, UnicodeDecodeError):
-            # A malformed/aggregate file must not be silently converted to a
-            # fictitious tune. It simply does not enter practice.
+            # A malformed file must not be silently converted to fictitious
+            # tune data. It simply does not enter practice.
             continue
     return tuple(charts)
 
@@ -354,6 +376,7 @@ def _walking_bass_state(
     bar: int,
     tempo: float,
     meter_numerator: int,
+    meter_denominator: int,
     form_position: float,
     boundary: bool,
 ) -> EnsembleState:
@@ -364,7 +387,7 @@ def _walking_bass_state(
             section="",
             tempo_bpm=tempo,
             meter_numerator=meter_numerator,
-            meter_denominator=4,
+            meter_denominator=meter_denominator,
             form_position=form_position,
         ),
         players=(
@@ -422,6 +445,7 @@ def practice_chart(
 
     bars = chart.bar_count
     meter = chart.meter_numerator or 4
+    meter_denominator = chart.meter_denominator or 4
     tempo = chart.tempo_bpm or default_tempo
     synthetic_defaults: list[str] = []
     if chart.meter_numerator is None:
@@ -458,6 +482,7 @@ def practice_chart(
                 bar=bar,
                 tempo=tempo,
                 meter_numerator=meter,
+                meter_denominator=meter_denominator,
                 form_position=form_position,
                 boundary=source_boundary,
             )
