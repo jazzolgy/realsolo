@@ -36,7 +36,7 @@ Commit one immediate bass action -> listen -> re-plan.
 
 ### v1.37 — Immediate realization
 
-Implemented in `src/music_intelligence/bass/immediate_realizer.py`.
+Implemented in `players/bass/immediate_realizer.py`.
 
 - consumes `HarmonicFrame` rather than parsing chord symbols independently
 - respects inferred -> observed -> expected evidence precedence for immediate realization
@@ -48,7 +48,7 @@ Implemented in `src/music_intelligence/bass/immediate_realizer.py`.
 
 ### v1.38 — Bass Performance Grammar v0.1
 
-Implemented in `src/music_intelligence/bass/performance_grammar.py`.
+Implemented in `players/bass/performance_grammar.py`.
 
 The grammar now separates:
 
