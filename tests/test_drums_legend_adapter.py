@@ -68,8 +68,7 @@ def test_projection_is_contextual_and_not_named_drummer_specific():
     )
     assert projection.legend_ids == ("test_drummer",)
     assert projection.bias(DrumLegendFeature.RIDE_SURFACE_FLEXIBILITY) > 0
-    assert projection.bias(DrumLegendFeature.SPACE_PREFERENCE) == 0
-    # BREATH_SPACE is not a drum-owned projection domain in this first adapter.
+    assert projection.bias(DrumLegendFeature.SPACE_PREFERENCE) > 0
     assert "parker" not in repr(projection).lower()
 
 
