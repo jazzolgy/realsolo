@@ -60,3 +60,22 @@ def test_stage1_solo_exposes_causal_articulation_arc():
     assert event["arc_phase"] in {"attack", "body", "peak", "release"}
     assert 0.2 <= event["attack_scale"] <= 1.5
     assert isinstance(event["arc_reasons"], list)
+
+
+def test_render_voice_accepts_generic_expression_controls():
+    gesture = monophonic_solo_gesture(
+        67,
+        .75,
+        instrument_role="tenor_sax",
+        expression_controls={
+            "vibrato_depth": .72,
+            "vibrato_rate_hz": 5.8,
+            "pitch_bend_cents": -18,
+            "expression": .9,
+        },
+    ).to_dict()
+    controls = gesture["voices"][0]["expression_controls"]
+    assert controls["vibrato_depth"] == .72
+    assert controls["vibrato_rate_hz"] == 5.8
+    assert controls["pitch_bend_cents"] == -18
+    assert controls["expression"] == .9
