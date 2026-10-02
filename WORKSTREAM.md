@@ -1,5 +1,7 @@
-# Workstream: Legend Intelligence
+# Workstream: AI Drummer
 
-Owns SharedJazzGrammar research, multi-legend evidence/provenance, LegendProfile design, Online Musical Evaluator, Slow Brain/Fast Hands contracts, and Parker deep study as the first benchmark.
+Owns drum-set realization, time-feel, ride/hi-hat/snare/bass-drum orchestration, comping, fills, dynamics, articulation, limb/kit feasibility, and drummer-specific ensemble interaction.
 
-Runtime work must not precompose complete solos. Shared-core changes require tests before integration.
+Shared phrase, form, narrative, memory, ensemble state, tension trajectory, and interaction semantics come from Core. Shared-core changes should be proposed via CORE_CHANGE_REQUEST.md.
+
+Runtime invariant: plan groove/interaction intention, commit one immediate drum gesture, then listen/re-plan.
