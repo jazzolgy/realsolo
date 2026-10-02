@@ -74,7 +74,7 @@ if(!audioCtx){audioCtx=new (window.AudioContext||window.webkitAudioContext)();ma
 if(audioCtx.state==="suspended")audioCtx.resume();
 if(!approvedSamples&&window.RealSoloApprovedSampleEngine){
 approvedSamples=new window.RealSoloApprovedSampleEngine(audioCtx);
-approvedSamples.init().then(function(){els.audioText.textContent="Audio engine: CC0 jazz samples";els.bankText.textContent="Meatbass + Virtuosity Drums installed";return approvedSamples.warmup();}).catch(function(){approvedSamples=null;});
+approvedSamples.init().then(function(){els.audioText.textContent="Audio engine: CC0 jazz samples";els.bankText.textContent="Osiris Piano + Meatbass + Virtuosity Drums installed";return approvedSamples.warmup();}).catch(function(){approvedSamples=null;});
 }
 els.audioText.textContent=approvedSamples&&approvedSamples.ready?"Audio engine: CC0 jazz samples":(sampler&&sampler.ready?"Audio engine: SoundFont sampler":"Audio engine: oscillator fallback");
 }
@@ -120,7 +120,8 @@ function renderGesture(gesture,when,beatDur){
 if(!gesture)return;
 (gesture.voices||[]).forEach(function(v){
 var t=when+(v.onset_offset_beats||0)*beatDur,d=Math.max(.03,(v.duration_beats||.5)*beatDur),role=v.instrument_role||"solo";
-if(role==="bass"&&approvedSamples&&approvedSamples.ready){approvedSamples.bass(v.pitch_midi,v.velocity||88,t,d);}
+if(role==="bass"&&approvedSamples&&approvedSamples.ready){approvedSamples.bass(v.pitch_midi,v.velocity||88,t,d,v.articulation||[]);}
+else if(role==="piano"&&approvedSamples&&approvedSamples.ready){approvedSamples.piano(v.pitch_midi,v.velocity||72,t,d);}
 else if(sampleReady()){
 if(role==="bass")sampler.bass(v.pitch_midi,v.velocity||88,t,d,v.articulation||[]);
 else if(role==="piano")sampler.piano(v.pitch_midi,v.velocity||72,t,d);
