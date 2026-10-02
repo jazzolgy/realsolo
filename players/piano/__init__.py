@@ -12,6 +12,14 @@ from .ensemble_role import (
     PianoHandRolePlan,
     derive_piano_hand_role_plan,
 )
+from .texture_control import (
+    AttackDensityLevel,
+    HarmonicColorLevel,
+    MacroArcPhase,
+    PianoTextureIntent,
+    PianoTextureIntentBias,
+    evaluate_texture_intent,
+)
 from .rh_lh_interaction import (
     RHLHInteractionBias,
     RHLHRelation,
@@ -201,6 +209,12 @@ __all__ = [
     "PianoHandFunction",
     "PianoHandRolePlan",
     "derive_piano_hand_role_plan",
+    "AttackDensityLevel",
+    "HarmonicColorLevel",
+    "MacroArcPhase",
+    "PianoTextureIntent",
+    "PianoTextureIntentBias",
+    "evaluate_texture_intent",
     "RHLHInteractionBias",
     "RHLHRelation",
     "evaluate_rh_lh_interaction",
