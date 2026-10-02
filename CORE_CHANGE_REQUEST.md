@@ -434,3 +434,102 @@ instruments should not be forced to populate it.
 - low agreement confidence remains distinct from low harmonic coverage
 - no piano-specific fields enter the shared object
 - representation contains no future turn schedule or exact future notes
+
+
+## CR-005 — Shared ensemble-breath / foreground-support complementarity evidence
+
+### Status
+
+Requested from player/piano after repeated analysis of the uploaded Charlie Parker
+compilation. Current implementation is an experimental piano-side adapter.
+
+### Requested Core capability
+
+Represent an observed short-term relation between foreground activity and accompaniment
+support without assigning a causal actor unless evidence exists.
+
+Minimum useful fields:
+
+- breath / complementarity type
+- foreground activity drop or rise
+- low-harmonic support persistence
+- percussive support persistence
+- post-event foreground re-entry contrast
+- observation confidence
+- actor-attribution confidence
+- provenance
+
+Provisional observed relation types:
+
+- foreground handoff
+- collective release
+- collective build
+- none / unclassified
+
+### Musical reason
+
+Generic ensemble density is insufficient.
+
+Two passages may have similar overall loudness while differing in an important way:
+
+1. foreground melodic activity falls while rhythm/harmonic support continues;
+2. foreground and accompaniment support fall together.
+
+These situations invite different immediate responses from a pianist, soloist, drummer,
+or other ensemble agent.
+
+### Causality / attribution caution
+
+Mixed-audio evidence does not establish:
+
+- that the foreground source is a specific player;
+- that a specific accompanist intentionally caused the response;
+- that temporal adjacency proves musical causation.
+
+Actor attribution must therefore remain independent from the raw complementarity
+observation and may legitimately remain zero.
+
+### Current piano-side experiment
+
+`players/piano/bebop_complementarity.py` defines:
+
+- `EnsembleBreathType`
+- `EnsembleComplementarityEvidence`
+- `classify_ensemble_complementarity()`
+
+Current Piano Solo interpretations include:
+
+- foreground handoff + active support -> preserve space or use a light pickup;
+- foreground handoff -> penalize dense overfilling;
+- collective release -> permit a directed new phrase entry or continued space.
+
+Current Piano Comping interpretations include:
+
+- supported foreground handoff -> favor lay-out / brief punctuation;
+- supported foreground handoff -> penalize sustained harmonic overfill;
+- collective release -> permit continued ensemble breath.
+
+These policy mappings remain instrument-local hypotheses.
+
+### Likely architectural boundary
+
+Core owns:
+
+- observed foreground/support relation
+- temporal morphology
+- confidence
+- attribution confidence
+- provenance
+
+Player layers own:
+
+- whether to answer, lay out, sustain, build, punctuate, or re-enter;
+- register, touch, articulation, density, and instrument-specific realization.
+
+### Tests required
+
+- foreground handoff and collective release remain distinguishable;
+- harmonic and percussive support remain separate;
+- actor attribution can remain unknown;
+- observation contains no future action or exact notes;
+- same evidence can be interpreted differently by different instrument policies.
