@@ -12,6 +12,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from music_intelligence.legends.interfaces import LegendProfileView
 
 
 class SoloDevelopmentOperation(str, Enum):
@@ -158,3 +162,84 @@ def shared_solo_method_options(
         ))
 
     return tuple(options)
+
+
+# Shared semantic feature -> Shared Solo Grammar operation mapping.
+# Legend packages may express these features, but no Player needs to know which
+# musician supplied them.
+_LEGEND_SOLO_FEATURE_OPERATION_MAP: dict[
+    str, tuple[tuple[SoloDevelopmentOperation, float], ...]
+] = {
+    "solo.rhythmic_motif_persistence": (
+        (SoloDevelopmentOperation.REPEAT, .70),
+        (SoloDevelopmentOperation.VARY, .30),
+        (SoloDevelopmentOperation.RECAP, .25),
+    ),
+    "solo.rhythmic_displacement": (
+        (SoloDevelopmentOperation.DISPLACE, 1.00),
+    ),
+    "solo.subdivision_variation": (
+        (SoloDevelopmentOperation.VARY, .35),
+        (SoloDevelopmentOperation.DIMINISH, .35),
+        (SoloDevelopmentOperation.AUGMENT, .20),
+    ),
+    "solo.linear_scale_arpeggio_motion": (
+        (SoloDevelopmentOperation.SEQUENCE, .55),
+        (SoloDevelopmentOperation.EXTEND, .35),
+        (SoloDevelopmentOperation.TARGET_NEXT_HARMONY, .20),
+    ),
+    "solo.productive_repetition": (
+        (SoloDevelopmentOperation.REPEAT, .65),
+        (SoloDevelopmentOperation.RECAP, .35),
+    ),
+}
+
+
+def apply_legend_solo_priors(
+    options: tuple[SoloMethodOption, ...],
+    legend_view: "LegendProfileView | None",
+    *,
+    active_tags: tuple[str, ...] = (),
+) -> tuple[SoloMethodOption, ...]:
+    """Apply bounded musician-specific priors to shared solo operations.
+
+    The mapping is instrument-neutral and semantic.  Legend evidence may bias
+    operation selection, but it never supplies a frozen future phrase.
+    """
+    if legend_view is None:
+        return options
+
+    by_operation: dict[SoloDevelopmentOperation, SoloMethodOption] = {
+        option.operation: option for option in options
+    }
+    additions: dict[SoloDevelopmentOperation, float] = {}
+    reasons: dict[SoloDevelopmentOperation, list[str]] = {}
+
+    for tendency in legend_view.tendencies(active_tags=active_tags):
+        mappings = _LEGEND_SOLO_FEATURE_OPERATION_MAP.get(tendency.feature, ())
+        if not mappings:
+            continue
+        evidence = tendency.weight * tendency.confidence
+        for operation, scale in mappings:
+            delta = max(-.20, min(.20, evidence * scale))
+            additions[operation] = additions.get(operation, 0.0) + delta
+            reasons.setdefault(operation, []).append(
+                f"legend:{legend_view.legend_id}:{tendency.feature}={delta:+.3f}"
+            )
+
+    out: list[SoloMethodOption] = []
+    operations = set(by_operation) | set(additions)
+    for operation in operations:
+        existing = by_operation.get(operation)
+        base_weight = existing.weight if existing is not None else .08
+        base_reasons = existing.reasons if existing is not None else (
+            "legend prior activates a contextually relevant shared operation",
+        )
+        delta = max(-.25, min(.25, additions.get(operation, 0.0)))
+        out.append(SoloMethodOption(
+            operation=operation,
+            weight=max(-.25, min(1.0, base_weight + delta)),
+            reasons=base_reasons + tuple(reasons.get(operation, ())),
+        ))
+
+    return tuple(sorted(out, key=lambda x: x.operation.value))
