@@ -174,3 +174,127 @@ def evaluate_response_bias(
             )
 
     return EnsembleResponseBias(score, components, tuple(reasons))
+
+
+@dataclass(frozen=True)
+class EnsembleSnapshot:
+    soloist_activity: float = 0.5
+    phrase_boundary_probability: float = 0.0
+    available_space_beats: float = 0.0
+    ensemble_density: float = 0.5
+
+    def validate(self) -> None:
+        for name in (
+            "soloist_activity",
+            "phrase_boundary_probability",
+            "ensemble_density",
+        ):
+            value = getattr(self, name)
+            if not 0.0 <= value <= 1.0:
+                raise ValueError(f"{name} must be within 0..1")
+        if self.available_space_beats < 0:
+            raise ValueError("available_space_beats cannot be negative")
+
+    @classmethod
+    def from_context(cls, context: Any) -> "EnsembleSnapshot":
+        return cls(
+            soloist_activity=float(getattr(context, "soloist_activity")),
+            phrase_boundary_probability=float(
+                getattr(context, "phrase_boundary_probability")
+            ),
+            available_space_beats=float(getattr(context, "available_space_beats")),
+            ensemble_density=float(getattr(context, "ensemble_density")),
+        )
+
+
+def infer_coarse_responses(
+    before: EnsembleSnapshot,
+    after: EnsembleSnapshot,
+    *,
+    latency_beats: float = 0.5,
+    attribution_confidence: float = 0.25,
+) -> tuple[EnsembleResponseObservation, ...]:
+    """Infer conservative response observations from coarse ensemble-state deltas.
+
+    These observations describe temporal changes only. Attribution confidence defaults
+    low because state deltas alone cannot establish that the piano caused them.
+    """
+    before.validate()
+    after.validate()
+    if latency_beats < 0:
+        raise ValueError("latency_beats cannot be negative")
+    if not 0.0 <= attribution_confidence <= 1.0:
+        raise ValueError("attribution_confidence must be within 0..1")
+
+    out: list[EnsembleResponseObservation] = []
+    density_delta = after.ensemble_density - before.ensemble_density
+    solo_delta = after.soloist_activity - before.soloist_activity
+    space_delta = after.available_space_beats - before.available_space_beats
+    boundary_delta = (
+        after.phrase_boundary_probability - before.phrase_boundary_probability
+    )
+
+    if density_delta >= 0.15:
+        out.append(
+            EnsembleResponseObservation(
+                EnsembleActor.ENSEMBLE,
+                ResponseType.DENSITY_INCREASE,
+                strength=min(1.0, density_delta / 0.5),
+                latency_beats=latency_beats,
+                confidence=0.8,
+                attribution_confidence=attribution_confidence,
+                provenance=("coarse_context_delta",),
+            )
+        )
+    elif density_delta <= -0.15:
+        out.append(
+            EnsembleResponseObservation(
+                EnsembleActor.ENSEMBLE,
+                ResponseType.DENSITY_DECREASE,
+                strength=min(1.0, abs(density_delta) / 0.5),
+                latency_beats=latency_beats,
+                confidence=0.8,
+                attribution_confidence=attribution_confidence,
+                provenance=("coarse_context_delta",),
+            )
+        )
+
+    if solo_delta >= 0.18 and after.phrase_boundary_probability < 0.55:
+        out.append(
+            EnsembleResponseObservation(
+                EnsembleActor.SOLOIST,
+                ResponseType.PHRASE_EXTENSION,
+                strength=min(1.0, solo_delta / 0.5),
+                latency_beats=latency_beats,
+                confidence=0.72,
+                attribution_confidence=attribution_confidence,
+                provenance=("coarse_context_delta",),
+            )
+        )
+
+    if (
+        space_delta >= 0.5
+        or (
+            after.available_space_beats >= 0.5
+            and boundary_delta >= 0.25
+        )
+    ):
+        out.append(
+            EnsembleResponseObservation(
+                EnsembleActor.SOLOIST,
+                ResponseType.SPACE_OPENED,
+                strength=min(
+                    1.0,
+                    max(
+                        after.phrase_boundary_probability,
+                        after.available_space_beats / 2.0,
+                    ),
+                ),
+                latency_beats=latency_beats,
+                confidence=0.78,
+                attribution_confidence=attribution_confidence,
+                provenance=("coarse_context_delta",),
+            )
+        )
+
+    return tuple(out)
