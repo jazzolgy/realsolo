@@ -26,3 +26,29 @@ def test_render_gesture_carries_tenor_sax_expression():
     assert voice["pitch_midi"] == 62
     assert voice["instrument_role"] == "tenor_sax"
     assert voice["articulation"] == ["vibrato", "fall"]
+
+
+def test_phrase_hints_are_serialized_for_renderer():
+    gesture = monophonic_solo_gesture(
+        64,
+        .5,
+        articulation=("legato",),
+        instrument_role="tenor_sax",
+        breath_before_beats=.18,
+        attack_scale=.55,
+        release_shape="connected",
+    ).to_dict()
+    voice = gesture["voices"][0]
+    assert voice["breath_before_beats"] == .18
+    assert voice["attack_scale"] == .55
+    assert voice["release_shape"] == "connected"
+
+
+def test_solo_reset_clears_phrase_memory():
+    solo = Stage1Soloist()
+    for step in range(4):
+        solo.choose("Dm7", "G7", beat_in_bar=float(step % 4), phrase_step=step)
+    assert solo.phrase_memory.notes_since_breath > 0
+    solo.reset()
+    assert solo.phrase_memory.notes_since_breath == 0
+    assert solo.phrase_memory.beats_since_breath == 0.0
