@@ -23,7 +23,15 @@ from .policy import (
     PianoPolicyEvaluator,
     PianoRealizationCandidate,
 )
-from .interaction import PianoInteractionState
+from .interaction import (
+    EnergyDirection,
+    PhraseSpaceWindow,
+    PianoDensity,
+    PianoInteractionState,
+    blend_density,
+    decay_density,
+    infer_energy_direction,
+)
 from .narrative import evaluate_narrative_bias
 
 
@@ -118,12 +126,101 @@ class PianoCompingScore:
 class PianoCompingState:
     piano: PianoPerformanceState = field(default_factory=PianoPerformanceState)
     committed: list[PianoCompingCandidate] = field(default_factory=list)
+    recent_density: PianoDensity = field(default_factory=PianoDensity)
+    last_family: str | None = None
+    last_role: str | None = None
+    sounding_streak: int = 0
+    silence_streak: int = 0
+    last_section_energy: float | None = None
 
-    def commit(self, candidate: PianoCompingCandidate) -> None:
+    @staticmethod
+    def _estimate_density(candidate: PianoCompingCandidate) -> PianoDensity:
+        if candidate.realization is None:
+            return PianoDensity()
+
+        event = candidate.realization.event
+        pitches = event.pitches_midi
+        voice_count = len(pitches)
+        span = float(max(pitches) - min(pitches)) if pitches else 0.0
+        duration = max(candidate.duration_beats, 0.125)
+        onset_rate = min(4.0, 1.0 / duration)
+        sustain_ratio = min(1.0, duration / 2.0)
+        concentration = 0.0
+        if voice_count > 1 and span > 0:
+            concentration = min(1.0, (voice_count - 1) / max(span / 12.0, 1.0) / 4.0)
+        dynamic_weight = min(1.0, event.velocity / 127.0)
+        pedal_blur = 0.0
+        if candidate.realization.pedal == "sustain":
+            pedal_blur = 1.0
+        elif candidate.realization.pedal == "half":
+            pedal_blur = 0.6
+        elif candidate.realization.pedal in {"flutter", "sostenuto"}:
+            pedal_blur = 0.35
+
+        return PianoDensity(
+            voice_count=voice_count,
+            onset_rate=onset_rate,
+            sustain_ratio=sustain_ratio,
+            register_span=span,
+            registral_concentration=concentration,
+            dynamic_weight=dynamic_weight,
+            pedal_blur=pedal_blur,
+        )
+
+    def commit(
+        self,
+        candidate: PianoCompingCandidate,
+        *,
+        section_energy: float | None = None,
+    ) -> None:
         candidate.validate()
+        if section_energy is not None and not 0.0 <= section_energy <= 1.0:
+            raise ValueError("section_energy must be within 0..1")
+
         if candidate.realization is not None:
             self.piano.commit(candidate.realization)
+            self.recent_density = blend_density(
+                self.recent_density,
+                self._estimate_density(candidate),
+            )
+            self.sounding_streak += 1
+            self.silence_streak = 0
+            self.last_family = candidate.realization.event.source_family
+        else:
+            self.recent_density = decay_density(self.recent_density)
+            self.silence_streak += 1
+            self.sounding_streak = 0
+            self.last_family = None
+
+        self.last_role = candidate.role.value
+        if section_energy is not None:
+            self.last_section_energy = section_energy
         self.committed.append(candidate)
+
+    def interaction_state_from_context(
+        self,
+        context: PianoCompingContext,
+    ) -> PianoInteractionState:
+        context.validate()
+        phrase_space = None
+        if context.available_space_beats > 0:
+            phrase_space = PhraseSpaceWindow(
+                confidence=context.phrase_boundary_probability,
+                estimated_length_beats=context.available_space_beats,
+                source="comping_context",
+            )
+
+        return PianoInteractionState(
+            soloist_activity=context.soloist_activity,
+            ensemble_density=context.ensemble_density,
+            recent_piano_density=self.recent_density,
+            phrase_space=phrase_space,
+            section_energy=context.section_energy,
+            energy_direction=infer_energy_direction(
+                self.last_section_energy,
+                context.section_energy,
+            ),
+        )
 
 
 class PianoCompingEvaluator:
@@ -355,13 +452,18 @@ def perform_one_comping_action(
     """Commit exactly one immediate comping decision, sounding or silent."""
 
     plan.validate_for_improvisation()
+    effective_interaction = (
+        interaction_state
+        if interaction_state is not None
+        else state.interaction_state_from_context(comping_context)
+    )
     chosen = evaluator.choose_immediate(
         candidates,
         comping_context,
         musical_context,
         state,
         harmonic_affordance,
-        interaction_state,
+        effective_interaction,
     )
-    state.commit(chosen.candidate)
+    state.commit(chosen.candidate, section_energy=comping_context.section_energy)
     return chosen
