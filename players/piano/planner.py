@@ -97,6 +97,18 @@ def build_contextual_comping_candidates(
 
     rootless = tuple(annotate_harmonic_semantics(x) for x in generate_rootless_voicings(request))
     for realization in rootless:
+        # Rootless color voicings are ordinary comping material, not only a
+        # response/build effect. This keeps 9th/13th color present in normal time.
+        out.append(
+            PianoCompingCandidate(
+                action_type=CompingActionType.SPARSE_SUPPORT,
+                role=InteractionRole.SUPPORT,
+                duration_beats=request.duration_beats,
+                realization=realization,
+                harmonic_affordance_id=affordance_id,
+                tags=frozenset({"rootless", "tension_support", "candidate_factory"}),
+            )
+        )
         if context.phrase_boundary_probability >= 0.45 or context.available_space_beats >= 0.5:
             out.append(
                 PianoCompingCandidate(
