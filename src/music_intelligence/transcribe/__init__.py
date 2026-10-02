@@ -15,8 +15,11 @@ from .chord_chart import (
     ChordChart,
     ChordChartPosition,
     ChordSymbol,
+    EnharmonicPolicy,
+    MeasureRepeatKind,
     NavigationMark,
     chart_position,
+    parse_chord_symbol,
 )
 from .events import (
     CommittedPerformanceEvent,
@@ -158,8 +161,11 @@ __all__ = [
     "ChordChart",
     "ChordChartPosition",
     "ChordSymbol",
+    "EnharmonicPolicy",
+    "MeasureRepeatKind",
     "NavigationMark",
     "chart_position",
+    "parse_chord_symbol",
     "CommittedPerformanceEvent",
     "ConfidenceBundle",
     "EventAlternative",
