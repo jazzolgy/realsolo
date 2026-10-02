@@ -10,6 +10,8 @@ from typing import Mapping
 from .bebop_complementarity import (
     EnsembleBreathType,
     EnsembleComplementarityEvidence,
+    SupportCarryMode,
+    support_carry_mode,
 )
 
 
@@ -44,6 +46,7 @@ def evaluate_bebop_breath_comping_bias(
         reasons.append(reason)
 
     if evidence.breath_type is EnsembleBreathType.FOREGROUND_HANDOFF:
+        carry_mode = support_carry_mode(evidence)
         if role == "lay_out":
             add(
                 "handoff_space",
@@ -68,6 +71,42 @@ def evaluate_bebop_breath_comping_bias(
                 -0.08 * weight * support,
                 "build pressure conflicts with an already-carried handoff",
             )
+        tags=set(getattr(candidate,"tags",()))
+        realization=getattr(candidate,"realization",None)
+        if realization is not None:
+            tags |= set(realization.event.tags)
+
+        if carry_mode is SupportCarryMode.HARMONIC_CARRIED:
+            if action == "sustained_support":
+                add(
+                    "handoff_harmonic_duplicate",
+                    -0.05 * weight,
+                    "harmonic support already carries the handoff",
+                )
+            if action == "punctuation":
+                add(
+                    "handoff_harmonic_carried_punctuation",
+                    0.04 * weight,
+                    "brief punctuation can complement existing harmonic support",
+                )
+
+        elif carry_mode is SupportCarryMode.PERCUSSIVE_CARRIED:
+            if action == "sparse_support" and (
+                "guide_tone" in tags or "harmonic_identity" in tags
+            ):
+                add(
+                    "handoff_percussive_carried_harmony",
+                    0.05 * weight,
+                    "percussive-carried handoff can admit thin harmonic identity",
+                )
+
+        elif carry_mode is SupportCarryMode.MIXED_SUPPORT:
+            if role == "lay_out":
+                add(
+                    "handoff_mixed_support_space",
+                    0.05 * weight,
+                    "harmonic and percussive layers already carry the handoff",
+                )
 
     elif evidence.breath_type is EnsembleBreathType.COLLECTIVE_RELEASE:
         if role == "lay_out":
