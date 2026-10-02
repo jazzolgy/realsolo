@@ -30,6 +30,13 @@ from .legend_adapter import (
     legend_gesture_adjustment,
     vocabulary_gesture_adjustment,
 )
+from .rhythmic_language import (
+    RhythmicMotifIdentity,
+    RhythmicTransform,
+    engineering_seed_motif,
+    realize_motif_now,
+    transform_motif,
+)
 from .model import (
     DrumGesture,
     DrumHit,
@@ -80,6 +87,28 @@ _SHARED_DEVELOPMENT_MAP = {
     SoloDevelopment.RECAP: SoloDevelopmentOperation.RECAP,
     SoloDevelopment.RESOLVE: SoloDevelopmentOperation.RESOLVE,
 }
+
+
+_RHYTHMIC_TRANSFORM_MAP = {
+    SoloDevelopment.STATE: RhythmicTransform.IDENTITY,
+    SoloDevelopment.REPEAT: RhythmicTransform.REPEAT,
+    SoloDevelopment.ORCHESTRATE: RhythmicTransform.REORCHESTRATE,
+    SoloDevelopment.INTERNAL_REST: RhythmicTransform.INTERNAL_REST,
+    SoloDevelopment.ELASTICITY_EXPAND: RhythmicTransform.EXPAND,
+    SoloDevelopment.ELASTICITY_CONTRACT: RhythmicTransform.CONTRACT,
+    SoloDevelopment.DISPLACE: RhythmicTransform.DISPLACE,
+    SoloDevelopment.THREE_BEAT_CYCLE: RhythmicTransform.DISPLACE,
+    SoloDevelopment.METRIC_ILLUSION: RhythmicTransform.DISPLACE,
+    SoloDevelopment.CONTRAST: RhythmicTransform.HYBRIDIZE,
+    SoloDevelopment.RECAP: RhythmicTransform.REPEAT,
+    SoloDevelopment.RESOLVE: RhythmicTransform.FRAGMENT,
+}
+
+
+def rhythmic_transform_for_development(
+    development: SoloDevelopment,
+) -> RhythmicTransform | None:
+    return _RHYTHMIC_TRANSFORM_MAP.get(development)
 
 
 def shared_operation_for_drum_development(
@@ -211,8 +240,15 @@ class DrumSoloState:
     last_voice: DrumVoice | None = None
     last_development: SoloDevelopment | None = None
     motif_repetitions: int = 0
+    motif_identity: RhythmicMotifIdentity | None = None
 
-    def observe(self, gesture: DrumGesture, development: SoloDevelopment) -> None:
+    def observe(
+        self,
+        gesture: DrumGesture,
+        development: SoloDevelopment,
+        *,
+        motif_identity: RhythmicMotifIdentity | None = None,
+    ) -> None:
         self.gestures_committed += 1
         self.last_development = development
         if gesture.role is GestureRole.SPACE:
@@ -221,6 +257,9 @@ class DrumSoloState:
             self.statements += 1
             if gesture.hits:
                 self.last_voice = gesture.hits[-1].voice
+        if motif_identity is not None:
+            motif_identity.validate()
+            self.motif_identity = motif_identity
         if development is SoloDevelopment.REPEAT:
             self.motif_repetitions += 1
         elif development not in {SoloDevelopment.STATE, SoloDevelopment.RECAP}:
@@ -233,6 +272,7 @@ class SoloCandidate:
     development: SoloDevelopment
     score: float
     reasons: tuple[tuple[str, float], ...] = ()
+    motif_identity: RhythmicMotifIdentity | None = None
 
 
 def solo_cell(cell_id: str) -> SoloVocabularyCell:
@@ -264,53 +304,56 @@ def _limb_for_voice(voice: DrumVoice, index: int) -> Limb:
     return Limb.RIGHT_HAND if index % 2 == 0 else Limb.LEFT_HAND
 
 
-def _statement_gesture(
-    plan: DrumSoloPlan,
+def _motif_for_development(
     state: DrumSoloState,
     development: SoloDevelopment,
-) -> DrumGesture:
-    """Create one immediate solo statement gesture, never a future phrase."""
-    voice_index = state.gestures_committed
-    if development is SoloDevelopment.ORCHESTRATE:
-        voice_index += state.statements
-    elif development is SoloDevelopment.CONTRAST:
-        voice_index += 2
-    elif development in {SoloDevelopment.RECAP, SoloDevelopment.RESOLVE}:
-        voice_index += 3
+) -> RhythmicMotifIdentity:
+    """Return transformed motif identity for this development decision."""
+    base = state.motif_identity or engineering_seed_motif()
+    transform = rhythmic_transform_for_development(development)
+    if transform is None:
+        return base
 
-    voice = _voice_for_orchestration(voice_index, plan.intensity)
-    velocity = int(52 + 62 * plan.intensity)
-    articulation = {
-        SoloDevelopment.REPEAT: "motif",
-        SoloDevelopment.ORCHESTRATE: "orchestrated_motif",
-        SoloDevelopment.DISPLACE: "displaced",
-        SoloDevelopment.THREE_BEAT_CYCLE: "three_beat_cycle",
-        SoloDevelopment.METRIC_ILLUSION: "metric_illusion",
-        SoloDevelopment.RECAP: "recap",
-        SoloDevelopment.RESOLVE: "resolution",
-    }.get(development, "solo")
+    amount = 1
+    if development is SoloDevelopment.THREE_BEAT_CYCLE:
+        amount = 3
+    elif development is SoloDevelopment.METRIC_ILLUSION:
+        amount = 2
+    elif development is SoloDevelopment.DISPLACE:
+        amount = 1 + (state.gestures_committed % 3)
 
+    motif = transform_motif(base, transform, amount_units=amount)
+    motif.validate()
+    return motif
+
+
+def _statement_gesture(
+    plan: DrumSoloPlan,
+    context: DrummerRuntimeContext,
+    state: DrumSoloState,
+    development: SoloDevelopment,
+) -> tuple[DrumGesture, RhythmicMotifIdentity]:
+    """Realize one current event from a genuinely transformed rhythmic motif."""
+    motif = _motif_for_development(state, development)
+    gesture = realize_motif_now(
+        motif,
+        context,
+        intensity=plan.intensity,
+        development_tag=development.value,
+    )
+    # Solo-layer tags preserve strategy/method provenance while rhythmic content
+    # comes from the motif engine.
+    tags = set(gesture.tags)
+    tags.update({plan.arc.value, plan.motif_cell_id, development.value})
     gesture = DrumGesture(
-        hits=(
-            DrumHit(
-                voice=voice,
-                limb=_limb_for_voice(voice, voice_index),
-                velocity=max(1, min(127, velocity)),
-                articulation=articulation,
-            ),
-        ),
-        role=GestureRole.FILL,
-        tags=frozenset({
-            "drum_solo",
-            plan.arc.value,
-            development.value,
-            plan.motif_cell_id,
-        }),
-        confidence=0.9,
-        provenance=("drum_player", "solo_engine", plan.motif_cell_id),
+        hits=gesture.hits,
+        role=gesture.role,
+        tags=frozenset(tags),
+        confidence=gesture.confidence,
+        provenance=gesture.provenance + ("solo_engine", plan.motif_cell_id),
     )
     gesture.validate()
-    return gesture
+    return gesture, motif
 
 
 def _development_options(
@@ -327,7 +370,12 @@ def _development_options(
     ]
 
     if state.statements >= 2:
-        options += [SoloDevelopment.DISPLACE, SoloDevelopment.CONTRAST]
+        options += [
+            SoloDevelopment.DISPLACE,
+            SoloDevelopment.CONTRAST,
+            SoloDevelopment.ELASTICITY_EXPAND,
+            SoloDevelopment.ELASTICITY_CONTRACT,
+        ]
     if plan.adventurousness >= 0.4:
         options += [SoloDevelopment.THREE_BEAT_CYCLE]
     if plan.adventurousness >= 0.7:
@@ -353,14 +401,17 @@ def build_solo_candidates(
     candidates: list[SoloCandidate] = []
 
     for development in _development_options(plan, context, state):
-        if development in {SoloDevelopment.ADD_SPACE, SoloDevelopment.INTERNAL_REST}:
+        motif_identity: RhythmicMotifIdentity | None = None
+        if development is SoloDevelopment.ADD_SPACE:
             gesture = DrumGesture(
                 role=GestureRole.SPACE,
                 tags=frozenset({"drum_solo", plan.arc.value, development.value}),
                 provenance=("drum_player", "solo_engine"),
             )
         else:
-            gesture = _statement_gesture(plan, state, development)
+            gesture, motif_identity = _statement_gesture(
+                plan, context, state, development
+            )
 
         score = 0.0
         reasons: list[tuple[str, float]] = []
@@ -378,12 +429,27 @@ def build_solo_candidates(
             score += 0.46
             reasons.append(("develop_by_orchestration", 0.46))
 
-        if development in {SoloDevelopment.ADD_SPACE, SoloDevelopment.INTERNAL_REST}:
+        if development is SoloDevelopment.ADD_SPACE:
             v = 0.15 + 0.46 * plan.space_probability + 0.22 * context.ensemble_activity
             if state.spaces > state.statements * 0.7:
                 v -= 0.25
             score += v
             reasons.append(("phrase_space", v))
+
+        if development is SoloDevelopment.INTERNAL_REST:
+            v = 0.18 + 0.34 * plan.space_probability
+            score += v
+            reasons.append(("motif_internal_rest", v))
+
+        if development is SoloDevelopment.ELASTICITY_EXPAND:
+            v = 0.16 + 0.28 * plan.adventurousness
+            score += v
+            reasons.append(("rhythmic_elasticity_expand", v))
+
+        if development is SoloDevelopment.ELASTICITY_CONTRACT:
+            v = 0.14 + 0.24 * plan.adventurousness
+            score += v
+            reasons.append(("rhythmic_elasticity_contract", v))
 
         if development is SoloDevelopment.DISPLACE:
             v = 0.20 + 0.32 * plan.adventurousness
@@ -468,7 +534,15 @@ def build_solo_candidates(
             score += delta
             reasons.extend(parts)
 
-        candidates.append(SoloCandidate(gesture, development, score, tuple(reasons)))
+        candidates.append(
+            SoloCandidate(
+                gesture,
+                development,
+                score,
+                tuple(reasons),
+                motif_identity=motif_identity,
+            )
+        )
 
     return tuple(candidates)
 
@@ -490,5 +564,9 @@ def perform_one_solo_gesture(
         vocabulary_intents=vocabulary_intents,
     )
     chosen = max(candidates, key=lambda c: c.score)
-    state.observe(chosen.gesture, chosen.development)
+    state.observe(
+        chosen.gesture,
+        chosen.development,
+        motif_identity=chosen.motif_identity,
+    )
     return chosen
