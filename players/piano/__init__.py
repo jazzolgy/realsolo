@@ -20,6 +20,7 @@ from .voicing import (
     generate_rootless_voicings,
     generate_shell_voicings,
 )
+from .planner import PianoCompingCandidateSet, build_contextual_comping_candidates
 from .comping import (
     CompingActionType,
     InteractionRole,
@@ -54,4 +55,6 @@ __all__ = [
     "generate_minimal_voicing_families",
     "generate_rootless_voicings",
     "generate_shell_voicings",
+    "PianoCompingCandidateSet",
+    "build_contextual_comping_candidates",
 ]
