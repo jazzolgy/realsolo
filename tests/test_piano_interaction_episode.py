@@ -274,3 +274,58 @@ def test_episode_contains_no_future_actions():
     assert not hasattr(state.active_episode, "future_actions")
     assert not hasattr(state.active_episode, "next_gesture")
     assert not hasattr(state.active_episode, "planned_sequence")
+
+
+def test_episode_deactivates_after_two_no_clear_response_turns():
+    state = PianoCompingState()
+    ctx = PianoCompingContext(section_energy=0.5)
+
+    for response_type in (
+        ResponseType.RHYTHMIC_ECHO,
+        ResponseType.NO_CLEAR_RESPONSE,
+        ResponseType.NO_CLEAR_RESPONSE,
+    ):
+        g = first_sounding(ctx, state)
+        state.commit(g, section_energy=0.5)
+        state.record_ensemble_response(
+            EnsembleResponseObservation(
+                EnsembleActor.ENSEMBLE,
+                response_type,
+                confidence=0.8,
+                attribution_confidence=0.5,
+            )
+        )
+
+    assert state.active_episode is not None
+    assert state.active_episode.active is False
+
+
+def test_inactive_episode_has_no_policy_bias():
+    state = PianoCompingState()
+    ctx = PianoCompingContext(
+        phrase_boundary_probability=0.9,
+        available_space_beats=1.0,
+        section_energy=0.5,
+    )
+    for response_type in (
+        ResponseType.RHYTHMIC_ECHO,
+        ResponseType.NO_CLEAR_RESPONSE,
+        ResponseType.NO_CLEAR_RESPONSE,
+    ):
+        g = first_sounding(ctx, state)
+        state.commit(g, section_energy=0.5)
+        state.record_ensemble_response(
+            EnsembleResponseObservation(
+                EnsembleActor.ENSEMBLE,
+                response_type,
+                confidence=1.0,
+                attribution_confidence=1.0,
+            )
+        )
+
+    answer = next(
+        c for c in slate(ctx, state).candidates
+        if c.role is InteractionRole.ANSWER and c.realization is not None
+    )
+    score = evaluate_episode_bias(answer, state.active_episode)
+    assert score.total == 0.0
