@@ -36,8 +36,10 @@ from .narrative import evaluate_narrative_bias
 from .variation import GestureSignature, VariationContext, evaluate_variation
 from .ensemble_response import (
     EnsembleResponseObservation,
+    EnsembleSnapshot,
     GestureResponseRecord,
     evaluate_response_bias,
+    infer_coarse_responses,
 )
 
 
@@ -229,6 +231,26 @@ class PianoCompingState:
         )
         if len(self.recent_responses) > 8:
             del self.recent_responses[:-8]
+
+    def observe_context_transition(
+        self,
+        before: PianoCompingContext,
+        after: PianoCompingContext,
+        *,
+        latency_beats: float = 0.5,
+        attribution_confidence: float = 0.25,
+    ) -> tuple[EnsembleResponseObservation, ...]:
+        if not self.recent_signatures:
+            raise ValueError("cannot observe response transition before a committed gesture")
+        observations = infer_coarse_responses(
+            EnsembleSnapshot.from_context(before),
+            EnsembleSnapshot.from_context(after),
+            latency_beats=latency_beats,
+            attribution_confidence=attribution_confidence,
+        )
+        for observation in observations:
+            self.record_ensemble_response(observation)
+        return observations
 
     def interaction_state_from_context(
         self,
