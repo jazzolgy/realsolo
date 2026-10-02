@@ -361,6 +361,17 @@ def generate_immediate_bass_candidates(
             (next_root, BassHarmonicRole.ANTICIPATION, 0.10,
              ("direct anticipation of next expected root",)),
         ))
+    elif (
+        ctx.mode is BassMode.TWO_FEEL
+        and next_root is not None
+        and ctx.beat_in_measure >= ctx.meter_numerator / 2.0
+    ):
+        raw.append((
+            next_root,
+            BassHarmonicRole.ANTICIPATION,
+            0.08,
+            ("second two-feel pulse may anticipate next expected root",),
+        ))
 
     candidates: list[BassActionCandidate] = []
     seen: set[tuple[int, BassHarmonicRole, int]] = set()
