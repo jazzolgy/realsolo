@@ -37,6 +37,18 @@ from .bebop_runtime import (
     perform_one_bebop_gesture,
     score_bebop_gesture,
 )
+from .comping_phrase import (
+    CompPhraseAction,
+    CompPhraseCandidate,
+    SnareMotifIdentity,
+    SnarePhraseMemory,
+    build_snare_phrase_candidates,
+    circular_phase_distance,
+    displaced_motif_match,
+    motif_match_at_phase,
+    normalized_bar_phase,
+    update_snare_phrase_memory,
+)
 from .comping import CompingPropensity, comping_propensity
 from .model import (
     DrumGesture,
@@ -141,6 +153,16 @@ __all__ = [
     "build_bebop_candidates",
     "perform_one_bebop_gesture",
     "score_bebop_gesture",
+    "CompPhraseAction",
+    "CompPhraseCandidate",
+    "SnareMotifIdentity",
+    "SnarePhraseMemory",
+    "build_snare_phrase_candidates",
+    "circular_phase_distance",
+    "displaced_motif_match",
+    "motif_match_at_phase",
+    "normalized_bar_phase",
+    "update_snare_phrase_memory",
     "CompingPropensity",
     "comping_propensity",
     "DrumGesture",
