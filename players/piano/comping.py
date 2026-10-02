@@ -14,8 +14,10 @@ from enum import Enum
 from typing import Mapping, Sequence
 
 from music_intelligence.harmony.jazz_harmony_core import HarmonicAffordance, HarmonicFrame
+from music_intelligence.harmony.orchestrator import HarmonicReasoningResult
 from music_intelligence.reasoning.legend_style_core import MusicalContextVector
 from music_intelligence.reasoning.online_improviser import SoftPlan
+from music_intelligence.reasoning.harmonic_player_bridge import harmonic_guidance_for_candidate
 
 from .policy import (
     PianoActionScore,
@@ -58,6 +60,10 @@ from .creative_continuity import (
     CreativityContext,
     evaluate_creative_continuity,
     profile_from_harmonic_context,
+)
+from .harmonic_creativity import (
+    adapt_continuity_profile_for_harmony,
+    adapt_creativity_context_for_harmony,
 )
 
 
@@ -353,6 +359,7 @@ class PianoCompingEvaluator:
         state: PianoCompingState,
         harmonic_affordance: HarmonicAffordance | None = None,
         interaction_state: PianoInteractionState | None = None,
+        harmonic_reasoning: HarmonicReasoningResult | None = None,
     ) -> PianoCompingScore:
         candidate.validate()
         comping_context.validate()
@@ -409,6 +416,16 @@ class PianoCompingEvaluator:
             reasons.extend(piano_score.reasons)
 
             event = candidate.realization.event
+            if harmonic_reasoning is not None:
+                guidance = harmonic_guidance_for_candidate(event, harmonic_reasoning)
+                score += guidance.score_delta
+                for key, value in guidance.components.items():
+                    components[f"shared_{key}"] = components.get(
+                        f"shared_{key}", 0.0
+                    ) + value
+                if guidance.score_delta:
+                    components["shared_harmonic_guidance_total"] = guidance.score_delta
+                reasons.extend(guidance.reasons)
             sparse = "sparse" in event.tags or candidate.action_type is CompingActionType.SPARSE_SUPPORT
             dense = "dense" in event.tags
 
@@ -576,14 +593,25 @@ class PianoCompingEvaluator:
         previous_signature = (
             state.recent_signatures[-1] if state.recent_signatures else None
         )
-        creative_bias = evaluate_creative_continuity(
-            candidate,
-            previous_signature,
-            profile_from_harmonic_context(state.last_harmonic_continuity),
+        base_creative_profile = profile_from_harmonic_context(
+            state.last_harmonic_continuity
+        )
+        creative_profile = adapt_continuity_profile_for_harmony(
+            base_creative_profile,
+            harmonic_reasoning,
+        )
+        creative_context = adapt_creativity_context_for_harmony(
             CreativityContext(
                 creativity_strength=comping_context.creativity_strength,
                 coherence_floor=comping_context.creativity_coherence_floor,
             ),
+            harmonic_reasoning,
+        )
+        creative_bias = evaluate_creative_continuity(
+            candidate,
+            previous_signature,
+            creative_profile,
+            creative_context,
         )
         score += creative_bias.total
         for key, value in creative_bias.components.items():
@@ -677,6 +705,7 @@ class PianoCompingEvaluator:
         state: PianoCompingState,
         harmonic_affordance: HarmonicAffordance | None = None,
         interaction_state: PianoInteractionState | None = None,
+        harmonic_reasoning: HarmonicReasoningResult | None = None,
     ) -> PianoCompingScore:
         if not candidates:
             raise ValueError("no comping candidates")
@@ -689,6 +718,7 @@ class PianoCompingEvaluator:
                     state,
                     harmonic_affordance,
                     interaction_state,
+                    harmonic_reasoning,
                 )
                 for candidate in candidates
             ),
@@ -706,6 +736,7 @@ def perform_one_comping_action(
     harmonic_affordance: HarmonicAffordance | None = None,
     interaction_state: PianoInteractionState | None = None,
     harmonic_frame: HarmonicFrame | None = None,
+    harmonic_reasoning: HarmonicReasoningResult | None = None,
 ) -> PianoCompingScore:
     """Commit exactly one immediate comping decision, sounding or silent."""
 
@@ -724,6 +755,7 @@ def perform_one_comping_action(
         state,
         harmonic_affordance,
         effective_interaction,
+        harmonic_reasoning,
     )
     state.commit(chosen.candidate, section_energy=comping_context.section_energy)
     return chosen
