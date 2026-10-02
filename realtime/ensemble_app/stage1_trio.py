@@ -127,6 +127,7 @@ class Stage1TrioRuntime:
         section: str = "",
         chorus: int = 0,
         bass_solo: bool = False,
+        bass_legend: str = "",
         active_player_ids: frozenset[str] | None = None,
         bass_ghost_only: bool = False,
     ):
@@ -227,6 +228,7 @@ class Stage1TrioRuntime:
                 "harmonic_transition_confidence": 0.9 if next_chord else 0.0,
                 "phrase_position": phrase_position,
                 "bass_mode": "solo" if bass_solo else "walking",
+                "bass_legend": bass_legend,
                 "groove_context": groove,
                 "time_feel": groove.feel.value,
                 "bass_ghost_only": bass_ghost_only,
