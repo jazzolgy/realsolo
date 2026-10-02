@@ -1,0 +1,193 @@
+{
+  "schema_version": "0.1",
+  "practice_batch_id": "scorebook.linear.batch001",
+  "purpose": "Abstract Shared Scale/Linear practice feedback from nine uploaded scorebooks",
+  "copyright_boundary": "No complete melody or literal copyrighted phrase is stored in this derived dataset.",
+  "seed_pages": [
+    {
+      "book": "RealBk3.pdf",
+      "pages": [
+        6
+      ],
+      "title": "Alanjuneally",
+      "evidence": [
+        "even_8ths",
+        "dense_harmonic_motion",
+        "altered_color"
+      ]
+    },
+    {
+      "book": "RealChBk.pdf",
+      "pages": [
+        7
+      ],
+      "title": "Almost Day",
+      "evidence": [
+        "bright_functional_baseline",
+        "non_bebop_reference"
+      ]
+    },
+    {
+      "book": "VcRealBk1.pdf",
+      "pages": [
+        7,
+        8
+      ],
+      "title": "A Night in Tunisia",
+      "evidence": [
+        "afro_feel",
+        "interlude",
+        "solo_break",
+        "section_role_change"
+      ]
+    },
+    {
+      "book": "VcRealBk2.pdf",
+      "pages": [
+        7,
+        8
+      ],
+      "title": "Like Someone in Love",
+      "evidence": [
+        "functional_standard",
+        "ballad_swing_reference"
+      ]
+    },
+    {
+      "book": "NewReal1.pdf",
+      "pages": [
+        7,
+        8
+      ],
+      "title": "Ana Maria",
+      "evidence": [
+        "half_time_rock",
+        "bossa",
+        "rock_feel",
+        "feel_change"
+      ]
+    },
+    {
+      "book": "NewReal2.pdf",
+      "pages": [
+        7,
+        8
+      ],
+      "title": "Along Came Betty",
+      "evidence": [
+        "medium_swing",
+        "dense_functional_motion",
+        "solo_role_evidence"
+      ]
+    },
+    {
+      "book": "NewReal3.pdf",
+      "pages": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "title": "Ain't That Peculiar",
+      "evidence": [
+        "medium_rock",
+        "repeated_pattern",
+        "explicit_rhythm_section_writing"
+      ]
+    },
+    {
+      "book": "Realbk1.pdf",
+      "pages": [
+        7
+      ],
+      "title": "A Night in Tunisia",
+      "evidence": [
+        "medium_afro",
+        "interlude",
+        "solo_break"
+      ]
+    },
+    {
+      "book": "RealBk2.pdf",
+      "pages": [
+        4
+      ],
+      "title": "Alfie's Theme",
+      "evidence": [
+        "two_feel",
+        "in_four",
+        "back_to_two",
+        "feel_change"
+      ]
+    }
+  ],
+  "validated_shared_design": [
+    "scale_field_must_remain_evidence_driven",
+    "route_semantics_should_remain_instrument_neutral",
+    "one_event_commit_contract_remains_valid"
+  ],
+  "gaps": [
+    {
+      "id": "SL-G1",
+      "concept": "feel_section_weighting",
+      "statement": "Feel and section evidence should modulate route weighting without redefining scale identity.",
+      "suggested_fields": [
+        "feel_change",
+        "section_role",
+        "form_boundary"
+      ]
+    },
+    {
+      "id": "SL-G2",
+      "concept": "harmonic_rhythm_horizon",
+      "statement": "Linear routes need explicit time-to-change context.",
+      "suggested_fields": [
+        "beats_to_harmonic_change",
+        "harmonic_rhythm_density",
+        "target_arrival_horizon"
+      ]
+    },
+    {
+      "id": "SL-G3",
+      "concept": "bounded_enclosure_state",
+      "statement": "Enclosure needs abstract multi-tick state rather than the same one-step neighbors as generic approach.",
+      "suggested_fields": [
+        "active_route",
+        "target_pc",
+        "route_stage",
+        "resolution_debt",
+        "started_at",
+        "confidence"
+      ]
+    },
+    {
+      "id": "SL-G4",
+      "concept": "section_role_separation",
+      "statement": "Head, solo, interlude, vamp and solo-break evidence must affect route policy without becoming scale labels."
+    },
+    {
+      "id": "SL-G5",
+      "concept": "provenance_confidence",
+      "statement": "Scorebook parse confidence and provenance should survive into linear-route evidence."
+    }
+  ],
+  "piano_adapter": {
+    "path": "players/piano/shared_linear_adapter.py",
+    "ownership": {
+      "shared_core": [
+        "route_semantics",
+        "immediate_pitch_class_affordances",
+        "target_pitch_classes",
+        "tension_resolution_semantics"
+      ],
+      "piano": [
+        "midi_register_realization",
+        "piano_range",
+        "physical_feasibility",
+        "touch_articulation",
+        "left_hand_interaction"
+      ]
+    },
+    "compatibility_fallback": "Legacy local connector generation remains only when shared linear affordances are absent."
+  }
+}
