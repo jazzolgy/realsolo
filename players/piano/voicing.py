@@ -206,3 +206,212 @@ def generate_minimal_voicing_families(
     request: PianoVoicingRequest,
 ) -> tuple[PianoRealizationCandidate, ...]:
     return generate_shell_voicings(request) + generate_rootless_voicings(request)
+
+
+def _available_role_pcs(material: ResolvedHarmonicMaterial) -> tuple[tuple[str, int], ...]:
+    """Flatten only pitch classes already exposed by Core-resolved material."""
+    out: list[tuple[str, int]] = []
+    seen: set[tuple[str, int]] = set()
+    for role, pcs in material.role_pitch_classes.items():
+        for pc in pcs:
+            item = (role, pc)
+            if item not in seen:
+                seen.add(item)
+                out.append(item)
+    return tuple(out)
+
+
+def _structure_score(intervals: Sequence[int], preferred: set[int]) -> int:
+    return sum(1 for interval in intervals if interval % 12 in preferred)
+
+
+def _candidate_from_pitch_classes(
+    request: PianoVoicingRequest,
+    role_pcs: Sequence[tuple[str, int]],
+    *,
+    targets: Sequence[float],
+    family: str,
+) -> PianoRealizationCandidate:
+    roles: list[tuple[str, int]] = []
+    for (role, pc), target in zip(role_pcs, targets):
+        pitch = _nearest_in_range(pc, target, request.low_midi, request.high_midi)
+        while any(existing == pitch for _, existing in roles) and pitch + 12 <= request.high_midi:
+            pitch += 12
+        roles.append((role, pitch))
+    return _event_from_roles(request, roles, family=family)
+
+
+def generate_tertian_voicings(
+    request: PianoVoicingRequest,
+) -> tuple[PianoRealizationCandidate, ...]:
+    """Create experimental tertian-shaped candidates from Core-supplied pitch classes.
+
+    No chord spelling is inferred here. The generator searches only among roles/pitch
+    classes already exposed by ResolvedHarmonicMaterial.
+    """
+    request.validate()
+    pool = _available_role_pcs(request.material)
+    if len(pool) < 3:
+        return ()
+
+    variants: list[PianoRealizationCandidate] = []
+    for start in range(min(len(pool), 5)):
+        chosen = [pool[start]]
+        current_pc = pool[start][1]
+        remaining = [item for item in pool if item != pool[start]]
+        while remaining and len(chosen) < 4:
+            ranked = sorted(
+                remaining,
+                key=lambda item: (
+                    0 if (item[1] - current_pc) % 12 in {3, 4} else 1,
+                    min((item[1] - current_pc) % 12, (current_pc - item[1]) % 12),
+                ),
+            )
+            nxt = ranked[0]
+            chosen.append(nxt)
+            current_pc = nxt[1]
+            remaining.remove(nxt)
+        if len(chosen) >= 3:
+            variants.append(
+                _candidate_from_pitch_classes(
+                    request,
+                    chosen,
+                    targets=(50, 55, 60, 65),
+                    family="tertian",
+                )
+            )
+    return tuple(variants[:4])
+
+
+def generate_quartal_voicings(
+    request: PianoVoicingRequest,
+) -> tuple[PianoRealizationCandidate, ...]:
+    """Create fourth-oriented candidates from already permitted harmonic material."""
+    request.validate()
+    pool = _available_role_pcs(request.material)
+    if len(pool) < 3:
+        return ()
+
+    variants: list[PianoRealizationCandidate] = []
+    for start in range(min(len(pool), 6)):
+        chosen = [pool[start]]
+        current_pc = pool[start][1]
+        remaining = [item for item in pool if item != pool[start]]
+        while remaining and len(chosen) < 4:
+            ranked = sorted(
+                remaining,
+                key=lambda item: (
+                    0 if (item[1] - current_pc) % 12 in {5, 6, 7} else 1,
+                    min(
+                        abs(((item[1] - current_pc) % 12) - 5),
+                        abs(((item[1] - current_pc) % 12) - 7),
+                    ),
+                ),
+            )
+            nxt = ranked[0]
+            chosen.append(nxt)
+            current_pc = nxt[1]
+            remaining.remove(nxt)
+        if len(chosen) >= 3:
+            variants.append(
+                _candidate_from_pitch_classes(
+                    request,
+                    chosen,
+                    targets=(48, 55, 62, 69),
+                    family="quartal",
+                )
+            )
+    return tuple(variants[:4])
+
+
+def generate_inverted_quartal_voicings(
+    request: PianoVoicingRequest,
+) -> tuple[PianoRealizationCandidate, ...]:
+    """Redistribute quartal material into a non-stacked/inverted register layout."""
+    base = generate_quartal_voicings(request)
+    out: list[PianoRealizationCandidate] = []
+    for realization in base:
+        voices = realization.event.voices
+        if len(voices) < 3:
+            continue
+        role_pcs = [(v.harmonic_role or "color", v.pitch_midi % 12) for v in voices]
+        rotated = role_pcs[1:] + role_pcs[:1]
+        out.append(
+            _candidate_from_pitch_classes(
+                request,
+                rotated,
+                targets=(50, 57, 64, 71),
+                family="inverted_quartal",
+            )
+        )
+    return tuple(out)
+
+
+def generate_octave_voicings(
+    request: PianoVoicingRequest,
+) -> tuple[PianoRealizationCandidate, ...]:
+    """Create projected octave structures from one supplied structural/color role."""
+    request.validate()
+    pool = _available_role_pcs(request.material)
+    if not pool:
+        return ()
+
+    preferred_order = ("3rd", "7th", "b7", "9th", "9", "11th", "11", "13th", "13", "root")
+    ranked = sorted(
+        pool,
+        key=lambda item: preferred_order.index(item[0]) if item[0] in preferred_order else len(preferred_order),
+    )
+    out: list[PianoRealizationCandidate] = []
+    for role, pc in ranked[:3]:
+        low = _nearest_in_range(pc, 52, request.low_midi, request.high_midi)
+        high_options = [n for n in (low + 12, low + 24) if n <= request.high_midi]
+        if not high_options:
+            continue
+        roles = [(role, low), (f"{role}_octave", high_options[-1])]
+        out.append(_event_from_roles(request, roles, family="octave"))
+    return tuple(out)
+
+
+def generate_mixed_voicings(
+    request: PianoVoicingRequest,
+) -> tuple[PianoRealizationCandidate, ...]:
+    """Experimental combination family mixing structural and color roles."""
+    request.validate()
+    structural = []
+    for role in ("3rd", "b3", "7th", "b7"):
+        for pc in request.material.role_pitch_classes.get(role, ()):
+            structural.append((role, pc))
+    colors = [
+        (role, pc)
+        for role, pcs in request.material.role_pitch_classes.items()
+        if role not in {"root", "3rd", "b3", "7th", "b7"}
+        for pc in pcs
+    ]
+    if len(structural) < 2 or not colors:
+        return ()
+
+    out: list[PianoRealizationCandidate] = []
+    for color in colors[:4]:
+        chosen = structural[:2] + [color]
+        out.append(
+            _candidate_from_pitch_classes(
+                request,
+                chosen,
+                targets=(50, 58, 67),
+                family="mixed",
+            )
+        )
+    return tuple(out)
+
+
+def generate_extended_voicing_families(
+    request: PianoVoicingRequest,
+) -> tuple[PianoRealizationCandidate, ...]:
+    """Experimental McNeely-derived family competition for sustained/static contexts."""
+    return (
+        generate_tertian_voicings(request)
+        + generate_quartal_voicings(request)
+        + generate_inverted_quartal_voicings(request)
+        + generate_octave_voicings(request)
+        + generate_mixed_voicings(request)
+    )
