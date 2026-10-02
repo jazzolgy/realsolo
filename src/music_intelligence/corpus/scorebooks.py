@@ -326,6 +326,40 @@ SEED_SONG_LOCATORS: tuple[ScorebookSongLocator, ...] = (
             ScoreEvidence(ScoreEvidenceKind.WRITTEN_BASS_PART, "dedicated bass page", .99, 2),
         ),
     ),
+    ScorebookSongLocator(
+        "score.real3.after_you",
+        "scorebook.real.3",
+        "After You",
+        1,
+        status=ScoreIngestStatus.VISION_REVIEWED,
+        evidence=(ScoreEvidence(ScoreEvidenceKind.STYLE, "medium even 8ths", .96, 1),),
+    ),
+    ScorebookSongLocator(
+        "score.vocal1.a_foggy_day",
+        "scorebook.vocal.1",
+        "A Foggy Day",
+        5,
+        end_page=6,
+        status=ScoreIngestStatus.VISION_REVIEWED,
+        evidence=(ScoreEvidence(ScoreEvidenceKind.STYLE, "medium swing", .92, 5),),
+    ),
+    ScorebookSongLocator(
+        "score.vocal2.lady_bird",
+        "scorebook.vocal.2",
+        "Lady Bird",
+        1,
+        end_page=2,
+        status=ScoreIngestStatus.VISION_REVIEWED,
+        evidence=(ScoreEvidence(ScoreEvidenceKind.STYLE, "vocal lead sheet", .85, 1),),
+    ),
+    ScorebookSongLocator(
+        "score.christmas.a_caroling_we_go",
+        "scorebook.christmas",
+        "A Caroling We Go",
+        6,
+        status=ScoreIngestStatus.VISION_REVIEWED,
+        evidence=(ScoreEvidence(ScoreEvidenceKind.STYLE, "medium-fast", .92, 6),),
+    ),
 )
 
 
