@@ -17,6 +17,7 @@ class MetricRole(str, Enum):
     CONTINUATION = "continuation"
     PREPARATION = "preparation"
     TWO_FEEL_ANCHOR = "two_feel_anchor"
+    TWO_FEEL_DIRECTION = "two_feel_direction"
     PEDAL_ANCHOR = "pedal_anchor"
 
 
@@ -102,6 +103,8 @@ def metric_role(ctx: BassGrammarContext) -> MetricRole:
     if ctx.pedal:
         return MetricRole.PEDAL_ANCHOR
     if ctx.two_feel:
+        if ctx.beat_in_measure >= ctx.meter_numerator / 2.0:
+            return MetricRole.TWO_FEEL_DIRECTION
         return MetricRole.TWO_FEEL_ANCHOR
     if ctx.walking and ctx.beat_in_measure >= ctx.meter_numerator - 1.0:
         return MetricRole.PREPARATION
@@ -153,18 +156,32 @@ def evaluate_bass_grammar(
             score += .04
             reasons.append("two-feel chordal support")
 
+    elif role is MetricRole.TWO_FEEL_DIRECTION:
+        if target_strategy is TargetStrategy.CURRENT_ROOT:
+            score -= .02
+            reasons.append("second two-feel pulse may move away from the root")
+        elif target_strategy is TargetStrategy.CURRENT_CHORD_MEMBER:
+            score += .05
+            reasons.append("second two-feel pulse supports simple chordal direction")
+        elif motion_strategy is MotionStrategy.DIRECT_ANTICIPATION:
+            score += .06
+            reasons.append("second two-feel pulse may prepare known next harmony")
+
     elif role is MetricRole.PEDAL_ANCHOR:
         if motion_strategy is MotionStrategy.PEDAL:
             score += .18
             reasons.append("pedal sustains a stable bass anchor")
 
     else:
-        if motion_strategy in {
-            MotionStrategy.CHORDAL,
-            MotionStrategy.SHARED_SCALE_OR_COLOR,
-        }:
-            score += .05
-            reasons.append("middle-beat line continuation")
+        if target_strategy is TargetStrategy.CURRENT_ROOT:
+            score -= .08
+            reasons.append("middle walking beat avoids redundant root re-anchoring")
+        elif motion_strategy is MotionStrategy.CHORDAL:
+            score += .10
+            reasons.append("middle walking beat develops through chord members")
+        elif motion_strategy is MotionStrategy.SHARED_SCALE_OR_COLOR:
+            score += .08
+            reasons.append("middle walking beat supports shared linear color")
 
     if ctx.previous_pitch_midi is not None:
         delta = candidate_pitch_midi - ctx.previous_pitch_midi

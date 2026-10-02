@@ -5,6 +5,49 @@ polyphonic evaluation come from Core. This package owns piano-specific
 realization, comping, and interaction policy.
 """
 
+from .bebop_solo_runtime import (
+    BebopSoloTickPlan,
+    build_bebop_solo_tick,
+    perform_bebop_solo_tick,
+)
+from .bebop_solo_candidates import generate_immediate_bebop_candidates
+from .bebop_phrase_intent import (
+    BebopDensityDirection,
+    BebopEntryMode,
+    BebopPhraseIntent,
+    BebopTargetMode,
+    derive_bebop_phrase_intent,
+)
+from .bebop_harmonic_turn import (
+    BebopHarmonicPhase,
+    BebopHarmonicTurnContext,
+    derive_bebop_harmonic_turn_context,
+)
+from .bebop_harmonic_turn_comping import (
+    BebopHarmonicTurnCompingBias,
+    evaluate_bebop_harmonic_turn_comping_bias,
+)
+from .bebop_turn_taking import (
+    BebopTurnTakingEvidence,
+    BebopTurnTakingType,
+    classify_bebop_turn_taking,
+)
+from .bebop_complementarity import (
+    EnsembleBreathType,
+    EnsembleComplementarityEvidence,
+    SupportCarryMode,
+    classify_ensemble_complementarity,
+    support_carry_mode,
+)
+from .bebop_comping_breath import (
+    BebopBreathCompingBias,
+    evaluate_bebop_breath_comping_bias,
+)
+from .bebop_phrase_space import (
+    BebopPhraseSpaceEvidence,
+    PhraseSpaceType,
+    classify_phrase_space,
+)
 from .solo import (
     PianoSoloContext,
     PianoSoloEvaluator,
@@ -117,6 +160,33 @@ __all__ = [
     "PianoActionScore",
     "PianoPerformanceState",
     "PianoPolicyEvaluator",
+    "BebopSoloTickPlan",
+    "build_bebop_solo_tick",
+    "perform_bebop_solo_tick",
+    "generate_immediate_bebop_candidates",
+    "BebopDensityDirection",
+    "BebopEntryMode",
+    "BebopPhraseIntent",
+    "BebopTargetMode",
+    "derive_bebop_phrase_intent",
+    "BebopHarmonicPhase",
+    "BebopHarmonicTurnContext",
+    "derive_bebop_harmonic_turn_context",
+    "BebopHarmonicTurnCompingBias",
+    "evaluate_bebop_harmonic_turn_comping_bias",
+    "BebopTurnTakingEvidence",
+    "BebopTurnTakingType",
+    "classify_bebop_turn_taking",
+    "EnsembleBreathType",
+    "EnsembleComplementarityEvidence",
+    "SupportCarryMode",
+    "classify_ensemble_complementarity",
+    "support_carry_mode",
+    "BebopBreathCompingBias",
+    "evaluate_bebop_breath_comping_bias",
+    "BebopPhraseSpaceEvidence",
+    "PhraseSpaceType",
+    "classify_phrase_space",
     "PianoSoloContext",
     "PianoSoloEvaluator",
     "PianoSoloState",

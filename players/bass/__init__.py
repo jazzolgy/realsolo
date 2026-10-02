@@ -10,6 +10,18 @@ from .performance_expression import (
     BassExpressionProfile,
     realize_bass_expression,
 )
+from .practice_curriculum import (
+    BassPracticeEvaluation,
+    BassPracticeExercise,
+    BassPracticeLevel,
+    bebop_walking_practice_curriculum,
+    curriculum_feature_weights,
+)
+from .sequential_runner import (
+    BassSequentialRunner,
+    BassStepInput,
+    BassStepResult,
+)
 from .render_projection import (
     BassRenderEvent,
     project_bass_candidate_to_render_event,
@@ -51,7 +63,13 @@ __all__ = [
     "BassInteractionIntent",
     "BassPerformanceMemory",
     "BassPerformanceSnapshot",
+    "BassPracticeEvaluation",
+    "BassPracticeExercise",
+    "BassPracticeLevel",
     "BassRenderEvent",
+    "BassSequentialRunner",
+    "BassStepInput",
+    "BassStepResult",
     "ArticulationIntent",
     "BassActionCandidate",
     "BassContext",
@@ -64,8 +82,10 @@ __all__ = [
     "MotionStrategy",
     "RegisterIntent",
     "TargetStrategy",
+    "bebop_walking_practice_curriculum",
     "choose_bass_interaction_intent",
     "choose_immediate_bass_action",
+    "curriculum_feature_weights",
     "evaluate_bass_grammar",
     "generate_immediate_bass_candidates",
     "realize_bass_expression",

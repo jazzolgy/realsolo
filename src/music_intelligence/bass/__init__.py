@@ -1,4 +1,4 @@
-"""Compatibility shim for legacy Bass imports.
+"""Legacy Bass package compatibility layer.
 
 Canonical implementation lives in players.bass.
 """

@@ -115,6 +115,8 @@ class BassSequentialRunner:
             sounding_length_ratio=candidate.expression.sounding_length_ratio,
             articulation=candidate.expression.articulation,
             interaction_role=interaction.intent.value,
+            harmonic_role=candidate.harmonic_role.value,
+            metric_role=candidate.grammar.metric_role.value,
         ))
         return BassStepResult(
             absolute_beat=item.absolute_beat,

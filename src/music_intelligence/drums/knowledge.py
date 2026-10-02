@@ -1,2 +1,6 @@
-"""Compatibility shim. Canonical module: players.drums.knowledge."""
-from players.drums.knowledge import *  # noqa: F401,F403
+"""Legacy compatibility alias for players.drums.knowledge."""
+from importlib import import_module as _import_module
+import sys as _sys
+
+_impl = _import_module("players.drums.knowledge")
+_sys.modules[__name__] = _impl

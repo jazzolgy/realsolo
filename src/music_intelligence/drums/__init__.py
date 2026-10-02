@@ -1,4 +1,4 @@
-"""Compatibility shim for legacy Drum imports.
+"""Legacy Drum package compatibility layer.
 
 Canonical implementation lives in players.drums.
 """

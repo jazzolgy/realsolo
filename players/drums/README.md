@@ -2,19 +2,6 @@
 
 AI Drummer workstream.
 
-## Ownership
-
-This directory is the instrument-facing public namespace for the Drum player.
-
-During the safe migration period, executable drum policy remains implemented in
-`src/music_intelligence/drums/` and is re-exported through `players.drums`.
-This avoids copying drummer policy into the realtime app and preserves every
-existing `music_intelligence.drums` import.
-
-New app/integration code may import the public Drum API from `players.drums`.
-Physical movement of implementation files can happen later as an isolated,
-fully tested migration.
-
 ## Owns
 
 - ride pattern / hi-hat / snare / bass-drum realization
@@ -37,12 +24,10 @@ fully tested migration.
 - harmonic rhythm when relevant
 - future structural awareness
 
-The drum layer may understand harmonic rhythm and form without duplicating
-Shared Harmony theory.
+The drum layer should understand harmonic rhythm and form without duplicating Shared Harmony theory.
 
 ## Runtime contract
 
-Plan groove, energy, orchestration, and interaction intention rather than a
-fixed future drum sequence.
+Plan groove, energy, orchestration, and interaction intention rather than a fixed future drum sequence.
 
 Commit one immediate drum gesture -> listen -> re-plan.
