@@ -11,6 +11,7 @@ from math import floor, lcm
 from xml.etree import ElementTree as ET
 
 from .engraving import BeamState, EngravingIntent, EngravingPlan, StemDirection
+from .instrument_profiles import InstrumentProfile, resolve_instrument_profile
 from .notation import NotatedAtomKind
 from .score import ReadableScore, ScoreEvent, ScorePart
 
@@ -116,6 +117,59 @@ def _append_note(
     _append_notations(note, event)
 
 
+def _profile_for_part(part: ScorePart) -> InstrumentProfile | None:
+    if part.profile_id is not None:
+        profile = resolve_instrument_profile(part.profile_id)
+        if profile is None:
+            raise ValueError(f"unknown instrument profile: {part.profile_id}")
+        return profile
+    return resolve_instrument_profile(part.instrument)
+
+
+def _append_profile_attributes(
+    attrs: ET.Element,
+    part: ScorePart,
+) -> None:
+    profile = _profile_for_part(part)
+    if profile is None:
+        return
+    if profile.staff_count != len(part.staff_ids):
+        raise ValueError(
+            f"instrument profile {profile.profile_id} expects "
+            f"{profile.staff_count} staff/staves, got {len(part.staff_ids)}"
+        )
+
+    for index, clef_spec in enumerate(profile.clefs, start=1):
+        clef_attrs = {"number": str(index)} if len(profile.clefs) > 1 else {}
+        clef = ET.SubElement(attrs, "clef", clef_attrs)
+        ET.SubElement(clef, "sign").text = clef_spec.sign
+        if clef_spec.sign != "percussion":
+            ET.SubElement(clef, "line").text = str(clef_spec.line)
+        if clef_spec.octave_change:
+            ET.SubElement(clef, "clef-octave-change").text = str(
+                clef_spec.octave_change
+            )
+
+    transposition = profile.transposition
+    if (
+        transposition.chromatic_semitones
+        or transposition.diatonic_steps is not None
+        or transposition.octave_change
+    ):
+        transpose = ET.SubElement(attrs, "transpose")
+        if transposition.diatonic_steps is not None:
+            ET.SubElement(transpose, "diatonic").text = str(
+                transposition.diatonic_steps
+            )
+        ET.SubElement(transpose, "chromatic").text = str(
+            transposition.chromatic_semitones
+        )
+        if transposition.octave_change:
+            ET.SubElement(transpose, "octave-change").text = str(
+                transposition.octave_change
+            )
+
+
 def _part_measures(
     part: ScorePart,
     *,
@@ -175,6 +229,7 @@ def score_to_musicxml(
                 ET.SubElement(time, "beat-type").text = str(score.meter_denominator)
                 if len(part.staff_ids) > 1:
                     ET.SubElement(attrs, "staves").text = str(len(part.staff_ids))
+                _append_profile_attributes(attrs, part)
 
             events = measures.get(measure_index, [])
             groups: dict[tuple[str, str], list[ScoreEvent]] = defaultdict(list)
