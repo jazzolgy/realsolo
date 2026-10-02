@@ -29,10 +29,15 @@ def test_lafaro_profile_exposes_motif_and_rhythm_domains_only_where_seeded():
     assert any(t.feature == "solo.rhythmic_displacement" for t in rhythm)
 
 
-def test_lafaro_vocabulary_does_not_invent_material():
-    assert SCOTT_LAFARO_VOCABULARY_INDEX.query(
+def test_lafaro_vocabulary_is_source_grounded_and_nonliteral():
+    result = SCOTT_LAFARO_VOCABULARY_INDEX.query(
         VocabularyQuery(legend_id="scott_lafaro")
-    ) == ()
+    )
+    assert result
+    assert all(item.provenance for item in result)
+    assert all(not item.literal_representation for item in result)
+    assert all(not item.transposition_normalized_representation for item in result)
+
     assert SCOTT_LAFARO_VOCABULARY_INDEX.query(
         VocabularyQuery(legend_id="bill_evans")
     ) == ()
