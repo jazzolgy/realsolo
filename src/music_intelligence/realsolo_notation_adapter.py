@@ -25,6 +25,10 @@ from music_intelligence.transcribe.chord_chart import (
     chart_position,
     parse_chord_symbol,
 )
+from music_intelligence.transcribe.chord_chart_render import (
+    ChordChartRenderModel,
+    build_chord_chart_render_model,
+)
 
 
 @dataclass(frozen=True)
@@ -85,6 +89,24 @@ def live_chart_state(
         occurrence=cursor.occurrence,
         active_ending=cursor.active_ending,
         position=position,
+    )
+
+
+def live_chart_render_model(
+    chart: ChordChart,
+    cursor: SharedFormCursorView,
+    *,
+    measures_per_row: int = 4,
+    transpose_semitones: int = 0,
+) -> ChordChartRenderModel:
+    """Build the complete renderer-neutral live chart projection."""
+
+    state = live_chart_state(chart, cursor)
+    return build_chord_chart_render_model(
+        chart,
+        position=state.position,
+        measures_per_row=measures_per_row,
+        transpose_semitones=transpose_semitones,
     )
 
 
