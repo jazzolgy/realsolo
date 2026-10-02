@@ -74,8 +74,8 @@ def test_render_model_marks_current_measure_and_chord():
     first = model.rows[0].measures[0]
     assert first.is_active_measure is True
     assert [c.is_active for c in first.chords] == [False, True]
-    assert model.current_chord_label == "G7"
-    assert model.next_chord_label == "Cmaj7"
+    assert model.current_chord_label == "A7"
+    assert model.next_chord_label == "Dmaj7"
     assert model.current_section == "A"
     assert model.transpose_semitones == 2
 
