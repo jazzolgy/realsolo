@@ -35,6 +35,13 @@ from .planner import (
 )
 from .narrative import NarrativeBiasScore, evaluate_narrative_bias
 from .variation import GestureSignature, VariationContext, VariationScore, evaluate_variation
+from .interaction_episode import (
+    EpisodeBias,
+    InteractionEpisode,
+    InteractionEpisodeType,
+    evaluate_episode_bias,
+    infer_interaction_episode,
+)
 from .ensemble_response import (
     EnsembleActor,
     EnsembleResponseBias,
@@ -119,6 +126,11 @@ __all__ = [
     "ResponseType",
     "evaluate_response_bias",
     "infer_coarse_responses",
+    "EpisodeBias",
+    "InteractionEpisode",
+    "InteractionEpisodeType",
+    "evaluate_episode_bias",
+    "infer_interaction_episode",
     "PianoRhythmicIntent",
     "RhythmicPlacement",
     "apply_rhythmic_intent",
