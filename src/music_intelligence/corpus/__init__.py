@@ -70,6 +70,7 @@ from .scorebooks import (
 
 from .score_context import (
     ScoreContextSnapshot,
+    ScorePerformancePhase,
     ScorePosition,
     ScoreSpan,
     StructuredScoreEvidence,
@@ -92,9 +93,23 @@ __all__ += [
     "songs_for_book",
     "validate_song_locators",
     "ScoreContextSnapshot",
+    "ScorePerformancePhase",
     "ScorePosition",
     "ScoreSpan",
     "StructuredScoreEvidence",
     "resolve_score_context",
     "structured_evidence_from_locator",
+]
+
+
+from .songs import (
+    ALONG_CAME_BETTY_EVIDENCE,
+    ALONG_CAME_BETTY_LOCATOR,
+    along_came_betty_evidence,
+)
+
+__all__ += [
+    "ALONG_CAME_BETTY_EVIDENCE",
+    "ALONG_CAME_BETTY_LOCATOR",
+    "along_came_betty_evidence",
 ]

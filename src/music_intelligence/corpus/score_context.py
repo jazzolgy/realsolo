@@ -7,12 +7,21 @@ has not located that information precisely enough.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import Iterable
 
 from .scorebooks import (
     ScoreEvidenceKind,
     ScorebookSongLocator,
 )
+
+
+class ScorePerformancePhase(str, Enum):
+    UNKNOWN = "unknown"
+    HEAD = "head"
+    SOLO = "solo"
+    SOLO_LAST = "solo_last"
+    HEAD_OUT = "head_out"
 
 
 @dataclass(frozen=True, order=True)
@@ -103,6 +112,7 @@ class StructuredScoreEvidence:
     span: ScoreSpan
     confidence: float = 1.0
     provenance: tuple[str, ...] = ()
+    phases: frozenset[ScorePerformancePhase] = frozenset()
 
     def validate(self) -> None:
         if not self.value.strip():
@@ -117,8 +127,12 @@ class ScoreContextSnapshot:
     book_id: str
     song_id: str
     position: ScorePosition
+    performance_phase: ScorePerformancePhase = ScorePerformancePhase.UNKNOWN
     style: tuple[str, ...] = ()
+    tempo: str | None = None
     meter: str | None = None
+    form: tuple[str, ...] = ()
+    chords: tuple[str, ...] = ()
     section: str | None = None
     section_role: str | None = None
     current_feel: str | None = None
@@ -132,6 +146,7 @@ class ScoreContextSnapshot:
     player_instructions: tuple[tuple[str, str], ...] = ()
     solo_indication: str | None = None
     navigation: tuple[str, ...] = ()
+    arrangement_notes: tuple[str, ...] = ()
     unresolved_evidence: tuple[StructuredScoreEvidence, ...] = ()
     confidence: float = 1.0
     provenance: tuple[str, ...] = ()
@@ -181,8 +196,15 @@ def resolve_score_context(
     locator: ScorebookSongLocator,
     position: ScorePosition,
     evidence: Iterable[StructuredScoreEvidence] | None = None,
+    *,
+    phase: ScorePerformancePhase = ScorePerformancePhase.UNKNOWN,
 ) -> ScoreContextSnapshot:
-    """Resolve only evidence supported at the current score position."""
+    """Resolve only evidence supported at the current score position and pass.
+
+    Phase-specific evidence is intentionally unresolved when the caller does not
+    identify the current performance phase. This prevents a written head and an
+    open-solo pass over the same bars from being conflated.
+    """
     locator.validate()
     position.validate()
     items = tuple(
@@ -194,7 +216,18 @@ def resolve_score_context(
         item.validate()
 
     page_items = tuple(x for x in items if x.span.page == position.page)
-    active = tuple(x for x in page_items if x.span.contains(position))
+
+    def phase_applies(item: StructuredScoreEvidence) -> bool:
+        if not item.phases:
+            return True
+        if phase is ScorePerformancePhase.UNKNOWN:
+            return False
+        return phase in item.phases
+
+    active = tuple(
+        x for x in page_items
+        if x.span.contains(position) and phase_applies(x)
+    )
 
     def values(kind: ScoreEvidenceKind) -> tuple[str, ...]:
         return tuple(dict.fromkeys(
@@ -207,12 +240,14 @@ def resolve_score_context(
 
     feel_change_here_item = _best(
         x for x in page_items
-        if x.kind is ScoreEvidenceKind.FEEL_CHANGE and x.span.starts_at(position)
+        if x.kind is ScoreEvidenceKind.FEEL_CHANGE
+        and x.span.starts_at(position)
+        and phase_applies(x)
     )
 
     future_feel = []
     for item in page_items:
-        if item.kind is not ScoreEvidenceKind.FEEL_CHANGE:
+        if item.kind is not ScoreEvidenceKind.FEEL_CHANGE or not phase_applies(item):
             continue
         distance = _future_start_distance(item, position)
         if distance is not None:
@@ -261,10 +296,17 @@ def resolve_score_context(
     unresolved = tuple(
         x for x in page_items
         if (
-            x.kind in {ScoreEvidenceKind.FEEL_CHANGE, ScoreEvidenceKind.PHRASE_BOUNDARY}
-            and x.span.is_page_wide
+            (
+                x.kind in {ScoreEvidenceKind.FEEL_CHANGE, ScoreEvidenceKind.PHRASE_BOUNDARY}
+                and x.span.is_page_wide
+            )
+            or (not x.span.is_page_wide and position.bar is None)
+            or (
+                bool(x.phases)
+                and phase is ScorePerformancePhase.UNKNOWN
+                and x.span.contains(position)
+            )
         )
-        or (not x.span.is_page_wide and position.bar is None)
     )
 
     resolved = tuple(x for x in active if x not in unresolved)
@@ -277,8 +319,12 @@ def resolve_score_context(
         book_id=locator.book_id,
         song_id=locator.song_id,
         position=position,
+        performance_phase=phase,
         style=values(ScoreEvidenceKind.STYLE),
+        tempo=best_value(ScoreEvidenceKind.TEMPO),
         meter=best_value(ScoreEvidenceKind.METER),
+        form=values(ScoreEvidenceKind.FORM),
+        chords=values(ScoreEvidenceKind.CHORD),
         section=best_value(ScoreEvidenceKind.SECTION),
         section_role=best_value(ScoreEvidenceKind.SECTION_ROLE),
         current_feel=best_value(ScoreEvidenceKind.FEEL),
@@ -294,6 +340,7 @@ def resolve_score_context(
         player_instructions=player_instructions,
         solo_indication=(solo.value if solo is not None else None),
         navigation=values(ScoreEvidenceKind.NAVIGATION),
+        arrangement_notes=values(ScoreEvidenceKind.ARRANGEMENT_NOTE),
         unresolved_evidence=unresolved,
         confidence=confidence,
         provenance=provenance,
