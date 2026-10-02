@@ -161,14 +161,19 @@ def score_to_musicxml(score: ReadableScore) -> str:
                 groups[(event.staff_id, event.voice_id)].append(event)
 
             first_group = True
+            previous_group_cursor = bar_length * measure_index
             for (staff_id, voice_id), voice_events in sorted(groups.items()):
                 voice_events.sort(key=lambda e: (e.span.onset, e.event_id))
                 measure_start = bar_length * measure_index
                 cursor = measure_start
 
                 if not first_group:
-                    backup = ET.SubElement(measure, "backup")
-                    ET.SubElement(backup, "duration").text = str(bar_duration)
+                    rewind = previous_group_cursor - measure_start
+                    if rewind > 0:
+                        backup = ET.SubElement(measure, "backup")
+                        ET.SubElement(backup, "duration").text = str(
+                            int(rewind * divisions)
+                        )
                 first_group = False
 
                 for event in voice_events:
@@ -184,6 +189,7 @@ def score_to_musicxml(score: ReadableScore) -> str:
                         staff_number=staff_numbers[staff_id],
                     )
                     cursor = event.span.offset
+                previous_group_cursor = cursor
 
     ET.indent(root, space="  ")
     return ET.tostring(root, encoding="unicode", xml_declaration=True)
