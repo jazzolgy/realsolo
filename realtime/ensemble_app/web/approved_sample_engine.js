@@ -60,6 +60,20 @@ export class RealSoloApprovedSampleEngine {
     return true;
   }
 
+  async piano(midi, velocity, when, duration) {
+    const pack = this.manifest.packs.piano;
+    if (!pack || !pack.regions) return false;
+    const rows = pack.regions;
+    return this._play(
+      this._select(rows, midi, velocity, "piano"),
+      midi,
+      velocity,
+      when,
+      duration,
+      true
+    );
+  }
+
   async bass(midi, velocity, when, duration, articulation = []) {
     const rows = this.manifest.packs.bass.regions;
     const tags = new Set(articulation || []);
@@ -95,6 +109,11 @@ export class RealSoloApprovedSampleEngine {
 
   async warmup() {
     const jobs = [];
+    const piano = this.manifest.packs.piano && this.manifest.packs.piano.regions || [];
+    for (const midi of [48,55,60,64,67,72,76,79]) {
+      const row = this._select(piano, midi, 76, "warmpiano");
+      if (row) jobs.push(this._buffer(row.sample));
+    }
     const bass = this.manifest.packs.bass.regions;
     for (const midi of [28, 31, 33, 36, 40, 43, 45, 48]) {
       const row = this._select(bass, midi, 80, "warmbass");
