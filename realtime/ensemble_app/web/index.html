@@ -81,8 +81,15 @@ if(frame.drums.kick)tone(36,when,.11,"sine",.055);
 }catch(e){els.audioText.textContent="Audio error: "+e.message;}
 }
 async function playSolo(chord,nextChord,beatInBar,when,beatDur){
-try{var url="/api/solo-event?chord="+encodeURIComponent(chord)+"&next_chord="+encodeURIComponent(nextChord)+"&beat_in_bar="+beatInBar+"&phrase_step="+soloStep++;
-var r=await fetch(url);var ev=await r.json();if(ev.pitch!==null)tone(ev.pitch,when,Math.max(.08,ev.duration_beats*beatDur),"sawtooth",.045);
+try{
+var rhythmReq=fetch("/api/accompaniment?chord="+encodeURIComponent(chord)+"&beat="+Math.floor(beatInBar));
+var url="/api/solo-event?chord="+encodeURIComponent(chord)+"&next_chord="+encodeURIComponent(nextChord)+"&beat_in_bar="+beatInBar+"&phrase_step="+soloStep++;
+var soloReq=fetch(url);var both=await Promise.all([rhythmReq,soloReq]);var frame=await both[0].json();var ev=await both[1].json();
+frame.bass.forEach(function(n){tone(n,when,beatDur*.82,"sine",.075);});
+if(frame.drums.ride)noiseHit(when,Math.min(.08,beatDur*.18),.016);
+if(frame.drums.hat)noiseHit(when+.01,Math.min(.04,beatDur*.1),.025);
+if(frame.drums.kick)tone(36,when,.11,"sine",.045);
+if(ev.pitch!==null)tone(ev.pitch,when,Math.max(.08,ev.duration_beats*beatDur),"sawtooth",.045);
 }catch(e){els.audioText.textContent="Solo error: "+e.message;}
 }
 function nextChordAt(barIndex,beatInBar){
