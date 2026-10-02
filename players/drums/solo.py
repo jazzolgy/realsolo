@@ -37,6 +37,7 @@ from .rhythmic_language import (
     engineering_seed_motif,
     grouping_boundary_motif,
     motif_from_committed_events,
+    motif_from_normalized_vocabulary,
     motif_phase_unit,
     realize_motif_now,
     transform_motif,
@@ -378,9 +379,27 @@ def _motif_for_development(
     plan: DrumSoloPlan,
     state: DrumSoloState,
     development: SoloDevelopment,
+    vocabulary_intents: tuple[DrumVocabularyIntent, ...] = (),
 ) -> RhythmicMotifIdentity:
     """Return transformed motif identity for this development decision."""
-    base = state.motif_identity or _seed_motif_for_cell(solo_cell(plan.motif_cell_id))
+    base = state.motif_identity
+    if base is None and vocabulary_intents:
+        for intent in sorted(
+            vocabulary_intents,
+            key=lambda item: (item.confidence, -item.recent_usage_count),
+            reverse=True,
+        ):
+            recalled = motif_from_normalized_vocabulary(
+                vocabulary_id=intent.vocabulary_id,
+                source_id=intent.source_id,
+                normalized_representation=intent.normalized_representation,
+                provenance=intent.provenance,
+            )
+            if recalled is not None:
+                base = recalled
+                break
+    if base is None:
+        base = _seed_motif_for_cell(solo_cell(plan.motif_cell_id))
     transform = rhythmic_transform_for_development(development)
     if transform is None:
         return base
@@ -403,9 +422,16 @@ def _statement_gesture(
     context: DrummerRuntimeContext,
     state: DrumSoloState,
     development: SoloDevelopment,
+    *,
+    vocabulary_intents: tuple[DrumVocabularyIntent, ...] = (),
 ) -> tuple[DrumGesture, RhythmicMotifIdentity]:
     """Realize one current event from a genuinely transformed rhythmic motif."""
-    motif = _motif_for_development(plan, state, development)
+    motif = _motif_for_development(
+        plan,
+        state,
+        development,
+        vocabulary_intents=vocabulary_intents,
+    )
     tolerance_units = 0
     if development in {SoloDevelopment.RECAP, SoloDevelopment.RESOLVE} and (
         plan.target_reentry or context.section_transition or context.phrase_position >= 0.9
@@ -492,7 +518,11 @@ def build_solo_candidates(
             )
         else:
             gesture, motif_identity = _statement_gesture(
-                plan, context, state, development
+                plan,
+                context,
+                state,
+                development,
+                vocabulary_intents=vocabulary_intents,
             )
 
         score = 0.0
