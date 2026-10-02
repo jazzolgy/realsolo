@@ -17,6 +17,12 @@ from .practice_curriculum import (
     bebop_walking_practice_curriculum,
     curriculum_feature_weights,
 )
+from .scorebook_evidence import (
+    BassScoreEvidenceDirective,
+    BassWrittenPartPrior,
+    derive_bass_score_evidence,
+    evidence_candidate_score,
+)
 from .scorebook_practice import (
     BassPracticeMetrics as ScorebookBassPracticeMetrics,
     BassPracticePassResult,
@@ -25,6 +31,14 @@ from .scorebook_practice import (
     BassPracticeSong,
     evaluate_practice_results,
     run_scorebook_practice,
+)
+from .written_part_comparator import (
+    BassLineAbstractProfile,
+    BassLineComparison,
+    BassLineObservation,
+    analyze_bass_line,
+    compare_bass_lines,
+    written_part_prior_from_profile,
 )
 from .sequential_runner import (
     BassSequentialRunner,
@@ -75,6 +89,11 @@ __all__ = [
     "BassPracticeEvaluation",
     "BassPracticeExercise",
     "BassPracticeLevel",
+    "BassScoreEvidenceDirective",
+    "BassWrittenPartPrior",
+    "BassLineAbstractProfile",
+    "BassLineComparison",
+    "BassLineObservation",
     "BassPracticePassResult",
     "BassPracticePulse",
     "BassPracticeSession",
@@ -96,14 +115,19 @@ __all__ = [
     "RegisterIntent",
     "TargetStrategy",
     "bebop_walking_practice_curriculum",
+    "analyze_bass_line",
     "choose_bass_interaction_intent",
+    "compare_bass_lines",
     "choose_immediate_bass_action",
     "curriculum_feature_weights",
+    "derive_bass_score_evidence",
+    "evidence_candidate_score",
     "evaluate_practice_results",
     "evaluate_bass_grammar",
     "generate_immediate_bass_candidates",
     "realize_bass_expression",
     "project_bass_candidate_to_render_event",
     "run_scorebook_practice",
+    "written_part_prior_from_profile",
     "metric_role",
 ]
