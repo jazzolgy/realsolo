@@ -7,7 +7,8 @@ from __future__ import annotations
 
 from fractions import Fraction
 
-from .notation import NotatedAtom, NotatedAtomKind, NotationCandidate, rest_for_gap
+from .notation import NotatedAtom, NotationCandidate
+from .rhythm import rest_for_gap
 
 
 def assemble_monophonic_voice(
