@@ -72,6 +72,15 @@ from .harmonic_time import (
     key_of_the_moment_score,
     summarize_harmonic_rhythm,
 )
+from .hypothesis_engine import (
+    ConfidenceVector,
+    EvidenceChannel,
+    HarmonicHypothesis,
+    HarmonicInterpretationSet,
+    RankedHypothesis,
+    merge_human_correction,
+    rank_harmonic_hypotheses,
+)
 
 __all__ = [
     "HarmonicAffordance",
@@ -132,4 +141,11 @@ __all__ = [
     "infer_local_key",
     "key_of_the_moment_score",
     "summarize_harmonic_rhythm",
+    "ConfidenceVector",
+    "EvidenceChannel",
+    "HarmonicHypothesis",
+    "HarmonicInterpretationSet",
+    "RankedHypothesis",
+    "merge_human_correction",
+    "rank_harmonic_hypotheses",
 ]
