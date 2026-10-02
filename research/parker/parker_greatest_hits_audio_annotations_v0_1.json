@@ -231,5 +231,154 @@
     "Parker_activity_vs_accompaniment_density",
     "transcription_crosscheck"
   ],
-  "non_copying_rule": "Learn conditional behavior; do not store or replay literal future Parker phrases."
+  "non_copying_rule": "Learn conditional behavior; do not store or replay literal future Parker phrases.",
+  "phrase_space_morphology": [
+    {
+      "interval": [
+        397.75,
+        398.75
+      ],
+      "rms_low_pre": 0.648,
+      "rms_low_post": 0.313,
+      "flux_low_pre": 1.257,
+      "flux_low_post": 1.224,
+      "harmonic_low_pre": 0.543,
+      "percussive_low_pre": 1.118,
+      "label": "quiet_active_candidate"
+    },
+    {
+      "interval": [
+        428.75,
+        429.75
+      ],
+      "rms_low_pre": 0.682,
+      "rms_low_post": 0.354,
+      "flux_low_pre": 0.96,
+      "flux_low_post": 1.011,
+      "harmonic_low_pre": 0.598,
+      "percussive_low_pre": 1.506,
+      "label": "quiet_active_candidate"
+    },
+    {
+      "interval": [
+        433,
+        435.25
+      ],
+      "rms_low_pre": 0.582,
+      "rms_low_post": 0.414,
+      "flux_low_pre": 1.181,
+      "flux_low_post": 0.991,
+      "harmonic_low_pre": 0.528,
+      "percussive_low_pre": 0.821,
+      "label": "quiet_active_candidate"
+    },
+    {
+      "interval": [
+        1308,
+        1310.75
+      ],
+      "rms_low_pre": 0.563,
+      "rms_low_post": 0.366,
+      "flux_low_pre": 1.024,
+      "flux_low_post": 1.27,
+      "harmonic_low_pre": 0.482,
+      "percussive_low_pre": 0.824,
+      "label": "quiet_active_candidate"
+    },
+    {
+      "interval": [
+        1313.25,
+        1315.5
+      ],
+      "rms_low_pre": 0.456,
+      "rms_low_post": 0.22,
+      "flux_low_pre": 0.899,
+      "flux_low_post": 0.771,
+      "harmonic_low_pre": 0.425,
+      "percussive_low_pre": 0.587,
+      "label": "strong_release_candidate"
+    },
+    {
+      "interval": [
+        1355.25,
+        1356.75
+      ],
+      "rms_low_pre": 0.374,
+      "rms_low_post": 0.178,
+      "flux_low_pre": 1.093,
+      "flux_low_post": 1.088,
+      "harmonic_low_pre": 0.397,
+      "percussive_low_pre": 0.302,
+      "label": "quiet_active_deep_energy_drop"
+    },
+    {
+      "interval": [
+        1365.75,
+        1367
+      ],
+      "rms_low_pre": 0.616,
+      "rms_low_post": 0.151,
+      "flux_low_pre": 1.085,
+      "flux_low_post": 0.895,
+      "harmonic_low_pre": 0.393,
+      "percussive_low_pre": 1.749,
+      "label": "percussive_carried_space"
+    },
+    {
+      "interval": [
+        1386.25,
+        1387.5
+      ],
+      "rms_low_pre": 0.461,
+      "rms_low_post": 0.23,
+      "flux_low_pre": 0.887,
+      "flux_low_post": 1.201,
+      "harmonic_low_pre": 0.519,
+      "percussive_low_pre": 0.393,
+      "label": "quiet_active_candidate"
+    },
+    {
+      "interval": [
+        1549.25,
+        1551.5
+      ],
+      "rms_low_pre": 0.497,
+      "rms_low_post": 0.228,
+      "flux_low_pre": 1.155,
+      "flux_low_post": 1.053,
+      "harmonic_low_pre": 0.488,
+      "percussive_low_pre": 0.557,
+      "label": "quiet_active_candidate"
+    },
+    {
+      "interval": [
+        2008,
+        2010.75
+      ],
+      "rms_low_pre": 0.313,
+      "rms_low_post": 0.189,
+      "flux_low_pre": 0.721,
+      "flux_low_post": 0.759,
+      "harmonic_low_pre": 0.307,
+      "percussive_low_pre": 0.299,
+      "label": "deep_release_candidate"
+    }
+  ],
+  "new_design_hypotheses": [
+    {
+      "id": "PA-H4",
+      "statement": "Phrase space should distinguish energy reduction from attack reduction.",
+      "status": "DESIGN_INFERENCE"
+    },
+    {
+      "id": "PA-H5",
+      "statement": "Some phrase-space windows preserve strong percussive support while harmonic energy thins.",
+      "status": "AUDIO_OBSERVED"
+    },
+    {
+      "id": "PA-H6",
+      "statement": "Piano re-entry can use rhythmic pickup/anticipation when percussive support carries the space.",
+      "status": "DESIGN_INFERENCE"
+    }
+  ]
 }
