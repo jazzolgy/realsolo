@@ -157,3 +157,19 @@ algorithms:
 - grace-note spacing and accidental column packing are not yet implemented.
 
 These items are next-stage engraving intelligence tasks.
+
+
+## Advanced layout / beaming implemented
+
+- primary and secondary beam levels are represented separately;
+- simple-meter secondary beams subgroup at quarter-note units;
+- compound-meter secondary beams subgroup at dotted-quarter units;
+- cross-staff beam-corner avoidance is modeled as a primary-beam-side policy;
+- simultaneous independent voices at unison/second can request opposite
+  notehead displacement sides;
+- simultaneous accidentals are packed into renderer-neutral columns;
+- grace-note identity is logical notation, while grace spacing remains a
+  separate layout decision;
+- MusicXML projection can emit level-1/level-2 beams and grace-note elements.
+
+These remain semantic/engraving decisions rather than exact glyph geometry.
