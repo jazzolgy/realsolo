@@ -70,6 +70,8 @@ from .bebop_harmonic_turn_comping import (
     evaluate_bebop_harmonic_turn_comping_bias,
 )
 from .ensemble_role import PianoEnsembleMode
+from .lh_texture import evaluate_lh_texture_bias
+from .lh_voice_leading import evaluate_lh_voice_leading
 
 
 class InteractionRole(str, Enum):
@@ -471,6 +473,24 @@ class PianoCompingEvaluator:
                         "foreground_sustain_restraint", -0.05,
                         "continuous LH sustain can make piano-trio solo texture too static",
                     )
+
+            lh_texture_bias = evaluate_lh_texture_bias(
+                candidate,
+                comping_context,
+            )
+            score += lh_texture_bias.score_delta
+            for key, value in lh_texture_bias.components.items():
+                components[key] = components.get(key,0.0) + value
+            reasons.extend(lh_texture_bias.reasons)
+
+            lh_voice_leading_bias = evaluate_lh_voice_leading(
+                candidate,
+                state,
+            )
+            score += lh_voice_leading_bias.score_delta
+            for key, value in lh_voice_leading_bias.components.items():
+                components[key] = components.get(key,0.0) + value
+            reasons.extend(lh_voice_leading_bias.reasons)
 
             event = candidate.realization.event
             if harmonic_reasoning is not None:
