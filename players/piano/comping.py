@@ -113,6 +113,7 @@ class PianoCompingContext:
     auto_pattern_consistency: bool = True
     creativity_strength: float = 0.55
     creativity_coherence_floor: float = 0.30
+    tension_preference: float = 0.62
     role_occupancy: CompingRoleOccupancy = field(default_factory=CompingRoleOccupancy)
     harmonic_turn: BebopHarmonicTurnContext = field(
         default_factory=BebopHarmonicTurnContext
@@ -136,6 +137,7 @@ class PianoCompingContext:
             "pattern_consistency_strength",
             "creativity_strength",
             "creativity_coherence_floor",
+            "tension_preference",
         ):
             value = getattr(self, name)
             if not 0.0 <= value <= 1.0:
@@ -549,6 +551,28 @@ class PianoCompingEvaluator:
                 )
 
             family_tags = set(event.tags) | set(candidate.tags)
+
+            if {"extension", "color_tone", "tension"} & family_tags:
+                color_bonus = 0.07 * comping_context.tension_preference
+                score = self._add(
+                    score, components, reasons,
+                    "color_tension_preference", color_bonus,
+                    "piano comping favors a moderate amount of extension/color",
+                )
+
+            if "high_tension" in family_tags:
+                if busy_solo or crowded:
+                    score = self._add(
+                        score, components, reasons,
+                        "altered_tension_restraint", -0.05,
+                        "strong altered tension is restrained when foreground/ensemble is busy",
+                    )
+                else:
+                    score = self._add(
+                        score, components, reasons,
+                        "altered_tension_color", 0.025 * comping_context.tension_preference,
+                        "explicit Core-supplied altered color can enrich open comping space",
+                    )
 
             if interaction_state is not None:
                 if (
