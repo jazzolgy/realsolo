@@ -68,7 +68,7 @@ def _active_chord_index(
     measure_number: int,
     beat: Fraction,
 ) -> int | None:
-    chords = resolved_measure_chords(display_chart, measure_number)
+    chords = resolved_measure_chords(chart, measure_number)
     active: int | None = None
     for index, change in enumerate(chords):
         if change.beat <= beat:
@@ -94,7 +94,7 @@ def build_chord_chart_render_model(
             transpose_semitones,
             enharmonic_policy=enharmonic_policy,
         )
-        if transpose_semitones
+        if transpose_semitones or enharmonic_policy is not None
         else chart
     )
     if measures_per_row <= 0:
@@ -113,7 +113,7 @@ def build_chord_chart_render_model(
         )
 
     measure_cells: list[MeasureRenderCell] = []
-    for measure in chart.measures:
+    for measure in display_chart.measures:
         resolved = resolved_measure_chords(display_chart, measure.number)
         is_active_measure = (
             position is not None and measure.number == position.measure_number
