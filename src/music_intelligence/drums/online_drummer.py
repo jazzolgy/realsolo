@@ -19,6 +19,7 @@ from .model import (
     Limb,
     TimeFeel,
 )
+from .pattern_runtime import source_pattern_candidates
 from .timing import (
     bounded_timing_offset_ms,
     is_ride_anchor,
@@ -105,6 +106,11 @@ def build_immediate_candidates(
         ))
     else:
         out.append(DrumGesture(role=GestureRole.SPACE, tags=frozenset({"time_space"})))
+
+    # Stored pedagogical/transcribed patterns are a real candidate source.
+    # Only their current slice is exposed; the rest of the pattern is not
+    # committed, preserving listen -> re-plan semantics.
+    out.extend(source_pattern_candidates(context))
 
     # Snare and bass drum are independent candidate families.  Neither implies
     # the other, and neither is generated as a pre-written comping pattern.
