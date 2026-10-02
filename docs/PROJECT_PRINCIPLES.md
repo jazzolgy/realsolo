@@ -60,3 +60,43 @@ The three active workstreams are:
 3. Live Ensemble App
 
 Each uses one shared repository and avoids silently forking the shared musical architecture.
+
+
+## Constraint-aware creativity
+
+RealSolo performers must remain capable of creative response in every musical context.
+
+A constrained context does **not** mean creativity is disabled.
+
+Examples:
+
+- when the soloist is busy, creativity may move from density to timing, register,
+  silence length, touch, or harmonic color restraint;
+- when a vamp requires groove continuity, rhythm may stay stable while voicing,
+  register, dynamics, articulation, omission, or color evolves;
+- when another comping instrument occupies harmonic space, the pianist may create
+  through sparse punctuation, register separation, rhythmic counter-shape, silence,
+  texture, or response timing rather than duplicated harmony;
+- near a form boundary, previously stable dimensions may loosen together to permit a
+  new texture or role.
+
+Therefore the system should not implement creativity as a random-temperature switch or
+as a rule to maximize difference from the previous gesture.
+
+The target is:
+
+```
+creative response
+= musical coherence
++ context awareness
++ freedom on currently available dimensions
+```
+
+This remains subordinate to the runtime invariant:
+
+```
+Plan intention, not notes.
+```
+
+No creativity layer may freeze a future note sequence, voicing sequence, or comping
+pattern.
