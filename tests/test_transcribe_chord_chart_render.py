@@ -5,6 +5,7 @@ from music_intelligence.transcribe import (
     ChordChange,
     ChordChart,
     ChordSymbol,
+    EnharmonicPolicy,
     MeasureRepeatKind,
     chart_position,
 )
@@ -85,3 +86,55 @@ def test_render_model_preserves_repeat_shorthand_while_resolving_visible_chords(
 
     assert repeated.repeat_shorthand is MeasureRepeatKind.ONE_BAR
     assert [c.label for c in repeated.chords] == ["Cmaj7"]
+
+
+def test_render_transposition_changes_visible_and_preview_labels():
+    chart = ChordChart(
+        "render:transpose",
+        "Transpose",
+        (
+            ChartMeasure(
+                1,
+                (
+                    ChordChange(Fraction(0), ChordSymbol(0, "7")),
+                    ChordChange(Fraction(2), ChordSymbol(5, "m7")),
+                ),
+            ),
+            ChartMeasure(
+                2,
+                (ChordChange(Fraction(0), ChordSymbol(10, "maj7")),),
+            ),
+        ),
+    )
+    pos = chart_position(chart, measure_number=1, beat=Fraction(1))
+
+    model = build_chord_chart_render_model(
+        chart,
+        position=pos,
+        transpose_semitones=1,
+        enharmonic_policy=EnharmonicPolicy.PREFER_FLATS,
+    )
+
+    assert [c.label for c in model.rows[0].measures[0].chords] == ["Db7", "Gbm7"]
+    assert model.current_chord_label == "Db7"
+    assert model.next_chord_label == "Gb m7".replace(" ", "")
+
+
+def test_render_can_respell_without_transposing_pitch():
+    chart = ChordChart(
+        "render:respell",
+        "Respell",
+        (
+            ChartMeasure(
+                1,
+                (ChordChange(Fraction(0), ChordSymbol(1, "7", enharmonic_policy=EnharmonicPolicy.PREFER_SHARPS)),),
+            ),
+        ),
+    )
+
+    model = build_chord_chart_render_model(
+        chart,
+        enharmonic_policy=EnharmonicPolicy.PREFER_FLATS,
+    )
+
+    assert model.rows[0].measures[0].chords[0].label == "Db7"
