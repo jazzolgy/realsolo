@@ -243,11 +243,32 @@ class PianoCompingEvaluator:
                         "long duration weakens punctuation character",
                     )
 
+            family_tags = set(event.tags) | set(candidate.tags)
+
+            if candidate.role is InteractionRole.SUPPORT and "shell" in family_tags:
+                if busy_solo or comping_context.ensemble_density >= 0.6:
+                    score = self._add(
+                        score, components, reasons, "shell_support_fit", 0.08,
+                        "shell voicing supports restrained accompaniment",
+                    )
+
+            if candidate.role is InteractionRole.ANSWER and "rootless" in family_tags:
+                if phrase_open and useful_space:
+                    score = self._add(
+                        score, components, reasons, "rootless_answer_fit", 0.08,
+                        "rootless color can serve a phrase-space response",
+                    )
+
             if candidate.role is InteractionRole.BUILD:
                 if comping_context.section_energy >= 0.55 and not busy_solo:
                     score = self._add(
                         score, components, reasons, "build_context", 0.10,
                         "section context can support an energy-building gesture",
+                    )
+                if "rootless" in family_tags:
+                    score = self._add(
+                        score, components, reasons, "rootless_build_fit", 0.06,
+                        "rootless color supports a build candidate",
                     )
                 if sparse:
                     score = self._add(
