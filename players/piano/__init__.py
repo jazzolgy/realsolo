@@ -12,6 +12,14 @@ from .policy import (
     PianoRealizationCandidate,
     perform_one_piano_action,
 )
+from .interaction import EnergyDirection, PhraseSpaceWindow, PianoDensity, PianoInteractionState
+from .voicing import (
+    PianoVoicingRequest,
+    ResolvedHarmonicMaterial,
+    generate_minimal_voicing_families,
+    generate_rootless_voicings,
+    generate_shell_voicings,
+)
 from .comping import (
     CompingActionType,
     InteractionRole,
@@ -37,4 +45,13 @@ __all__ = [
     "PianoCompingScore",
     "PianoCompingState",
     "perform_one_comping_action",
+    "EnergyDirection",
+    "PhraseSpaceWindow",
+    "PianoDensity",
+    "PianoInteractionState",
+    "PianoVoicingRequest",
+    "ResolvedHarmonicMaterial",
+    "generate_minimal_voicing_families",
+    "generate_rootless_voicings",
+    "generate_shell_voicings",
 ]
