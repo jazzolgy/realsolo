@@ -1,0 +1,28 @@
+{
+  "corpus_licks": 131,
+  "global_motion": {"transitions": 1254, "step_share": 0.6188197767145136, "within_p4_share": 0.9417862838915471, "wide_leap_share": 0.04784688995215311, "compound_leap_share": 0.0, "mean_abs_interval": 2.4992025518341308},
+  "phase_motion": {
+    "early": {"transitions": 423, "step_share": 0.5957446808510638, "within_p4_share": 0.9456264775413712, "wide_leap_share": 0.04491725768321513, "compound_leap_share": 0.0, "mean_abs_interval": 2.5059101654846336},
+    "middle": {"transitions": 408, "step_share": 0.5759803921568627, "within_p4_share": 0.946078431372549, "wide_leap_share": 0.051470588235294115, "compound_leap_share": 0.0, "mean_abs_interval": 2.590686274509804},
+    "late": {"transitions": 423, "step_share": 0.6832151300236406, "within_p4_share": 0.933806146572104, "wide_leap_share": 0.04728132387706856, "compound_leap_share": 0.0, "mean_abs_interval": 2.404255319148936}
+  },
+  "family_motion": {
+    "dominant_material": {"transitions": 210, "step_share": 0.580952380952381, "within_p4_share": 0.9380952380952381, "wide_leap_share": 0.02857142857142857, "compound_leap_share": 0.0, "mean_abs_interval": 2.533333333333333},
+    "long_ii_v": {"transitions": 259, "step_share": 0.637065637065637, "within_p4_share": 0.918918918918919, "wide_leap_share": 0.0694980694980695, "compound_leap_share": 0.0, "mean_abs_interval": 2.563706563706564},
+    "major_chord_material": {"transitions": 205, "step_share": 0.5560975609756098, "within_p4_share": 0.9512195121951219, "wide_leap_share": 0.04878048780487805, "compound_leap_share": 0.0, "mean_abs_interval": 2.682926829268293},
+    "minor_chord_material": {"transitions": 163, "step_share": 0.6625766871165644, "within_p4_share": 0.9570552147239264, "wide_leap_share": 0.03067484662576687, "compound_leap_share": 0.0, "mean_abs_interval": 2.4171779141104293},
+    "minor_ii_v": {"transitions": 182, "step_share": 0.6813186813186813, "within_p4_share": 0.9560439560439561, "wide_leap_share": 0.038461538461538464, "compound_leap_share": 0.0, "mean_abs_interval": 2.197802197802198},
+    "short_ii_v": {"transitions": 203, "step_share": 0.6009852216748769, "within_p4_share": 0.9458128078817734, "wide_leap_share": 0.054187192118226604, "compound_leap_share": 0.0, "mean_abs_interval": 2.5123152709359604},
+    "turnaround": {"transitions": 32, "step_share": 0.65625, "within_p4_share": 0.90625, "wide_leap_share": 0.09375, "compound_leap_share": 0.0, "mean_abs_interval": 2.625}
+  },
+  "terminal_long_tone_share": 0.5648854961832062,
+  "terminal_duration_mean_eighths": 1.6552162849872774,
+  "internal_duration_mean_eighths": 0.9379319510898458,
+  "wide_leap_count_with_followup": 56,
+  "wide_leap_contrary_recovery_share": 0.8571428571428571,
+  "wide_leap_next_within_p4_share": 0.9821428571428571,
+  "three_note_span_gt_octave_share": 0.0008904719501335708,
+  "four_note_span_gt_octave_share": 0.008064516129032258,
+  "evidence_class": "pedagogical_symbolic_131",
+  "runtime_use": "bounded_conditional_prior_only"
+}
