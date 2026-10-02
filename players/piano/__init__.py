@@ -5,6 +5,15 @@ polyphonic evaluation come from Core. This package owns piano-specific
 realization, comping, and interaction policy.
 """
 
+from .bebop_harmonic_turn import (
+    BebopHarmonicPhase,
+    BebopHarmonicTurnContext,
+    derive_bebop_harmonic_turn_context,
+)
+from .bebop_harmonic_turn_comping import (
+    BebopHarmonicTurnCompingBias,
+    evaluate_bebop_harmonic_turn_comping_bias,
+)
 from .bebop_turn_taking import (
     BebopTurnTakingEvidence,
     BebopTurnTakingType,
@@ -138,6 +147,11 @@ __all__ = [
     "PianoActionScore",
     "PianoPerformanceState",
     "PianoPolicyEvaluator",
+    "BebopHarmonicPhase",
+    "BebopHarmonicTurnContext",
+    "derive_bebop_harmonic_turn_context",
+    "BebopHarmonicTurnCompingBias",
+    "evaluate_bebop_harmonic_turn_comping_bias",
     "BebopTurnTakingEvidence",
     "BebopTurnTakingType",
     "classify_bebop_turn_taking",
