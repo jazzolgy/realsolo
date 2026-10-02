@@ -30,6 +30,7 @@ from .performance_grammar import (
     TargetStrategy,
     evaluate_bass_grammar,
 )
+from .performance_expression import BassExpressionProfile, realize_bass_expression
 from .performance_memory import BassPerformanceSnapshot
 
 
@@ -92,6 +93,7 @@ class BassActionCandidate:
     target_pitch_class: int
     score: float
     grammar: BassGrammarDecision
+    expression: BassExpressionProfile
     reasons: tuple[str, ...] = ()
 
 
@@ -406,6 +408,12 @@ def generate_immediate_bass_candidates(
                 pitch=pitch,
                 role=role,
             )
+            expression = realize_bass_expression(
+                mode=ctx.mode.value,
+                grammar=grammar,
+                memory=ctx.memory_snapshot,
+                interaction=ctx.interaction_decision,
+            )
             score = base + vl + grammar.score_delta + interaction_score - motion_penalty
             candidates.append(BassActionCandidate(
                 event=CandidateEvent(
@@ -418,10 +426,12 @@ def generate_immediate_bass_candidates(
                 target_pitch_class=pc % 12,
                 score=score,
                 grammar=grammar,
+                expression=expression,
                 reasons=(
                     reasons
                     + grammar.reasons
                     + interaction_reasons
+                    + expression.reasons
                     + (f"shared voice-leading={vl:.3f}",)
                 ),
             ))
