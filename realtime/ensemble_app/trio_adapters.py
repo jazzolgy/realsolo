@@ -9,7 +9,7 @@ from music_intelligence.reasoning.ensemble_state import (
 )
 from music_intelligence.reasoning.interaction_scheduler import InteractionDirective
 
-from .player_contract import RenderGesture
+from .player_contract import RenderGesture, apply_shared_groove_to_render_gesture
 from .runtime_loop import (
     PlayerRuntimeDecision,
     committed_intent,
@@ -103,6 +103,24 @@ class _BaseRuntimeAdapter:
         ))
         if native is None:
             return None
+        if native.gesture is not None:
+            native = NativeImmediateResult(
+                gesture=apply_shared_groove_to_render_gesture(
+                    native.gesture,
+                    anchor_beat=snapshot.transport.beat,
+                    groove=snapshot.groove,
+                ),
+                density=native.density,
+                energy=native.energy,
+                tension=native.tension,
+                leadership=native.leadership,
+                phrase_maturity=native.phrase_maturity,
+                tags=frozenset(
+                    set(native.tags)
+                    | ({f"groove:{snapshot.groove.feel.value}"} if snapshot.groove is not None else set())
+                ),
+                provenance=native.provenance + (("shared_groove_projection",) if snapshot.groove is not None else ()),
+            )
         native.validate()
 
         density = max(0.0, min(1.0, native.density + directive.density_delta))
