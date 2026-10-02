@@ -42,6 +42,8 @@ class BassSoloSnapshot:
     motif_intervals: tuple[int, ...] = ()
     motif_durations: tuple[float, ...] = ()
     repetition_count: int = 0
+    same_operation_count: int = 0
+    consecutive_space_count: int = 0
 
     @property
     def previous_pitch(self) -> int | None:
@@ -78,9 +80,11 @@ class BassSoloMemory:
         motif_intervals = intervals[-3:]
         motif_durations = durations[-4:]
 
-        # recent_repetition_count means motif-identity repetition, not
-        # "the same operation happened several times".  Repeated STATE/VARY
-        # actions must not suppress a later intentional REPEAT.
+        # Keep three different memories separate:
+        # 1) motif-identity repetition (REPEAT/RECAP),
+        # 2) generic same-operation streak,
+        # 3) consecutive silence/space.
+        # They serve different musical purposes and must not alias each other.
         repetition = 0
         if self.operations and self.operations[-1] in {
             SoloDevelopmentOperation.REPEAT,
@@ -95,6 +99,22 @@ class BassSoloMemory:
                 else:
                     break
 
+        same_operation = 0
+        if self.operations:
+            last = self.operations[-1]
+            for op in reversed(self.operations):
+                if op is last:
+                    same_operation += 1
+                else:
+                    break
+
+        space_count = 0
+        for event in reversed(self.events):
+            if event.pitch_midi is None:
+                space_count += 1
+            else:
+                break
+
         return BassSoloSnapshot(
             recent_pitches=pitched,
             recent_intervals=intervals,
@@ -103,6 +123,8 @@ class BassSoloMemory:
             motif_intervals=motif_intervals,
             motif_durations=motif_durations,
             repetition_count=repetition,
+            same_operation_count=same_operation,
+            consecutive_space_count=space_count,
         )
 
 
@@ -165,9 +187,17 @@ def _adjusted_weight(
     }:
         score -= .22
 
-    # Repetition identity is allowed, but not an endless operation loop.
+    # Generic operation-loop pressure is distinct from motif repetition.
+    # This prevents STATE/SPACE/etc. from getting mechanically stuck while
+    # preserving the separate semantics of productive motif repetition.
     if snapshot.recent_operations and option.operation is snapshot.recent_operations[-1]:
-        score -= .08 * min(3, snapshot.repetition_count)
+        score -= .06 * min(3, snapshot.same_operation_count)
+
+    if option.operation in {
+        SoloDevelopmentOperation.ADD_SPACE,
+        SoloDevelopmentOperation.INTERNAL_REST,
+    } and snapshot.consecutive_space_count:
+        score -= .18 * min(2, snapshot.consecutive_space_count)
 
     # Rhythmic monotony debt: several consecutive long events create a soft
     # reason to vary/fragment/displace/diminish. This is not randomization; it
