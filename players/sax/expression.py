@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from realtime.ensemble_app.solo_articulation import SoloArticulation
+from .articulation import SoloArticulation
 
 
 @dataclass(frozen=True, slots=True)
