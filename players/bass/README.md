@@ -119,3 +119,29 @@ Important policy:
 The next slice should add performed note length, accent intent and microtiming
 as first-class realization parameters, then connect those parameters to live
 drum/piano/soloist evidence.
+
+
+### v1.47 — Performance expression layer
+
+Immediate bass candidates now carry a bass-specific expression profile in
+addition to pitch/duration identity.
+
+The profile separates:
+
+- notated duration vs sounding-length ratio
+- accent vs harmonic importance
+- local microtiming vs shared pulse
+- articulation intent
+- ghost/dead-note opportunity
+
+Important constraints:
+
+- these are soft performance parameters, not fixed bebop constants
+- ghost/dead notes are not blindly inserted as pitched notes
+- recent ghost use creates restraint
+- recent strong accents create accent-release pressure
+- Anchor/Hold/Reset stabilize note body
+- Yield softens attack and foreground presence
+- Propel/Build can add forward attack energy
+- Connect/Answer favor connected delivery
+- actual renderer integration remains a later step
