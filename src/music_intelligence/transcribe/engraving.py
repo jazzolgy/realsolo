@@ -339,6 +339,35 @@ def tuplet_group_placement(
     return placements
 
 
+
+def cross_staff_tie_placement(
+    event: ScoreEvent,
+    intent: EngravingIntent,
+    profile: EngravingProfile,
+) -> VerticalPlacement:
+    """Apply normal tie-position policy to cross-staff notes when enabled.
+
+    This mirrors the architectural rule that cross-staff ties should use the
+    same tie-position system as ordinary notes rather than a separate ad-hoc
+    geometry path.
+    """
+
+    if not event.tie_from_previous and not event.tie_to_next:
+        return VerticalPlacement.AUTO
+    if intent.cross_staff_target is None:
+        return intent.tie_placement
+    if not profile.apply_tie_rules_to_cross_staff:
+        return VerticalPlacement.AUTO
+    if intent.tie_placement is not VerticalPlacement.AUTO:
+        return intent.tie_placement
+
+    # Initial renderer-neutral convention based on logical voice/stem side.
+    if intent.stem_direction is StemDirection.UP:
+        return VerticalPlacement.BELOW
+    if intent.stem_direction is StemDirection.DOWN:
+        return VerticalPlacement.ABOVE
+    return VerticalPlacement.AUTO
+
 def build_default_engraving_plan(
     score: ReadableScore,
     *,
