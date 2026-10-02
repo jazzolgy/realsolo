@@ -2,7 +2,7 @@
 
 Shared harmony, phrase, ensemble reasoning, sonority semantics, and generic
 polyphonic evaluation come from Core. This package owns piano-specific
-realization and interaction policy.
+realization, comping, and interaction policy.
 """
 
 from .policy import (
@@ -12,6 +12,16 @@ from .policy import (
     PianoRealizationCandidate,
     perform_one_piano_action,
 )
+from .comping import (
+    CompingActionType,
+    InteractionRole,
+    PianoCompingCandidate,
+    PianoCompingContext,
+    PianoCompingEvaluator,
+    PianoCompingScore,
+    PianoCompingState,
+    perform_one_comping_action,
+)
 
 __all__ = [
     "PianoActionScore",
@@ -19,4 +29,12 @@ __all__ = [
     "PianoPolicyEvaluator",
     "PianoRealizationCandidate",
     "perform_one_piano_action",
+    "CompingActionType",
+    "InteractionRole",
+    "PianoCompingCandidate",
+    "PianoCompingContext",
+    "PianoCompingEvaluator",
+    "PianoCompingScore",
+    "PianoCompingState",
+    "perform_one_comping_action",
 ]
