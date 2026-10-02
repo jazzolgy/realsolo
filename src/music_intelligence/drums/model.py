@@ -129,6 +129,7 @@ class DrummerRuntimeContext:
     Harmony and is consumed read-only.
     """
     position_in_bar_beats: float
+    pattern_phase_beats: float | None = None
     tempo_bpm: float = 140.0
     beats_per_bar: int = 4
     phrase_position: float = 0.0
@@ -141,6 +142,8 @@ class DrummerRuntimeContext:
     harmony: HarmonicFrame | None = None
 
     def validate(self) -> None:
+        if self.pattern_phase_beats is not None and self.pattern_phase_beats < 0:
+            raise ValueError("pattern_phase_beats may not be negative")
         if self.tempo_bpm <= 0:
             raise ValueError("tempo_bpm must be positive")
         if self.beats_per_bar <= 0:
