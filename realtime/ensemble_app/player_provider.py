@@ -47,21 +47,21 @@ def current_stage1_provider_status() -> tuple[PlayerProviderStatus, ...]:
     return (
         PlayerProviderStatus(
             "piano",
-            ProviderState.PLAYER_BRANCH,
-            "player/piano",
-            "player implementation exists on its branch; awaiting integration into shared runtime",
+            ProviderState.CORE_PLAYER,
+            "player/piano via native trio runtime",
+            "Stage 1 consumes committed piano comping actions from the executable player runtime",
         ),
         PlayerProviderStatus(
             "bass",
-            ProviderState.PLAYER_BRANCH,
-            "player/bass",
-            "workstream exists; realtime still uses temporary fallback until committed gestures are exposed",
+            ProviderState.CORE_PLAYER,
+            "player/bass via native trio runtime",
+            "Stage 1 consumes committed bass actions; realtime fallback removed from accompaniment path",
         ),
         PlayerProviderStatus(
             "drums",
-            ProviderState.PLAYER_BRANCH,
-            "player/drums",
-            "workstream exists; realtime still uses temporary fallback until committed gestures are exposed",
+            ProviderState.CORE_PLAYER,
+            "player/drums via native trio runtime",
+            "Stage 1 consumes committed drum gestures; realtime fallback removed from accompaniment path",
         ),
         PlayerProviderStatus(
             "solo",
