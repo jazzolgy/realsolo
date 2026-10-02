@@ -35,3 +35,29 @@ and piano-specific voicing/comping grammar.
 
 If future piano work reveals another genuinely shared musical concept, document it
 first in `CORE_CHANGE_REQUEST.md` rather than duplicating it locally.
+
+
+## Experimental context-aware comping slice
+
+The first McNeely-derived vertical slice now lives in `comping.py`.
+
+It deliberately tests only a small decision space:
+
+- silence
+- sparse support
+- punctuation
+- response
+- sustained support
+
+The current experimental context contains soloist activity, phrase-boundary
+probability, available phrase space, bass/drummer activity, ensemble density,
+recent piano density, section energy, and time feel.
+
+These fields are piano-side research projections for now. They are **not** declared
+stable shared-Core contracts yet.
+
+The comping layer consumes a Core `HarmonicAffordance` by ID/alignment only; it does
+not recreate chord-scale, tension, substitution, or harmonic-function theory.
+
+Research rule: same harmony must be able to yield different immediate actions when
+ensemble/phrase context changes, including choosing silence.
