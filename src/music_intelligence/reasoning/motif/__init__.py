@@ -14,6 +14,10 @@ from .learner import (
 )
 from .policy import MotifPolicyDecision, choose_motif_policy
 from .transformation import transform_motif
+from .vocabulary_bridge import (
+    motif_candidate_from_vocabulary,
+    motif_candidates_from_vocabulary,
+)
 
 __all__ = [
     "MotifCandidate",
@@ -33,4 +37,6 @@ __all__ = [
     "MotifPolicyDecision",
     "choose_motif_policy",
     "transform_motif",
+    "motif_candidate_from_vocabulary",
+    "motif_candidates_from_vocabulary",
 ]
