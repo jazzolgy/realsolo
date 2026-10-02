@@ -8,6 +8,7 @@ from music_intelligence.transcribe.engraving import (
     VerticalPlacement,
     beam_group_intents,
     build_default_engraving_plan,
+    cross_staff_primary_beam_side,
     cross_staff_tie_placement,
     tuplet_group_placement,
 )
@@ -266,3 +267,31 @@ def test_cross_staff_tie_can_reuse_normal_tie_position_rules():
 
     assert placement is VerticalPlacement.BELOW
     assert legacy is VerticalPlacement.AUTO
+
+
+
+def test_cross_staff_primary_beam_can_follow_first_note_side_rule():
+    first = event("beam:first", "voice1", Fraction(0))
+    second = event("beam:second", "voice1", Fraction(1, 2))
+    EngravingIntent = __import__(
+        "music_intelligence.transcribe.engraving",
+        fromlist=["EngravingIntent"],
+    ).EngravingIntent
+    intents = (
+        EngravingIntent("beam:first"),
+        EngravingIntent("beam:second", cross_staff_target="piano:lower"),
+    )
+
+    side = cross_staff_primary_beam_side(
+        (first, second),
+        intents,
+        EngravingProfile(avoid_cross_staff_beam_corners=True),
+    )
+    legacy = cross_staff_primary_beam_side(
+        (first, second),
+        intents,
+        EngravingProfile(avoid_cross_staff_beam_corners=False),
+    )
+
+    assert side.value == "first_note"
+    assert legacy.value == "auto"
