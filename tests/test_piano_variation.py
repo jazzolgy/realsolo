@@ -201,7 +201,10 @@ def test_comping_evaluator_uses_recent_signature_memory():
 
     varied = replace(
         original,
-        tags=frozenset(set(original.tags) | {"rhythm:offbeat"}),
+        tags=frozenset(
+            {tag for tag in original.tags if not tag.startswith("rhythm:")}
+            | {"rhythm:offbeat"}
+        ),
     )
 
     ev = PianoCompingEvaluator()
