@@ -125,3 +125,35 @@ geometry, fonts, spacing tables, or proprietary engraving algorithms.
 The goal is to develop a musical/notation intelligence layer that can later
 drive Sibelius, Dorico, MuseScore, MusicXML or another renderer without making
 any one renderer the source of musical truth.
+
+
+## Sibelius defaults currently mirrored
+
+The following behaviors are based on Avid reference/release documentation and
+are treated as renderer-informed defaults rather than universal notation law:
+
+- In 2/4, 4/4 and 2/2, consecutive eighth notes may beam in groups of four.
+- 6/8, 9/8 and 12/8 use dotted-beat grouping.
+- Beam groups may break when the written rhythmic pattern changes.
+- Tuplets are, by default, positioned by considering the tuplet as though all
+  notes were beamed together rather than using only the first note.
+- A profile option can separate tuplets from adjacent beamed notes.
+- Cross-staff ties can reuse ordinary tie-position rules.
+- Cross-staff voice-position rules, accidental spacing, ties and beams remain
+  separate engraving concerns.
+
+## Current approximation boundaries
+
+The following are still simplified and must not be mistaken for exact Sibelius
+algorithms:
+
+- tuplet above/below placement currently uses a renderer-neutral pitch/register
+  proxy rather than Sibelius's exact staff/beam geometry;
+- tie curvature and exact optical anchor points are not yet modeled;
+- primary/secondary beam geometry is not yet represented;
+- cross-staff beam slope and stem endpoint geometry are not yet represented;
+- notehead displacement for seconds/unisons in multi-voice writing is not yet
+  implemented;
+- grace-note spacing and accidental column packing are not yet implemented.
+
+These items are next-stage engraving intelligence tasks.
