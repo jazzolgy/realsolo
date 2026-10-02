@@ -5,6 +5,11 @@ polyphonic evaluation come from Core. This package owns piano-specific
 realization, comping, and interaction policy.
 """
 
+from .bebop_solo_runtime import (
+    BebopSoloTickPlan,
+    build_bebop_solo_tick,
+    perform_bebop_solo_tick,
+)
 from .bebop_solo_candidates import generate_immediate_bebop_candidates
 from .bebop_phrase_intent import (
     BebopDensityDirection,
@@ -155,6 +160,9 @@ __all__ = [
     "PianoActionScore",
     "PianoPerformanceState",
     "PianoPolicyEvaluator",
+    "BebopSoloTickPlan",
+    "build_bebop_solo_tick",
+    "perform_bebop_solo_tick",
     "generate_immediate_bebop_candidates",
     "BebopDensityDirection",
     "BebopEntryMode",
