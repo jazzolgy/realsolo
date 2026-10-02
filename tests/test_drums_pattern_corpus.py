@@ -96,3 +96,20 @@ def test_afro_cuban_plan_can_retrieve_clave_but_bop_plan_cannot():
     )
     assert any("clave" in g.tags for g in latin)
     assert all("clave" not in g.tags for g in bop)
+
+
+def test_two_bar_clave_can_address_second_bar_via_pattern_phase():
+    from music_intelligence.drums.model import DrummerSoftPlan
+    from music_intelligence.drums.pattern_runtime import source_pattern_candidates
+
+    plan = DrummerSoftPlan(style_tags=frozenset({"afro_cuban"}))
+    # Bar-relative position is beat 2, but corpus phase is beat 6 of the 8-beat clave.
+    ctx = DrummerRuntimeContext(
+        position_in_bar_beats=2.0,
+        pattern_phase_beats=6.0,
+    )
+    candidates = source_pattern_candidates(plan, ctx)
+    assert any(
+        "plainfield_son_clave_3_2" in g.tags
+        for g in candidates
+    )
