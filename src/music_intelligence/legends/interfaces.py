@@ -44,6 +44,13 @@ class VocabularyUseType(str, Enum):
     HYBRID_COMPOSITION = "hybrid_composition"
 
 
+class SignatureStatus(str, Enum):
+    NONE = "none"
+    RECURRING = "recurring"
+    SIGNATURE_CANDIDATE = "signature_candidate"
+    SIGNATURE_CONFIRMED = "signature_confirmed"
+
+
 class VocabularyDimension(str, Enum):
     """Instrument-neutral dimensions that may transfer across players."""
 
@@ -72,6 +79,7 @@ class VocabularyQuery:
     allowed_uses: frozenset[VocabularyUseType] = frozenset(VocabularyUseType)
     required_dimensions: frozenset[VocabularyDimension] = frozenset()
     target_instrument: str = ""
+    preferred_use: VocabularyUseType | None = None
     limit: int = 16
 
 
@@ -109,6 +117,8 @@ class VocabularyMemoryItem:
     literal_similarity: float | None = None
     structural_similarity: float | None = None
     quotation_type: VocabularyUseType | None = None
+    signature_status: SignatureStatus = SignatureStatus.NONE
+    signature_evidence_count: int = 0
     usage_count: int = 0
     recent_usage_count: int = 0
     confidence: float = 1.0
@@ -131,8 +141,15 @@ class VocabularyMemoryItem:
                 raise ValueError(f"{name} must be within 0..1")
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError("confidence must be within 0..1")
+        if self.signature_evidence_count < 0:
+            raise ValueError("signature_evidence_count may not be negative")
         if self.usage_count < 0 or self.recent_usage_count < 0:
             raise ValueError("usage counts may not be negative")
+        if (
+            self.signature_status is SignatureStatus.SIGNATURE_CONFIRMED
+            and self.signature_evidence_count < 2
+        ):
+            raise ValueError("confirmed signature vocabulary requires repeated evidence")
 
 
 @dataclass(frozen=True)
