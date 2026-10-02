@@ -96,3 +96,33 @@ def test_engraving_plan_rejects_unknown_logical_event():
         intents=(),
     )
     bad.validate(score)
+
+
+def test_compound_meter_beams_eighths_in_dotted_quarter_groups():
+    part = ScorePart(
+        "piano",
+        "Piano",
+        "piano",
+        ("piano:upper", "piano:lower"),
+        (
+            event("a68", "voice1", Fraction(0)),
+            event("b68", "voice1", Fraction(1, 2)),
+            event("c68", "voice1", Fraction(1)),
+            event("d68", "voice1", Fraction(3, 2)),
+        ),
+    )
+    score = assemble_score(
+        score_id="engrave:68",
+        title="Six Eight",
+        parts=(part,),
+        meter_numerator=6,
+        meter_denominator=8,
+    )
+    plan = build_default_engraving_plan(score)
+    by_id = {i.event_id: i for i in plan.intents}
+
+    assert by_id["a68"].beam_state is BeamState.BEGIN
+    assert by_id["b68"].beam_state is BeamState.CONTINUE
+    assert by_id["c68"].beam_state is BeamState.END
+    assert by_id["a68"].beam_group_id == by_id["c68"].beam_group_id
+    assert by_id["d68"].beam_state is BeamState.NONE
