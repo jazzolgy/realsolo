@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Mapping, Sequence
+
+from music_intelligence.reasoning.groove_context import GrooveTemporalContext, groove_timing_offset_beats
 
 ExpressionValue = float | int | str | bool
 
@@ -143,3 +145,44 @@ def monophonic_solo_gesture(
         ),
         source=source,
     )
+
+
+def apply_shared_groove_to_render_gesture(
+    gesture: RenderGesture,
+    *,
+    anchor_beat: float,
+    groove: GrooveTemporalContext | None,
+) -> RenderGesture:
+    """Project one committed gesture onto the shared ensemble pulse.
+
+    This is not musical selection and does not force every subdivision to swing.
+    It only moves swing-eligible nominal eighth offbeats to the shared temporal
+    reference, identically for piano, bass, drums, and solo voices.
+    """
+    gesture.validate()
+    if groove is None:
+        return gesture
+    groove.validate()
+
+    def warped(v: RenderVoice) -> RenderVoice:
+        shift=groove_timing_offset_beats(
+            anchor_beat+v.onset_offset_beats,
+            groove,
+            swing_eligible=True,
+        )
+        return replace(v,onset_offset_beats=v.onset_offset_beats+shift)
+
+    annotations=dict(gesture.annotations)
+    annotations["groove_feel"]=groove.feel.value
+    annotations["groove_grammar"]=groove.grammar_id
+    annotations["swing_ratio"]=f"{groove.effective_swing_ratio:.4f}"
+    tags=tuple(dict.fromkeys((*gesture.tags,f"groove:{groove.feel.value}")))
+    out=replace(
+        gesture,
+        voices=tuple(warped(v) for v in gesture.voices),
+        drum_hits=tuple(warped(v) for v in gesture.drum_hits),
+        tags=tags,
+        annotations=annotations,
+    )
+    out.validate()
+    return out
