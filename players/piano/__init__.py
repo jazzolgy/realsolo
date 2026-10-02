@@ -5,6 +5,13 @@ polyphonic evaluation come from Core. This package owns piano-specific
 realization, comping, and interaction policy.
 """
 
+from .ensemble_role import (
+    PianoEnsembleMode,
+    PianoEnsembleRoleContext,
+    PianoHandFunction,
+    PianoHandRolePlan,
+    derive_piano_hand_role_plan,
+)
 from .linear_practice_comparator import (
     AbstractWrittenLineObservation,
     ContourClass,
@@ -174,6 +181,11 @@ __all__ = [
     "PianoActionScore",
     "PianoPerformanceState",
     "PianoPolicyEvaluator",
+    "PianoEnsembleMode",
+    "PianoEnsembleRoleContext",
+    "PianoHandFunction",
+    "PianoHandRolePlan",
+    "derive_piano_hand_role_plan",
     "AbstractWrittenLineObservation",
     "ContourClass",
     "IntervalMotionClass",
