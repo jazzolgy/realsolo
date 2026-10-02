@@ -41,6 +41,12 @@ from .chord_chart_quality import (
     ChordChartIssue,
     audit_chord_chart,
 )
+from .dynamics import (
+    DynamicTrajectoryCandidate,
+    DynamicTrajectoryKind,
+    infer_dynamic_trajectory,
+    score_spanner_from_dynamic_trajectory,
+)
 from .events import (
     CommittedPerformanceEvent,
     ConfidenceBundle,
@@ -206,6 +212,10 @@ __all__ = [
     "ChordChartAudit",
     "ChordChartIssue",
     "audit_chord_chart",
+    "DynamicTrajectoryCandidate",
+    "DynamicTrajectoryKind",
+    "infer_dynamic_trajectory",
+    "score_spanner_from_dynamic_trajectory",
     "CommittedPerformanceEvent",
     "ConfidenceBundle",
     "EventAlternative",
