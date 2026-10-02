@@ -100,11 +100,25 @@ def project_legend_views(
         if view_weight < 0:
             raise ValueError("legend view weight may not be negative")
         legends.append(view.legend_id)
+        tag_set = set(tags)
         for domain in DRUM_LEGEND_DOMAINS:
-            for tendency in view.tendencies(domain=domain, active_tags=tags):
-                totals[tendency.feature] = totals.get(tendency.feature, 0.0) + (
-                    view_weight * tendency.weight * tendency.confidence
-                )
+            allowed = set(view.domain_features.get(domain, ()))
+            if not allowed:
+                continue
+            for profile, profile_weight in view.weighted_profiles():
+                if profile_weight < 0:
+                    raise ValueError("shared profile weight may not be negative")
+                for tendency in profile.tendencies:
+                    if tendency.feature not in allowed:
+                        continue
+                    if tendency.context_tags and not tendency.context_tags.issubset(tag_set):
+                        continue
+                    totals[tendency.feature] = totals.get(tendency.feature, 0.0) + (
+                        view_weight
+                        * profile_weight
+                        * tendency.weight
+                        * tendency.confidence
+                    )
     return DrumLegendProjection(
         legend_ids=tuple(legends),
         feature_biases=tuple(sorted(totals.items())),
@@ -124,6 +138,9 @@ def drum_vocabulary_intent(
     receives descriptors and a source reference; exact current-event realization
     remains a separate last-moment decision.
     """
+    item.validate()
+    if use_type not in item.candidate_uses:
+        raise ValueError("requested vocabulary use is not permitted by this memory item")
     if use_type is VocabularyUseType.LITERAL_QUOTE and not item.literal_representation:
         raise ValueError("literal quote requires literal source representation")
 
