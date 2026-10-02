@@ -36,6 +36,15 @@ from .practice_curriculum import (
     bebop_walking_practice_curriculum,
     curriculum_feature_weights,
 )
+from .solo_method import bass_shared_solo_options
+from .solo_runtime import (
+    BassSoloCandidateFamily,
+    BassSoloMemory,
+    BassSoloPlan,
+    BassSoloSnapshot,
+    bass_solo_candidate_score,
+    choose_bass_solo_plan,
+)
 from .scorebook_evidence import (
     BassScoreEvidenceDirective,
     BassWrittenPartPrior,
@@ -130,6 +139,10 @@ __all__ = [
     "BassPhraseIntentKind",
     "BassPhraseState",
     "BassScoreEvidenceDirective",
+    "BassSoloCandidateFamily",
+    "BassSoloMemory",
+    "BassSoloPlan",
+    "BassSoloSnapshot",
     "BassScorebookStudyDecision",
     "BassScorebookStudyTrack",
     "BassWrittenPartPrior",
@@ -166,6 +179,9 @@ __all__ = [
     "analyze_bass_line",
     "choose_bass_interaction_intent",
     "choose_bass_phrase_intent",
+    "choose_bass_solo_plan",
+    "bass_shared_solo_options",
+    "bass_solo_candidate_score",
     "classify_scorebook_bass_study",
     "compare_bass_lines",
     "compare_partial_bass_profiles",
