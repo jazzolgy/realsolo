@@ -165,9 +165,11 @@ def generate_rootless_voicings(request: PianoVoicingRequest) -> tuple[PianoReali
         return ()
 
     colors: list[tuple[str, int]] = []
+    # Prefer common color tensions before stronger altered colors. Altered roles
+    # remain available when Shared Core explicitly supplies them.
     preferred_roles = (
-        "9th", "b9", "#9", "11th", "#11", "13th", "b13",
-        "9", "11", "13",
+        "9th", "9", "13th", "13", "#11", "11th", "11",
+        "b9", "#9", "b13",
     )
     for role in preferred_roles:
         for pc in request.material.role_pitch_classes.get(role, ()):
