@@ -29,7 +29,7 @@ def test_musicxml_emits_chord_elements_for_simultaneous_triad():
         _note("g", "G", 0, 1, "triad:1", "mf"),
         _note("next", "A", 1, 1),
     )
-    part = ScorePart("piano", "Piano", "piano", ("upper",), events)
+    part = ScorePart("piano", "Piano", "piano", ("upper", "lower"), events)
     score = assemble_score(score_id="chord", title="Chord", parts=(part,))
 
     root = ET.fromstring(score_to_musicxml(score))
@@ -49,7 +49,7 @@ def test_separate_same_voice_onsets_do_not_become_chord_without_group():
         _note("e", "E", 1, 1),
         _note("g", "G", 2, 1),
     )
-    part = ScorePart("piano", "Piano", "piano", ("upper",), events)
+    part = ScorePart("piano", "Piano", "piano", ("upper", "lower"), events)
     score = assemble_score(score_id="line", title="Line", parts=(part,))
 
     root = ET.fromstring(score_to_musicxml(score))
