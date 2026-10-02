@@ -39,6 +39,18 @@ from .voice_leading import (
     assess_voice_leading,
     make_resolution_debt,
 )
+from .modal_nonfunctional import (
+    ContinuityMechanism,
+    HarmonicOrientation,
+    ModalAssessment,
+    ModalState,
+    NonfunctionalAssessment,
+    NonfunctionalState,
+    VerticalTopology,
+    assess_modal_state,
+    assess_nonfunctional_state,
+    modal_characteristic_pc,
+)
 
 __all__ = [
     "HarmonicAffordance",
@@ -72,4 +84,14 @@ __all__ = [
     "VoiceState",
     "assess_voice_leading",
     "make_resolution_debt",
+    "ContinuityMechanism",
+    "HarmonicOrientation",
+    "ModalAssessment",
+    "ModalState",
+    "NonfunctionalAssessment",
+    "NonfunctionalState",
+    "VerticalTopology",
+    "assess_modal_state",
+    "assess_nonfunctional_state",
+    "modal_characteristic_pc",
 ]
