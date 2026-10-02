@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .allocation import StaffProfile
+from .chord_chart import ChordChart, ChordChartPosition, chart_position
 from .engraving import EngravingPlan, EngravingProfile, build_default_engraving_plan
 from .events import CommittedPerformanceEvent
 from .instrument_profiles import InstrumentProfile, resolve_instrument_profile
@@ -65,6 +66,22 @@ class NotationEngine:
             meter_numerator=self.config.meter_numerator,
             meter_denominator=self.config.meter_denominator,
         )
+
+    def chart_position(
+        self,
+        chart: ChordChart,
+        *,
+        measure_number: int,
+        beat,
+    ) -> ChordChartPosition:
+        return chart_position(
+            chart,
+            measure_number=measure_number,
+            beat=beat,
+        )
+
+    def transpose_chart(self, chart: ChordChart, semitones: int) -> ChordChart:
+        return chart.transpose(semitones)
 
     def engraving_plan(self, score: ReadableScore) -> EngravingPlan:
         return build_default_engraving_plan(
