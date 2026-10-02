@@ -1,13 +1,19 @@
-"""Right-hand swing and phrase elasticity for piano melody/solo events.
+"""Piano-side compatibility helpers for the Shared GrooveTemporalContext.
 
-This is not a fixed 2:1 quantizer. It applies context-sensitive timing to the current
-event only, preserving the one-event improvisation contract.
+Shared Core owns the ensemble pulse and swing ratio. Piano only realizes that
+shared timing and may add small phrase-local elasticity for the current event.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from enum import Enum
 
+from music_intelligence.reasoning.groove_context import (
+    GrooveFeel,
+    GrooveTemporalContext,
+    build_groove_context,
+    groove_timing_offset_beats,
+)
 from music_intelligence.reasoning.legend_style_core import CandidateEvent
 
 
@@ -20,12 +26,13 @@ class SwingRole(str, Enum):
 class RHSwingContext:
     tempo_bpm: float = 130.0
     role: SwingRole = SwingRole.SOLO
-    subdivision_phase: float = 0.0  # 0.0 = beat, 0.5 = notated off-eighth
+    subdivision_phase: float = 0.0
     phrase_maturity: float = 0.5
     phrase_end_pressure: float = 0.0
     anticipation_strength: float = 0.0
     triplet_context: bool = False
     confidence: float = 1.0
+    groove: GrooveTemporalContext | None = None
 
     def validate(self) -> None:
         if not 40 <= self.tempo_bpm <= 360:
@@ -40,57 +47,73 @@ class RHSwingContext:
             value=getattr(self,name)
             if not 0.0 <= value <= 1.0:
                 raise ValueError(f"{name} must be within 0..1")
+        if self.groove is not None:
+            self.groove.validate()
+
+
+def _shared_swing_context(context: RHSwingContext) -> GrooveTemporalContext:
+    if context.groove is not None:
+        return context.groove
+    return build_groove_context(
+        GrooveFeel.SWING,
+        tempo_bpm=context.tempo_bpm,
+        groove_strength=context.confidence,
+        provenance=("piano_rh_swing_compat","shared_groove_default"),
+    )
 
 
 def swing_ratio_for_tempo(tempo_bpm: float) -> float:
-    """Return long:short eighth ratio; faster tempos approach straighter eighths."""
-    if tempo_bpm <= 90:
-        return 2.05
-    if tempo_bpm >= 220:
-        return 1.28
-    # ~1.78 at 130 bpm.
-    return 2.05 - (tempo_bpm-90.0) * (0.77/130.0)
+    """Compatibility accessor; the ratio itself is owned by Shared Core."""
+    return build_groove_context(
+        GrooveFeel.SWING,
+        tempo_bpm=tempo_bpm,
+    ).effective_swing_ratio
 
 
 def apply_rh_swing(
     event: CandidateEvent,
     context: RHSwingContext,
 ) -> CandidateEvent:
-    """Apply current-note swing/phrase elasticity without creating future notes."""
-    context.validate()
-    tags=set(event.tags)
-    onset=event.onset_offset_beats
-    duration=event.duration_beats
+    """Realize shared swing plus small current-phrase elasticity.
 
+    Solo runtime should normally receive groove timing in PianoSoloRealizer.
+    This helper remains useful for written-head realization and compatibility.
+    """
+    context.validate()
     if event.pitch_midi is None:
         return event
 
-    ratio=swing_ratio_for_tempo(context.tempo_bpm)
-    offbeat=context.subdivision_phase >= 0.40
+    tags=set(event.tags)
+    onset=event.onset_offset_beats
+    duration=event.duration_beats
+    groove=_shared_swing_context(context)
 
-    # Delay the second eighth toward the triplet region, but not rigidly.
-    if offbeat and duration <= 0.75 and not context.triplet_context:
-        target_phase=ratio/(ratio+1.0)
-        delay=max(0.0,target_phase-0.5)
-        onset += delay * context.confidence
-        tags |= {"swing_offbeat","rh_swing"}
-    else:
-        tags.add("rh_swing")
+    if not context.triplet_context:
+        onset += groove_timing_offset_beats(
+            context.subdivision_phase,
+            groove,
+            swing_eligible=True,
+        )
+        if abs(context.subdivision_phase-.5) <= .08:
+            tags.add("swing_offbeat")
+    tags |= {"rh_swing",f"groove:{groove.feel.value}"}
 
-    # Phrase-level elasticity inspired by observed jazz phrasing rather than
-    # notation playback: anticipations can lean forward; endings can lay back.
-    if context.anticipation_strength >= .55 and {"anticipation","pickup","syncopated_entry"} & tags:
-        onset -= 0.035 * context.anticipation_strength * context.confidence
+    if (
+        context.anticipation_strength >= .55
+        and {"anticipation","pickup","syncopated_entry"} & tags
+    ):
+        onset -= .035 * context.anticipation_strength * context.confidence
         tags.add("phrase_lean_forward")
 
     if context.phrase_end_pressure >= .6:
-        onset += 0.03 * context.phrase_end_pressure * context.confidence
+        onset += .03 * context.phrase_end_pressure * context.confidence
         duration *= 1.12
         tags.add("phrase_lay_back")
 
-    # Head interpretation can hold structural melody tones longer than solo notes.
     if context.role is SwingRole.HEAD and (
-        "guide_tone" in tags or "harmonic_identity" in tags or "melody_structural" in tags
+        "guide_tone" in tags
+        or "harmonic_identity" in tags
+        or "melody_structural" in tags
     ):
         duration *= 1.08
         tags.add("head_phrase_elasticity")
