@@ -1,3 +1,9 @@
+from .arc import (
+    SaxArcContext,
+    SaxArcDecision,
+    apply_sax_arc,
+    choose_sax_articulation_arc,
+)
 from .expression import (
     SaxExpressionContext,
     SaxExpressionDecision,
@@ -10,6 +16,10 @@ from .phrase import (
 )
 
 __all__ = [
+    "SaxArcContext",
+    "SaxArcDecision",
+    "apply_sax_arc",
+    "choose_sax_articulation_arc",
     "SaxExpressionContext",
     "SaxExpressionDecision",
     "choose_sax_expression",
