@@ -158,13 +158,13 @@ def evaluate_bass_grammar(
 
     elif role is MetricRole.TWO_FEEL_DIRECTION:
         if target_strategy is TargetStrategy.CURRENT_ROOT:
-            score -= .03
-            reasons.append("second two-feel pulse should not default to another root")
-        elif motion_strategy is MotionStrategy.CHORDAL:
-            score += .11
-            reasons.append("second two-feel pulse carries chordal direction")
+            score -= .02
+            reasons.append("second two-feel pulse may move away from the root")
+        elif target_strategy is TargetStrategy.CURRENT_CHORD_MEMBER:
+            score += .05
+            reasons.append("second two-feel pulse supports simple chordal direction")
         elif motion_strategy is MotionStrategy.DIRECT_ANTICIPATION:
-            score += .07
+            score += .06
             reasons.append("second two-feel pulse may prepare known next harmony")
 
     elif role is MetricRole.PEDAL_ANCHOR:
