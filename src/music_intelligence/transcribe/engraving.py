@@ -41,12 +41,20 @@ class VerticalPlacement(str, Enum):
     BELOW = "below"
 
 
+class TiePositionMode(str, Enum):
+    OPTICAL = "optical"
+    MANUAL = "manual"
+
+
 @dataclass(frozen=True)
 class EngravingProfile:
     """Global house-style-like engraving preferences."""
 
     optical_note_spacing: bool = True
+    auto_respace: bool = True
     magnetic_layout: bool = True
+    tie_position_mode: TiePositionMode = TiePositionMode.OPTICAL
+    tie_height_scale: float = 1.0
     apply_voice_position_rules_to_cross_staff: bool = True
     apply_tie_rules_to_cross_staff: bool = True
     hide_cross_staff_bar_rests: bool = True
@@ -56,6 +64,8 @@ class EngravingProfile:
     def validate(self) -> None:
         if self.minimum_note_spacing <= 0:
             raise ValueError("minimum_note_spacing must be positive")
+        if self.tie_height_scale <= 0:
+            raise ValueError("tie_height_scale must be positive")
 
 
 @dataclass(frozen=True)
