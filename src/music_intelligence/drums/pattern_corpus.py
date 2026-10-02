@@ -13,7 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
-from .model import DrumVoice, GestureRole
+from .model import DrumVoice, GestureRole, Limb
 
 
 class PatternUse(str, Enum):
@@ -35,6 +35,7 @@ class PatternHit:
     voice: DrumVoice
     velocity_class: str = "medium"
     articulation: str = "normal"
+    limb: Limb | None = None
 
 
 @dataclass(frozen=True)
@@ -167,6 +168,83 @@ PATTERN_CORPUS: tuple[StoredDrumPattern, ...] = (
             source_page="p. 2",
         ),
         notes="Source describes four 16th notes leading into the upbeat-of-4 figure.",
+    ),
+
+    StoredDrumPattern(
+        pattern_id="plainfield_son_clave_3_2",
+        name="3-2 Son Clave",
+        role=GestureRole.TIME,
+        length_beats=8.0,
+        hits=(
+            PatternHit(0.0, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(1.5, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(3.0, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(5.0, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(6.0, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+        ),
+        tags=frozenset({"afro_cuban", "clave", "son_clave", "3_2", "two_bar"}),
+        source=SourceRights(
+            source_title="Kim Plainfield - Advanced Concepts",
+            source_page="p. 45 in uploaded PDF",
+        ),
+        notes="Literal 3-2 son-clave rhythm shown with the clave/cascara examples.",
+    ),
+    StoredDrumPattern(
+        pattern_id="plainfield_son_clave_2_3",
+        name="2-3 Son Clave",
+        role=GestureRole.TIME,
+        length_beats=8.0,
+        hits=(
+            PatternHit(1.0, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(2.0, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(4.0, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(5.5, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(7.0, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+        ),
+        tags=frozenset({"afro_cuban", "clave", "son_clave", "2_3", "two_bar"}),
+        source=SourceRights(
+            source_title="Kim Plainfield - Advanced Concepts",
+            source_page="p. 45 in uploaded PDF",
+        ),
+        notes="Literal 2-3 son-clave reversal shown in the source.",
+    ),
+    StoredDrumPattern(
+        pattern_id="plainfield_rumba_clave_3_2",
+        name="3-2 Rumba Clave",
+        role=GestureRole.TIME,
+        length_beats=8.0,
+        hits=(
+            PatternHit(0.0, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(1.5, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(3.5, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(5.0, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(6.0, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+        ),
+        tags=frozenset({"afro_cuban", "clave", "rumba_clave", "3_2", "two_bar"}),
+        source=SourceRights(
+            source_title="Kim Plainfield - Advanced Concepts",
+            source_page="p. 45 in uploaded PDF",
+        ),
+        notes="Literal 3-2 rumba-clave rhythm shown in the source.",
+    ),
+    StoredDrumPattern(
+        pattern_id="plainfield_rumba_clave_2_3",
+        name="2-3 Rumba Clave",
+        role=GestureRole.TIME,
+        length_beats=8.0,
+        hits=(
+            PatternHit(1.0, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(2.0, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(4.0, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(5.5, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+            PatternHit(7.5, DrumVoice.CLAVE, "medium", "clave", Limb.RIGHT_HAND),
+        ),
+        tags=frozenset({"afro_cuban", "clave", "rumba_clave", "2_3", "two_bar"}),
+        source=SourceRights(
+            source_title="Kim Plainfield - Advanced Concepts",
+            source_page="p. 45 in uploaded PDF",
+        ),
+        notes="Literal 2-3 rumba-clave reversal shown in the source.",
     ),
 )
 
