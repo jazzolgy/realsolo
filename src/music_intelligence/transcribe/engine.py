@@ -16,6 +16,7 @@ from .chord_chart import (
     chart_position,
 )
 from .chord_chart_quality import ChordChartAudit, audit_chord_chart
+from .chord_chart_render import ChordChartRenderModel, build_chord_chart_render_model
 from .engraving import EngravingPlan, EngravingProfile, build_default_engraving_plan
 from .events import CommittedPerformanceEvent
 from .instrument_profiles import InstrumentProfile, resolve_instrument_profile
@@ -109,6 +110,21 @@ class NotationEngine:
 
     def audit_chart(self, chart: ChordChart) -> ChordChartAudit:
         return audit_chord_chart(chart)
+
+    def render_chart(
+        self,
+        chart: ChordChart,
+        *,
+        position: ChordChartPosition | None = None,
+        measures_per_row: int = 4,
+        transpose_semitones: int = 0,
+    ) -> ChordChartRenderModel:
+        return build_chord_chart_render_model(
+            chart,
+            position=position,
+            measures_per_row=measures_per_row,
+            transpose_semitones=transpose_semitones,
+        )
 
     def musicxml(
         self,
