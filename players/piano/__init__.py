@@ -26,7 +26,11 @@ from .voicing import (
     generate_shell_voicings,
     generate_tertian_voicings,
 )
-from .planner import PianoCompingCandidateSet, build_contextual_comping_candidates
+from .planner import (
+    PianoCompingCandidateSet,
+    build_contextual_comping_candidates,
+    expand_candidate_set_rhythmically,
+)
 from .narrative import NarrativeBiasScore, evaluate_narrative_bias
 from .rhythm import (
     PianoRhythmicIntent,
@@ -77,6 +81,7 @@ __all__ = [
     "generate_tertian_voicings",
     "PianoCompingCandidateSet",
     "build_contextual_comping_candidates",
+    "expand_candidate_set_rhythmically",
     "NarrativeBiasScore",
     "evaluate_narrative_bias",
     "PianoRhythmicIntent",
