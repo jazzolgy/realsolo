@@ -120,6 +120,8 @@ class Stage1Soloist:
             pitch = midi_near(pc, center)
             for candidate_pitch in (pitch - 12, pitch, pitch + 12):
                 if 52 <= candidate_pitch <= 88:
+                    if self.previous_pitch is not None and candidate_pitch == self.previous_pitch:
+                        continue
                     tags = {"chord_tone"}
                     if len(chord.pitch_classes) >= 4 and pc in (chord.pitch_classes[1], chord.pitch_classes[-1]):
                         tags.add("guide_tone")
