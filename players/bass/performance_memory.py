@@ -115,8 +115,13 @@ class BassPerformanceMemory:
             x.articulation in {BassArticulation.GHOSTED, BassArticulation.DEAD}
             for x in recent
         )
-        harmonic_roles = tuple(x.harmonic_role for x in recent)
-        metric_roles = tuple(x.metric_role for x in recent)
+        structural_recent = [
+            x for x in recent
+            if "ghost_note" not in x.event.tags
+            and x.harmonic_role != "percussive_ghost"
+        ]
+        harmonic_roles = tuple(x.harmonic_role for x in structural_recent)
+        metric_roles = tuple(x.metric_role for x in structural_recent)
 
         # Complexity is deliberately heuristic: large movement, ghost events,
         # and non-anchor roles all contribute. It is a local player-state signal,
