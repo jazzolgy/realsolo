@@ -52,6 +52,8 @@ class PianoSoloContext:
     left_hand_register_top_midi: int | None = None
     ensemble_density: float = 0.5
     creativity_strength: float = 0.6
+    previous_pitch_midi: int | None = None
+    comfortable_leap_semitones: int = 5
     phrase_space: BebopPhraseSpaceEvidence = field(
         default_factory=BebopPhraseSpaceEvidence
     )
@@ -90,6 +92,10 @@ class PianoSoloContext:
             value = getattr(self, name)
             if not 0.0 <= value <= 1.0:
                 raise ValueError(f"{name} must be within 0..1")
+        if self.previous_pitch_midi is not None and not 21 <= self.previous_pitch_midi <= 108:
+            raise ValueError("previous_pitch_midi outside piano range")
+        if not 1 <= self.comfortable_leap_semitones <= 12:
+            raise ValueError("comfortable_leap_semitones must be within 1..12")
         if (
             self.left_hand_register_top_midi is not None
             and not 21 <= self.left_hand_register_top_midi <= 108
@@ -152,6 +158,45 @@ class PianoSoloEvaluator:
                 reasons.append("candidate leaves preferred right-hand solo register")
 
         tags = set(candidate.tags)
+
+        # Parker-informed lines should sound directed and singable, not merely
+        # harmonically complicated. Prefer small/medium motion; allow larger leaps
+        # when they clearly land on structural/resolution targets.
+        if candidate.pitch_midi is not None and context.previous_pitch_midi is not None:
+            interval = abs(candidate.pitch_midi - context.previous_pitch_midi)
+            directed = bool(
+                {"guide_tone","directed_target","resolution_path","next_harmony_target"}
+                & tags
+            )
+            connector = bool(
+                {"close_approach","neighbor","passing","enclosure","connector"} & tags
+            )
+            if interval <= 2 and connector:
+                components["accessible_bebop_motion"] = 0.085
+                score += 0.085
+                reasons.append("small directed connector makes bebop line audible and playable")
+            elif interval <= context.comfortable_leap_semitones:
+                components["comfortable_motion"] = 0.045
+                score += 0.045
+                reasons.append("moderate interval supports singable bebop continuity")
+            elif interval >= 8 and not directed:
+                components["undirected_large_leap"] = -0.13
+                score -= 0.13
+                reasons.append("large leap lacks structural target and sounds unnecessarily difficult")
+            elif interval >= 8 and directed:
+                components["directed_large_leap"] = 0.015
+                score += 0.015
+                reasons.append("larger leap is tolerated because it lands on a structural target")
+
+        # Keep Parker chromatic language target-directed rather than chaining
+        # successive color notes without harmonic identity.
+        if context.musical.recent_altered_density >= .55:
+            if "altered" in tags and not (
+                {"guide_tone","directed_target","resolution_path","next_harmony_target"} & tags
+            ):
+                components["altered_density_restraint"] = -0.09
+                score -= 0.09
+                reasons.append("recent altered density calls for a clearer target")
 
         # Busy LH/ensemble texture should redirect the solo toward clarity, not
         # suppress melodic creativity entirely.

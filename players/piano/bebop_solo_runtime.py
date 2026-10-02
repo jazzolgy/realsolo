@@ -17,6 +17,7 @@ from .bebop_harmonic_turn import BebopHarmonicTurnContext
 from .bebop_phrase_intent import BebopPhraseIntent, derive_bebop_phrase_intent
 from .bebop_solo_candidates import generate_immediate_bebop_candidates
 from .bebop_turn_taking import BebopTurnTakingEvidence
+from .rh_swing import RHSwingContext, SwingRole, apply_rh_swing
 from .solo import (
     PianoSoloContext,
     PianoSoloEvaluator,
@@ -52,6 +53,7 @@ def build_bebop_solo_tick(
     high_midi: int = 96,
     harmonic_frame: HarmonicFrame | None = None,
     local_key_pitch_classes: frozenset[int] = frozenset(),
+    swing_context: RHSwingContext | None = None,
 ) -> BebopSoloTickPlan:
     intent=derive_bebop_phrase_intent(
         harmonic_turn,
@@ -88,6 +90,8 @@ def build_bebop_solo_tick(
         high_midi=high_midi,
         linear_affordances=linear_affordances,
     )
+    if swing_context is not None:
+        candidates=tuple(apply_rh_swing(candidate,swing_context) for candidate in candidates)
     plan=BebopSoloTickPlan(intent,candidates)
     plan.validate()
     return plan

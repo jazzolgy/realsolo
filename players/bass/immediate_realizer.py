@@ -45,6 +45,12 @@ from .scorebook_evidence import (
     BassScoreEvidenceDirective,
     evidence_candidate_score,
 )
+from .solo_runtime import (
+    BassSoloCandidateFamily,
+    BassSoloPlan,
+    BassSoloSnapshot,
+    bass_solo_candidate_score,
+)
 
 
 class BassMode(str, Enum):
@@ -52,6 +58,7 @@ class BassMode(str, Enum):
     TWO_FEEL = "two_feel"
     PEDAL = "pedal"
     OSTINATO = "ostinato"
+    SOLO = "solo"
 
 
 class BassHarmonicRole(str, Enum):
@@ -64,6 +71,8 @@ class BassHarmonicRole(str, Enum):
     NEIGHBOR = "neighbor"
     SCALE_COLOR = "scale_color"
     PEDAL = "pedal"
+    MELODIC_TENSION = "melodic_tension"
+    REST = "rest"
 
 
 @dataclass(frozen=True)
@@ -85,6 +94,8 @@ class BassContext:
     local_key_pitch_classes: frozenset[int] = frozenset()
     score_evidence: BassScoreEvidenceDirective = BassScoreEvidenceDirective()
     phrase_intent: BassPhraseIntent = BassPhraseIntent(BassPhraseIntentKind.GROUND)
+    solo_plan: BassSoloPlan | None = None
+    solo_snapshot: BassSoloSnapshot = BassSoloSnapshot()
 
     def validate(self) -> None:
         if self.meter_numerator <= 0:
@@ -111,7 +122,7 @@ class BassContext:
 class BassActionCandidate:
     event: CandidateEvent
     harmonic_role: BassHarmonicRole
-    target_pitch_class: int
+    target_pitch_class: int | None
     score: float
     grammar: BassGrammarDecision
     expression: BassExpressionProfile
@@ -149,12 +160,17 @@ def _pitch_realizations_for_pc(pc: int, ctx: BassContext) -> tuple[int, ...]:
         # belong to later pedal-register planning, not immediate branching.
         if ctx.mode is BassMode.PEDAL:
             return (ordered[0],)
+        if ctx.mode is BassMode.SOLO:
+            return tuple(ordered[:4])
         return tuple(ordered[:2])
 
     # Keep the nearest realization and, when available, one on the opposite side.
     nearest = min(options, key=lambda p: (abs(p - target), p))
     if ctx.mode is BassMode.PEDAL:
         return (nearest,)
+    if ctx.mode is BassMode.SOLO:
+        ordered = sorted(options, key=lambda p: (abs(p - target), p))
+        return tuple(ordered[:4])
     below = [p for p in options if p < target]
     above = [p for p in options if p > target]
     selected = [nearest]
@@ -182,6 +198,7 @@ def _voice_role_for(candidate: BassHarmonicRole) -> TargetRole:
         BassHarmonicRole.DIATONIC_PASSING,
         BassHarmonicRole.NEIGHBOR,
         BassHarmonicRole.SCALE_COLOR,
+        BassHarmonicRole.MELODIC_TENSION,
     }:
         return TargetRole.TENSION
     return TargetRole.UNKNOWN
@@ -204,6 +221,8 @@ def _grammar_mapping(role: BassHarmonicRole) -> tuple[MotionStrategy, TargetStra
         return MotionStrategy.SHARED_SCALE_OR_COLOR, TargetStrategy.NONE
     if role is BassHarmonicRole.PEDAL:
         return MotionStrategy.PEDAL, TargetStrategy.CURRENT_ROOT
+    if role is BassHarmonicRole.MELODIC_TENSION:
+        return MotionStrategy.SHARED_SCALE_OR_COLOR, TargetStrategy.NONE
     raise ValueError(f"unsupported bass harmonic role: {role}")
 
 
@@ -236,6 +255,7 @@ def _grammar_context(ctx: BassContext) -> BassGrammarContext:
         walking=ctx.mode is BassMode.WALKING,
         two_feel=ctx.mode is BassMode.TWO_FEEL,
         pedal=ctx.mode is BassMode.PEDAL,
+        solo=ctx.mode is BassMode.SOLO,
         previous_pitch_midi=ctx.previous_pitch_midi,
         previous_motion_semitones=ctx.previous_motion_semitones,
         register_intent=ctx.register_intent,
@@ -481,18 +501,31 @@ def generate_immediate_bass_candidates(
         return ()
 
     pcs = _active_pitch_classes(frame)
-    duration = _duration_for_mode(ctx.mode)
+    duration = (
+        ctx.solo_plan.duration_beats
+        if ctx.mode is BassMode.SOLO and ctx.solo_plan is not None
+        else _duration_for_mode(ctx.mode)
+    )
     raw: list[tuple[int, BassHarmonicRole, float, tuple[str, ...]]] = []
 
     if ctx.mode is BassMode.PEDAL:
         raw.append((root_pc, BassHarmonicRole.PEDAL, 0.28, ("pedal anchor candidate",)))
     else:
-        raw.append((root_pc, BassHarmonicRole.ROOT, 0.28, ("current harmonic anchor",)))
+        raw.append((
+            root_pc,
+            BassHarmonicRole.ROOT,
+            0.08 if ctx.mode is BassMode.SOLO else 0.28,
+            ("current harmonic anchor",),
+        ))
 
         fifth_pc = (root_pc + 7) % 12
         if not pcs or fifth_pc in pcs:
-            raw.append((fifth_pc, BassHarmonicRole.FIFTH, 0.16,
-                        ("shared evidence supports perfect-fifth option",)))
+            raw.append((
+                fifth_pc,
+                BassHarmonicRole.FIFTH,
+                0.07 if ctx.mode is BassMode.SOLO else 0.16,
+                ("shared evidence supports perfect-fifth option",),
+            ))
 
         # Two-feel should not be reduced to root-up-fifth. Other shared chord
         # members are legitimate immediate support choices.
@@ -507,6 +540,38 @@ def generate_immediate_bass_candidates(
                     else "two-feel non-root/fifth chord member kept as a low-priority color"
                 )
                 raw.append((pc, BassHarmonicRole.CHORD_TONE, base, (reason,)))
+
+        if ctx.mode is BassMode.SOLO:
+            for pc in sorted(pcs):
+                if pc in {root_pc, fifth_pc}:
+                    continue
+                raw.append((
+                    pc,
+                    BassHarmonicRole.CHORD_TONE,
+                    0.10,
+                    ("solo foreground structural chord member",),
+                ))
+
+            for pc in sorted(ctx.local_key_pitch_classes - pcs):
+                raw.append((
+                    pc,
+                    BassHarmonicRole.SCALE_COLOR,
+                    0.075,
+                    ("solo foreground contextual scale color",),
+                ))
+
+            tension_pcs = {
+                (pc - 1) % 12 for pc in pcs
+            } | {
+                (pc + 1) % 12 for pc in pcs
+            }
+            for pc in sorted(tension_pcs - pcs):
+                raw.append((
+                    pc,
+                    BassHarmonicRole.MELODIC_TENSION,
+                    0.025,
+                    ("solo foreground tension candidate",),
+                ))
 
     next_root = frame.next_expected.root_pc if frame.next_expected is not None else None
     late_measure = ctx.beat_in_measure >= ctx.meter_numerator - 1.0
@@ -529,6 +594,33 @@ def generate_immediate_bass_candidates(
             BassHarmonicRole.ANTICIPATION,
             0.08,
             ("second two-feel pulse may anticipate next expected root",),
+        ))
+
+    if (
+        ctx.mode is BassMode.SOLO
+        and next_root is not None
+        and ctx.solo_plan is not None
+        and ctx.solo_plan.family is BassSoloCandidateFamily.HARMONIC_TARGET
+    ):
+        raw.extend((
+            (
+                next_root,
+                BassHarmonicRole.ANTICIPATION,
+                0.14,
+                ("solo plan targets next structural harmony",),
+            ),
+            (
+                (next_root - 1) % 12,
+                BassHarmonicRole.CHROMATIC_APPROACH,
+                0.10,
+                ("solo plan approaches next harmony from below",),
+            ),
+            (
+                (next_root + 1) % 12,
+                BassHarmonicRole.CHROMATIC_APPROACH,
+                0.08,
+                ("solo plan approaches next harmony from above",),
+            ),
         ))
 
     # Walking alone consumes Shared Scale/Linear Core in this slice.
@@ -598,7 +690,10 @@ def generate_immediate_bass_candidates(
             motion_penalty = 0.0
             if ctx.previous_pitch_midi is not None:
                 leap = abs(pitch - ctx.previous_pitch_midi)
-                if leap > 7:
+                if ctx.mode is BassMode.SOLO:
+                    if leap > 12:
+                        motion_penalty = 0.012 * (leap - 12)
+                elif leap > 7:
                     motion_penalty = 0.035 * (leap - 7)
 
             tags = {
@@ -644,6 +739,21 @@ def generate_immediate_bass_candidates(
                 pitch=pitch,
                 role=role,
             )
+            solo_score = 0.0
+            solo_reasons: tuple[str, ...] = ()
+            if ctx.mode is BassMode.SOLO and ctx.solo_plan is not None:
+                solo_score, solo_reasons = bass_solo_candidate_score(
+                    ctx.solo_plan,
+                    ctx.solo_snapshot,
+                    pitch=pitch,
+                    structural=role in {
+                        BassHarmonicRole.ROOT,
+                        BassHarmonicRole.FIFTH,
+                        BassHarmonicRole.CHORD_TONE,
+                        BassHarmonicRole.ANTICIPATION,
+                    },
+                )
+
             expression = realize_bass_expression(
                 mode=ctx.mode.value,
                 grammar=grammar,
@@ -658,14 +768,35 @@ def generate_immediate_bass_candidates(
                 + interaction_score
                 + evidence_score
                 + phrase_score
+                + solo_score
                 - motion_penalty
             )
             candidates.append(BassActionCandidate(
                 event=CandidateEvent(
                     pitch_midi=pitch,
                     duration_beats=duration,
-                    tags=frozenset(tags),
-                    source_family="bass_immediate_realization",
+                    onset_offset_beats=(
+                        ctx.solo_plan.onset_offset_beats
+                        if ctx.mode is BassMode.SOLO and ctx.solo_plan is not None
+                        else 0.0
+                    ),
+                    tags=frozenset(
+                        tags
+                        | (
+                            {
+                                "solo",
+                                ctx.solo_plan.family.value,
+                                ctx.solo_plan.operation.value,
+                            }
+                            if ctx.mode is BassMode.SOLO and ctx.solo_plan is not None
+                            else set()
+                        )
+                    ),
+                    source_family=(
+                        f"bass_solo:{ctx.solo_plan.family.value}"
+                        if ctx.mode is BassMode.SOLO and ctx.solo_plan is not None
+                        else "bass_immediate_realization"
+                    ),
                 ),
                 harmonic_role=role,
                 target_pitch_class=pc % 12,
@@ -678,10 +809,45 @@ def generate_immediate_bass_candidates(
                     + interaction_reasons
                     + evidence_reasons
                     + phrase_reasons
+                    + solo_reasons
                     + expression.reasons
                     + (f"shared voice-leading={vl:.3f}",)
                 ),
             ))
+
+    if (
+        ctx.mode is BassMode.SOLO
+        and ctx.solo_plan is not None
+        and ctx.solo_plan.permits_rest
+    ):
+        grammar = evaluate_bass_grammar(
+            ctx=grammar_ctx,
+            candidate_pitch_midi=ctx.previous_pitch_midi or 40,
+            motion_strategy=MotionStrategy.CHORDAL,
+            target_strategy=TargetStrategy.NONE,
+        )
+        expression = realize_bass_expression(
+            mode=ctx.mode.value,
+            grammar=grammar,
+            memory=ctx.memory_snapshot,
+            interaction=ctx.interaction_decision,
+            phrase_intent=ctx.phrase_intent,
+        )
+        candidates.append(BassActionCandidate(
+            event=CandidateEvent(
+                pitch_midi=None,
+                duration_beats=ctx.solo_plan.duration_beats,
+                onset_offset_beats=0.0,
+                tags=frozenset({"bass", "solo", "rest", ctx.solo_plan.operation.value}),
+                source_family="bass_solo:space",
+            ),
+            harmonic_role=BassHarmonicRole.REST,
+            target_pitch_class=None,
+            score=0.62 + 0.20 * ctx.solo_plan.space_probability,
+            grammar=grammar,
+            expression=expression,
+            reasons=ctx.solo_plan.reasons + ("solo plan selects active space",),
+        ))
 
     return tuple(sorted(candidates, key=lambda x: x.score, reverse=True))
 

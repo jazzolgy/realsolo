@@ -19,6 +19,7 @@ class MetricRole(str, Enum):
     TWO_FEEL_ANCHOR = "two_feel_anchor"
     TWO_FEEL_DIRECTION = "two_feel_direction"
     PEDAL_ANCHOR = "pedal_anchor"
+    SOLO_FOREGROUND = "solo_foreground"
 
 
 class MotionStrategy(str, Enum):
@@ -62,6 +63,7 @@ class BassGrammarContext:
     walking: bool = True
     two_feel: bool = False
     pedal: bool = False
+    solo: bool = False
     previous_pitch_midi: int | None = None
     previous_motion_semitones: int | None = None
     register_intent: RegisterIntent = RegisterIntent.STABLE
@@ -100,6 +102,8 @@ class BassGrammarDecision:
 
 def metric_role(ctx: BassGrammarContext) -> MetricRole:
     ctx.validate()
+    if ctx.solo:
+        return MetricRole.SOLO_FOREGROUND
     if ctx.pedal:
         return MetricRole.PEDAL_ANCHOR
     if ctx.two_feel:
@@ -129,7 +133,24 @@ def evaluate_bass_grammar(
     score = 0.0
     reasons: list[str] = []
 
-    if role is MetricRole.HARMONIC_ANCHOR:
+    if role is MetricRole.SOLO_FOREGROUND:
+        if target_strategy is TargetStrategy.CURRENT_ROOT:
+            score -= .035
+            reasons.append("solo foreground avoids automatic beat-one root obligation")
+        elif motion_strategy is MotionStrategy.CHORDAL:
+            score += .035
+            reasons.append("solo may state harmony without being anchored to root")
+        elif motion_strategy is MotionStrategy.SHARED_SCALE_OR_COLOR:
+            score += .045
+            reasons.append("solo foreground supports melodic color")
+        elif motion_strategy in {
+            MotionStrategy.CHROMATIC_APPROACH,
+            MotionStrategy.DIRECT_ANTICIPATION,
+        }:
+            score += .020
+            reasons.append("solo foreground may use directed tension without metric obligation")
+
+    elif role is MetricRole.HARMONIC_ANCHOR:
         if target_strategy is TargetStrategy.CURRENT_ROOT:
             score += .16
             reasons.append("beat-one harmonic anchoring")
@@ -231,7 +252,9 @@ def evaluate_bass_grammar(
         score -= .03
         reasons.append("busy ensemble favors a simpler bass action")
 
-    if role is MetricRole.PREPARATION:
+    if role is MetricRole.SOLO_FOREGROUND:
+        groove = GrooveRelation.ON_PULSE
+    elif role is MetricRole.PREPARATION:
         groove = GrooveRelation.PREPARE_CHANGE
     elif role is MetricRole.PEDAL_ANCHOR:
         groove = GrooveRelation.SUSTAIN_ANCHOR

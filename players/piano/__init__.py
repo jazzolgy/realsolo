@@ -12,6 +12,16 @@ from .ensemble_role import (
     PianoHandRolePlan,
     derive_piano_hand_role_plan,
 )
+from .rh_swing import (
+    RHSwingContext,
+    SwingRole,
+    apply_rh_swing,
+    swing_ratio_for_tempo,
+)
+from .head_interpretation import (
+    HeadInterpretationContext,
+    interpret_head_event,
+)
 from .texture_control import (
     AttackDensityLevel,
     HarmonicColorLevel,
@@ -209,6 +219,12 @@ __all__ = [
     "PianoHandFunction",
     "PianoHandRolePlan",
     "derive_piano_hand_role_plan",
+    "RHSwingContext",
+    "SwingRole",
+    "apply_rh_swing",
+    "swing_ratio_for_tempo",
+    "HeadInterpretationContext",
+    "interpret_head_event",
     "AttackDensityLevel",
     "HarmonicColorLevel",
     "MacroArcPhase",

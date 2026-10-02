@@ -60,6 +60,63 @@ def _nearest_pitch_for_pc(
     return min(choices,key=lambda n:abs(n-anchor_midi))
 
 
+def _annotate_motion_tags(
+    event: CandidateEvent,
+    previous_pitch_midi: int | None,
+) -> CandidateEvent:
+    """Expose interval-motion tags so shared Parker motion priors can actually fire."""
+    if previous_pitch_midi is None or event.pitch_midi is None:
+        return event
+    interval=abs(event.pitch_midi-previous_pitch_midi)
+    tags=set(event.tags)
+    if interval <= 2:
+        tags.add("step_motion")
+    if interval <= 5:
+        tags.add("within_p4_motion")
+    if interval >= 7:
+        tags.add("wide_leap")
+    if interval >= 12:
+        tags.add("compound_span_pressure")
+    return CandidateEvent(
+        event.pitch_midi,
+        event.duration_beats,
+        onset_offset_beats=event.onset_offset_beats,
+        tags=frozenset(tags),
+        source_family=event.source_family,
+    )
+
+
+def _annotate_parker_phrase_tags(
+    event: CandidateEvent,
+    intent: BebopPhraseIntent,
+) -> CandidateEvent:
+    tags=set(event.tags)
+    duration=event.duration_beats
+    if event.pitch_midi is None:
+        if duration <= .5:
+            tags.add("rest_half_beat")
+        elif duration <= 1.0:
+            tags.add("rest_one_beat")
+        elif duration <= 2.0:
+            tags.add("rest_two_beats")
+        else:
+            tags.add("rest_four_beats_plus")
+    else:
+        if duration >= 1.0 and abs(event.onset_offset_beats) >= .10:
+            tags.add("syncopated_long_tone")
+        elif duration >= 1.0 and abs(event.onset_offset_beats) < .05:
+            tags.add("routine_downbeat_long_tone")
+        if intent.density_direction.value == "release" and duration >= .75:
+            tags |= {"phrase_late","structural_terminal_long_tone"}
+    return CandidateEvent(
+        event.pitch_midi,
+        event.duration_beats,
+        onset_offset_beats=event.onset_offset_beats,
+        tags=frozenset(tags),
+        source_family=event.source_family,
+    )
+
+
 def _event_key(event: CandidateEvent) -> tuple:
     return (
         event.pitch_midi,
@@ -238,6 +295,32 @@ def generate_immediate_bebop_candidates(
                 tags=frozenset({"rest","ensemble_space"}),
             )
         )
+
+    # Parker rhythm prior needs actual candidate features, not dormant profile
+    # entries. Add a few contextual triplet options rather than a constant triplet
+    # surface.
+    triplet_variants=[]
+    if intent.density_direction.value in {"stable","build"}:
+        for event in events:
+            if (
+                event.pitch_midi is not None
+                and {"connector","close_approach","passing","neighbor","enclosure"} & set(event.tags)
+            ):
+                triplet_variants.append(
+                    CandidateEvent(
+                        event.pitch_midi,
+                        1.0/3.0,
+                        onset_offset_beats=event.onset_offset_beats,
+                        tags=frozenset(set(event.tags)|{"triplet","connector"}),
+                        source_family=event.source_family,
+                    )
+                )
+                if len(triplet_variants) >= 4:
+                    break
+    events.extend(triplet_variants)
+
+    events=[_annotate_motion_tags(event,previous_pitch_midi) for event in events]
+    events=[_annotate_parker_phrase_tags(event,intent) for event in events]
 
     # Deterministic dedupe.
     unique=[]
