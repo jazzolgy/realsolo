@@ -71,6 +71,8 @@ from .score import (
     extract_individual_part,
 )
 from .musicxml import score_to_musicxml
+from .sequence import assemble_monophonic_voice
+from .projection import EventProjectionResult, project_pitched_event
 
 __all__ = [
     "CommittedPerformanceEvent",
@@ -121,4 +123,7 @@ __all__ = [
     "assemble_score",
     "extract_individual_part",
     "score_to_musicxml",
+    "assemble_monophonic_voice",
+    "EventProjectionResult",
+    "project_pitched_event",
 ]
