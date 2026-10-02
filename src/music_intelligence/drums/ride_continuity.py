@@ -92,18 +92,6 @@ def classify_ride_phase(
     return RidePhase.OTHER
 
 
-def _ride_hit(
-    plan: DrummerSoftPlan,
-    *,
-    velocity_delta: int,
-    articulation: str,
-) -> DrumHit:
-    prior = tempo_conditioned_swing_prior(plan_tempo := 140.0)
-    # The placeholder prior above is replaced by context-aware construction in
-    # build_ride_candidates; this helper is intentionally not exposed.
-    raise AssertionError("context-aware ride hit builder should be used")
-
-
 def _context_ride_hit(
     plan: DrummerSoftPlan,
     context: DrummerRuntimeContext,
@@ -325,3 +313,30 @@ def update_ride_memory(
         beats_since_clear_quarter=since_q,
         last_action=action,
     )
+
+
+def score_ride_surface_gesture(
+    gesture: DrumGesture,
+    plan: DrummerSoftPlan,
+    context: DrummerRuntimeContext,
+    interaction: BebopInteractionState,
+    memory: RideContinuityMemory,
+    *,
+    bass: BassPulseProjection | None = None,
+    profile: BebopStyleProfile = DEFAULT_BEBOP_PROFILE,
+) -> float:
+    """Recover the current ride-surface candidate bias by musical identity."""
+    candidates = build_ride_candidates(
+        plan,
+        context,
+        interaction,
+        memory,
+        bass=bass,
+        profile=profile,
+    )
+    tags = gesture.tags
+    for candidate in candidates:
+        action_tag = candidate.action.value
+        if action_tag in tags:
+            return candidate.score_bias
+    return 0.0
