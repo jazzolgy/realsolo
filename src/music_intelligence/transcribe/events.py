@@ -16,7 +16,17 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Mapping
 
-from music_intelligence.reasoning.ensemble_state import CommitmentState
+
+class PerformanceCommitment(str, Enum):
+    COMMITTED = "committed"
+    PLAYED = "played"
+
+
+def commitment_value(value: str | Enum) -> str:
+    """Normalize external commitment enums without importing their package."""
+
+    raw = getattr(value, "value", value)
+    return str(raw)
 
 
 class EvidenceKind(str, Enum):
@@ -149,7 +159,7 @@ class CommittedPerformanceEvent:
     event_id: str
     player_id: str
     instrument: str
-    commitment: CommitmentState
+    commitment: PerformanceCommitment | str | Enum
     time: PerformanceTimeSpan
 
     pitch: PerformedPitch | None = None
@@ -180,7 +190,10 @@ class CommittedPerformanceEvent:
             raise ValueError("player_id is required")
         if not self.instrument:
             raise ValueError("instrument is required")
-        if self.commitment not in {CommitmentState.COMMITTED, CommitmentState.PLAYED}:
+        if commitment_value(self.commitment) not in {
+            PerformanceCommitment.COMMITTED.value,
+            PerformanceCommitment.PLAYED.value,
+        }:
             raise ValueError("transcription accepts only committed or played events")
 
         self.time.validate()
