@@ -35,7 +35,12 @@ from .ride_continuity import (
     build_ride_candidates,
     score_ride_surface_gesture,
 )
-from .legend_adapter import DrumLegendProjection, legend_gesture_adjustment
+from .legend_adapter import (
+    DrumLegendProjection,
+    DrumVocabularyIntent,
+    legend_gesture_adjustment,
+    vocabulary_gesture_adjustment,
+)
 from .model import (
     DrumGesture,
     DrumHit,
@@ -63,6 +68,7 @@ class BebopRuntimeProjection:
     ride_memory: RideContinuityMemory = RideContinuityMemory()
     snare_memory: SnarePhraseMemory = SnarePhraseMemory()
     legend: DrumLegendProjection | None = None
+    vocabulary_intents: tuple[DrumVocabularyIntent, ...] = ()
 
     def validate(self) -> None:
         self.soloist.validate()
@@ -88,6 +94,7 @@ class BebopRuntimeProjection:
             ride_memory=RideContinuityMemory(),
             snare_memory=SnarePhraseMemory(),
             legend=None,
+            vocabulary_intents=(),
         )
 
 
@@ -394,6 +401,16 @@ def score_bebop_gesture(
     # realization features; it never inserts a precomposed future phrase.
     if projection.legend is not None:
         delta, parts = legend_gesture_adjustment(gesture, projection.legend)
+        score += delta
+        components.extend(parts)
+
+    # Shared vocabulary memory is another bounded source of evidence.
+    # Only current-gesture fit is scored; no future lick/fill is scheduled.
+    if projection.vocabulary_intents:
+        delta, parts = vocabulary_gesture_adjustment(
+            gesture,
+            projection.vocabulary_intents,
+        )
         score += delta
         components.extend(parts)
 
