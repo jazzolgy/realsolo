@@ -4,6 +4,7 @@ from __future__ import annotations
 from .model import DrumGesture, DrumHit, DrummerRuntimeContext, DrummerSoftPlan, DrumVoice, Limb
 from .pattern_corpus import StoredDrumPattern, hits_at_current_position, patterns_with_tags
 from .timing import swing_prior_from_groove
+from music_intelligence.reasoning.groove_context import GrooveFeel
 
 
 _VOICE_TO_LIMB = {
@@ -114,9 +115,15 @@ def source_pattern_candidates(
     plan.validate()
     candidates: list[DrumGesture] = []
 
+    shared_feel = context.groove.feel if context.groove is not None else None
     for pattern in patterns_with_tags("ride"):
         if not _style_matches(pattern, plan):
             continue
+        if shared_feel is not None:
+            if "swing" in pattern.tags and shared_feel not in {GrooveFeel.SWING, GrooveFeel.SHUFFLE}:
+                continue
+            if "bop" in pattern.tags and shared_feel in {GrooveFeel.STRAIGHT, GrooveFeel.FUNK, GrooveFeel.BOSSA, GrooveFeel.SALSA}:
+                continue
         gesture = pattern_gesture_now(pattern, context)
         if gesture is not None:
             candidates.append(gesture)
