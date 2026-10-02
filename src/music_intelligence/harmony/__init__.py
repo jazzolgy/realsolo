@@ -81,6 +81,13 @@ from .hypothesis_engine import (
     merge_human_correction,
     rank_harmonic_hypotheses,
 )
+from .orchestrator import (
+    HarmonicActionOption,
+    HarmonicReasoningInput,
+    HarmonicReasoningResult,
+    ReharmonizationResult,
+    reason_about_harmony,
+)
 
 __all__ = [
     "HarmonicAffordance",
@@ -148,4 +155,9 @@ __all__ = [
     "RankedHypothesis",
     "merge_human_correction",
     "rank_harmonic_hypotheses",
+    "HarmonicActionOption",
+    "HarmonicReasoningInput",
+    "HarmonicReasoningResult",
+    "ReharmonizationResult",
+    "reason_about_harmony",
 ]
