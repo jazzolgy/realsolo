@@ -152,7 +152,7 @@ def basic_rhythm_candidates(
     grids = (
         ("quarter", Fraction(1, 1), None, 0.00),
         ("eighth", Fraction(1, 2), None, 0.02),
-        ("sixteenth", Fraction(1, 4), None, 0.06),
+        ("sixteenth", Fraction(1, 4), None, 0.12),
     )
     candidates = [
         rhythm_candidate_from_event(
