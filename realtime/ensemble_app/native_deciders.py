@@ -247,8 +247,8 @@ class DrumsNativeDecider:
 
 @dataclass
 class PianoNativeDecider:
-    state: PianoCompingState = PianoCompingState()
-    evaluator: PianoCompingEvaluator = PianoCompingEvaluator()
+    state: PianoCompingState = field(default_factory=PianoCompingState)
+    evaluator: PianoCompingEvaluator = field(default_factory=PianoCompingEvaluator)
 
     def __call__(self, context: Mapping[str, object]) -> NativeImmediateResult | None:
         request = context.get("piano_voicing_request")
