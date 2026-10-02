@@ -27,6 +27,18 @@ from .contextual_tension import (
     TensionUse,
     assess_tension,
 )
+from .voice_leading import (
+    MotionType,
+    ResolutionDebt,
+    TargetRole,
+    VoiceLeadingAssessment,
+    VoiceLeadingContext,
+    VoiceMotion,
+    VoiceRole,
+    VoiceState,
+    assess_voice_leading,
+    make_resolution_debt,
+)
 
 __all__ = [
     "HarmonicAffordance",
@@ -50,4 +62,14 @@ __all__ = [
     "TensionContext",
     "TensionUse",
     "assess_tension",
+    "MotionType",
+    "ResolutionDebt",
+    "TargetRole",
+    "VoiceLeadingAssessment",
+    "VoiceLeadingContext",
+    "VoiceMotion",
+    "VoiceRole",
+    "VoiceState",
+    "assess_voice_leading",
+    "make_resolution_debt",
 ]
