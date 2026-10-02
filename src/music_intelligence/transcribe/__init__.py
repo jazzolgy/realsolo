@@ -90,7 +90,11 @@ from .allocation import (
     allocation_candidates,
     preferred_allocation,
 )
-from .piano import PianoGestureCandidate, piano_gesture_candidates
+from .piano import (
+    PianoGestureCandidate,
+    apply_piano_gesture_candidate,
+    piano_gesture_candidates,
+)
 from .instrument_profiles import (
     ALTO,
     BASS,
@@ -238,6 +242,7 @@ __all__ = [
     "allocation_candidates",
     "preferred_allocation",
     "PianoGestureCandidate",
+    "apply_piano_gesture_candidate",
     "piano_gesture_candidates",
     "ALTO",
     "BASS",
