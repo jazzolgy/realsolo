@@ -1,0 +1,166 @@
+{
+  "schema_version": "0.1",
+  "legend_id": "bill_evans",
+  "recording_id": "portrait_in_jazz_autumn_leaves_take1_stereo",
+  "source_id": "BE-003",
+  "policy": "Abstract, position-aligned vocabulary only. No complete copyrighted melody or solo phrase stored.",
+  "items": [
+    {
+      "vocabulary_id": "BE-AL-HEAD-RHYTHMIC-ELASTICITY-001",
+      "tune_id": "autumn_leaves",
+      "chorus": "head_in",
+      "bar": "form-wide",
+      "timestamp": "~0:08-0:45",
+      "harmony_context": "fast_swing_functional_standard",
+      "phrase_position": "head",
+      "entrance": "score-relative flexible entry",
+      "ending": "phrase-dependent layback/extension",
+      "rhythm": "free rhythmic interpretation over stable written melody identity",
+      "contour": "written-melody-derived",
+      "interval_pattern": "not stored",
+      "register": "melody foreground",
+      "tension_curve": "section-shaped",
+      "source_instrument": "piano",
+      "dimensions": [
+        "rhythm",
+        "phrase_shape",
+        "target_behavior",
+        "interaction_role"
+      ],
+      "transferable_to": [
+        "piano"
+      ],
+      "domains": [
+        "head_interpretation",
+        "rhythm_subdivision",
+        "phrase_entrance",
+        "phrase_ending"
+      ],
+      "context_tags": [
+        "fast_swing",
+        "head",
+        "piano_trio",
+        "autumn_leaves"
+      ],
+      "candidate_uses": [
+        "abstracted_pattern",
+        "hybrid_composition"
+      ],
+      "signature_status": "recurring",
+      "signature_evidence_count": 2,
+      "confidence": 0.86,
+      "provenance": [
+        "project_audio:BE-003",
+        "score:NewReal1:p12",
+        "score:Realbk1:p36",
+        "external:listening_guide_head_0m08",
+        "manual_alignment:v0.1"
+      ]
+    },
+    {
+      "vocabulary_id": "BE-AL-A1-STRUCTURAL-DESCENT-001",
+      "tune_id": "autumn_leaves",
+      "chorus": "piano_solo",
+      "bar": "A-section opening 1-4",
+      "timestamp": "piano solo starts ~2:00",
+      "harmony_context": "functional ii-v-major-cycle",
+      "harmonic_function": "forward functional motion",
+      "phrase_position": "A-section opening",
+      "entrance": "continuous flowing entry",
+      "ending": "structural descent completion",
+      "rhythm": "rhythmically elaborated structural line",
+      "contour": "descending structural framework",
+      "interval_pattern": "stepwise framework with neighbor/encircling/delay/arpeggiation operations",
+      "register": "middle-to-upper piano solo register",
+      "tension_curve": "developing then resolving",
+      "source_instrument": "piano",
+      "dimensions": [
+        "pitch_interval",
+        "contour",
+        "phrase_shape",
+        "tension_release",
+        "target_behavior"
+      ],
+      "transferable_to": [
+        "piano",
+        "sax"
+      ],
+      "domains": [
+        "motif_development",
+        "linear_connection",
+        "tension_release",
+        "future_harmony_awareness"
+      ],
+      "context_tags": [
+        "fast_swing",
+        "piano_solo",
+        "A_section",
+        "autumn_leaves"
+      ],
+      "candidate_uses": [
+        "fragment_recall",
+        "abstracted_pattern",
+        "hybrid_composition"
+      ],
+      "signature_status": "recurring",
+      "signature_evidence_count": 2,
+      "confidence": 0.84,
+      "provenance": [
+        "project_audio:BE-003",
+        "external:evans_craft_analysis_cross_version_A_section",
+        "external:piano_solo_transcription_starts_2m00",
+        "manual_alignment:v0.1"
+      ]
+    },
+    {
+      "vocabulary_id": "BE-AL-BASS-FOREGROUND-DIALOGUE-001",
+      "tune_id": "autumn_leaves",
+      "chorus": "post_head_bass_collective",
+      "bar": "position-dependent",
+      "timestamp": "~0:45-~2:00",
+      "harmony_context": "fast_swing_functional_standard",
+      "phrase_position": "bass_foreground",
+      "entrance": "piano withholding then dialog entry",
+      "ending": "collective transition toward piano foreground",
+      "rhythm": "responsive sparse/line-based piano contribution",
+      "contour": "counterline/dialogue rather than continuous chordal backing",
+      "interval_pattern": "not stored",
+      "register": "context-dependent, including octave-line response",
+      "tension_curve": "foreground handoff",
+      "source_instrument": "piano",
+      "dimensions": [
+        "rhythm",
+        "interaction_role",
+        "register_trajectory",
+        "phrase_shape"
+      ],
+      "transferable_to": [
+        "piano"
+      ],
+      "domains": [
+        "ensemble_interaction",
+        "call_response",
+        "form_awareness"
+      ],
+      "context_tags": [
+        "fast_swing",
+        "bass_foreground",
+        "piano_trio",
+        "autumn_leaves"
+      ],
+      "candidate_uses": [
+        "abstracted_pattern",
+        "hybrid_composition"
+      ],
+      "signature_status": "recurring",
+      "signature_evidence_count": 2,
+      "confidence": 0.82,
+      "provenance": [
+        "project_audio:BE-003",
+        "external:portrait_in_jazz_trio_analysis",
+        "external:listening_guide",
+        "manual_alignment:v0.1"
+      ]
+    }
+  ]
+}
