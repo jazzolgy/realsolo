@@ -103,7 +103,7 @@ def _read_raw_text(repo: str, remote_path: str, *, ref: str = "master") -> str:
 def _parse_osiris_mapping(text: str, *, lovel: int, hivel: int) -> list[dict]:
     regions: list[dict] = []
     current: dict[str, str] | None = None
-    token_re = re.compile(r"([A-Za-z0-9_]+)=([^\\s]+)")
+    token_re = re.compile(r"([A-Za-z0-9_]+)=([^\s]+)")
     for raw in text.splitlines():
         line = raw.split("//", 1)[0].strip()
         if not line:
