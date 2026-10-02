@@ -18,6 +18,11 @@ from music_intelligence.legends import (
     VocabularyUseType,
 )
 
+from music_intelligence.reasoning.motif import (
+    MotifIdentity,
+    motif_identity_from_vocabulary,
+)
+
 from .model import DrumGesture, DrumVoice, GestureRole
 
 
@@ -71,6 +76,7 @@ class DrumVocabularyIntent:
     articulation_descriptor: str = ""
     contour_descriptor: str = ""
     normalized_representation: str = ""
+    shared_motif_identity: MotifIdentity | None = None
     literal_similarity: float | None = None
     structural_similarity: float | None = None
     confidence: float = 1.0
@@ -153,6 +159,7 @@ def drum_vocabulary_intent(
         articulation_descriptor=item.articulation,
         contour_descriptor=item.contour,
         normalized_representation=item.transposition_normalized_representation,
+        shared_motif_identity=motif_identity_from_vocabulary(item),
         literal_similarity=item.literal_similarity,
         structural_similarity=item.structural_similarity,
         confidence=item.confidence,
