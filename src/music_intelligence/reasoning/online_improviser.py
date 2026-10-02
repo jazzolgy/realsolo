@@ -1,4 +1,4 @@
-"""v1.31 online improvisation commitment contract.
+"""v1.32 online improvisation commitment contract.
 
 The player may plan intentions and candidate families in advance, but it must not
 freeze a future note sequence and replay it as pseudo-improvisation.
@@ -104,6 +104,18 @@ class OnlineMusicalEvaluator:
             else:
                 active_tags.add("phrase_late")
 
+            if candidate.pitch_midi is None:
+                active_tags.add("rest")
+                d = candidate.duration_beats
+                if d <= .625:
+                    active_tags.add("rest_half_beat")
+                elif d <= 1.5:
+                    active_tags.add("rest_one_beat")
+                elif d <= 3.0:
+                    active_tags.add("rest_two_beats")
+                else:
+                    active_tags.add("rest_four_beats_plus")
+
             if candidate.pitch_midi is not None and context.previous_pitch_midi is not None:
                 interval = candidate.pitch_midi - context.previous_pitch_midi
                 abs_interval = abs(interval)
@@ -129,7 +141,7 @@ class OnlineMusicalEvaluator:
                 if len(recent) >= 4 and max(recent[-4:]) - min(recent[-4:]) > 12:
                     active_tags.add("compound_span_pressure")
 
-            if candidate.duration_beats >= 1.0 and context.phrase_maturity >= .67:
+            if candidate.pitch_midi is not None and candidate.duration_beats >= 1.0 and context.phrase_maturity >= .67:
                 active_tags.add("structural_terminal_long_tone")
 
             for feature in active_tags:
