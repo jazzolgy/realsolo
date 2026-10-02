@@ -19,6 +19,7 @@ __all__ = [
     "RightsProfile",
     "corpus_root_from_env",
     "ALL_PLAYER_INSTRUMENTS",
+    "IREALB_V1_ARCHIVE_URL",
     "IREALB_V1_DATASET_ID",
     "IREALB_V1_DOI",
     "IREALB_V1_LICENSE",
@@ -27,6 +28,7 @@ __all__ = [
     "StandardChartInstallReport",
     "chart_item_id",
     "chart_relpath",
+    "download_and_install_standard_100",
     "install_standard_100_from_archive",
     "register_standard_100",
     "standard_100_corpus_items",
@@ -34,6 +36,7 @@ __all__ = [
 
 from .standard_charts import (
     ALL_PLAYER_INSTRUMENTS,
+    IREALB_V1_ARCHIVE_URL,
     IREALB_V1_DATASET_ID,
     IREALB_V1_DOI,
     IREALB_V1_LICENSE,
@@ -42,6 +45,7 @@ from .standard_charts import (
     StandardChartInstallReport,
     chart_item_id,
     chart_relpath,
+    download_and_install_standard_100,
     install_standard_100_from_archive,
     register_standard_100,
     standard_100_corpus_items,
