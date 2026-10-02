@@ -336,3 +336,101 @@ no clear response.
 - no piano-specific register/hand/pedal fields enter the shared representation
 - no future action sequence is stored
 - existing monophonic/polyphonic online paths remain compatible
+
+
+## CR-004 — Shared accompaniment role occupancy / harmonic-rhythmic coverage
+
+### Status
+
+Requested from player/piano after cross-source validation with piano/guitar comping material.
+Current implementation is an experimental piano-side adapter.
+
+### Requested Core capability
+
+Represent which ensemble member or section is currently occupying accompaniment functions,
+without assuming that one instrument must always own them.
+
+Minimum useful information:
+
+- accompaniment/comping actor or section identity
+- current role priority: primary / secondary / shared / unspecified
+- harmonic coverage strength
+- rhythmic coverage strength
+- accompaniment activity
+- confidence that performers agree on the active harmony/alterations
+- confidence/provenance for inferred role assignment
+
+The representation should not encode piano-specific hands, voicing families, pedal, or register.
+
+### Musical reason
+
+Small-group accompaniment conflict is not captured by generic ensemble density alone.
+
+Two ensembles may have the same global density while differing radically:
+
+1. bass/drums/soloist are active but no other chordal instrument is comping;
+2. guitar is already supplying continuous harmony and rhythmic support.
+
+The pianist should not respond identically.
+
+Cross-source evidence from piano/guitar comping pedagogy explicitly emphasizes:
+
+- knowing each musician's current role;
+- avoiding conflict when piano and guitar can perform the same role;
+- deciding which instrument is the primary comping instrument;
+- sparse/rhythmic piano behavior when guitar supplies continuous harmonic material;
+- switching comping responsibility to create variety and consistency;
+- avoiding unnecessary added material when rhythm and harmony are already covered.
+
+### Current piano-side experiment
+
+`players/piano/role_occupancy.py` defines:
+
+- `CompingPriority`
+- `CompingRoleOccupancy`
+- `RoleOccupancyBias`
+- `evaluate_role_occupancy_bias()`
+
+Current piano policy experiments include:
+
+- other instrument primary + strong coverage -> favor lay-out/sparse punctuation;
+- duplicated sustained harmonic coverage -> penalty;
+- shared high coverage -> favor space/sparse gestures, penalize dense overlap;
+- piano primary -> support/anchor is not treated as role conflict;
+- low harmonic-agreement confidence -> caution before adding harmonic material.
+
+These mappings remain instrument-policy hypotheses, not proposed Core rules.
+
+### Likely architectural boundary
+
+Core owns:
+
+- generic accompaniment role occupancy
+- actor/section identity
+- harmonic/rhythmic coverage estimates
+- priority/ownership semantics
+- agreement/confidence/provenance
+
+Player layers own:
+
+- how their instrument reacts to occupied roles
+- instrument-specific sparse/dense realization
+- touch, register, pedal, articulation
+- whether to punctuate, lay out, sustain, or change voicing family
+
+### Regression risk
+
+Low if additive.
+
+Role occupancy should be optional. Ensemble configurations without multiple comping-capable
+instruments should not be forced to populate it.
+
+### Tests required
+
+- same ensemble density can yield different role-occupancy states
+- multiple comping-capable instruments can be represented
+- harmonic and rhythmic coverage remain separate
+- role priority may be shared or unspecified, not only primary/secondary
+- low agreement confidence remains distinct from low harmonic coverage
+- no piano-specific fields enter the shared object
+- representation contains no future turn schedule or exact future notes
