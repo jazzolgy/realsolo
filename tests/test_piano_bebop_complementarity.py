@@ -127,3 +127,51 @@ def test_complementarity_keeps_actor_attribution_unknown_by_default():
         post_foreground_ratio=2.2,
     )
     assert evidence.actor_attribution_confidence == 0.0
+
+
+def test_harmonic_carried_handoff_is_recognized():
+    from players.piano import SupportCarryMode, support_carry_mode
+    evidence = EnsembleComplementarityEvidence(
+        breath_type=EnsembleBreathType.FOREGROUND_HANDOFF,
+        foreground_drop=0.8,
+        low_harmonic_support=0.95,
+        percussive_support=0.4,
+        confidence=1.0,
+    )
+    assert support_carry_mode(evidence) is SupportCarryMode.HARMONIC_CARRIED
+
+
+def test_percussive_carried_handoff_can_reward_thin_harmonic_anchor():
+    evaluator = PianoSoloEvaluator()
+    ctx = PianoSoloContext(
+        ensemble_complementarity=EnsembleComplementarityEvidence(
+            breath_type=EnsembleBreathType.FOREGROUND_HANDOFF,
+            foreground_drop=0.8,
+            low_harmonic_support=0.3,
+            percussive_support=0.95,
+            confidence=1.0,
+        )
+    )
+    anchor = CandidateEvent(
+        67,
+        0.5,
+        tags=frozenset({"guide_tone", "harmonic_identity"}),
+    )
+    score = evaluator.evaluate(anchor, ctx)
+    assert score.components.get("percussive_carried_harmonic_support", 0) > 0
+
+
+def test_mixed_support_can_reward_preserving_space():
+    evaluator = PianoSoloEvaluator()
+    ctx = PianoSoloContext(
+        ensemble_complementarity=EnsembleComplementarityEvidence(
+            breath_type=EnsembleBreathType.FOREGROUND_HANDOFF,
+            foreground_drop=0.8,
+            low_harmonic_support=0.95,
+            percussive_support=0.95,
+            confidence=1.0,
+        )
+    )
+    rest = CandidateEvent(None, 0.5, tags=frozenset({"rest"}))
+    score = evaluator.evaluate(rest, ctx)
+    assert score.components.get("mixed_support_preserve_space", 0) > 0
