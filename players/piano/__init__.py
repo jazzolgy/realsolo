@@ -35,6 +35,12 @@ from .planner import (
 )
 from .narrative import NarrativeBiasScore, evaluate_narrative_bias
 from .variation import GestureSignature, VariationContext, VariationScore, evaluate_variation
+from .harmonic_continuity import (
+    HarmonicContinuityFeatures,
+    HarmonicContinuityMemory,
+    HarmonicFingerprint,
+    estimate_harmonic_continuity,
+)
 from .role_occupancy import (
     CompingPriority,
     CompingRoleOccupancy,
@@ -141,6 +147,10 @@ __all__ = [
     "CompingRoleOccupancy",
     "RoleOccupancyBias",
     "evaluate_role_occupancy_bias",
+    "HarmonicContinuityFeatures",
+    "HarmonicContinuityMemory",
+    "HarmonicFingerprint",
+    "estimate_harmonic_continuity",
     "PianoRhythmicIntent",
     "RhythmicPlacement",
     "apply_rhythmic_intent",
