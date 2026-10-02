@@ -14,6 +14,18 @@ from .notation import NotatedAtomKind, ScoreSpan, TupletRatio
 from .spelling import WrittenPitch
 
 
+@dataclass(frozen=True)
+class ScoreKeySignature:
+    fifths: int = 0
+    mode: str = "major"
+
+    def validate(self) -> None:
+        if not -7 <= self.fifths <= 7:
+            raise ValueError("key signature fifths must be within -7..7")
+        if not self.mode:
+            raise ValueError("key signature mode is required")
+
+
 class ScoreSpannerKind(str, Enum):
     CRESCENDO = "crescendo"
     DIMINUENDO = "diminuendo"
@@ -172,6 +184,7 @@ class ReadableScore:
     spanners: tuple[ScoreSpanner, ...] = ()
     meter_numerator: int = 4
     meter_denominator: int = 4
+    key_signature: ScoreKeySignature = ScoreKeySignature()
     provenance: tuple[str, ...] = ()
 
     def validate(self) -> None:
@@ -179,6 +192,7 @@ class ReadableScore:
             raise ValueError("score_id is required")
         if self.meter_numerator <= 0 or self.meter_denominator <= 0:
             raise ValueError("meter must be positive")
+        self.key_signature.validate()
         if not self.parts:
             raise ValueError("score requires at least one part")
         ids = [p.part_id for p in self.parts]
@@ -216,6 +230,7 @@ def assemble_score(
     spanners: tuple[ScoreSpanner, ...] = (),
     meter_numerator: int = 4,
     meter_denominator: int = 4,
+    key_signature: ScoreKeySignature = ScoreKeySignature(),
     provenance: tuple[str, ...] = (),
 ) -> ReadableScore:
     score = ReadableScore(
@@ -225,6 +240,7 @@ def assemble_score(
         spanners=spanners,
         meter_numerator=meter_numerator,
         meter_denominator=meter_denominator,
+        key_signature=key_signature,
         provenance=provenance + ("transcribe:score-assembly",),
     )
     score.validate()
@@ -243,6 +259,7 @@ def extract_individual_part(score: ReadableScore, part_id: str) -> ReadableScore
         spanners=tuple(s for s in score.spanners if s.part_id == part_id),
         meter_numerator=score.meter_numerator,
         meter_denominator=score.meter_denominator,
+        key_signature=score.key_signature,
         provenance=score.provenance + ("transcribe:individual-part",),
     )
 
@@ -262,6 +279,7 @@ def assemble_logical_score(
     spanners: tuple[ScoreSpanner, ...] = (),
     meter_numerator: int = 4,
     meter_denominator: int = 4,
+    key_signature: ScoreKeySignature = ScoreKeySignature(),
     provenance: tuple[str, ...] = (),
 ) -> LogicalScore:
     return assemble_score(
@@ -271,5 +289,6 @@ def assemble_logical_score(
         spanners=spanners,
         meter_numerator=meter_numerator,
         meter_denominator=meter_denominator,
+        key_signature=key_signature,
         provenance=provenance + ("transcribe:logical-score",),
     )
