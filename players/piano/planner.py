@@ -17,6 +17,7 @@ from .comping import (
     PianoCompingContext,
 )
 from .expression import expand_expression_variants
+from .candidate_diversity import select_diverse_candidates
 from .harmonic_semantics import annotate_harmonic_semantics
 from .rhythm import expand_rhythmic_variants
 from .voicing import (
@@ -242,9 +243,5 @@ def build_immediate_performance_candidates(
     if len(slate.candidates) <= max_candidates:
         return slate
 
-    # Preserve silence first, then keep a diverse prefix of sounding candidates.
-    silent = list(slate.silent)
-    sounding = list(slate.sounding)
-    budget = max(0, max_candidates - len(silent))
-    kept = tuple(silent + sounding[:budget])
+    kept = select_diverse_candidates(slate.candidates, max_candidates)
     return PianoCompingCandidateSet(kept)
