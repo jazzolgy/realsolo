@@ -148,3 +148,19 @@ def test_runtime_loop_commits_only_immediate_renderer_gestures():
     assert not hasattr(result, "future_notes")
     for gesture in result.gestures:
         assert isinstance(gesture, RenderGesture)
+
+
+def test_runtime_tick_projects_committed_gestures_to_portable_packets():
+    loop = EnsembleRuntimeLoop((
+        FakeProvider("piano", 60, []),
+        FakeProvider("bass", 36, []),
+        FakeProvider("drums", 0, []),
+    ))
+    result = loop.step(base_state())
+    packets = result.to_portable_packets(sequence_start=100)
+
+    assert [p.sequence_id for p in packets] == [100, 101, 102]
+    assert all(p.protocol_version == 1 for p in packets)
+    assert all(p.generation == result.snapshot_generation for p in packets)
+    assert all(p.anchor_beat == result.state.transport.beat for p in packets)
+    assert [p.gesture.role for p in packets] == ["piano", "bass", "drums"]
