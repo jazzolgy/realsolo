@@ -224,6 +224,7 @@ def _append_profile_attributes(
 
 
 def _dynamic_event_ids_to_emit(
+    score: ReadableScore,
     part: ScorePart,
     engraving_plan: EngravingPlan | None,
 ) -> set[str]:
@@ -247,9 +248,31 @@ def _dynamic_event_ids_to_emit(
     emitted: set[str] = set()
     seen_at_onset: set[tuple[str, Fraction, str]] = set()
 
+    events_by_id = {event.event_id: event for event in part.events}
+    hairpin_interior_ids: set[str] = set()
+    hairpin_endpoint_ids: set[str] = set()
+    for spanner in score.spanners:
+        if spanner.part_id != part.part_id:
+            continue
+        if spanner.kind.value not in {"crescendo", "diminuendo"}:
+            continue
+        start = events_by_id.get(spanner.start_event_id)
+        end = events_by_id.get(spanner.end_event_id)
+        if start is None or end is None:
+            continue
+        hairpin_endpoint_ids.update({start.event_id, end.event_id})
+        for event in part.events:
+            if start.span.onset < event.span.onset < end.span.onset:
+                hairpin_interior_ids.add(event.event_id)
+
     for event in ordered:
         marking = event.dynamic_marking
         if marking is None:
+            continue
+        if (
+            event.event_id in hairpin_interior_ids
+            and event.event_id not in hairpin_endpoint_ids
+        ):
             continue
 
         engraving = (
@@ -321,7 +344,7 @@ def score_to_musicxml(
         measures = _part_measures(part, bar_length=bar_length)
         max_measure = max(measures, default=0)
         staff_numbers = {sid: i + 1 for i, sid in enumerate(part.staff_ids)}
-        dynamic_event_ids = _dynamic_event_ids_to_emit(part, engraving_plan)
+        dynamic_event_ids = _dynamic_event_ids_to_emit(score, part, engraving_plan)
         spanner_events = _spanner_events_for_part(score, part)
 
         for measure_index in range(max_measure + 1):
