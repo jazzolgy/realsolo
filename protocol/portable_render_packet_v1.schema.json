@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://realsolo.dev/schema/portable-render-packet-v1.json",
+  "title": "RealSolo Portable Render Packet v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol_version", "message_type", "sequence_id", "generation", "transport", "gesture"],
+  "properties": {
+    "protocol_version": {"const": 1},
+    "message_type": {"const": "render_gesture"},
+    "sequence_id": {"type": "integer", "minimum": 0},
+    "generation": {"type": "integer", "minimum": 0},
+    "transport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tempo_bpm", "anchor_beat"],
+      "properties": {
+        "tempo_bpm": {"type": "number", "minimum": 20, "maximum": 400},
+        "anchor_beat": {"type": "number", "minimum": 0}
+      }
+    },
+    "gesture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "voices", "drum_hits", "source", "tags", "annotations"],
+      "properties": {
+        "role": {"type": "string", "minLength": 1},
+        "source": {"type": "string"},
+        "tags": {"type": "array", "items": {"type": "string"}},
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        },
+        "voices": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/renderVoice"}
+        },
+        "drum_hits": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/renderVoice"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "expressionScalar": {
+      "oneOf": [
+        {"type": "boolean"},
+        {"type": "integer"},
+        {"type": "number"},
+        {"type": "string"}
+      ]
+    },
+    "renderVoice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pitch_midi", "velocity", "duration_beats", "onset_offset_beats",
+        "articulation", "instrument_role", "breath_before_beats",
+        "attack_scale", "release_shape", "expression_controls"
+      ],
+      "properties": {
+        "pitch_midi": {"type": "integer", "minimum": 0, "maximum": 127},
+        "velocity": {"type": "integer", "minimum": 1, "maximum": 127},
+        "duration_beats": {"type": "number", "exclusiveMinimum": 0},
+        "onset_offset_beats": {"type": "number"},
+        "articulation": {"type": "array", "items": {"type": "string"}},
+        "instrument_role": {"type": "string", "minLength": 1},
+        "breath_before_beats": {"type": "number", "minimum": 0},
+        "attack_scale": {"type": "number", "exclusiveMinimum": 0},
+        "release_shape": {"type": "string"},
+        "expression_controls": {
+          "type": "object",
+          "additionalProperties": {"$ref": "#/$defs/expressionScalar"}
+        }
+      }
+    }
+  }
+}
