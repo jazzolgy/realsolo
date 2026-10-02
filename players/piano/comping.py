@@ -13,9 +13,11 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Mapping, Sequence
 
-from music_intelligence.harmony.jazz_harmony_core import HarmonicAffordance
+from music_intelligence.harmony.jazz_harmony_core import HarmonicAffordance, HarmonicFrame
+from music_intelligence.harmony.orchestrator import HarmonicReasoningResult
 from music_intelligence.reasoning.legend_style_core import MusicalContextVector
 from music_intelligence.reasoning.online_improviser import SoftPlan
+from music_intelligence.reasoning.harmonic_player_bridge import harmonic_guidance_for_candidate
 
 from .policy import (
     PianoActionScore,
@@ -40,6 +42,28 @@ from .ensemble_response import (
     GestureResponseRecord,
     evaluate_response_bias,
     infer_coarse_responses,
+)
+from .interaction_episode import (
+    InteractionEpisode,
+    evaluate_episode_bias,
+    infer_interaction_episode,
+)
+from .role_occupancy import (
+    CompingRoleOccupancy,
+    evaluate_role_occupancy_bias,
+)
+from .harmonic_continuity import (
+    HarmonicContinuityFeatures,
+    HarmonicContinuityMemory,
+)
+from .creative_continuity import (
+    CreativityContext,
+    evaluate_creative_continuity,
+    profile_from_harmonic_context,
+)
+from .harmonic_creativity import (
+    adapt_continuity_profile_for_harmony,
+    adapt_creativity_context_for_harmony,
 )
 
 
@@ -78,6 +102,11 @@ class PianoCompingContext:
     variation_pressure: float = 0.5
     groove_lock_strength: float = 0.0
     motif_continuity_strength: float = 0.0
+    pattern_consistency_strength: float = 0.0
+    auto_pattern_consistency: bool = True
+    creativity_strength: float = 0.55
+    creativity_coherence_floor: float = 0.30
+    role_occupancy: CompingRoleOccupancy = field(default_factory=CompingRoleOccupancy)
     time_feel: str = "swing"
 
     def validate(self) -> None:
@@ -92,6 +121,9 @@ class PianoCompingContext:
             "variation_pressure",
             "groove_lock_strength",
             "motif_continuity_strength",
+            "pattern_consistency_strength",
+            "creativity_strength",
+            "creativity_coherence_floor",
         ):
             value = getattr(self, name)
             if not 0.0 <= value <= 1.0:
@@ -100,6 +132,7 @@ class PianoCompingContext:
             raise ValueError("available_space_beats cannot be negative")
         if self.soloist_register_midi is not None and not 0 <= self.soloist_register_midi <= 127:
             raise ValueError("soloist_register_midi must be within MIDI range")
+        self.role_occupancy.validate()
 
 
 @dataclass(frozen=True)
@@ -151,6 +184,9 @@ class PianoCompingState:
     last_section_energy: float | None = None
     recent_signatures: list[GestureSignature] = field(default_factory=list)
     recent_responses: list[GestureResponseRecord] = field(default_factory=list)
+    active_episode: InteractionEpisode | None = None
+    harmonic_continuity: HarmonicContinuityMemory = field(default_factory=HarmonicContinuityMemory)
+    last_harmonic_continuity: HarmonicContinuityFeatures | None = None
 
     @staticmethod
     def _estimate_density(candidate: PianoCompingCandidate) -> PianoDensity:
@@ -219,6 +255,22 @@ class PianoCompingState:
             self.last_section_energy = section_energy
         self.committed.append(candidate)
 
+    def observe_harmonic_frame(
+        self,
+        frame: HarmonicFrame,
+    ) -> HarmonicContinuityFeatures:
+        features = self.harmonic_continuity.observe(frame)
+        self.last_harmonic_continuity = features
+        return features
+
+    def effective_pattern_consistency(
+        self,
+        context: PianoCompingContext,
+    ) -> float:
+        if context.auto_pattern_consistency and self.last_harmonic_continuity is not None:
+            return self.last_harmonic_continuity.pattern_consistency_strength
+        return context.pattern_consistency_strength
+
     def record_ensemble_response(
         self,
         observation: EnsembleResponseObservation,
@@ -231,6 +283,7 @@ class PianoCompingState:
         )
         if len(self.recent_responses) > 8:
             del self.recent_responses[:-8]
+        self.active_episode = infer_interaction_episode(self.recent_responses)
 
     def observe_context_transition(
         self,
@@ -306,6 +359,7 @@ class PianoCompingEvaluator:
         state: PianoCompingState,
         harmonic_affordance: HarmonicAffordance | None = None,
         interaction_state: PianoInteractionState | None = None,
+        harmonic_reasoning: HarmonicReasoningResult | None = None,
     ) -> PianoCompingScore:
         candidate.validate()
         comping_context.validate()
@@ -362,6 +416,16 @@ class PianoCompingEvaluator:
             reasons.extend(piano_score.reasons)
 
             event = candidate.realization.event
+            if harmonic_reasoning is not None:
+                guidance = harmonic_guidance_for_candidate(event, harmonic_reasoning)
+                score += guidance.score_delta
+                for key, value in guidance.components.items():
+                    components[f"shared_{key}"] = components.get(
+                        f"shared_{key}", 0.0
+                    ) + value
+                if guidance.score_delta:
+                    components["shared_harmonic_guidance_total"] = guidance.score_delta
+                reasons.extend(guidance.reasons)
             sparse = "sparse" in event.tags or candidate.action_type is CompingActionType.SPARSE_SUPPORT
             dense = "dense" in event.tags
 
@@ -526,6 +590,55 @@ class PianoCompingEvaluator:
                     "sparse gesture supports release intention",
                 )
 
+        previous_signature = (
+            state.recent_signatures[-1] if state.recent_signatures else None
+        )
+        base_creative_profile = profile_from_harmonic_context(
+            state.last_harmonic_continuity
+        )
+        creative_profile = adapt_continuity_profile_for_harmony(
+            base_creative_profile,
+            harmonic_reasoning,
+        )
+        creative_context = adapt_creativity_context_for_harmony(
+            CreativityContext(
+                creativity_strength=comping_context.creativity_strength,
+                coherence_floor=comping_context.creativity_coherence_floor,
+            ),
+            harmonic_reasoning,
+        )
+        creative_bias = evaluate_creative_continuity(
+            candidate,
+            previous_signature,
+            creative_profile,
+            creative_context,
+        )
+        score += creative_bias.total
+        for key, value in creative_bias.components.items():
+            components[f"creative_continuity:{key}"] = components.get(
+                f"creative_continuity:{key}", 0.0
+            ) + value
+        reasons.extend(creative_bias.reasons)
+
+        occupancy_bias = evaluate_role_occupancy_bias(
+            candidate,
+            comping_context.role_occupancy,
+        )
+        score += occupancy_bias.total
+        for key, value in occupancy_bias.components.items():
+            components[f"role_occupancy:{key}"] = components.get(
+                f"role_occupancy:{key}", 0.0
+            ) + value
+        reasons.extend(occupancy_bias.reasons)
+
+        episode_bias = evaluate_episode_bias(candidate, state.active_episode)
+        score += episode_bias.total
+        for key, value in episode_bias.components.items():
+            components[f"interaction_episode:{key}"] = components.get(
+                f"interaction_episode:{key}", 0.0
+            ) + value
+        reasons.extend(episode_bias.reasons)
+
         response_bias = evaluate_response_bias(
             candidate,
             state.recent_responses,
@@ -544,6 +657,9 @@ class PianoCompingEvaluator:
                 variation_pressure=comping_context.variation_pressure,
                 groove_lock_strength=comping_context.groove_lock_strength,
                 motif_continuity_strength=comping_context.motif_continuity_strength,
+                pattern_consistency_strength=state.effective_pattern_consistency(
+                    comping_context
+                ),
             ),
         )
         score += variation.total
@@ -589,6 +705,7 @@ class PianoCompingEvaluator:
         state: PianoCompingState,
         harmonic_affordance: HarmonicAffordance | None = None,
         interaction_state: PianoInteractionState | None = None,
+        harmonic_reasoning: HarmonicReasoningResult | None = None,
     ) -> PianoCompingScore:
         if not candidates:
             raise ValueError("no comping candidates")
@@ -601,6 +718,7 @@ class PianoCompingEvaluator:
                     state,
                     harmonic_affordance,
                     interaction_state,
+                    harmonic_reasoning,
                 )
                 for candidate in candidates
             ),
@@ -617,10 +735,14 @@ def perform_one_comping_action(
     state: PianoCompingState,
     harmonic_affordance: HarmonicAffordance | None = None,
     interaction_state: PianoInteractionState | None = None,
+    harmonic_frame: HarmonicFrame | None = None,
+    harmonic_reasoning: HarmonicReasoningResult | None = None,
 ) -> PianoCompingScore:
     """Commit exactly one immediate comping decision, sounding or silent."""
 
     plan.validate_for_improvisation()
+    if harmonic_frame is not None:
+        state.observe_harmonic_frame(harmonic_frame)
     effective_interaction = (
         interaction_state
         if interaction_state is not None
@@ -633,6 +755,7 @@ def perform_one_comping_action(
         state,
         harmonic_affordance,
         effective_interaction,
+        harmonic_reasoning,
     )
     state.commit(chosen.candidate, section_energy=comping_context.section_energy)
     return chosen
