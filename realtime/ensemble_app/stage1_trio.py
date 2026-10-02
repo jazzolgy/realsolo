@@ -103,6 +103,7 @@ class Stage1TrioRuntime:
         tempo_bpm: float,
         section: str = "",
         chorus: int = 0,
+        bass_solo: bool = False,
     ):
         form_position = 0.0 if total_bars <= 1 else bar_index / max(1, total_bars - 1)
         phrase_position = ((bar_index % 4) + beat_in_bar / 4.0) / 4.0
@@ -121,6 +122,22 @@ class Stage1TrioRuntime:
             duration_beats=0.65,
         )
 
+        active_players = tuple(
+            PlayerPresence(
+                p.player_id,
+                p.instrument,
+                (
+                    PlayerRole.SOLOIST
+                    if bass_solo and p.player_id == "bass"
+                    else PlayerRole.BASS
+                    if not bass_solo and p.player_id == "bass"
+                    else p.role
+                ),
+                p.active,
+            )
+            for p in self.state.players
+        )
+
         self.state = EnsembleState(
             transport=TransportState(
                 beat=beat_in_bar,
@@ -132,7 +149,7 @@ class Stage1TrioRuntime:
                 meter_denominator=4,
                 form_position=max(0.0, min(1.0, form_position)),
             ),
-            players=self.state.players,
+            players=active_players,
             intents=self.state.intents,
             recent_interactions=self.state.recent_interactions,
             harmonic_state_id=chord_symbol,
@@ -161,6 +178,8 @@ class Stage1TrioRuntime:
                 "musical_context": musical_context,
                 "ensemble_tension": frame.tension,
                 "harmonic_transition_confidence": 0.9 if next_chord else 0.0,
+                "phrase_position": phrase_position,
+                "bass_mode": "solo" if bass_solo else "walking",
             },
         )
         self.state = result.state
