@@ -15,6 +15,7 @@ from music_intelligence.reasoning.ensemble_state import (
     TransportState,
 )
 from music_intelligence.reasoning.legend_style_core import MusicalContextVector
+from music_intelligence.reasoning.groove_context import GrooveFeel, build_groove_context
 from players.piano import PianoVoicingRequest
 
 from .native_deciders import build_native_trio_runtime
@@ -63,7 +64,28 @@ class Stage1TrioRuntime:
     state: EnsembleState
 
     @classmethod
-    def create(cls, tempo_bpm: float = 120.0) -> "Stage1TrioRuntime":
+    def create(
+        cls,
+        tempo_bpm: float = 120.0,
+        groove_feel: GrooveFeel = GrooveFeel.SWING,
+    ) -> "Stage1TrioRuntime":
+        groove = build_groove_context(
+            groove_feel,
+            tempo_bpm=tempo_bpm,
+            meter_numerator=4,
+            meter_denominator=4,
+            grammar_id=(
+                "swing.eighth_triplet_feel"
+                if groove_feel is GrooveFeel.SWING
+                else groove_feel.value
+            ),
+            subdivision_hint=(
+                "swing_eighth"
+                if groove_feel is GrooveFeel.SWING
+                else "style_specific"
+            ),
+            provenance=("stage1_preperformance_init",),
+        )
         state = EnsembleState(
             transport=TransportState(
                 beat=0.0,
@@ -84,6 +106,7 @@ class Stage1TrioRuntime:
             ensemble_energy=0.46,
             ensemble_tension=0.35,
             space_available=0.58,
+            groove=groove,
         )
         return cls(build_native_trio_runtime(), state)
 
@@ -138,6 +161,23 @@ class Stage1TrioRuntime:
             for p in self.state.players
         )
 
+        groove = build_groove_context(
+            self.state.groove.feel if self.state.groove is not None else GrooveFeel.SWING,
+            tempo_bpm=tempo_bpm,
+            meter_numerator=4,
+            meter_denominator=4,
+            grammar_id=(
+                self.state.groove.grammar_id
+                if self.state.groove is not None
+                else "swing.eighth_triplet_feel"
+            ),
+            subdivision_hint=(
+                self.state.groove.subdivision_hint
+                if self.state.groove is not None
+                else "swing_eighth"
+            ),
+            provenance=("stage1_preperformance_init","tempo_refresh"),
+        )
         self.state = EnsembleState(
             transport=TransportState(
                 beat=beat_in_bar,
@@ -158,6 +198,7 @@ class Stage1TrioRuntime:
             ensemble_tension=frame.tension,
             space_available=self.state.space_available,
             leader_player_id=self.state.leader_player_id,
+            groove=groove,
             generation=self.state.generation + 1,
         )
 
@@ -180,6 +221,8 @@ class Stage1TrioRuntime:
                 "harmonic_transition_confidence": 0.9 if next_chord else 0.0,
                 "phrase_position": phrase_position,
                 "bass_mode": "solo" if bass_solo else "walking",
+                "groove_context": groove,
+                "time_feel": groove.feel.value,
             },
         )
         self.state = result.state
