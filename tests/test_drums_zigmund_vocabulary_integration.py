@@ -56,7 +56,9 @@ def test_zigmund_231_cell_becomes_actual_solo_motif_seed():
     assert motif is not None
     assert motif.onset_units == (0, 2, 5, 6)
     assert motif.accent_vector == (0.638, 0.720, 0.613, 0.659)
-    assert motif.source == "shared_legend_vocabulary:bill_evans_without_a_song_1977"
+    assert motif.source == "shared_motif_identity"
+    assert "bill_evans_without_a_song_1977" in motif.provenance
+    assert "players_drums:rhythmic_projection" in motif.provenance
     assert len(state_candidate.gesture.hits) <= 1
 
 
@@ -76,7 +78,8 @@ def test_legend_memory_changes_seed_without_freezing_future_phrase():
     )
     assert any(
         c.motif_identity is not None
-        and c.motif_identity.source.startswith("shared_legend_vocabulary:")
+        and c.motif_identity.source == "shared_motif_identity"
+        and "bill_evans_without_a_song_1977" in c.motif_identity.provenance
         for c in candidates
         if c.development is not SoloDevelopment.ADD_SPACE
     )
