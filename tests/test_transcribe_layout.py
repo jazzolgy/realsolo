@@ -4,7 +4,7 @@ from music_intelligence.transcribe.engraving import (
     EngravingIntent,
     EngravingPlan,
 )
-from music_intelligence.transcribe.layout import optical_spacing_decisions
+from music_intelligence.transcribe.layout import (\n    LayoutActionKind,\n    layout_actions,\n    optical_spacing_decisions,\n)
 from music_intelligence.transcribe.notation import NotatedAtomKind, ScoreSpan, TupletRatio
 from music_intelligence.transcribe.score import ScoreEvent, ScorePart, assemble_score
 from music_intelligence.transcribe.spelling import WrittenPitch
@@ -41,7 +41,7 @@ def test_optical_spacing_pressure_is_separate_from_note_duration():
     assert decision.spacing_weight > 1.0
     assert event.span.duration == Fraction(1, 2)
     assert "accidental needs horizontal clearance" in decision.reasons
-    assert "cross-staff notation requires extra collision margin" in decision.reasons
+    assert "cross-staff notation may need horizontal clearance" in decision.reasons
 
 
 def test_simultaneous_voices_create_layout_pressure_without_changing_voice_ids():
@@ -75,3 +75,28 @@ def test_simultaneous_voices_create_layout_pressure_without_changing_voice_ids()
     assert decisions["l"].spacing_weight > 1.0
     assert upper.voice_id == "v1"
     assert lower.voice_id == "v2"
+
+
+
+def test_magnetic_layout_repositions_attached_objects_without_changing_note_spacing_semantics():
+    event = ScoreEvent(
+        event_id="mag:1",
+        part_id="sax",
+        staff_id="sax:staff",
+        voice_id="v1",
+        kind=NotatedAtomKind.NOTE,
+        span=ScoreSpan(Fraction(0), Fraction(1)),
+        source_event_ids=("src:mag",),
+        written_pitch=WrittenPitch("F", 0, 4),
+        articulations=("accent", "staccato"),
+        markings=("scoop",),
+    )
+    part = ScorePart("sax", "Tenor Sax", "tenor_sax", ("sax:staff",), (event,))
+    score = assemble_score(score_id="layout:mag", title="Magnetic", parts=(part,))
+    plan = EngravingPlan(score_id=score.score_id)
+
+    actions = layout_actions(score, plan)
+
+    assert any(a.kind is LayoutActionKind.MAGNETIC_REPOSITION for a in actions)
+    assert not any(a.kind is LayoutActionKind.HORIZONTAL_RESPACING for a in actions)
+    assert event.span.duration == Fraction(1)
