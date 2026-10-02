@@ -25,6 +25,7 @@ from .voicing import (
     PianoVoicingRequest,
     generate_extended_voicing_families,
     generate_rootless_voicings,
+    generate_root_anchor_voicings,
     generate_shell_voicings,
 )
 
@@ -92,6 +93,22 @@ def build_contextual_comping_candidates(
                 realization=realization,
                 harmonic_affordance_id=affordance_id,
                 tags=frozenset({"shell", "anchor", "candidate_factory"}),
+            )
+        )
+
+    root_anchors = tuple(
+        annotate_harmonic_semantics(x)
+        for x in generate_root_anchor_voicings(request)
+    )
+    for realization in root_anchors:
+        out.append(
+            PianoCompingCandidate(
+                action_type=CompingActionType.PUNCTUATION,
+                role=InteractionRole.ANCHOR,
+                duration_beats=min(request.duration_beats,0.5),
+                realization=realization,
+                harmonic_affordance_id=affordance_id,
+                tags=frozenset({"root_anchor","structural_reset","candidate_factory"}),
             )
         )
 
