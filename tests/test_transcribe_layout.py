@@ -4,7 +4,11 @@ from music_intelligence.transcribe.engraving import (
     EngravingIntent,
     EngravingPlan,
 )
-from music_intelligence.transcribe.layout import (\n    LayoutActionKind,\n    layout_actions,\n    optical_spacing_decisions,\n)
+from music_intelligence.transcribe.layout import (
+    LayoutActionKind,
+    layout_actions,
+    optical_spacing_decisions,
+)
 from music_intelligence.transcribe.notation import NotatedAtomKind, ScoreSpan, TupletRatio
 from music_intelligence.transcribe.score import ScoreEvent, ScorePart, assemble_score
 from music_intelligence.transcribe.spelling import WrittenPitch
