@@ -647,3 +647,71 @@ This remains compatible with the project principle:
 ```
 Plan intention, not notes.
 ```
+
+
+## 18. Ensemble-response memory
+
+### SOURCE-DERIVED
+
+The workbook repeatedly asks the pianist to listen to and interact with soloist,
+drummer, and bass rather than treating comping as a one-way accompaniment stream.
+Examples include imitation/call-response, drummer interaction, bass interaction,
+phrase fills, and reciprocal ensemble figures.
+
+### DESIGN INFERENCE
+
+RealSolo should distinguish:
+
+```
+what the ensemble did after the piano gesture
+```
+
+from:
+
+```
+how certain we are that the ensemble event was a response to the piano gesture
+```
+
+Current experimental fields:
+
+```
+actor
+response_type
+strength
+latency_beats
+confidence
+attribution_confidence
+provenance
+```
+
+Current provisional response types include rhythmic echo, accent alignment, phrase
+extension/end, density increase/decrease, space opened, harmonic response, and no
+clear response.
+
+### Causality rule
+
+Temporal succession is not enough to infer causation.
+
+A drummer accent after a piano stab may be:
+
+- a genuine answer,
+- a shared response to the same formal cue,
+- coincidental,
+- or part of an already unfolding drum phrase.
+
+Therefore response memory must preserve attribution uncertainty.
+
+### Current piano policy experiments
+
+- drummer rhythmic echo can mildly reinforce the previous rhythmic identity;
+- soloist phrase extension biases the pianist toward space/restrained support;
+- phrase end / newly opened space can bias answer/fill/punctuation;
+- ensemble density increase can bias lay-out/softening;
+- density decrease can permit restrained re-entry.
+
+These mappings are RealSolo policy hypotheses, not source-stated rules.
+
+### Core boundary
+
+The observation itself is likely instrument-independent and has been proposed as
+CR-003. Piano-specific interpretation should remain in the piano policy.
