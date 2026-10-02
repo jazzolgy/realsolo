@@ -29,6 +29,11 @@ from music_intelligence.transcribe.chord_chart_render import (
     ChordChartRenderModel,
     build_chord_chart_render_model,
 )
+from music_intelligence.transcribe.chord_chart_viewport import (
+    ChordChartViewport,
+    ChordChartViewportConfig,
+    build_chord_chart_viewport,
+)
 
 
 @dataclass(frozen=True)
@@ -107,6 +112,32 @@ def live_chart_render_model(
         position=state.position,
         measures_per_row=measures_per_row,
         transpose_semitones=transpose_semitones,
+    )
+
+
+def live_chart_viewport(
+    chart: ChordChart,
+    cursor: SharedFormCursorView,
+    *,
+    measures_per_row: int = 4,
+    transpose_semitones: int = 0,
+    viewport_config: ChordChartViewportConfig = ChordChartViewportConfig(),
+    previous: ChordChartViewport | None = None,
+    previous_section: str | None = None,
+) -> ChordChartViewport:
+    """Build the live auto-follow viewport from an authoritative form cursor."""
+
+    model = live_chart_render_model(
+        chart,
+        cursor,
+        measures_per_row=measures_per_row,
+        transpose_semitones=transpose_semitones,
+    )
+    return build_chord_chart_viewport(
+        model,
+        config=viewport_config,
+        previous=previous,
+        previous_section=previous_section,
     )
 
 
