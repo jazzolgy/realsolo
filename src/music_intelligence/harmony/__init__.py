@@ -51,6 +51,16 @@ from .modal_nonfunctional import (
     assess_nonfunctional_state,
     modal_characteristic_pc,
 )
+from .reharmonization import (
+    ContinuityAxis,
+    HarmonicSnapshot,
+    ReharmonizationAssessment,
+    ReharmonizationKind,
+    ReharmonizationProposal,
+    assess_reharmonization,
+    make_substitute_dominant_proposal,
+    tritone_substitute_root,
+)
 
 __all__ = [
     "HarmonicAffordance",
@@ -94,4 +104,12 @@ __all__ = [
     "assess_modal_state",
     "assess_nonfunctional_state",
     "modal_characteristic_pc",
+    "ContinuityAxis",
+    "HarmonicSnapshot",
+    "ReharmonizationAssessment",
+    "ReharmonizationKind",
+    "ReharmonizationProposal",
+    "assess_reharmonization",
+    "make_substitute_dominant_proposal",
+    "tritone_substitute_root",
 ]
