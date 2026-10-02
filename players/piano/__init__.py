@@ -5,6 +5,7 @@ polyphonic evaluation come from Core. This package owns piano-specific
 realization, comping, and interaction policy.
 """
 
+from .shared_linear_adapter import realize_shared_linear_affordances
 from .bebop_solo_runtime import (
     BebopSoloTickPlan,
     build_bebop_solo_tick,
@@ -160,6 +161,7 @@ __all__ = [
     "PianoActionScore",
     "PianoPerformanceState",
     "PianoPolicyEvaluator",
+    "realize_shared_linear_affordances",
     "BebopSoloTickPlan",
     "build_bebop_solo_tick",
     "perform_bebop_solo_tick",
