@@ -57,6 +57,7 @@ class ScoreEvidenceKind(str, Enum):
     BASS_INSTRUCTION = "bass_instruction"
     WRITTEN_PART = "written_part"
     WRITTEN_BASS_PART = "written_bass_part"
+    WRITTEN_PART_POLICY = "written_part_policy"
     ARRANGEMENT_NOTE = "arrangement_note"
 
 
@@ -302,7 +303,27 @@ SEED_SONG_LOCATORS: tuple[ScorebookSongLocator, ...] = (
         status=ScoreIngestStatus.VISION_REVIEWED,
         evidence=(
             ScoreEvidence(ScoreEvidenceKind.STYLE, "medium swing", .99, 7),
-            ScoreEvidence(ScoreEvidenceKind.WRITTEN_BASS_PART, "bass walks", .98, 8),
+            ScoreEvidence(
+                ScoreEvidenceKind.BASS_INSTRUCTION,
+                "bass walks",
+                .99,
+                8,
+                ("scorebook:newreal2:p8", "vision-reviewed"),
+            ),
+            ScoreEvidence(
+                ScoreEvidenceKind.WRITTEN_BASS_PART,
+                "written walking bass line in section D",
+                .98,
+                8,
+                ("scorebook:newreal2:p8", "vision-reviewed"),
+            ),
+            ScoreEvidence(
+                ScoreEvidenceKind.SECTION_ROLE,
+                "D: written walking-bass comparison region",
+                .96,
+                8,
+                ("scorebook:newreal2:p8", "vision-reviewed"),
+            ),
         ),
     ),
     ScorebookSongLocator(
@@ -314,7 +335,20 @@ SEED_SONG_LOCATORS: tuple[ScorebookSongLocator, ...] = (
         status=ScoreIngestStatus.VISION_REVIEWED,
         evidence=(
             ScoreEvidence(ScoreEvidenceKind.STYLE, "medium funk", .99, 9),
-            ScoreEvidence(ScoreEvidenceKind.WRITTEN_BASS_PART, "dedicated bass page", .99, 10),
+            ScoreEvidence(
+                ScoreEvidenceKind.WRITTEN_BASS_PART,
+                "dedicated syncopated funk bass page",
+                .99,
+                10,
+                ("scorebook:newreal2:p10", "vision-reviewed"),
+            ),
+            ScoreEvidence(
+                ScoreEvidenceKind.WRITTEN_PART_POLICY,
+                "use as groove/ostinato and articulation evidence; not as walking-bass target",
+                .98,
+                10,
+                ("scorebook:newreal2:p10", "vision-reviewed"),
+            ),
         ),
     ),
     ScorebookSongLocator(
@@ -326,7 +360,27 @@ SEED_SONG_LOCATORS: tuple[ScorebookSongLocator, ...] = (
         status=ScoreIngestStatus.VISION_REVIEWED,
         evidence=(
             ScoreEvidence(ScoreEvidenceKind.STYLE, "medium funk", .99, 1),
-            ScoreEvidence(ScoreEvidenceKind.WRITTEN_BASS_PART, "dedicated bass page", .99, 2),
+            ScoreEvidence(
+                ScoreEvidenceKind.WRITTEN_BASS_PART,
+                "dedicated bass page",
+                .99,
+                2,
+                ("scorebook:newreal3:p2", "vision-reviewed"),
+            ),
+            ScoreEvidence(
+                ScoreEvidenceKind.WRITTEN_PART_POLICY,
+                "bass line freely interpreted except last two bars of A are played every chorus",
+                .99,
+                2,
+                ("scorebook:newreal3:p2", "vision-reviewed"),
+            ),
+            ScoreEvidence(
+                ScoreEvidenceKind.SECTION_ROLE,
+                "A last two bars: recurring fixed anchor; remainder: interpretive bass material",
+                .98,
+                2,
+                ("scorebook:newreal3:p2", "vision-reviewed"),
+            ),
         ),
     ),
     ScorebookSongLocator(
