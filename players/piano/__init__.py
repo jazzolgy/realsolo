@@ -30,8 +30,18 @@ from .planner import (
     PianoCompingCandidateSet,
     build_contextual_comping_candidates,
     expand_candidate_set_rhythmically,
+    expand_candidate_set_expressively,
 )
 from .narrative import NarrativeBiasScore, evaluate_narrative_bias
+from .expression import (
+    DynamicLevel,
+    PianoExpressionIntent,
+    RegisterDirection,
+    TouchType,
+    apply_expression_intent,
+    expand_expression_variants,
+    expression_intents_for_candidate,
+)
 from .rhythm import (
     PianoRhythmicIntent,
     RhythmicPlacement,
@@ -89,4 +99,12 @@ __all__ = [
     "apply_rhythmic_intent",
     "expand_rhythmic_variants",
     "rhythmic_intents_for_candidate",
+    "DynamicLevel",
+    "PianoExpressionIntent",
+    "RegisterDirection",
+    "TouchType",
+    "apply_expression_intent",
+    "expand_expression_variants",
+    "expression_intents_for_candidate",
+    "expand_candidate_set_expressively",
 ]
