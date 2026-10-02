@@ -29,6 +29,8 @@ class BassCommittedAction:
     sounding_length_ratio: float = 0.85
     articulation: BassArticulation = BassArticulation.NEUTRAL
     interaction_role: str = "anchor"
+    harmonic_role: str = "unknown"
+    metric_role: str = "unknown"
 
     def validate(self) -> None:
         if not 0.0 <= self.accent <= 1.0:
@@ -49,6 +51,8 @@ class BassPerformanceSnapshot:
     recent_density: float = 0.0
     recent_ghost_count: int = 0
     recent_complexity: float = 0.0
+    recent_harmonic_roles: tuple[str, ...] = ()
+    recent_metric_roles: tuple[str, ...] = ()
 
     @property
     def previous_pitch_midi(self) -> int | None:
@@ -111,6 +115,8 @@ class BassPerformanceMemory:
             x.articulation in {BassArticulation.GHOSTED, BassArticulation.DEAD}
             for x in recent
         )
+        harmonic_roles = tuple(x.harmonic_role for x in recent)
+        metric_roles = tuple(x.metric_role for x in recent)
 
         # Complexity is deliberately heuristic: large movement, ghost events,
         # and non-anchor roles all contribute. It is a local player-state signal,
@@ -144,4 +150,6 @@ class BassPerformanceMemory:
             recent_density=min(1.0, len(recent) / max(1, window)),
             recent_ghost_count=ghost_count,
             recent_complexity=recent_complexity,
+            recent_harmonic_roles=harmonic_roles,
+            recent_metric_roles=metric_roles,
         )
