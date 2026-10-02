@@ -6,7 +6,7 @@ from music_intelligence.transcribe.notation import (
     ScoreSpan,
     TupletRatio,
 )
-from music_intelligence.transcribe.score import ScoreEvent, ScorePart, assemble_score
+from music_intelligence.transcribe.score import ScoreEvent, ScoreKeySignature, ScorePart, assemble_score
 from music_intelligence.transcribe.spelling import WrittenPitch
 from music_intelligence.transcribe.musicxml import score_to_musicxml
 
@@ -79,3 +79,60 @@ def test_musicxml_is_projection_not_score_model_mutation():
 
     assert "scoop" in xml
     assert score.parts[0].events[0] == before
+
+
+
+def test_musicxml_emits_written_key_for_bb_transposing_part():
+    event = ScoreEvent(
+        event_id="cl:1",
+        part_id="clarinet",
+        staff_id="clarinet:staff",
+        voice_id="v1",
+        kind=NotatedAtomKind.NOTE,
+        span=ScoreSpan(Fraction(0), Fraction(1)),
+        source_event_ids=("src:cl:1",),
+        written_pitch=WrittenPitch("D", 0, 4),
+    )
+    part = ScorePart(
+        "clarinet",
+        "Clarinet in Bb",
+        "clarinet_bb",
+        ("clarinet:staff",),
+        (event,),
+    )
+    score = assemble_score(
+        score_id="key:bb",
+        title="Concert C",
+        parts=(part,),
+        key_signature=ScoreKeySignature(0, "major"),
+    )
+
+    root = ET.fromstring(score_to_musicxml(score))
+
+    assert root.findtext(".//attributes/key/fifths") == "2"
+    assert root.findtext(".//attributes/key/mode") == "major"
+    assert root.findtext(".//attributes/transpose/chromatic") == "-2"
+
+
+def test_musicxml_emits_concert_key_for_non_transposing_part():
+    event = ScoreEvent(
+        event_id="fl:1",
+        part_id="flute",
+        staff_id="flute:staff",
+        voice_id="v1",
+        kind=NotatedAtomKind.NOTE,
+        span=ScoreSpan(Fraction(0), Fraction(1)),
+        source_event_ids=("src:fl:1",),
+        written_pitch=WrittenPitch("B", -1, 4),
+    )
+    part = ScorePart("flute", "Flute", "flute", ("flute:staff",), (event,))
+    score = assemble_score(
+        score_id="key:flute",
+        title="Concert F",
+        parts=(part,),
+        key_signature=ScoreKeySignature(-1, "major"),
+    )
+
+    root = ET.fromstring(score_to_musicxml(score))
+
+    assert root.findtext(".//attributes/key/fifths") == "-1"
