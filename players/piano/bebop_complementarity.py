@@ -16,6 +16,14 @@ class EnsembleBreathType(str, Enum):
     COLLECTIVE_BUILD = "collective_build"
 
 
+class SupportCarryMode(str, Enum):
+    HARMONIC_CARRIED = "harmonic_carried"
+    PERCUSSIVE_CARRIED = "percussive_carried"
+    MIXED_SUPPORT = "mixed_support"
+    MODERATE_SUPPORT = "moderate_support"
+    UNSPECIFIED = "unspecified"
+
+
 @dataclass(frozen=True)
 class EnsembleComplementarityEvidence:
     breath_type: EnsembleBreathType = EnsembleBreathType.NONE
@@ -75,3 +83,23 @@ def classify_ensemble_complementarity(
     )
     result.validate()
     return result
+
+
+
+def support_carry_mode(
+    evidence: EnsembleComplementarityEvidence,
+) -> SupportCarryMode:
+    """Describe which accompaniment layer most clearly carries a handoff."""
+    evidence.validate()
+    low=evidence.low_harmonic_support
+    perc=evidence.percussive_support
+
+    if low >= 0.8 and perc >= 0.8:
+        return SupportCarryMode.MIXED_SUPPORT
+    if low >= 0.8 and perc < 0.8:
+        return SupportCarryMode.HARMONIC_CARRIED
+    if perc >= 0.8 and low < 0.8:
+        return SupportCarryMode.PERCUSSIVE_CARRIED
+    if max(low,perc) >= 0.55:
+        return SupportCarryMode.MODERATE_SUPPORT
+    return SupportCarryMode.UNSPECIFIED
