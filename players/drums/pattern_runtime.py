@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from .model import DrumGesture, DrumHit, DrummerRuntimeContext, DrummerSoftPlan, DrumVoice, Limb
 from .pattern_corpus import StoredDrumPattern, hits_at_current_position, patterns_with_tags
-from .timing import tempo_conditioned_swing_prior
+from .timing import swing_prior_from_groove
 
 
 _VOICE_TO_LIMB = {
@@ -31,14 +31,14 @@ def _velocity(value: str) -> int:
     }.get(value, 72)
 
 
-def _tempo_warp_onset(pattern: StoredDrumPattern, onset: float, bpm: float) -> float:
+def _tempo_warp_onset(pattern: StoredDrumPattern, onset: float, context: DrummerRuntimeContext) -> float:
     """Warp canonical swung offbeats while preserving source-pattern identity."""
     if "swing" not in pattern.tags or "ride" not in pattern.tags:
         return onset
     frac = onset % 1.0
     if abs(frac - 2.0 / 3.0) > 0.02:
         return onset
-    prior = tempo_conditioned_swing_prior(bpm)
+    prior = swing_prior_from_groove(context.groove, fallback_bpm=context.tempo_bpm)
     return int(onset) + prior.offbeat_fraction
 
 
@@ -59,7 +59,7 @@ def pattern_gesture_now(
         selected = tuple(
             hit
             for hit in pattern.hits
-            if abs(_tempo_warp_onset(pattern, hit.onset_beats, context.tempo_bpm) - phase)
+            if abs(_tempo_warp_onset(pattern, hit.onset_beats, context) - phase)
             <= tolerance_beats
         )
     else:
