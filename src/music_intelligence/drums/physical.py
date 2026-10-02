@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .model import DrumGesture, DrumHit, DrumVoice, Limb
+from .model import DrumGesture, DrumHit, DrumVoice, GestureRole, Limb
 
 
 @dataclass(frozen=True)
@@ -75,7 +75,7 @@ def four_limb_solo_gesture(
 
     gesture = DrumGesture(
         hits=tuple(hits),
-        role=__import__("music_intelligence.drums.model", fromlist=["GestureRole"]).GestureRole.FILL,
+        role=GestureRole.FILL,
         tags=frozenset({"drum_solo", "four_limb", "physical_feasibility"}),
         provenance=("drum_player", "physical_model"),
     )
