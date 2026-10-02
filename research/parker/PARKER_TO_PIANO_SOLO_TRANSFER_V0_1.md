@@ -240,3 +240,107 @@ Creativity may move into:
 - tension/release trajectory.
 
 The objective is coordinated pianism, not two independent MIDI streams.
+
+
+## Turn-taking × harmony/form
+
+### Evidence separation
+
+Do not merge the evidence sources.
+
+Uploaded Parker audio supports observation of:
+
+- supported foreground handoff;
+- collective release;
+- re-entry morphology;
+- harmonic/percussive support persistence.
+
+Shared Harmony Core supplies:
+
+- current harmonic function/evidence;
+- phrase position;
+- cadence state;
+- next expected harmony;
+- current harmonic action options.
+
+The piano policy combines these streams only at the current decision point.
+
+### DESIGN-INFERENCE
+
+The same ensemble handoff can invite different piano behavior depending on harmonic/form
+phase.
+
+#### STABLE_FIELD
+
+If the harmonic field is stable:
+
+- a handoff need not trigger a new phrase;
+- connector, color, motif continuation, register/touch development remain available;
+- pattern/phrase continuity can be preserved.
+
+#### DIRECTED_RESOLUTION
+
+If dominant/resolution pressure is strong:
+
+- directed targets;
+- guide-tone arrival;
+- audible resolution paths
+
+should outrank directionless chromatic novelty.
+
+This does **not** mean the pianist must play the resolution.
+
+Space remains a valid response if the ensemble already carries the function.
+
+#### ANTICIPATORY
+
+If next harmony is sufficiently known:
+
+- pickup;
+- anticipation;
+- next-harmony target
+
+may become more plausible than a rigid downbeat restart.
+
+This transfers Parker-like anticipatory decision logic, not a literal Parker phrase.
+
+#### FORM_BOUNDARY
+
+Near a strong phrase/cadence boundary:
+
+- lay-out;
+- phrase ending;
+- new phrase entry;
+- register reset;
+- texture reset
+
+may all become more available.
+
+Automatic continuation should not blindly cross every formal boundary.
+
+### Turn-taking interaction
+
+A completed supported-handoff re-entry should not be treated as if the phrase has not
+yet begun.
+
+After re-entry:
+
+- continuation;
+- connector;
+- directed target
+
+can be favored over another redundant `phrase_entry`.
+
+Likewise, a collective release aligned with a form boundary provides stronger evidence
+for allowing the ensemble to breathe before the next texture begins.
+
+### Runtime invariant
+
+The harmonic-turn context contains:
+
+- no exact future note;
+- no exact future phrase;
+- no scheduled lick;
+- no precomposed multi-beat solution.
+
+It only changes the relative plausibility of the **next immediate event**.
