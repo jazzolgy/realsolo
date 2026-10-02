@@ -1,10 +1,14 @@
-"""Piano-specific online performance policy.
+"""Piano-specific online realization policy.
 
-The shared Core supplies musical context and the generic SoftPlan contract.
-This module owns only piano-specific realization decisions.
+Shared sonority semantics and generic polyphonic evaluation live in Core.
+This module adds only piano-specific feasibility and realization choices.
 
-Important runtime rule: a plan may prepare intentions and candidate families,
-but this policy commits exactly one immediately playable piano action at a time.
+Runtime contract:
+- plan intention, not exact future notes
+- choose one immediate polyphonic gesture
+- realize it for piano
+- commit once
+- listen and re-plan
 """
 
 from __future__ import annotations
@@ -14,34 +18,54 @@ from typing import Mapping, Sequence
 
 from music_intelligence.reasoning.legend_style_core import MusicalContextVector
 from music_intelligence.reasoning.online_improviser import SoftPlan
+from music_intelligence.reasoning.polyphonic_event import PolyphonicEventCandidate
+from music_intelligence.reasoning.polyphonic_online import (
+    PolyphonicCandidateScore,
+    PolyphonicOnlineEvaluator,
+    PolyphonicPerformanceMemory,
+)
+
+
+PIANO_LOW_MIDI = 21
+PIANO_HIGH_MIDI = 108
 
 
 @dataclass(frozen=True)
-class PianoVoicingCandidate:
-    """One immediately playable polyphonic piano action."""
+class PianoRealizationCandidate:
+    """Piano realization metadata wrapped around one shared Core gesture."""
 
-    pitches_midi: tuple[int, ...]
-    duration_beats: float
-    onset_offset_beats: float = 0.0
-    velocity: int = 72
-    tags: frozenset[str] = frozenset()
-    role: str = "comping"
-    source_family: str = "piano_generated"
+    event: PolyphonicEventCandidate
+    hand_assignment: tuple[tuple[str, str], ...] = ()
+    pedal: str = "none"
+    touch: str = "neutral"
 
     def validate(self) -> None:
-        if not self.pitches_midi:
-            raise ValueError("piano voicing must contain at least one pitch")
-        if self.duration_beats <= 0:
-            raise ValueError("duration_beats must be positive")
-        if not 1 <= self.velocity <= 127:
-            raise ValueError("velocity must be in MIDI range 1..127")
-        if any(p < 21 or p > 108 for p in self.pitches_midi):
-            raise ValueError("piano pitch outside acoustic-piano MIDI range")
+        self.event.validate()
+
+        if any(
+            pitch < PIANO_LOW_MIDI or pitch > PIANO_HIGH_MIDI
+            for pitch in self.event.pitches_midi
+        ):
+            raise ValueError("voice outside acoustic-piano MIDI range")
+
+        known = {voice.voice_id for voice in self.event.voices}
+        assigned: set[str] = set()
+        for voice_id, hand in self.hand_assignment:
+            if voice_id not in known:
+                raise ValueError("hand assignment references unknown voice_id")
+            if voice_id in assigned:
+                raise ValueError("voice may not be assigned to more than one hand")
+            if hand not in {"LH", "RH"}:
+                raise ValueError("hand must be LH or RH")
+            assigned.add(voice_id)
+
+        if self.pedal not in {"none", "sustain", "half", "flutter", "sostenuto"}:
+            raise ValueError("unsupported piano pedal mode")
 
 
 @dataclass(frozen=True)
 class PianoActionScore:
-    candidate: PianoVoicingCandidate
+    candidate: PianoRealizationCandidate
     total: float
     components: Mapping[str, float] = field(default_factory=dict)
     reasons: tuple[str, ...] = ()
@@ -49,100 +73,102 @@ class PianoActionScore:
 
 @dataclass
 class PianoPerformanceState:
-    """Piano-local performed history; shared musical memory remains in Core."""
+    """Piano-local realization history plus shared polyphonic performance memory."""
 
-    last_voicing: tuple[int, ...] = ()
-    committed: list[PianoVoicingCandidate] = field(default_factory=list)
+    polyphonic_memory: PolyphonicPerformanceMemory = field(
+        default_factory=PolyphonicPerformanceMemory
+    )
+    committed: list[PianoRealizationCandidate] = field(default_factory=list)
 
-    def commit(self, candidate: PianoVoicingCandidate) -> None:
+    def commit(self, candidate: PianoRealizationCandidate) -> None:
         candidate.validate()
-        self.last_voicing = candidate.pitches_midi
+        self.polyphonic_memory.commit(candidate.event)
         self.committed.append(candidate)
 
 
-def _nearest_voice_motion(previous: Sequence[int], current: Sequence[int]) -> float:
-    if not previous or not current:
-        return 0.0
-    distances = [min(abs(p - q) for q in previous) for p in current]
-    return sum(distances) / len(distances)
-
-
 class PianoPolicyEvaluator:
-    """Evaluate only unperformed, immediate piano candidates."""
+    """Add piano-specific evaluation on top of the shared Core evaluator."""
+
+    def __init__(self, core_evaluator: PolyphonicOnlineEvaluator | None = None):
+        self.core_evaluator = core_evaluator or PolyphonicOnlineEvaluator()
+
+    def _score_piano_realization(
+        self,
+        candidate: PianoRealizationCandidate,
+        context: MusicalContextVector,
+    ) -> tuple[float, dict[str, float], list[str]]:
+        event = candidate.event
+        score = 0.0
+        components: dict[str, float] = {}
+        reasons: list[str] = []
+
+        pitches = event.pitches_midi
+        span = max(pitches) - min(pitches)
+
+        # Piano-specific physical/registral plausibility. This is deliberately
+        # not a generic Core voicing judgment.
+        if span > 36 and not candidate.hand_assignment:
+            value = -0.12
+            score += value
+            components["piano_unassigned_wide_span"] = value
+            reasons.append("wide piano span needs explicit hand realization")
+
+        hands = dict(candidate.hand_assignment)
+        if hands:
+            by_id = {voice.voice_id: voice.pitch_midi for voice in event.voices}
+            lh = [by_id[v] for v, hand in hands.items() if hand == "LH"]
+            rh = [by_id[v] for v, hand in hands.items() if hand == "RH"]
+            if lh and rh and max(lh) > min(rh) + 7:
+                value = -0.10
+                score += value
+                components["hand_crossing_pressure"] = value
+                reasons.append("large hand crossing pressure")
+
+        if candidate.pedal in {"sustain", "half"} and context.ensemble_activity >= 0.8:
+            if "dense" in event.tags:
+                value = -0.08
+                score += value
+                components["pedal_texture_fit"] = value
+                reasons.append("dense sustained piano texture may cloud active ensemble")
+
+        if candidate.touch == "percussive" and "sparse" in event.tags:
+            value = 0.03
+            score += value
+            components["touch_definition"] = value
+            reasons.append("defined attack supports sparse piano gesture")
+
+        return score, components, reasons
 
     def evaluate(
         self,
-        candidate: PianoVoicingCandidate,
+        candidate: PianoRealizationCandidate,
         context: MusicalContextVector,
         state: PianoPerformanceState,
     ) -> PianoActionScore:
         candidate.validate()
-        score = 0.0
-        components: dict[str, float] = {}
-        reasons: list[str] = []
-        tags = set(candidate.tags)
 
-        if {"guide_tones", "shell"} & tags:
-            value = 0.20
-            score += value
-            components["harmonic_clarity"] = value
-            reasons.append("preserves harmonic identity")
+        core_score: PolyphonicCandidateScore = self.core_evaluator.evaluate(
+            candidate.event,
+            context,
+            state.polyphonic_memory,
+        )
+        piano_score, piano_components, piano_reasons = self._score_piano_realization(
+            candidate,
+            context,
+        )
 
-        if state.last_voicing:
-            motion = _nearest_voice_motion(state.last_voicing, candidate.pitches_midi)
-            if motion <= 3.0:
-                value = 0.18
-                reasons.append("economical voice leading")
-            elif motion >= 8.0:
-                value = -0.14
-                reasons.append("large aggregate voice-leading motion")
-            else:
-                value = 0.0
-            if value:
-                score += value
-                components["voice_leading"] = value
-
-        busy_ensemble = context.ensemble_activity >= 0.65
-        if busy_ensemble and {"leave_space", "sparse"} & tags:
-            value = 0.24
-            score += value
-            components["ensemble_space"] = value
-            reasons.append("yields space to active ensemble")
-        if busy_ensemble and {"dense", "rhythmic_fill"} & tags:
-            value = -0.22
-            score += value
-            components["density_fit"] = value
-            reasons.append("avoids crowding an active ensemble")
-
-        if "answer" in tags:
-            value = 0.12
-            score += value
-            components["interaction"] = value
-            reasons.append("supports call-and-response behavior")
-
-        if "anticipation" in tags and candidate.onset_offset_beats < 0:
-            value = 0.10
-            score += value
-            components["anticipation"] = value
-            reasons.append("controlled harmonic/rhythmic anticipation")
-
-        if context.tension >= 0.7 and {"upper_structure", "altered_color"} & tags:
-            value = 0.10
-            score += value
-            components["tension_fit"] = value
-            reasons.append("color matches elevated tension")
-
-        if context.tension <= 0.3 and "high_tension_cluster" in tags:
-            value = -0.12
-            score += value
-            components["tension_mismatch"] = value
-            reasons.append("avoids premature harmonic density")
-
-        return PianoActionScore(candidate, score, components, tuple(reasons))
+        components = dict(core_score.components)
+        components.update(piano_components)
+        return PianoActionScore(
+            candidate=candidate,
+            total=core_score.total + piano_score,
+            components=components,
+            reasons=core_score.reasons + tuple(piano_reasons),
+        )
 
     def choose_immediate(
         self,
-        candidates: Sequence[PianoVoicingCandidate],
+        candidates: Sequence[PianoRealizationCandidate],
         context: MusicalContextVector,
         state: PianoPerformanceState,
     ) -> PianoActionScore:
@@ -157,11 +183,11 @@ class PianoPolicyEvaluator:
 def perform_one_piano_action(
     plan: SoftPlan,
     evaluator: PianoPolicyEvaluator,
-    candidates: Sequence[PianoVoicingCandidate],
+    candidates: Sequence[PianoRealizationCandidate],
     context: MusicalContextVector,
     state: PianoPerformanceState,
 ) -> PianoActionScore:
-    """Commit one piano action, then return control to the listen/re-plan loop."""
+    """Commit one piano realization of one shared Core gesture."""
 
     plan.validate_for_improvisation()
     chosen = evaluator.choose_immediate(candidates, context, state)
