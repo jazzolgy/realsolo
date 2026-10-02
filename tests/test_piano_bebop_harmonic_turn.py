@@ -3,7 +3,10 @@ from music_intelligence.harmony.jazz_harmony_core import (
     HarmonicFrame,
     HarmonySource,
 )
-from music_intelligence.reasoning.legend_style_core import CandidateEvent
+from music_intelligence.reasoning.legend_style_core import (
+    CandidateEvent,
+    MusicalContextVector,
+)
 from players.piano import (
     BebopHarmonicPhase,
     BebopTurnTakingEvidence,
@@ -11,6 +14,9 @@ from players.piano import (
     CompingActionType,
     InteractionRole,
     PianoCompingCandidate,
+    PianoCompingContext,
+    PianoCompingEvaluator,
+    PianoCompingState,
     PianoSoloContext,
     PianoSoloEvaluator,
     derive_bebop_harmonic_turn_context,
@@ -167,3 +173,35 @@ def test_harmonic_turn_context_contains_no_future_note_plan():
     assert not hasattr(ctx,"future_notes")
     assert not hasattr(ctx,"future_phrase")
     assert not hasattr(ctx,"planned_sequence")
+
+
+def test_real_comping_evaluator_consumes_harmonic_turn_bias():
+    harmonic_turn=derive_bebop_harmonic_turn_context(
+        HarmonicFrame(
+            expected=HarmonicEvidence(
+                HarmonySource.EXPECTED,
+                symbol="G7",
+                function="dominant",
+            ),
+            phrase_position=0.98,
+            tension=0.8,
+            cadence_state="cadential",
+        ),
+        turn(BebopTurnTakingType.COLLECTIVE_RELEASE_REENTRY),
+    )
+    candidate=PianoCompingCandidate(
+        action_type=CompingActionType.SILENCE,
+        role=InteractionRole.LAY_OUT,
+        duration_beats=0.5,
+    )
+    ctx=PianoCompingContext(harmonic_turn=harmonic_turn)
+    score=PianoCompingEvaluator().evaluate(
+        candidate,
+        ctx,
+        MusicalContextVector(),
+        PianoCompingState(),
+    )
+    assert score.components.get("bebop_harmonic_turn:boundary_space",0)>0
+    assert score.components.get(
+        "bebop_harmonic_turn:release_boundary_alignment",0
+    )>0
