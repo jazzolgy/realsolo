@@ -335,11 +335,20 @@ def _statement_gesture(
 ) -> tuple[DrumGesture, RhythmicMotifIdentity]:
     """Realize one current event from a genuinely transformed rhythmic motif."""
     motif = _motif_for_development(state, development)
+    tolerance_units = 0
+    if development in {SoloDevelopment.RECAP, SoloDevelopment.RESOLVE} and (
+        plan.target_reentry or context.section_transition or context.phrase_position >= 0.9
+    ):
+        # Re-entry is an explicit role boundary: allow the nearest motif event
+        # to act as immediate punctuation without scheduling any future phrase.
+        tolerance_units = max(1, motif.cycle_units // 6)
+
     gesture = realize_motif_now(
         motif,
         context,
         intensity=plan.intensity,
         development_tag=development.value,
+        tolerance_units=tolerance_units,
     )
     # Solo-layer tags preserve strategy/method provenance while rhythmic content
     # comes from the motif engine.
