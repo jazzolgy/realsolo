@@ -507,3 +507,63 @@ the following holds:
 A concept moves from Piano into Shared Core only when it is demonstrably
 instrument-independent.
 
+
+
+## 16. Extended voicing-family implementation note
+
+### SOURCE-DERIVED
+
+The *Last Minute* study explicitly presents and contrasts:
+
+- quartal structures,
+- inverted quartal structures,
+- tertian structures,
+- combination structures,
+- octave structures.
+
+The source supports the existence and pedagogical comparison of these families inside
+a fast/modal, sustained-harmony study context.
+
+### DESIGN INFERENCE
+
+RealSolo currently treats these as **experimental candidate families**, not universal
+style rules.
+
+Implementation constraints:
+
+- the piano layer never invents pitch classes outside the Core-resolved material;
+- extended families are only offered to the contextual planner when the supplied
+  `HarmonicAffordance.context_tags` indicate modal/static/sustained/pedal context;
+- family generation does not imply one family is intrinsically superior;
+- silence remains available even when rich modal-family candidates exist;
+- family choice remains one immediate gesture decision, not a planned future sequence.
+
+Current experimental family mapping:
+
+```
+quartal / inverted_quartal / mixed
+  → ANCHOR or BUILD candidates depending on section energy
+
+octave
+  → SUPPORT or PUNCTUATE candidate
+
+tertian
+  → SUPPORT candidate
+```
+
+This role mapping is a RealSolo heuristic and is **not stated by McNeely**. It must
+remain provisional until cross-source and expert comparison.
+
+### Important negative rule
+
+The generator does not derive a quartal/modal pitch collection from a chord symbol.
+It searches only pitch classes already supplied by `ResolvedHarmonicMaterial`.
+
+Therefore:
+
+```
+Core decides what harmonic material is available.
+Piano decides how permitted material is registrally/structurally realized.
+```
+
+This boundary should remain intact after CR-002 is implemented.
