@@ -25,6 +25,7 @@ from .bass_coupling import (
     project_bass_pulse,
 )
 from music_intelligence.reasoning.ensemble_state import EnsembleState
+from .calibration import BebopCalibrationTelemetry
 from .chorus_memory import BebopChorusMemory, chorus_gesture_adjustment
 from .comping_phrase import (
     CompPhraseAction,
@@ -501,6 +502,7 @@ def perform_one_bebop_gesture(
     projection: BebopRuntimeProjection,
     memory: DrummerPerformanceMemory,
     profile: BebopStyleProfile = DEFAULT_BEBOP_PROFILE,
+    telemetry: BebopCalibrationTelemetry | None = None,
 ) -> BebopScoredGesture:
     """Commit one bebop-aware immediate gesture, then listen/re-plan."""
     candidates = build_bebop_candidates(plan, context, projection)
@@ -509,4 +511,6 @@ def perform_one_bebop_gesture(
         key=lambda x: x.score,
     )
     memory.commit(chosen.gesture)
+    if telemetry is not None:
+        telemetry.observe(chosen.gesture)
     return chosen
