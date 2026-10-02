@@ -17,6 +17,7 @@ class GestureSignature:
     register: str | None
     dynamic: str | None
     touch: str | None
+    rhythm_cell: str | None = None
 
     @classmethod
     def from_candidate(cls, candidate: Any) -> "GestureSignature":
@@ -39,6 +40,7 @@ class GestureSignature:
             register=tag_value("register:"),
             dynamic=tag_value("dynamic:"),
             touch=tag_value("touch:"),
+            rhythm_cell=tag_value("rhythm_cell:"),
         )
 
     def similarity(self, other: "GestureSignature") -> float:
@@ -49,6 +51,7 @@ class GestureSignature:
             (self.register, other.register),
             (self.dynamic, other.dynamic),
             (self.touch, other.touch),
+            (self.rhythm_cell, other.rhythm_cell),
         )
         comparable = [(a, b) for a, b in pairs if a is not None and b is not None]
         if not comparable:
@@ -142,6 +145,39 @@ def evaluate_variation(
                 "groove_continuity",
                 0.06 * context.groove_lock_strength,
                 "rhythmic continuity can preserve groove identity while other dimensions vary",
+            )
+
+    # Rhythmic repetition pressure is independent from voicing/family changes.
+    # This prevents a mechanically repeated comping cell from hiding behind new
+    # voicings. Stable vamp/groove evidence can explicitly relax the penalty.
+    repetition_key = current.rhythm_cell or current.rhythm
+    if repetition_key is not None:
+        recent_rhythms = [
+            (sig.rhythm_cell or sig.rhythm)
+            for sig in recent[-4:]
+            if (sig.rhythm_cell or sig.rhythm) is not None
+        ]
+        same_rhythm_count = sum(1 for rhythm in recent_rhythms if rhythm == repetition_key)
+        consistency_relief = 1.0 - 0.85 * context.pattern_consistency_strength
+        if same_rhythm_count >= 2:
+            add(
+                "rhythm_repetition_streak",
+                -0.10 * context.variation_pressure * same_rhythm_count * consistency_relief,
+                "repeated comping rhythm cell needs variation unless a real pattern is being preserved",
+            )
+
+        # Detect a short A-B-A-B loop. Real comping may repeat a motif, but absent
+        # strong pattern evidence this loop should not become the default engine.
+        if (
+            len(recent_rhythms) >= 3
+            and recent_rhythms[-2] == repetition_key
+            and recent_rhythms[-3] == recent_rhythms[-1]
+            and context.pattern_consistency_strength < 0.7
+        ):
+            add(
+                "short_periodic_loop",
+                -0.08 * context.variation_pressure,
+                "short periodic comping loop is becoming mechanically predictable",
             )
 
     # Motif continuity: allow same family/role when expression or timing changes.

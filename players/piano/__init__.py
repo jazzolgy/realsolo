@@ -5,6 +5,50 @@ polyphonic evaluation come from Core. This package owns piano-specific
 realization, comping, and interaction policy.
 """
 
+from .ensemble_role import (
+    PianoEnsembleMode,
+    PianoEnsembleRoleContext,
+    PianoHandFunction,
+    PianoHandRolePlan,
+    derive_piano_hand_role_plan,
+)
+from .texture_control import (
+    AttackDensityLevel,
+    HarmonicColorLevel,
+    MacroArcPhase,
+    PianoTextureIntent,
+    PianoTextureIntentBias,
+    evaluate_texture_intent,
+)
+from .rh_lh_interaction import (
+    RHLHInteractionBias,
+    RHLHRelation,
+    evaluate_rh_lh_interaction,
+)
+from .lh_texture import (
+    LHTextureBias,
+    LHTextureClass,
+    classify_lh_texture,
+    evaluate_lh_texture_bias,
+)
+from .lh_voice_leading import (
+    LHVoiceLeadingBias,
+    evaluate_lh_voice_leading,
+)
+from .linear_practice_comparator import (
+    AbstractWrittenLineObservation,
+    ContourClass,
+    IntervalMotionClass,
+    LinearPracticeComparison,
+    MotionSourceClass,
+    TargetHorizonClass,
+    compare_abstract_routes,
+)
+from .scorebook_evidence import (
+    PianoScorebookEvidenceView,
+    build_piano_scorebook_evidence_view,
+)
+from .shared_linear_adapter import realize_shared_linear_affordances
 from .bebop_solo_runtime import (
     BebopSoloTickPlan,
     build_bebop_solo_tick,
@@ -160,6 +204,36 @@ __all__ = [
     "PianoActionScore",
     "PianoPerformanceState",
     "PianoPolicyEvaluator",
+    "PianoEnsembleMode",
+    "PianoEnsembleRoleContext",
+    "PianoHandFunction",
+    "PianoHandRolePlan",
+    "derive_piano_hand_role_plan",
+    "AttackDensityLevel",
+    "HarmonicColorLevel",
+    "MacroArcPhase",
+    "PianoTextureIntent",
+    "PianoTextureIntentBias",
+    "evaluate_texture_intent",
+    "RHLHInteractionBias",
+    "RHLHRelation",
+    "evaluate_rh_lh_interaction",
+    "LHTextureBias",
+    "LHTextureClass",
+    "classify_lh_texture",
+    "evaluate_lh_texture_bias",
+    "LHVoiceLeadingBias",
+    "evaluate_lh_voice_leading",
+    "AbstractWrittenLineObservation",
+    "ContourClass",
+    "IntervalMotionClass",
+    "LinearPracticeComparison",
+    "MotionSourceClass",
+    "TargetHorizonClass",
+    "compare_abstract_routes",
+    "PianoScorebookEvidenceView",
+    "build_piano_scorebook_evidence_view",
+    "realize_shared_linear_affordances",
     "BebopSoloTickPlan",
     "build_bebop_solo_tick",
     "perform_bebop_solo_tick",

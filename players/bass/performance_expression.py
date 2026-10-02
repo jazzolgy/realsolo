@@ -24,6 +24,7 @@ from .performance_grammar import (
     MetricRole,
 )
 from .performance_memory import BassArticulation, BassPerformanceSnapshot
+from .phrase_intent import BassPhraseIntent, BassPhraseIntentKind
 
 
 @dataclass(frozen=True)
@@ -52,6 +53,7 @@ def realize_bass_expression(
     grammar: BassGrammarDecision,
     memory: BassPerformanceSnapshot = BassPerformanceSnapshot(),
     interaction: BassInteractionDecision | None = None,
+    phrase_intent: BassPhraseIntent | None = None,
 ) -> BassExpressionProfile:
     """Realize how the already-chosen immediate bass event should be played."""
     reasons: list[str] = []
@@ -143,6 +145,37 @@ def realize_bass_expression(
         ghost += max(0.0, interaction.response_opportunity - .45) * .20
         if interaction.complexity_delta < 0:
             ghost += interaction.complexity_delta * .18
+
+    if phrase_intent is not None:
+        if phrase_intent.kind in {
+            BassPhraseIntentKind.GROUND,
+            BassPhraseIntentKind.RESET,
+        }:
+            length += .035
+            accent += .015
+            ghost -= .035
+            reasons.append(f"phrase {phrase_intent.kind.value} gives the note a steadier body")
+        elif phrase_intent.kind is BassPhraseIntentKind.DEVELOP:
+            length += .015
+            accent += .010
+            reasons.append("phrase development keeps articulation connected but restrained")
+        elif phrase_intent.kind is BassPhraseIntentKind.BUILD:
+            accent += .045
+            timing -= 2.0
+            ghost += .035
+            reasons.append("phrase build adds forward body and attack energy")
+        elif phrase_intent.kind is BassPhraseIntentKind.SUSTAIN:
+            length += .025
+            accent -= .010
+            reasons.append("phrase sustain favors continuity over extra attack")
+        elif phrase_intent.kind is BassPhraseIntentKind.RELEASE:
+            accent -= .055
+            length -= .045
+            ghost -= .030
+            reasons.append("phrase release lightens attack and note body")
+
+        # Phrase-level articulation energy is a slow bias, not a direct velocity.
+        accent += (phrase_intent.articulation_energy - .50) * .08
 
     # Recent articulation/complexity creates a restraint budget.
     if memory.recent_ghost_count >= 1:

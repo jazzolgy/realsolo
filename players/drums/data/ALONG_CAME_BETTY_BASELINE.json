@@ -1,0 +1,18 @@
+{
+  "source": "user_provided_render",
+  "title": "RealSolo Along Came Betty Trio baseline",
+  "audio_duration_seconds": 59.878,
+  "analysis_sample_rate_hz": 22050,
+  "detected_tempo_periodicity_bpm": 73.828,
+  "interpreted_double_time_pulse_bpm": 147.656,
+  "detected_onsets": 398,
+  "onset_events_per_second": 6.647,
+  "median_rms_dbfs": -15.797,
+  "p90_rms_dbfs": -13.248,
+  "notes": [
+    "Tempo tracker locked to a half-time periodicity; double-time interpretation is recorded separately.",
+    "Onset count is whole-mix percussive/transient activity, not drum-only event count.",
+    "This file is a calibration baseline only; no raw audio is stored in the repository.",
+    "Use future renders of the same arrangement for within-system A/B comparison."
+  ]
+}

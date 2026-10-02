@@ -42,6 +42,7 @@ class BassInteractionContext:
     drum_fill_active: bool = False
     piano_fill_active: bool = False
     low_register_conflict: bool = False
+    ensemble_activity: float = 0.5
 
 
 @dataclass(frozen=True)
@@ -109,6 +110,22 @@ def choose_bass_interaction_intent(
         recovery += .18
         density -= .04
         reasons.append("low-register overlap calls for bass register/space adjustment")
+
+    if ctx.ensemble_activity >= .78:
+        density -= .10
+        complexity -= .12
+        opportunity -= .10
+        if intent in {
+            BassInteractionIntent.ANSWER,
+            BassInteractionIntent.FILL,
+            BassInteractionIntent.BUILD,
+            BassInteractionIntent.CONNECT,
+        }:
+            intent = BassInteractionIntent.HOLD
+        reasons.append("dense ensemble texture asks bass to simplify its information load")
+    elif ctx.ensemble_activity <= .30:
+        opportunity += .12
+        reasons.append("open ensemble texture leaves room for bass response")
 
     # Local memory prevents perpetual decoration. Complexity debt is repaid by
     # anchoring/holding instead of adding another interesting gesture.
