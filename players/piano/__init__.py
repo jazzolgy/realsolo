@@ -34,6 +34,7 @@ from .planner import (
     expand_candidate_set_expressively,
 )
 from .narrative import NarrativeBiasScore, evaluate_narrative_bias
+from .variation import GestureSignature, VariationContext, VariationScore, evaluate_variation
 from .expression import (
     DynamicLevel,
     PianoExpressionIntent,
@@ -96,6 +97,10 @@ __all__ = [
     "expand_candidate_set_rhythmically",
     "NarrativeBiasScore",
     "evaluate_narrative_bias",
+    "GestureSignature",
+    "VariationContext",
+    "VariationScore",
+    "evaluate_variation",
     "PianoRhythmicIntent",
     "RhythmicPlacement",
     "apply_rhythmic_intent",
