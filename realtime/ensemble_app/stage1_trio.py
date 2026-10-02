@@ -257,7 +257,7 @@ class Stage1TrioRuntime:
                 bar=bar_index,
                 section=section,
                 chorus=chorus,
-                tempo_bpm=tempo_bpm,
+                tempo_bpm=groove.tempo_bpm,
                 meter_numerator=4,
                 meter_denominator=4,
                 form_position=max(0.0, min(1.0, form_position)),
