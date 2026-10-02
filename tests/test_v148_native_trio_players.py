@@ -55,8 +55,10 @@ def test_native_bass_decider_returns_real_player_gesture():
     out = adapter.decide_immediate(snapshot=s, directive=d, context=runtime_context())
     assert out is not None
     assert out.gestures
-    assert out.gestures[0].source == "player/bass:immediate_realizer"
+    assert out.gestures[0].source == "player/bass:sequential_runner"
     assert out.gestures[0].voices
+    assert "phrase_intent" in out.gestures[0].annotations
+    assert "interaction_intent" in out.gestures[0].annotations
 
 
 def test_native_drum_decider_returns_online_drummer_gesture():
@@ -88,5 +90,5 @@ def test_full_trio_runtime_cycle_uses_native_deciders():
     assert {x.player_id for x in result.decisions} == {"piano", "bass", "drums"}
     assert result.skipped_player_ids == ()
     sources = {g.source for g in result.gestures}
-    assert "player/bass:immediate_realizer" in sources
+    assert "player/bass:sequential_runner" in sources
     assert "player/drums:online_drummer" in sources
