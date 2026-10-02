@@ -1,0 +1,30 @@
+{
+  "schema": "legend_drum_source_backlog.v1",
+  "sources": [
+    {
+      "legend_id": "eliot_zigmund",
+      "source_id": "bill_evans_nardis_vancouver_1975",
+      "tune_id": "nardis",
+      "status": "metadata_verified_audio_pending",
+      "priority": 1,
+      "goal": "independent-source validation of existing Zigmund rhythmic cells"
+    },
+    {
+      "legend_id": "paul_motian",
+      "source_id": "bill_evans_milestones_village_vanguard_1961",
+      "tune_id": "milestones",
+      "status": "metadata_verified_audio_pending",
+      "priority": 2,
+      "goal": "extract Motian foreground/trading rhythmic language if verified"
+    },
+    {
+      "legend_id": "joe_labarbera",
+      "source_id": "bill_evans_nardis_buenos_aires_1979",
+      "tune_id": "nardis",
+      "status": "metadata_verified_audio_pending",
+      "priority": 3,
+      "goal": "extract late-Evans-trio extended solo language"
+    }
+  ],
+  "promotion_rule": "No vocabulary item may be promoted from metadata alone. Audio window verification and provenance are required."
+}
