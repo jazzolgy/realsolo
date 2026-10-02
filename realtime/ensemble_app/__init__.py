@@ -22,6 +22,7 @@ __all__ = [
     "BassNativeDecider",
     "DrumsNativeDecider",
     "PianoNativeDecider",
+    "build_native_trio_runtime",
 ]
 
 from .runtime_loop import (
@@ -45,4 +46,5 @@ from .native_deciders import (
     BassNativeDecider,
     DrumsNativeDecider,
     PianoNativeDecider,
+    build_native_trio_runtime,
 )
