@@ -94,10 +94,14 @@ def choose_bass_interaction_intent(
         reasons.append("soloist phrase ending creates response opportunity")
 
     if ctx.drum_fill_active or ctx.piano_fill_active:
+        had_response_window = opportunity > 0
         opportunity -= .30
         density -= .08
         complexity -= .10
-        if intent in {BassInteractionIntent.ANSWER, BassInteractionIntent.FILL}:
+        if had_response_window or intent in {
+            BassInteractionIntent.ANSWER,
+            BassInteractionIntent.FILL,
+        }:
             intent = BassInteractionIntent.YIELD
         reasons.append("another rhythm-section voice is already filling the space")
 
