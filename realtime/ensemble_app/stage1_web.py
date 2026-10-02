@@ -8,10 +8,10 @@ from urllib.parse import parse_qs, urlparse
 from .chart import ChartBar, SongChart
 from .asset_installer import ASSET_ROOT
 from .harmony_display import transpose_chord
-from .stage1_music import Stage1Soloist, accompaniment_frame
-from .player_contract import fallback_accompaniment_gesture, monophonic_solo_gesture
+from .stage1_music import Stage1Soloist
+from .player_contract import monophonic_solo_gesture
 from .player_provider import current_stage1_provider_status
-from .stage1_piano import Stage1PianoPlayer
+from .stage1_trio import Stage1TrioRuntime
 
 WEB_ROOT = Path(__file__).with_name("web")
 
@@ -57,7 +57,7 @@ def chart_payload(chart: SongChart, *, transpose: int = 0) -> dict:
 class Stage1Handler(SimpleHTTPRequestHandler):
     chart = demo_chart()
     soloist = Stage1Soloist()
-    pianist = Stage1PianoPlayer.create()
+    trio = Stage1TrioRuntime.create()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(WEB_ROOT), **kwargs)
@@ -96,7 +96,7 @@ class Stage1Handler(SimpleHTTPRequestHandler):
 
         if parsed.path == "/api/reset-solo":
             self.soloist.reset()
-            self.pianist.reset()
+            self.trio.reset(self.chart.tempo_bpm)
             body = b'{"ok": true}'
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
@@ -108,52 +108,49 @@ class Stage1Handler(SimpleHTTPRequestHandler):
         if parsed.path == "/api/accompaniment":
             query = parse_qs(parsed.query)
             chord = query.get("chord", ["Cmaj7"])[0]
-            try:
-                beat = int(query.get("beat", ["0"])[0]) % 4
-            except ValueError:
-                beat = 0
-            frame = accompaniment_frame(chord, beat)
-            base = fallback_accompaniment_gesture(frame)
-            # Bass/drums remain fallback. Piano is now supplied by player/piano.
-            rhythm_voices = tuple(v for v in base.voices if v.instrument_role == "bass")
-            try:
-                bar_index = int(query.get("bar_index", ["0"])[0])
-            except ValueError:
-                bar_index = 0
             next_chord = query.get("next_chord", [""])[0]
-            piano = self.pianist.decide(
+            try:
+                beat = float(query.get("beat", ["0"])[0]) % self.chart.beats_per_bar
+                bar_index = int(query.get("bar_index", ["0"])[0]) % len(self.chart.bars)
+                tempo_bpm = float(query.get("tempo", [str(self.chart.tempo_bpm)])[0])
+                chorus = max(0, int(query.get("chorus", ["0"])[0]))
+            except ValueError:
+                beat, bar_index, tempo_bpm, chorus = 0.0, 0, self.chart.tempo_bpm, 0
+
+            bar = self.chart.bars[bar_index]
+            result = self.trio.decide(
                 chord,
                 next_chord,
-                beat_in_bar=float(beat),
+                beat_in_bar=beat,
                 bar_index=bar_index,
+                total_bars=len(self.chart.bars),
+                tempo_bpm=tempo_bpm,
+                section=bar.section or "",
+                chorus=chorus,
             )
+
             combined = {
                 "role": "accompaniment",
-                "voices": [
-                    {
-                        "pitch_midi": v.pitch_midi,
-                        "velocity": v.velocity,
-                        "duration_beats": v.duration_beats,
-                        "onset_offset_beats": v.onset_offset_beats,
-                        "articulation": list(v.articulation),
-                        "instrument_role": v.instrument_role,
-                    }
-                    for v in rhythm_voices
-                ],
-                "drum_hits": base.to_dict()["drum_hits"],
-                "source": "mixed_player_runtime",
-                "tags": ["bass_drums_fallback", "piano_player"],
-                "annotations": {},
+                "voices": [],
+                "drum_hits": [],
+                "source": "native_trio_runtime",
+                "tags": [],
+                "annotations": {
+                    "snapshot_generation": str(result.snapshot_generation),
+                },
             }
-            if piano is not None:
-                pp = piano.to_dict()
-                combined["voices"].extend(pp["voices"])
-                combined["annotations"].update(pp["annotations"])
-                combined["source"] = pp["source"]
+            for gesture in result.gestures:
+                payload = gesture.to_dict()
+                combined["voices"].extend(payload["voices"])
+                combined["drum_hits"].extend(payload["drum_hits"])
+                combined["tags"].extend(payload["tags"])
+                combined["annotations"].update(payload["annotations"])
+
             body = json.dumps(
                 {
-                    "legacy": frame,
                     "gesture": combined,
+                    "players": [d.player_id for d in result.decisions],
+                    "skipped": list(result.skipped_player_ids),
                 }
             ).encode("utf-8")
             self.send_response(200)
