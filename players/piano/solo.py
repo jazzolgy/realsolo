@@ -30,6 +30,10 @@ from .bebop_complementarity import (
     support_carry_mode,
 )
 from .bebop_turn_taking import BebopTurnTakingEvidence, BebopTurnTakingType
+from .bebop_harmonic_turn import (
+    BebopHarmonicPhase,
+    BebopHarmonicTurnContext,
+)
 
 
 def default_bebop_legend_blend() -> LegendBlend:
@@ -64,6 +68,9 @@ class PianoSoloContext:
             0.0,
         )
     )
+    harmonic_turn: BebopHarmonicTurnContext = field(
+        default_factory=BebopHarmonicTurnContext
+    )
 
     def validate(self) -> None:
         if not 21 <= self.right_hand_low_midi <= 108:
@@ -90,6 +97,7 @@ class PianoSoloContext:
         self.phrase_space.validate()
         self.ensemble_complementarity.validate()
         self.turn_taking.validate()
+        self.harmonic_turn.validate()
 
 
 @dataclass
@@ -362,6 +370,79 @@ class PianoSoloEvaluator:
                 score += v
                 components["foreground_continues_overdensity"] = v
                 reasons.append("continued foreground activity argues against another dense layer")
+
+        harmonic_turn = context.harmonic_turn
+        if harmonic_turn.confidence > 0:
+            weight = harmonic_turn.confidence
+
+            if harmonic_turn.phase is BebopHarmonicPhase.ANTICIPATORY:
+                if {"anticipation", "pickup", "next_harmony_target"} & tags:
+                    v = 0.08 * weight * max(
+                        harmonic_turn.anticipation_strength,
+                        0.5,
+                    )
+                    score += v
+                    components["harmonic_turn_anticipation"] = v
+                    reasons.append(
+                        "turn-taking re-entry aligns with known future harmony"
+                    )
+                if "routine_downbeat_entry" in tags:
+                    v = -0.04 * weight
+                    score += v
+                    components["harmonic_turn_downbeat_rigidity"] = v
+                    reasons.append(
+                        "known next harmony leaves room for anticipatory re-entry"
+                    )
+
+            elif harmonic_turn.phase is BebopHarmonicPhase.DIRECTED_RESOLUTION:
+                if {"directed_target", "resolution_path", "guide_tone"} & tags:
+                    v = 0.08 * weight * max(
+                        harmonic_turn.resolution_strength,
+                        0.5,
+                    )
+                    score += v
+                    components["harmonic_turn_resolution"] = v
+                    reasons.append(
+                        "directed harmonic moment favors audible target/resolution"
+                    )
+                if "undirected_outside" in tags:
+                    v = -0.05 * weight
+                    score += v
+                    components["harmonic_turn_undirected_outside"] = v
+                    reasons.append(
+                        "resolution pressure argues against directionless outside color"
+                    )
+
+            elif harmonic_turn.phase is BebopHarmonicPhase.STABLE_FIELD:
+                if {"connector", "color_tone", "motif_continuation"} & tags:
+                    v = 0.04 * weight * max(
+                        harmonic_turn.stability_strength,
+                        0.5,
+                    )
+                    score += v
+                    components["harmonic_turn_stable_field"] = v
+                    reasons.append(
+                        "stable field permits connective/color development"
+                    )
+
+            elif harmonic_turn.phase is BebopHarmonicPhase.FORM_BOUNDARY:
+                if {"phrase_entry", "phrase_end", "register_reset", "texture_reset"} & tags:
+                    v = 0.07 * weight * max(
+                        harmonic_turn.phrase_boundary_pressure,
+                        0.5,
+                    )
+                    score += v
+                    components["harmonic_turn_form_boundary"] = v
+                    reasons.append(
+                        "form boundary permits phrase/texture reset"
+                    )
+                if "automatic_continuation" in tags:
+                    v = -0.04 * weight
+                    score += v
+                    components["harmonic_turn_boundary_overrun"] = v
+                    reasons.append(
+                        "form boundary should not be ignored by automatic continuation"
+                    )
 
         return CandidateScore(candidate, score, components, tuple(reasons))
 
