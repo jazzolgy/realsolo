@@ -43,6 +43,15 @@ def _chord(page: int, bar: int, symbol: str, *, confidence: float = .99):
     return _e(ScoreEvidenceKind.CHORD, symbol, page, bar, bar, confidence=confidence)
 
 
+def _half_bar_chords(page: int, bar: int, first: str, second: str, *, confidence: float = .99):
+    """Two visibly half-bar chord regions in 4/4, using 1-based beat coordinates."""
+    provenance = _PROV7 if page == 7 else _PROV8
+    return (
+        StructuredScoreEvidence(ScoreEvidenceKind.CHORD, first, ScoreSpan(page, bar, 1.0, bar, 2.999), confidence, provenance),
+        StructuredScoreEvidence(ScoreEvidenceKind.CHORD, second, ScoreSpan(page, bar, 3.0, bar, 4.999), confidence, provenance),
+    )
+
+
 # Song-global bar numbering is used here:
 # A=1-16, B=17-24, C=25-34, D=35-50, coda=51+.
 # This numbering is an ingestion coordinate, not a claim about playback order.
@@ -86,61 +95,61 @@ ALONG_CAME_BETTY_EVIDENCE = (
 
     # A
     _chord(7, 1, "Bbm7"),
-    _chord(7, 2, "Bm7 E7"),
+    *_half_bar_chords(7, 2, "Bm7", "E7"),
     _chord(7, 3, "Bbm7"),
-    _chord(7, 4, "Bm7 E7"),
+    *_half_bar_chords(7, 4, "Bm7", "E7"),
     _chord(7, 5, "Amaj7"),
     _chord(7, 6, "G#7"),
     _chord(7, 7, "Gmaj7"),
     _chord(7, 8, "F#7"),
     _chord(7, 9, "F#m7"),
-    _chord(7, 10, "Gm7 C7"),
+    *_half_bar_chords(7, 10, "Gm7", "C7"),
     _chord(7, 11, "F#m7"),
-    _chord(7, 12, "Gm7 C7"),
+    *_half_bar_chords(7, 12, "Gm7", "C7"),
     _chord(7, 13, "Fmaj7"),
     _chord(7, 14, "A7"),
     _chord(7, 15, "Dm7"),
-    _chord(7, 16, "G7 Cm9", confidence=.96),
+    *_half_bar_chords(7, 16, "G7", "Cm9", confidence=.96),
 
     # B
     _chord(7, 17, "Cm9"),
     _chord(7, 18, "F7"),
-    _chord(7, 19, "Am7b5 D7"),
+    *_half_bar_chords(7, 19, "Am7b5", "D7"),
     _chord(7, 20, "Gm7"),
     _chord(7, 21, "Gm7/F"),
-    _chord(7, 22, "Em7b5 A7"),
+    *_half_bar_chords(7, 22, "Em7b5", "A7"),
     _chord(7, 23, "Fm7"),
     _chord(7, 24, "Bb7"),
 
     # C
     _chord(7, 25, "Bbm7"),
-    _chord(7, 26, "Bm7 E7"),
+    *_half_bar_chords(7, 26, "Bm7", "E7"),
     _chord(7, 27, "Bbm7"),
-    _chord(7, 28, "Bm7 E7"),
+    *_half_bar_chords(7, 28, "Bm7", "E7"),
     _chord(7, 29, "Cm7b5"),
     _chord(7, 30, "F7"),
     _chord(7, 31, "Bbm7b5"),
     _chord(7, 32, "Eb7#9"),
     _chord(7, 33, "Abmaj7"),
-    _chord(7, 34, "Bm7 E7"),
+    *_half_bar_chords(7, 34, "Bm7", "E7"),
 
     # D mirrors the written A-like harmonic cycle on p.8.
     _chord(8, 35, "Bbm7"),
-    _chord(8, 36, "Bm7 E7"),
+    *_half_bar_chords(8, 36, "Bm7", "E7"),
     _chord(8, 37, "Bbm7"),
-    _chord(8, 38, "Bm7 E7"),
+    *_half_bar_chords(8, 38, "Bm7", "E7"),
     _chord(8, 39, "Amaj7"),
     _chord(8, 40, "G#7"),
     _chord(8, 41, "Gmaj7"),
     _chord(8, 42, "F#7"),
     _chord(8, 43, "F#m7"),
-    _chord(8, 44, "Gm7 C7"),
+    *_half_bar_chords(8, 44, "Gm7", "C7"),
     _chord(8, 45, "F#m7"),
-    _chord(8, 46, "Gm7 C7"),
+    *_half_bar_chords(8, 46, "Gm7", "C7"),
     _chord(8, 47, "Fmaj7"),
     _chord(8, 48, "A7"),
     _chord(8, 49, "Dm7"),
-    _chord(8, 50, "G7 Cm9", confidence=.96),
+    *_half_bar_chords(8, 50, "G7", "Cm9", confidence=.96),
 
     # Coda harmony visible on p.8. The final Abmaj7 is sustained across the
     # notated ending; exact written note payload remains private source data.
