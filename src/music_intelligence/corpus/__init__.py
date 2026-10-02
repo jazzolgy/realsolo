@@ -66,3 +66,35 @@ from .scorebooks import (
     songs_for_book,
     validate_song_locators,
 )
+
+
+from .score_context import (
+    ScoreContextSnapshot,
+    ScorePosition,
+    ScoreSpan,
+    StructuredScoreEvidence,
+    resolve_score_context,
+    structured_evidence_from_locator,
+)
+
+__all__ += [
+    "SCOREBOOK_SPECS",
+    "SEED_SONG_LOCATORS",
+    "ScoreEvidence",
+    "ScoreEvidenceKind",
+    "ScoreIngestStatus",
+    "ScorebookFamily",
+    "ScorebookSongLocator",
+    "ScorebookSpec",
+    "ingestion_queue",
+    "register_scorebooks",
+    "scorebook_corpus_items",
+    "songs_for_book",
+    "validate_song_locators",
+    "ScoreContextSnapshot",
+    "ScorePosition",
+    "ScoreSpan",
+    "StructuredScoreEvidence",
+    "resolve_score_context",
+    "structured_evidence_from_locator",
+]
