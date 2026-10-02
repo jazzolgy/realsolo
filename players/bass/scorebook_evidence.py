@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from music_intelligence.corpus.score_context import ScoreContextSnapshot
 from music_intelligence.corpus.scorebooks import ScoreEvidence, ScoreEvidenceKind
 
 
@@ -144,3 +145,60 @@ def evidence_candidate_score(
             reasons.append("scorebook two-feel evidence restrains color motion")
 
     return score, tuple(reasons)
+
+
+def derive_bass_score_context(
+    snapshot: ScoreContextSnapshot,
+) -> BassScoreEvidenceDirective:
+    """Translate resolved Shared Core score context into soft Bass pressure.
+
+    Bass consumes Core's evidence-bounded runtime snapshot rather than
+    re-resolving score position, navigation, or page evidence itself.
+    """
+    walking = 0.0
+    two_feel = 0.0
+    written = snapshot.written_part_role is not None
+    reasons: list[str] = []
+
+    feel_tokens = tuple(
+        x for x in (
+            snapshot.current_feel,
+            snapshot.feel_change_here,
+        )
+        if x
+    )
+    for value in feel_tokens:
+        token = value.lower()
+        if "two feel" in token or "2 feel" in token or "back to 2" in token:
+            two_feel = max(two_feel, snapshot.confidence)
+            reasons.append(f"Core score context feel: {value}")
+        if "in four" in token or "4 feel" in token or "walking" in token:
+            walking = max(walking, snapshot.confidence)
+            reasons.append(f"Core score context feel: {value}")
+
+    for instrument, value in snapshot.player_instructions:
+        if instrument != "bass":
+            continue
+        token = value.lower()
+        if "walk" in token or "in four" in token:
+            walking = max(walking, snapshot.confidence)
+            reasons.append(f"Core bass instruction: {value}")
+        if "two feel" in token or "2 feel" in token:
+            two_feel = max(two_feel, snapshot.confidence)
+            reasons.append(f"Core bass instruction: {value}")
+
+    preferred = None
+    if walking > two_feel + .10:
+        preferred = "walking"
+    elif two_feel > walking + .10:
+        preferred = "two_feel"
+
+    return BassScoreEvidenceDirective(
+        preferred_mode=preferred,
+        walking_pressure=walking,
+        two_feel_pressure=two_feel,
+        written_part_available=written,
+        confidence=snapshot.confidence,
+        provenance=snapshot.provenance,
+        reasons=tuple(reasons),
+    )
