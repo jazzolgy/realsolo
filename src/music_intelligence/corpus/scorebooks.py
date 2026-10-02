@@ -57,6 +57,7 @@ class ScoreEvidenceKind(str, Enum):
     BASS_INSTRUCTION = "bass_instruction"
     WRITTEN_PART = "written_part"
     WRITTEN_BASS_PART = "written_bass_part"
+    WRITTEN_PART_POLICY = "written_part_policy"
     ARRANGEMENT_NOTE = "arrangement_note"
 
 
