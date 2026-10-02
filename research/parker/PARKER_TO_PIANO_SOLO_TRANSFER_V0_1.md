@@ -197,3 +197,46 @@ Forbidden:
 - freezing and replaying an exact future Parker-derived phrase
 - literal recorded lick scheduling
 - multi-beat exact-note scripts presented as improvisation
+
+
+## Piano self-coordination: right-hand solo vs left-hand comping
+
+### DESIGN-INFERENCE
+
+The uploaded Parker mix does not provide isolated piano hands, so the following is not
+claimed as direct Parker-recording evidence.
+
+For a pianist, bebop soloing and comping should nevertheless share one performance
+state rather than behave like two unrelated agents.
+
+The right hand should receive at least:
+
+- left-hand comping activity;
+- left-hand harmonic coverage;
+- left-hand rhythmic coverage;
+- top of the active left-hand register.
+
+Current policy hypotheses:
+
+- sparse left-hand harmonic coverage -> right hand may clarify guide tones / harmonic
+  identity more explicitly;
+- dense left-hand harmonic coverage -> avoid redundant right-hand harmonic outlining;
+- active left-hand rhythmic coverage -> reduce unnecessary dense right-hand surface;
+- register collision with an active left hand -> prefer separation unless collision is
+  intentionally motivated.
+
+This is not a rule that the right hand must become simpler whenever the left hand is
+active.
+
+Creativity may move into:
+
+- contour;
+- chromatic targeting;
+- rhythmic placement;
+- articulation;
+- register separation;
+- phrase length;
+- silence;
+- tension/release trajectory.
+
+The objective is coordinated pianism, not two independent MIDI streams.
