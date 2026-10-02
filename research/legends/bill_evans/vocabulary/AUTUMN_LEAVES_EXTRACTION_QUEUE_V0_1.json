@@ -1,0 +1,141 @@
+{
+  "schema_version": "0.1",
+  "extraction_queue_id": "evans.autumn_leaves.take1.queue.v0_1",
+  "recording_id": "bill_evans_portrait_in_jazz_autumn_leaves_take1",
+  "alignment_ref": "research/legends/bill_evans/observations/alignment/AUTUMN_LEAVES_TAKE1_ALIGNMENT_V0_1.json",
+  "objective": "Convert aligned audio/score positions into executable Evans vocabulary and conditional priors.",
+  "units": [
+    {
+      "unit_id": "entry_handoff_c3_29_32",
+      "chorus": 3,
+      "bars": "29-32",
+      "track_seconds": [
+        120,
+        123.628
+      ],
+      "domains": [
+        "phrase_entrance",
+        "ensemble_interaction",
+        "form_awareness",
+        "rhythm_subdivision"
+      ],
+      "extract": [
+        "entry displacement",
+        "pickup length",
+        "target function",
+        "register direction",
+        "bass foreground relationship",
+        "LH texture",
+        "RH-LH timing relation"
+      ],
+      "priority": 1
+    },
+    {
+      "unit_id": "piano_solo_c4_a1",
+      "chorus": 4,
+      "bars": "1-8",
+      "track_seconds": [
+        123.628,
+        132.932
+      ],
+      "domains": [
+        "harmony_target_selection",
+        "linear_connection",
+        "motif_development",
+        "microtiming_swing"
+      ],
+      "extract": [
+        "target-tone classes",
+        "approach/enclosure families",
+        "motif seed",
+        "swing placement",
+        "interval-motion class",
+        "LH attack relation"
+      ],
+      "priority": 1
+    },
+    {
+      "unit_id": "piano_solo_c4_a2",
+      "chorus": 4,
+      "bars": "9-16",
+      "track_seconds": [
+        132.932,
+        142.236
+      ],
+      "domains": [
+        "motif_development",
+        "repetition_variation",
+        "rhythm_subdivision"
+      ],
+      "extract": [
+        "what repeats from A1",
+        "what is transformed",
+        "rhythmic displacement",
+        "density change",
+        "register change"
+      ],
+      "priority": 1
+    },
+    {
+      "unit_id": "piano_solo_c4_b",
+      "chorus": 4,
+      "bars": "17-24",
+      "track_seconds": [
+        142.236,
+        151.54
+      ],
+      "domains": [
+        "tension_release",
+        "register_trajectory",
+        "ensemble_interaction"
+      ],
+      "extract": [
+        "contrast strategy",
+        "harmonic tension curve",
+        "register movement",
+        "bass/drum interaction",
+        "phrase-space decisions"
+      ],
+      "priority": 2
+    },
+    {
+      "unit_id": "piano_solo_c4_c",
+      "chorus": 4,
+      "bars": "25-32",
+      "track_seconds": [
+        151.54,
+        160.844
+      ],
+      "domains": [
+        "phrase_ending",
+        "future_harmony_awareness",
+        "form_awareness"
+      ],
+      "extract": [
+        "cadential targeting",
+        "continuation vs closure",
+        "next-chorus anticipation",
+        "terminal duration",
+        "LH thinning or enrichment"
+      ],
+      "priority": 1
+    }
+  ],
+  "output_contract": {
+    "store_literal_notes": false,
+    "preserve_provenance": true,
+    "runtime_ready_fields": [
+      "domain",
+      "context_tags",
+      "target_function",
+      "rhythm_relation",
+      "contour",
+      "interval_motion",
+      "register_trajectory",
+      "lh_texture",
+      "interaction_role",
+      "confidence",
+      "provenance"
+    ]
+  }
+}
