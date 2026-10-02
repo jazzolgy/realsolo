@@ -27,6 +27,7 @@ from .voicing import (
     generate_tertian_voicings,
 )
 from .planner import PianoCompingCandidateSet, build_contextual_comping_candidates
+from .narrative import NarrativeBiasScore, evaluate_narrative_bias
 from .comping import (
     CompingActionType,
     InteractionRole,
@@ -69,4 +70,6 @@ __all__ = [
     "generate_tertian_voicings",
     "PianoCompingCandidateSet",
     "build_contextual_comping_candidates",
+    "NarrativeBiasScore",
+    "evaluate_narrative_bias",
 ]
