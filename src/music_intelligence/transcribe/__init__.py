@@ -269,3 +269,13 @@ __all__ = [
     "dynamic_marking_from_level",
     "project_pitched_event",
 ]
+
+from .scorebook_ingestion import (
+    ObservedChord,
+    ObservedMeasure,
+    PageAnnotation,
+    ScorebookIngestionResult,
+    ScorebookPageObservation,
+    compile_scorebook_observation,
+    evidence_summary,
+)
