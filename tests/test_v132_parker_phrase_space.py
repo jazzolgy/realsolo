@@ -11,9 +11,10 @@ def _data():
         Path(__file__).parents[1]
         / "src"
         / "music_intelligence"
-        / "bebop"
+        / "legends"
+        / "parker"
         / "data"
-        / "parker_phrase_space_stats_v132.json"
+        / "phrase_space_stats.json"
     )
     return json.loads(path.read_text(encoding="utf-8"))
 

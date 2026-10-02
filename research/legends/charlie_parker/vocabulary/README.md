@@ -1,0 +1,1 @@
+# Parker Vocabulary\n\nCanonical extraction area for licks, fragments, motifs, rhythmic cells and phrase templates. Store source/context provenance with every item. Raw payload placement follows source rights/access policy; the runtime schema explicitly supports literal quotation.\n

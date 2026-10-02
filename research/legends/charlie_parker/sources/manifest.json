@@ -1,0 +1,30 @@
+{
+  "legend_id": "charlie_parker",
+  "sources": [
+    {
+      "source_id": "parker.private.greatest_hits_compilation",
+      "kind": "audio",
+      "access": "project_private",
+      "title": "Charlie Parker Greatest Hits compilation",
+      "raw_payload_in_public_repo": false
+    },
+    {
+      "source_id": "parker.omnibook",
+      "kind": "score_reference",
+      "access": "source-dependent",
+      "raw_payload_in_public_repo": false
+    },
+    {
+      "source_id": "parker.pedagogical_symbolic_131",
+      "kind": "derived_symbolic",
+      "access": "derived_aggregate",
+      "raw_payload_in_public_repo": false
+    },
+    {
+      "source_id": "parker.score_phrase_space_46",
+      "kind": "derived_score_analysis",
+      "access": "derived_aggregate",
+      "raw_payload_in_public_repo": false
+    }
+  ]
+}
