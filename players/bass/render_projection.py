@@ -57,7 +57,10 @@ def project_bass_candidate_to_render_event(
 
     expr = candidate.expression
     beat_ms = 60000.0 / tempo_bpm
-    onset_offset_beats = expr.microtiming_ms / beat_ms
+    onset_offset_beats = (
+        candidate.event.onset_offset_beats
+        + expr.microtiming_ms / beat_ms
+    )
     duration_beats = candidate.event.duration_beats * expr.sounding_length_ratio
 
     articulation = tuple(dict.fromkeys((
