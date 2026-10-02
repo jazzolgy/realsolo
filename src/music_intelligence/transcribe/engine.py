@@ -9,7 +9,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .allocation import StaffProfile
-from .chord_chart import ChordChart, ChordChartPosition, chart_position
+from .chord_chart import (
+    ChordChart,
+    ChordChartPosition,
+    EnharmonicPolicy,
+    chart_position,
+)
 from .engraving import EngravingPlan, EngravingProfile, build_default_engraving_plan
 from .events import CommittedPerformanceEvent
 from .instrument_profiles import InstrumentProfile, resolve_instrument_profile
@@ -80,8 +85,17 @@ class NotationEngine:
             beat=beat,
         )
 
-    def transpose_chart(self, chart: ChordChart, semitones: int) -> ChordChart:
-        return chart.transpose(semitones)
+    def transpose_chart(
+        self,
+        chart: ChordChart,
+        semitones: int,
+        *,
+        enharmonic_policy: EnharmonicPolicy | None = None,
+    ) -> ChordChart:
+        return chart.transpose(
+            semitones,
+            enharmonic_policy=enharmonic_policy,
+        )
 
     def engraving_plan(self, score: ReadableScore) -> EngravingPlan:
         return build_default_engraving_plan(
