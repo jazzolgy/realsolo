@@ -12,6 +12,8 @@ Feature families:
 - register center/span/slope
 - direction reversal
 - repeated-note rate
+- offbeat/subdivision activity
+- quarter-note floor continuity
 """
 from __future__ import annotations
 
@@ -24,9 +26,9 @@ from .scorebook_evidence import BassWrittenPartPrior
 class BassLineObservation:
     pitch_midi: int
     beat: float
-    duration_beats: float = 1.0
     harmonic_root_pc: int | None = None
     structural_pitch_classes: frozenset[int] = frozenset()
+    duration_beats: float = 1.0
 
     def validate(self) -> None:
         if not 0 <= self.pitch_midi <= 127:
