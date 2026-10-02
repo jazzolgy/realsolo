@@ -15,6 +15,7 @@ from .genre import build_genre_artifact
 from .groove import build_groove_artifact
 from .groove_grammar import GrooveGrammar, DEFAULT_GROOVE_GRAMMARS, best_matching_grammars, groove_similarity
 from .store import LearningStore
+from .audio_evidence import artifacts_from_audio_aggregate
 from .engine import LearningFeedback,LearningPriorView,SharedLearningEngine
 from .pipeline import (
     AudioAnalysisAdapter,
@@ -43,6 +44,7 @@ __all__ = [
     "best_matching_grammars",
     "groove_similarity",
     "LearningStore",
+    "artifacts_from_audio_aggregate",
     "LearningFeedback",
     "LearningPriorView",
     "SharedLearningEngine",

@@ -20,6 +20,21 @@
       "identity_status": "tracklist_supplied_by_project_owner"
     },
     {
+      "source_id": "be_best_full_album_project_audio",
+      "type": "audio_compilation",
+      "status": "private_project_source",
+      "path_hint": "Best Bill Evans Songs (Full Album).mp3 uploaded to project",
+      "intended_use": [
+        "repeated listening",
+        "note-hypothesis analysis",
+        "trio-role analysis",
+        "cross-source comparison",
+        "vocabulary extraction"
+      ],
+      "duration_s": 3760.091,
+      "identity_status": "file supplied by project owner; track-level identity not yet canonicalized"
+    },
+    {
       "source_id": "master_index_project",
       "type": "scorebook_index",
       "status": "private_project_source",
