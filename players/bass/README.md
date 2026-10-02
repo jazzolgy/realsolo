@@ -31,3 +31,27 @@ The bass layer must not build a separate jazz-harmony theory. If a concept is ge
 Plan harmonic/rhythmic intention and candidate family, not a fixed future line.
 
 Commit one immediate bass action -> listen -> re-plan.
+
+## First vertical slice
+
+Implemented in `src/music_intelligence/bass/immediate_realizer.py`.
+
+Current scope:
+
+- consumes `HarmonicFrame` rather than parsing chord symbols independently
+- respects inferred -> observed -> expected evidence precedence for immediate realization
+- generates walking, two-feel, and pedal immediate-action candidates
+- uses Shared Core voice-leading to score current-to-next bass motion
+- permits chromatic approach / direct anticipation near a known next harmony
+- refuses to invent a perfect-fifth candidate when current pitch-class evidence does not support it
+- returns only one-event candidates; no future bass line is frozen
+
+Not yet claimed as solved:
+
+- learned walking-bass grammar
+- swing/microtiming and note-length model
+- drummer coupling
+- soloist/piano density interaction beyond a minimal placeholder
+- ostinato memory/pattern continuation
+- bass-specific LegendProfile corpus
+- acoustic/electric physical-performance models
