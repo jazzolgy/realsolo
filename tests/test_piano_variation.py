@@ -84,7 +84,10 @@ def test_partial_variation_can_score_above_exact_repeat():
 
     varied = replace(
         original,
-        tags=frozenset(set(original.tags) | {"rhythm:offbeat"}),
+        tags=frozenset(
+            {tag for tag in original.tags if not tag.startswith("rhythm:")}
+            | {"rhythm:offbeat"}
+        ),
     )
 
     exact_score = evaluate_variation(
@@ -148,7 +151,10 @@ def test_motif_continuity_can_reward_same_family_role_with_changed_realization()
 
     varied = replace(
         original,
-        tags=frozenset(set(original.tags) | {"register:higher"}),
+        tags=frozenset(
+            {tag for tag in original.tags if not tag.startswith("register:")}
+            | {"register:higher"}
+        ),
     )
 
     score = evaluate_variation(
