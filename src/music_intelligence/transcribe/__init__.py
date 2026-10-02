@@ -127,6 +127,7 @@ from .layout import (
     notehead_displacements,
     optical_spacing_decisions,
 )
+from .engine import NotationEngine, NotationEngineConfig
 from .quality import (
     QualityIssueSeverity,
     ScoreQualityIssue,
@@ -239,6 +240,8 @@ __all__ = [
     "layout_pressures",
     "notehead_displacements",
     "optical_spacing_decisions",
+    "NotationEngine",
+    "NotationEngineConfig",
     "QualityIssueSeverity",
     "ScoreQualityIssue",
     "ScoreQualityReport",
