@@ -365,11 +365,11 @@ def _exercise_state(pass_index: int, bar: int, bars: int) -> SoloistEnergyProjec
     phase = bar / max(1, bars - 1)
     mode = pass_index % 4
     if mode == 0:
-        # Baseline conversational support.
+        # Rising soloist with drummer headroom: explicit BUILD drill.
         return SoloistEnergyProjection(
-            activity=0.45 + 0.15 * phase,
-            current_energy=0.45 + 0.20 * phase,
-            energy_slope=0.08,
+            activity=min(0.88, 0.42 + 0.38 * phase),
+            current_energy=min(0.88, 0.42 + 0.40 * phase),
+            energy_slope=0.28,
             phrase_terminal_probability=0.8 if phase > 0.92 else 0.1,
         )
     if mode == 1:
