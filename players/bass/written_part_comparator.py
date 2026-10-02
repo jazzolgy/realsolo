@@ -17,6 +17,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from .scorebook_evidence import BassWrittenPartPrior
+
 
 @dataclass(frozen=True)
 class BassLineObservation:
@@ -188,4 +190,20 @@ def compare_bass_lines(
         generated=generated,
         feature_distance=sum(normalized) / max(1, len(normalized)),
         feature_deltas=tuple(deltas),
+    )
+
+
+def written_part_prior_from_profile(
+    profile: BassLineAbstractProfile,
+) -> BassWrittenPartPrior:
+    """Convert a written-part abstract profile into bounded ranking priors."""
+    return BassWrittenPartPrior(
+        root_preference=max(0.0, min(1.0, profile.root_occupancy_rate)),
+        scalar_preference=max(0.0, min(1.0, profile.scalar_motion_rate)),
+        chromatic_preference=max(
+            0.0,
+            min(1.0, profile.chromatic_approach_rate + .5 * profile.enclosure_rate),
+        ),
+        reversal_preference=max(0.0, min(1.0, profile.direction_reversal_rate)),
+        register_center_midi=profile.register_center,
     )
