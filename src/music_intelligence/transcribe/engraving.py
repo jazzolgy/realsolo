@@ -29,6 +29,12 @@ class BeamState(str, Enum):
     END = "end"
 
 
+class PrimaryBeamSide(str, Enum):
+    AUTO = "auto"
+    FIRST_NOTE = "first_note"
+    LAST_NOTE = "last_note"
+
+
 class TupletBracketMode(str, Enum):
     AUTO = "auto"
     SHOW = "show"
@@ -57,6 +63,8 @@ class EngravingProfile:
     tie_height_scale: float = 1.0
     apply_voice_position_rules_to_cross_staff: bool = True
     apply_tie_rules_to_cross_staff: bool = True
+    avoid_cross_staff_beam_corners: bool = True
+    cross_staff_primary_beam_side: PrimaryBeamSide = PrimaryBeamSide.FIRST_NOTE
     hide_cross_staff_bar_rests: bool = True
     separate_tuplets_from_adjacent_notes: bool = False
     position_tuplets_as_if_all_notes_beamed: bool = True
@@ -78,6 +86,8 @@ class EngravingIntent:
     stem_direction: StemDirection = StemDirection.AUTO
     beam_state: BeamState = BeamState.NONE
     beam_group_id: str | None = None
+    secondary_beam_state: BeamState = BeamState.NONE
+    secondary_beam_group_id: str | None = None
     cross_staff_target: str | None = None
     tie_placement: VerticalPlacement = VerticalPlacement.AUTO
     tuplet_placement: VerticalPlacement = VerticalPlacement.AUTO
@@ -96,6 +106,16 @@ class EngravingIntent:
             raise ValueError("beam_group_id requires a non-NONE beam state")
         if self.beam_state is not BeamState.NONE and not self.beam_group_id:
             raise ValueError("beamed event requires beam_group_id")
+        if (
+            self.secondary_beam_state is BeamState.NONE
+            and self.secondary_beam_group_id is not None
+        ):
+            raise ValueError("secondary_beam_group_id requires a non-NONE state")
+        if (
+            self.secondary_beam_state is not BeamState.NONE
+            and not self.secondary_beam_group_id
+        ):
+            raise ValueError("secondary beamed event requires group id")
         if self.horizontal_spacing_weight <= 0:
             raise ValueError("horizontal_spacing_weight must be positive")
         if not 0.0 <= self.collision_priority <= 1.0:
@@ -267,6 +287,69 @@ def beam_group_intents(
     return result
 
 
+
+def secondary_beam_group(
+    meter_numerator: int,
+    meter_denominator: int,
+) -> Fraction:
+    """Return the default secondary-beam subgroup in quarter-note units.
+
+    Reference behavior:
+    - simple meter: subgroup every two eighth notes (one quarter note);
+    - compound meter: subgroup every three eighth notes (dotted quarter).
+    """
+
+    if meter_numerator <= 0 or meter_denominator <= 0:
+        raise ValueError("meter must be positive")
+    if meter_denominator == 8 and meter_numerator in {6, 9, 12}:
+        return Fraction(3, 2)
+    return Fraction(1, 1)
+
+
+def secondary_beam_intents(
+    events: tuple[ScoreEvent, ...],
+    *,
+    subgroup: Fraction,
+) -> dict[str, tuple[BeamState, str | None]]:
+    """Assign beam level 2 to sixteenth-or-shorter notes by rhythmic subgroup."""
+
+    if subgroup <= 0:
+        raise ValueError("secondary-beam subgroup must be positive")
+
+    buckets: dict[tuple[str, str, int], list[ScoreEvent]] = {}
+    for event in events:
+        if event.span.duration > Fraction(1, 4):
+            continue
+        bucket = int(event.span.onset // subgroup)
+        buckets.setdefault((event.staff_id, event.voice_id, bucket), []).append(event)
+
+    result = {event.event_id: (BeamState.NONE, None) for event in events}
+    for (staff_id, voice_id, bucket), group in buckets.items():
+        group.sort(key=lambda e: (e.span.onset, e.event_id))
+        contiguous: list[list[ScoreEvent]] = []
+        current: list[ScoreEvent] = []
+        for event in group:
+            if current and current[-1].span.offset != event.span.onset:
+                contiguous.append(current)
+                current = []
+            current.append(event)
+        if current:
+            contiguous.append(current)
+
+        for segment_index, segment in enumerate(contiguous):
+            if len(segment) < 2:
+                continue
+            group_id = f"beam2:{staff_id}:{voice_id}:{bucket}:{segment_index}"
+            for index, event in enumerate(segment):
+                if index == 0:
+                    state = BeamState.BEGIN
+                elif index == len(segment) - 1:
+                    state = BeamState.END
+                else:
+                    state = BeamState.CONTINUE
+                result[event.event_id] = (state, group_id)
+    return result
+
 def _midi_like_position(event: ScoreEvent) -> int | None:
     pitch = event.written_pitch
     if pitch is None:
@@ -387,6 +470,13 @@ def build_default_engraving_plan(
         ),
         separate_tuplets_from_adjacent_notes=profile.separate_tuplets_from_adjacent_notes,
     )
+    secondary_map = secondary_beam_intents(
+        all_events,
+        subgroup=secondary_beam_group(
+            score.meter_numerator,
+            score.meter_denominator,
+        ),
+    )
     tuplet_placements = tuplet_group_placement(
         all_events,
         position_as_if_all_notes_beamed=profile.position_tuplets_as_if_all_notes_beamed,
@@ -395,6 +485,7 @@ def build_default_engraving_plan(
     intents: list[EngravingIntent] = []
     for event in all_events:
         beam_state, beam_group_id = beam_map[event.event_id]
+        secondary_beam_state, secondary_beam_group_id = secondary_map[event.event_id]
         cross_staff = None
         # Cross-staff movement must be requested explicitly in logical metadata
         # later; the default plan never invents one.
@@ -409,6 +500,8 @@ def build_default_engraving_plan(
             stem_direction=stem_map[event.event_id],
             beam_state=beam_state,
             beam_group_id=beam_group_id,
+            secondary_beam_state=secondary_beam_state,
+            secondary_beam_group_id=secondary_beam_group_id,
             cross_staff_target=cross_staff,
             tuplet_placement=tuplet_placements.get(
                 event.event_id,
