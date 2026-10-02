@@ -1,7 +1,7 @@
-"""Charlie Parker vocabulary memory interface.
+"""Bill Evans vocabulary memory interface.
 
-Parker owns the source/provenance of Parker vocabulary. Shared Vocabulary owns
-cross-instrument filtering, affinity, repetition pressure and ranking.
+Bill Evans owns source/provenance. Shared Vocabulary owns reusable retrieval and
+cross-instrument ranking.
 """
 from __future__ import annotations
 from dataclasses import dataclass
@@ -11,13 +11,13 @@ from music_intelligence.vocabulary import rank_vocabulary_items
 
 
 @dataclass(frozen=True)
-class ParkerVocabularyIndex:
+class BillEvansVocabularyIndex:
     items: tuple[VocabularyMemoryItem, ...] = ()
 
     def query(self, request: VocabularyQuery) -> tuple[VocabularyMemoryItem, ...]:
-        if request.legend_id != "charlie_parker":
+        if request.legend_id != "bill_evans":
             return ()
         return rank_vocabulary_items(self.items, request)
 
 
-PARKER_VOCABULARY_INDEX = ParkerVocabularyIndex()
+BILL_EVANS_VOCABULARY_INDEX = BillEvansVocabularyIndex()
