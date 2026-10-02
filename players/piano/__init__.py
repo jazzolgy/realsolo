@@ -39,9 +39,11 @@ from .ensemble_response import (
     EnsembleActor,
     EnsembleResponseBias,
     EnsembleResponseObservation,
+    EnsembleSnapshot,
     GestureResponseRecord,
     ResponseType,
     evaluate_response_bias,
+    infer_coarse_responses,
 )
 from .expression import (
     DynamicLevel,
@@ -112,9 +114,11 @@ __all__ = [
     "EnsembleActor",
     "EnsembleResponseBias",
     "EnsembleResponseObservation",
+    "EnsembleSnapshot",
     "GestureResponseRecord",
     "ResponseType",
     "evaluate_response_bias",
+    "infer_coarse_responses",
     "PianoRhythmicIntent",
     "RhythmicPlacement",
     "apply_rhythmic_intent",
