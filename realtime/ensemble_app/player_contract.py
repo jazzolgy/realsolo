@@ -14,6 +14,9 @@ class RenderVoice:
     onset_offset_beats: float = 0.0
     articulation: tuple[str, ...] = ()
     instrument_role: str = "solo"
+    breath_before_beats: float = 0.0
+    attack_scale: float = 1.0
+    release_shape: str = "normal"
 
     def validate(self) -> None:
         if not 0 <= self.pitch_midi <= 127:
@@ -22,6 +25,10 @@ class RenderVoice:
             raise ValueError("velocity must be in MIDI range 1..127")
         if self.duration_beats <= 0:
             raise ValueError("duration_beats must be positive")
+        if self.breath_before_beats < 0:
+            raise ValueError("breath_before_beats cannot be negative")
+        if self.attack_scale <= 0:
+            raise ValueError("attack_scale must be positive")
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,6 +57,9 @@ class RenderGesture:
                 "onset_offset_beats": v.onset_offset_beats,
                 "articulation": list(v.articulation),
                 "instrument_role": v.instrument_role,
+                "breath_before_beats": v.breath_before_beats,
+                "attack_scale": v.attack_scale,
+                "release_shape": v.release_shape,
             }
 
         return {
@@ -101,6 +111,9 @@ def monophonic_solo_gesture(
     velocity: int = 82,
     articulation: tuple[str, ...] = (),
     instrument_role: str = "tenor_sax",
+    breath_before_beats: float = 0.0,
+    attack_scale: float = 1.0,
+    release_shape: str = "normal",
     source: str = "core_immediate",
 ) -> RenderGesture:
     return RenderGesture(
@@ -112,6 +125,9 @@ def monophonic_solo_gesture(
                 duration_beats,
                 articulation=articulation,
                 instrument_role=instrument_role,
+                breath_before_beats=breath_before_beats,
+                attack_scale=attack_scale,
+                release_shape=release_shape,
             ),
         ),
         source=source,
