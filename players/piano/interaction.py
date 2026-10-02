@@ -102,3 +102,56 @@ class PianoInteractionState:
         self.recent_piano_density.validate()
         if self.phrase_space is not None:
             self.phrase_space.validate()
+
+
+def blend_density(previous: PianoDensity, current: PianoDensity, alpha: float = 0.6) -> PianoDensity:
+    """Exponential smoothing for recent piano activity."""
+    if not 0.0 <= alpha <= 1.0:
+        raise ValueError("alpha must be within 0..1")
+    previous.validate()
+    current.validate()
+    beta = 1.0 - alpha
+    return PianoDensity(
+        voice_count=round(alpha * current.voice_count + beta * previous.voice_count),
+        onset_rate=alpha * current.onset_rate + beta * previous.onset_rate,
+        sustain_ratio=alpha * current.sustain_ratio + beta * previous.sustain_ratio,
+        register_span=alpha * current.register_span + beta * previous.register_span,
+        registral_concentration=(
+            alpha * current.registral_concentration
+            + beta * previous.registral_concentration
+        ),
+        dynamic_weight=alpha * current.dynamic_weight + beta * previous.dynamic_weight,
+        pedal_blur=alpha * current.pedal_blur + beta * previous.pedal_blur,
+    )
+
+
+def decay_density(previous: PianoDensity, factor: float = 0.55) -> PianoDensity:
+    """Decay recent piano activity after a silent action."""
+    if not 0.0 <= factor <= 1.0:
+        raise ValueError("factor must be within 0..1")
+    previous.validate()
+    return PianoDensity(
+        voice_count=round(previous.voice_count * factor),
+        onset_rate=previous.onset_rate * factor,
+        sustain_ratio=previous.sustain_ratio * factor,
+        register_span=previous.register_span * factor,
+        registral_concentration=previous.registral_concentration * factor,
+        dynamic_weight=previous.dynamic_weight * factor,
+        pedal_blur=previous.pedal_blur * factor,
+    )
+
+
+def infer_energy_direction(previous: float | None, current: float, threshold: float = 0.08) -> EnergyDirection:
+    """Infer only coarse direction from observed section-energy change."""
+    if not 0.0 <= current <= 1.0:
+        raise ValueError("current energy must be within 0..1")
+    if previous is None:
+        return EnergyDirection.STABLE
+    if not 0.0 <= previous <= 1.0:
+        raise ValueError("previous energy must be within 0..1")
+    delta = current - previous
+    if delta >= threshold:
+        return EnergyDirection.UP
+    if delta <= -threshold:
+        return EnergyDirection.DOWN
+    return EnergyDirection.STABLE
