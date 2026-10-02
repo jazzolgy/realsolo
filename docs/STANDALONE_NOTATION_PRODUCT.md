@@ -94,3 +94,10 @@ producers and music schools.
 
 RealSolo can still consume the same engine internally, so improvements to
 transcription quality benefit both products.
+
+## RealSolo retained notation features
+
+Product separation does not remove notation from RealSolo. RealSolo keeps a
+live ChordChart, a readable Player Part, and an optional Full Score. The
+standalone product differentiates itself through deeper transcription, editing,
+cleanup and score preparation rather than by owning notation exclusively.
