@@ -53,6 +53,7 @@ class BassStepInput:
     piano_fill_active: bool = False
     low_register_conflict: bool = False
     ensemble_activity: float = 0.5
+    local_key_pitch_classes: frozenset[int] = frozenset()
     directive: InteractionDirective | None = None
 
 
@@ -102,6 +103,7 @@ class BassSequentialRunner:
                 ensemble_activity=item.ensemble_activity,
                 memory_snapshot=snap,
                 interaction_decision=interaction,
+                local_key_pitch_classes=item.local_key_pitch_classes,
             ),
         )
         render = project_bass_candidate_to_render_event(
