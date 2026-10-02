@@ -113,3 +113,20 @@ __all__ += [
     "ALONG_CAME_BETTY_LOCATOR",
     "along_came_betty_evidence",
 ]
+
+
+from .score_harmony import (
+    ParsedScoreChord,
+    UnsupportedScoreChord,
+    expected_harmony_from_score,
+    harmonic_frame_from_score,
+    parse_score_chord_symbol,
+)
+
+__all__ += [
+    "ParsedScoreChord",
+    "UnsupportedScoreChord",
+    "expected_harmony_from_score",
+    "harmonic_frame_from_score",
+    "parse_score_chord_symbol",
+]

@@ -71,3 +71,18 @@ __all__ = [
     "SaxPhraseDecision",
     "SaxPhraseMemory",
 ]
+
+
+from .chart_runtime import (
+    SaxChartRealizationCandidate,
+    SaxChartTickPlan,
+    build_sax_chart_tick,
+    groove_from_score,
+)
+
+__all__ += [
+    "SaxChartRealizationCandidate",
+    "SaxChartTickPlan",
+    "build_sax_chart_tick",
+    "groove_from_score",
+]
