@@ -210,3 +210,129 @@ object can be optional/downstream so existing sax and harmony tests remain uncha
 - no field contains piano register/hand/voicing layout
 - no chord-symbol parsing is required in `players/piano/`
 - representation contains no exact future note sequence
+
+
+## CR-003 — Shared ensemble-response observation / interaction evidence
+
+### Status
+
+Requested from player/piano; current implementation is an experimental piano-side
+adapter only.
+
+### Requested Core capability
+
+Provide an instrument-neutral representation for what the ensemble does shortly after
+a performed gesture, without assuming that the earlier gesture caused the later event.
+
+Minimum useful fields:
+
+- responding actor / section
+- observed response type
+- response strength
+- latency in beats or time
+- observation confidence
+- explicit attribution confidence
+- provenance
+- reference to the immediately preceding performed gesture or interaction event
+
+Candidate response types currently explored in piano:
+
+- rhythmic echo
+- accent alignment
+- phrase extension
+- phrase end
+- density increase / decrease
+- space opened
+- harmonic response
+- no clear response
+
+The final Core taxonomy should be cross-instrument and may differ from these provisional
+piano labels.
+
+### Musical reason
+
+Ensemble improvisation is not only:
+
+```
+listen -> choose -> perform
+```
+
+It is also:
+
+```
+perform
+  -> hear what the other musicians did next
+  -> estimate whether a meaningful interaction relation occurred
+  -> update the next immediate decision
+```
+
+This information is not piano-specific. A saxophonist, drummer, bassist, guitarist, or
+arranger agent may all need to remember whether an earlier gesture was echoed,
+answered, intensified, left space for, or followed by an ensemble density change.
+
+### Causality caution
+
+Temporal adjacency must not be treated as proof of musical causation.
+
+Core should preserve at least two confidence concepts:
+
+- confidence that the response event was actually observed;
+- confidence that the response is meaningfully attributable to the preceding gesture.
+
+A low-attribution observation may still be stored but should have little policy effect.
+
+### Current piano-side experiment
+
+`players/piano/ensemble_response.py` currently defines:
+
+- `EnsembleActor`
+- `ResponseType`
+- `EnsembleResponseObservation`
+- `GestureResponseRecord`
+- `evaluate_response_bias()`
+
+The piano policy uses only bounded recent memory and modest score biases. It does not
+force a response or pre-plan future gestures.
+
+Examples:
+
+- drummer rhythmic echo -> mild support for preserving rhythmic identity while other
+  dimensions may vary;
+- soloist phrase extension -> favor space/restrained support rather than immediate build;
+- space opened / phrase end -> favor answer/fill/punctuation candidates;
+- ensemble density increase -> favor recovery space or softer realization.
+
+These are experimental policy interpretations, not proposed Core rules.
+
+### Likely architectural boundary
+
+Core owns:
+
+- generic response observation representation
+- performer/section identity
+- temporal relation / latency
+- confidence and attribution confidence
+- provenance
+- bounded interaction-event memory interface
+
+Instrument/player layers own:
+
+- whether a specific response should cause that instrument to lay out, answer, build,
+  change register, preserve groove identity, etc.
+
+### Regression risk
+
+Low if introduced additively.
+
+Do not make all performance events require a response record. Most ticks may contain
+no clear response.
+
+### Tests required
+
+- response may be recorded without claiming causality
+- observation confidence and attribution confidence remain distinct
+- low attribution produces weak downstream influence
+- multiple instrument/section actors can be represented
+- no piano-specific register/hand/pedal fields enter the shared representation
+- no future action sequence is stored
+- existing monophonic/polyphonic online paths remain compatible
