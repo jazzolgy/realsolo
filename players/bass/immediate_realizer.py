@@ -35,6 +35,11 @@ from .performance_grammar import (
     evaluate_bass_grammar,
 )
 from .performance_expression import BassExpressionProfile, realize_bass_expression
+from .phrase_intent import (
+    BassPhraseDirection,
+    BassPhraseIntent,
+    BassPhraseIntentKind,
+)
 from .performance_memory import BassPerformanceSnapshot
 from .scorebook_evidence import (
     BassScoreEvidenceDirective,
@@ -79,6 +84,7 @@ class BassContext:
     interaction_decision: BassInteractionDecision | None = None
     local_key_pitch_classes: frozenset[int] = frozenset()
     score_evidence: BassScoreEvidenceDirective = BassScoreEvidenceDirective()
+    phrase_intent: BassPhraseIntent = BassPhraseIntent(BassPhraseIntentKind.GROUND)
 
     def validate(self) -> None:
         if self.meter_numerator <= 0:
@@ -379,6 +385,89 @@ def _interaction_memory_score(
     return score, tuple(reasons)
 
 
+def _phrase_intent_score(
+    *,
+    ctx: BassContext,
+    pitch: int,
+    role: BassHarmonicRole,
+) -> tuple[float, tuple[str, ...]]:
+    """Score one immediate candidate against the current multi-event phrase plan."""
+    intent = ctx.phrase_intent
+    score = 0.0
+    reasons: list[str] = []
+
+    structural = {
+        BassHarmonicRole.ROOT,
+        BassHarmonicRole.FIFTH,
+        BassHarmonicRole.CHORD_TONE,
+        BassHarmonicRole.PEDAL,
+    }
+    connective = {
+        BassHarmonicRole.DIATONIC_PASSING,
+        BassHarmonicRole.CHROMATIC_APPROACH,
+        BassHarmonicRole.ANTICIPATION,
+        BassHarmonicRole.NEIGHBOR,
+        BassHarmonicRole.SCALE_COLOR,
+    }
+
+    if intent.kind in {
+        BassPhraseIntentKind.GROUND,
+        BassPhraseIntentKind.RELEASE,
+        BassPhraseIntentKind.RESET,
+    }:
+        if role is BassHarmonicRole.ROOT:
+            score += .055
+            reasons.append(f"phrase {intent.kind.value} favors clear bass orientation")
+        elif role is BassHarmonicRole.FIFTH:
+            score += .025
+        elif role in connective:
+            score -= .045
+            reasons.append(f"phrase {intent.kind.value} reduces information density")
+
+    elif intent.kind is BassPhraseIntentKind.DEVELOP:
+        if role in {
+            BassHarmonicRole.DIATONIC_PASSING,
+            BassHarmonicRole.CHORD_TONE,
+            BassHarmonicRole.NEIGHBOR,
+        }:
+            score += .035
+            reasons.append("phrase development supports connective variety")
+        if role in {
+            BassHarmonicRole.CHROMATIC_APPROACH,
+            BassHarmonicRole.ANTICIPATION,
+        }:
+            score += .015
+
+    elif intent.kind is BassPhraseIntentKind.BUILD:
+        if role in connective:
+            score += .055
+            reasons.append("phrase build supports directional information")
+        elif role is BassHarmonicRole.ROOT:
+            score -= .015
+
+    elif intent.kind is BassPhraseIntentKind.SUSTAIN:
+        if role in structural:
+            score += .018
+        if role in {BassHarmonicRole.NEIGHBOR, BassHarmonicRole.SCALE_COLOR}:
+            score -= .018
+
+    previous = ctx.previous_pitch_midi
+    if previous is not None and pitch != previous:
+        delta = pitch - previous
+        if intent.direction is BassPhraseDirection.RISE:
+            score += .022 if delta > 0 else -.012
+        elif intent.direction is BassPhraseDirection.FALL:
+            score += .022 if delta < 0 else -.012
+        elif intent.direction is BassPhraseDirection.RECOVER:
+            slope = ctx.memory_snapshot.phrase_register_slope
+            if slope > 0:
+                score += .032 if delta < 0 else -.020
+            elif slope < 0:
+                score += .032 if delta > 0 else -.020
+
+    return score, tuple(reasons)
+
+
 def generate_immediate_bass_candidates(
     frame: HarmonicFrame,
     ctx: BassContext,
@@ -550,11 +639,17 @@ def generate_immediate_bass_candidates(
                 harmonic_role=role.value,
                 metric_role=grammar.metric_role.value,
             )
+            phrase_score, phrase_reasons = _phrase_intent_score(
+                ctx=ctx,
+                pitch=pitch,
+                role=role,
+            )
             expression = realize_bass_expression(
                 mode=ctx.mode.value,
                 grammar=grammar,
                 memory=ctx.memory_snapshot,
                 interaction=ctx.interaction_decision,
+                phrase_intent=ctx.phrase_intent,
             )
             score = (
                 base
@@ -562,6 +657,7 @@ def generate_immediate_bass_candidates(
                 + grammar.score_delta
                 + interaction_score
                 + evidence_score
+                + phrase_score
                 - motion_penalty
             )
             candidates.append(BassActionCandidate(
@@ -581,6 +677,7 @@ def generate_immediate_bass_candidates(
                     + grammar.reasons
                     + interaction_reasons
                     + evidence_reasons
+                    + phrase_reasons
                     + expression.reasons
                     + (f"shared voice-leading={vl:.3f}",)
                 ),
