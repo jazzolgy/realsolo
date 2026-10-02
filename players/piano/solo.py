@@ -23,6 +23,10 @@ from music_intelligence.reasoning.online_improviser import (
 )
 
 from .bebop_phrase_space import BebopPhraseSpaceEvidence, PhraseSpaceType
+from .bebop_complementarity import (
+    EnsembleBreathType,
+    EnsembleComplementarityEvidence,
+)
 
 
 def default_bebop_legend_blend() -> LegendBlend:
@@ -39,6 +43,9 @@ class PianoSoloContext:
     creativity_strength: float = 0.6
     phrase_space: BebopPhraseSpaceEvidence = field(
         default_factory=BebopPhraseSpaceEvidence
+    )
+    ensemble_complementarity: EnsembleComplementarityEvidence = field(
+        default_factory=EnsembleComplementarityEvidence
     )
 
     def validate(self) -> None:
@@ -57,6 +64,7 @@ class PianoSoloContext:
             if not 0.0 <= value <= 1.0:
                 raise ValueError(f"{name} must be within 0..1")
         self.phrase_space.validate()
+        self.ensemble_complementarity.validate()
 
 
 @dataclass
@@ -184,6 +192,45 @@ class PianoSoloEvaluator:
                 score += v
                 components["deep_release_hold_space"] = v
                 reasons.append("deep release need not be filled immediately")
+
+        complementarity = context.ensemble_complementarity
+        if complementarity.breath_type is EnsembleBreathType.FOREGROUND_HANDOFF:
+            weight = complementarity.confidence * complementarity.foreground_drop
+            if candidate.pitch_midi is None or "rest" in tags:
+                v = 0.07 * weight
+                score += v
+                components["foreground_handoff_space"] = v
+                reasons.append("foreground handoff can remain open over active support")
+            if {"pickup", "anticipation", "syncopated_entry"} & tags:
+                support = max(
+                    complementarity.low_harmonic_support,
+                    complementarity.percussive_support,
+                )
+                v = 0.06 * weight * support
+                score += v
+                components["foreground_handoff_pickup"] = v
+                reasons.append("active support favors a light rhythmic pickup")
+            if "dense_run" in tags:
+                v = -0.08 * weight
+                score += v
+                components["foreground_handoff_overfill"] = v
+                reasons.append("dense run can overfill an already-supported handoff")
+
+        elif complementarity.breath_type is EnsembleBreathType.COLLECTIVE_RELEASE:
+            weight = complementarity.confidence * complementarity.foreground_drop
+            if (
+                complementarity.post_foreground_reentry >= 0.35
+                and {"phrase_entry", "directed_target", "resolution_path"} & tags
+            ):
+                v = 0.09 * weight
+                score += v
+                components["collective_release_reentry"] = v
+                reasons.append("collective release can frame a new directed phrase entry")
+            elif candidate.pitch_midi is None:
+                v = 0.04 * weight
+                score += v
+                components["collective_release_hold"] = v
+                reasons.append("collective release may be allowed to breathe")
 
         return CandidateScore(candidate, score, components, tuple(reasons))
 
