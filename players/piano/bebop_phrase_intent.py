@@ -8,6 +8,12 @@ from dataclasses import dataclass
 from enum import Enum
 
 from music_intelligence.reasoning.online_improviser import SoftPlan
+from music_intelligence.reasoning.solo_grammar import (
+    SoloArc,
+    SoloDevelopmentOperation,
+    SoloMethodContext,
+    shared_solo_method_options,
+)
 
 from .bebop_complementarity import EnsembleBreathType, EnsembleComplementarityEvidence
 from .bebop_harmonic_turn import BebopHarmonicPhase, BebopHarmonicTurnContext
@@ -43,6 +49,7 @@ class BebopPhraseIntent:
     target_mode: BebopTargetMode
     density_direction: BebopDensityDirection
     connector_families: tuple[str, ...]
+    solo_method: SoloDevelopmentOperation = SoloDevelopmentOperation.STATE
     register_direction: str = "stable"
     confidence: float = 0.5
     rationale: tuple[str, ...] = ()
@@ -59,7 +66,7 @@ class BebopPhraseIntent:
             horizon_beats=self.horizon_beats,
             intention=f"{self.entry_mode.value}:{self.target_mode.value}",
             soft_targets=(self.target_mode.value,),
-            candidate_families=self.connector_families,
+            candidate_families=self.connector_families + (f"solo_method:{self.solo_method.value}",),
             register_direction=self.register_direction,
             density_direction=self.density_direction.value,
             exact_future_notes=(),
@@ -143,6 +150,38 @@ def derive_bebop_phrase_intent(
             families=("rest","pickup","phrase_entry")
             reasons.append("collective release has not yet clearly re-entered")
 
+    shared_context = SoloMethodContext(
+        phrase_maturity=max(0.0, min(1.0, 1.0 - harmonic_turn.phrase_boundary_pressure)),
+        tension=max(0.0, min(1.0, harmonic_turn.resolution_strength)),
+        ensemble_activity=max(
+            0.0,
+            min(
+                1.0,
+                max(
+                    complementarity.low_harmonic_support,
+                    complementarity.percussive_support,
+                ),
+            ),
+        ),
+        recent_repetition_count=0,
+        phrase_space_available=max(0.0, min(1.0, complementarity.foreground_drop)),
+        form_boundary_pressure=max(0.0, min(1.0, harmonic_turn.phrase_boundary_pressure)),
+        future_harmony_available=harmonic_turn.phase is BebopHarmonicPhase.ANTICIPATORY,
+        interaction_role=(
+            "ANSWER"
+            if turn.episode_type is BebopTurnTakingType.SUPPORTED_HANDOFF_REENTRY
+            else ""
+        ),
+    )
+    shared_arc = (
+        SoloArc.RELEASE
+        if density is BebopDensityDirection.RELEASE
+        else SoloArc.DEVELOP
+    )
+    shared_options = shared_solo_method_options(shared_context, arc=shared_arc)
+    solo_method = max(shared_options, key=lambda option: option.weight).operation
+    reasons.append(f"shared solo method: {solo_method.value}")
+
     confidence=max(
         0.25,
         min(
@@ -159,6 +198,7 @@ def derive_bebop_phrase_intent(
         target_mode=target,
         density_direction=density,
         connector_families=families,
+        solo_method=solo_method,
         register_direction=register,
         confidence=confidence,
         rationale=tuple(reasons),
