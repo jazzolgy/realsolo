@@ -18,6 +18,13 @@ from .bebop import (
     infer_bebop_interaction_state,
 )
 from .bebop_profile import BebopStyleProfile, DEFAULT_BEBOP_PROFILE
+from .bass_coupling import (
+    BassPulseProjection,
+    coupling_score_adjustment,
+    infer_bass_drums_coupling,
+    project_bass_pulse,
+)
+from music_intelligence.reasoning.ensemble_state import EnsembleState
 from .model import (
     DrumGesture,
     DrumHit,
@@ -41,10 +48,28 @@ class BebopRuntimeProjection:
 
     soloist: SoloistEnergyProjection
     phrase_memory: BebopPhraseMemory
+    bass: BassPulseProjection | None = None
 
     def validate(self) -> None:
         self.soloist.validate()
         self.phrase_memory.validate()
+        if self.bass is not None:
+            self.bass.validate()
+
+    @classmethod
+    def from_ensemble_state(
+        cls,
+        *,
+        soloist: SoloistEnergyProjection,
+        phrase_memory: BebopPhraseMemory,
+        ensemble_state: EnsembleState,
+    ) -> "BebopRuntimeProjection":
+        """Build a drum-owned projection without copying Shared Core semantics."""
+        return cls(
+            soloist=soloist,
+            phrase_memory=phrase_memory,
+            bass=project_bass_pulse(ensemble_state),
+        )
 
 
 @dataclass(frozen=True)
@@ -242,6 +267,20 @@ def score_bebop_gesture(
             v = -0.24 * profile.phrase_pacing_memory.value * recent
             score += v
             components.append(("phrase_pacing_memory", v))
+
+    # Bass/drums coupling is complementary rather than a synchronous-hit reward.
+    if projection.bass is not None:
+        coupling = infer_bass_drums_coupling(
+            projection.bass,
+            interaction_state=interaction.state,
+        )
+        delta, parts = coupling_score_adjustment(
+            gesture,
+            bass_intent=bass_intent,
+            coupling=coupling,
+        )
+        score += delta
+        components.extend(parts)
 
     return BebopScoredGesture(
         gesture=gesture,
