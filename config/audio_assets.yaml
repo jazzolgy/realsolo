@@ -1,0 +1,66 @@
+version: 1
+policy: docs/AUDIO_ASSET_POLICY.md
+
+assets:
+  - id: karoryfer_meatbass
+    role: bass
+    name: Karoryfer Meatbass
+    license: CC0-1.0
+    status: approved
+    source: https://github.com/sfzinstruments/karoryfer.meatbass
+    bundle_default_candidate: true
+    notes:
+      - "1958 Otto Rubner double bass"
+      - "Pizzicato includes four velocity layers and four round robins"
+      - "Prefer pizzicato mapping for initial jazz walking-bass renderer"
+
+  - id: virtuosity_drums
+    role: drums
+    name: Virtuosity Drums
+    license: CC0-1.0
+    status: approved
+    source: https://versilian-studios.com/virtuosity-drums/
+    bundle_default_candidate: true
+    notes:
+      - "Contemporary jazz drum kit"
+      - "Multiple mic positions"
+      - "Map ride/hat/snare/kick articulations in renderer"
+
+  - id: salamander_grand_v3
+    role: piano
+    name: Salamander Grand Piano V3
+    license: CC-BY-3.0
+    status: conditional
+    source: https://sfzinstruments.github.io/pianos/salamander/
+    bundle_default_candidate: false
+    conditions:
+      - attribution
+      - license_notice
+      - modification_notice_when_applicable
+      - release_packaging_review
+    notes:
+      - "Yamaha C5"
+      - "16 velocity layers"
+
+  - id: mtg_solo_sax
+    role: solo_sax
+    name: MTG Solo Sax
+    license: CC-BY-4.0
+    status: conditional
+    source: https://github.com/sfzinstruments/MTG.SoloSax
+    bundle_default_candidate: false
+    conditions:
+      - attribution
+      - license_link
+      - modification_notice_when_applicable
+      - release_packaging_review
+    notes:
+      - "Soprano/alto/tenor/baritone"
+      - "2-3 velocity layers and round-robin mapping"
+      - "Vibrato, legato, breath/key-noise controls"
+
+excluded_families:
+  - name: Spitfire LABS
+    reason: "Do not treat royalty-free music-output rights as permission to redistribute underlying samples."
+  - name: Pianobook
+    reason: "Community-library licenses vary; no library is bundled without asset-specific redistribution approval."
