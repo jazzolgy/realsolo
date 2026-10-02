@@ -5,32 +5,134 @@ Shared transcription and notation workstream for RealSolo.
 The goal is not only "audio to notes". This layer turns performed musical
 evidence and AI-player committed events into readable score representation.
 
-## Why this is separate
+## Core boundary
 
-All player branches should be able to produce notation without each building
-its own score engine.
+**Performance Representation != Notation Representation.**
 
-Piano, bass, drums and saxophone can therefore expose committed performance
-events while this branch owns the common notation pipeline.
+The branch follows:
 
-## Core separation
+Committed Performance Events / Audio Analysis
+-> Performance Evidence
+-> Musical Structure references
+-> NotationIntent
+-> NotationCandidate family
+-> Preferred Readable Score
+-> MusicXML / replaceable renderer
 
-Performance Representation != Notation Representation.
+It must not feed rewritten notation back into the live player as though the
+score had been the original improvisational decision.
 
-Examples:
-- swing timing may be performed unevenly but notated as straight eighths;
-- rolled or spread piano voicings may belong to one notated sonority;
-- ghost notes or pedal resonance may be audible but omitted;
-- phrase-level interpretation may require ties, rests, tuplets or simplified
-  notation different from raw onset timestamps.
+## Consumes, does not duplicate
 
-## Initial outputs
+This workstream consumes Shared Core / UMR semantics such as:
 
-- internal NotationIntent / NotationCandidate structures
-- MusicXML export
-- instrument-part score projection
-- full-score assembly
-- later PDF/visual engraving through a renderer adapter
+- player / instrument identity
+- performance timing and transport beat mapping
+- Expected / Observed / Inferred Harmony references
+- phrase / form / motif references
+- ensemble state references
+- committed player events
 
-The branch should keep rendering technology replaceable. MusicXML is an output
-format, not the internal musical representation.
+It does not own:
+
+- player musical policy
+- instrument improvisation grammar
+- shared jazz harmony reasoning
+- ensemble interaction scheduling
+- audio synthesis
+
+Shared Core changes, when necessary, should be proposed through
+`CORE_CHANGE_REQUEST.md` rather than silently copied here.
+
+## Current vertical slice
+
+### 1. Common committed-event input
+
+`CommittedPerformanceEvent` preserves:
+
+- physical onset / offset
+- performed beat onset / offset when available
+- pitched or unpitched evidence
+- continuous-pitch reference
+- voice / layer role hints
+- articulation / ornament / technique
+- gesture, phrase, harmony, ensemble references
+- factorized confidence
+- alternatives, evidence and provenance
+
+Only COMMITTED / PLAYED events enter transcription. Provisional player intent
+is not score evidence.
+
+### 2. Notation intent / candidates
+
+`NotationIntent` records whether evidence should be included, omitted or kept
+optional and carries notation-facing interpretation without forcing one score.
+
+`NotationCandidate` keeps competing readable representations with separate
+fidelity, readability and complexity costs.
+
+### 3. Rhythm / score time
+
+The initial deterministic rhythm layer supports:
+
+- exact score-time spans using rational beat units
+- readable grid quantization
+- explicit rests
+- barline splitting and tie chains
+- arbitrary N:M tuplet representation
+
+Microtiming is evidence, not automatically literal notation.
+
+### 4. Pitch spelling
+
+Enharmonic spelling is candidate-based. It may consume a key-signature or
+explicit spelling preference supplied by Shared Core / a human correction, but
+does not infer harmony itself.
+
+Continuous pitch without a nominal Western pitch is not prematurely forced into
+12-TET notation.
+
+### 5. Voice / staff allocation
+
+Staff and voice are separate from player and instrument identity. Allocation
+keeps alternatives and can consume role, register, continuity and explicit
+notation-context hints.
+
+### 6. Piano gesture notation
+
+Staggered onsets inside one committed piano gesture may produce candidates for:
+
+- simultaneous chord
+- arpeggiated chord
+- separate structural onsets
+
+A small micro-stagger is therefore not automatically copied as several written
+attack times.
+
+### 7. Bass / sax / drum directives
+
+Initial notation-only rules cover:
+
+- bass dead / ghost notes
+- sax scoop, fall, doit, bend, vibrato, growl, subtone and grace-note evidence
+- drum unpitched tokens, cymbal x-noteheads, ghost notes and common techniques
+
+These rules describe performed evidence; they do not generate instrument music.
+
+### 8. MusicXML
+
+`ReadableScore` / `ScorePart` / `ScoreEvent` form the notation-domain score
+assembly model. `score_to_musicxml()` projects it to MusicXML 4.0.
+
+MusicXML is an output format, never the internal UMR.
+
+### 9. Individual part / full score
+
+A full `ReadableScore` owns multiple parts. Individual parts are extracted
+without rewriting the underlying notation events.
+
+## Evaluation direction
+
+The long-term product target is not timestamp fidelity alone. Evaluation should
+include readable rhythm, voice separation, instrument notation, engraving and
+ultimately **Human Time to Final Score (HTFS)**.
