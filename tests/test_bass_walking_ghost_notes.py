@@ -123,3 +123,21 @@ def test_recent_ghosts_create_density_restraint():
     ))
     assert third.score < first.score
     assert not third.play
+
+
+def test_ghosts_do_not_pollute_structural_role_history():
+    memory=_memory_with_pitch(40)
+    before=memory.snapshot()
+    ghost=choose_walking_ghost_note(BassGhostContext(
+        mode="walking",
+        beat_in_measure=1.0+_swing().swing_offbeat_fraction,
+        groove=_swing(),
+        memory=before,
+        ensemble_activity=.25,
+        opportunity_hint=.8,
+    ))
+    assert ghost.play
+    commit_walking_ghost(memory,ghost)
+    after=memory.snapshot()
+    assert after.recent_harmonic_roles == before.recent_harmonic_roles
+    assert after.recent_metric_roles == before.recent_metric_roles
