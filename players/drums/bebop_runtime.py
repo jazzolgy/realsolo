@@ -35,6 +35,7 @@ from .ride_continuity import (
     build_ride_candidates,
     score_ride_surface_gesture,
 )
+from .legend_adapter import DrumLegendProjection, legend_gesture_adjustment
 from .model import (
     DrumGesture,
     DrumHit,
@@ -61,6 +62,7 @@ class BebopRuntimeProjection:
     bass: BassPulseProjection | None = None
     ride_memory: RideContinuityMemory = RideContinuityMemory()
     snare_memory: SnarePhraseMemory = SnarePhraseMemory()
+    legend: DrumLegendProjection | None = None
 
     def validate(self) -> None:
         self.soloist.validate()
@@ -85,6 +87,7 @@ class BebopRuntimeProjection:
             bass=project_bass_pulse(ensemble_state),
             ride_memory=RideContinuityMemory(),
             snare_memory=SnarePhraseMemory(),
+            legend=None,
         )
 
 
@@ -386,6 +389,13 @@ def score_bebop_gesture(
             v = -0.24 * profile.phrase_pacing_memory.value * recent
             score += v
             components.append(("phrase_pacing_memory", v))
+
+    # Shared Legend Intelligence affects ranking through drummer-specific
+    # realization features; it never inserts a precomposed future phrase.
+    if projection.legend is not None:
+        delta, parts = legend_gesture_adjustment(gesture, projection.legend)
+        score += delta
+        components.extend(parts)
 
     # Bass/drums coupling is complementary rather than a synchronous-hit reward.
     if projection.bass is not None:
