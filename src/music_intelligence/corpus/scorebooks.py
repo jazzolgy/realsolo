@@ -49,10 +49,13 @@ class ScoreEvidenceKind(str, Enum):
     METER = "meter"
     FORM = "form"
     SECTION = "section"
+    SECTION_ROLE = "section_role"
+    NAVIGATION = "navigation"
     CHORD = "chord"
     SOLO_CHANGES = "solo_changes"
     FEEL_CHANGE = "feel_change"
     BASS_INSTRUCTION = "bass_instruction"
+    WRITTEN_PART = "written_part"
     WRITTEN_BASS_PART = "written_bass_part"
     ARRANGEMENT_NOTE = "arrangement_note"
 
