@@ -2,6 +2,8 @@ from music_intelligence.bass import (
     BassContext,
     BassHarmonicRole,
     BassMode,
+    MetricRole,
+    RegisterIntent,
     generate_immediate_bass_candidates,
 )
 from music_intelligence.harmony.jazz_harmony_core import (
@@ -32,6 +34,7 @@ def test_walking_generates_immediate_root_and_chord_candidates():
     assert any(x.harmonic_role is BassHarmonicRole.ROOT for x in items)
     assert all(x.event.duration_beats == 1.0 for x in items)
     assert all(28 <= x.event.pitch_midi <= 55 for x in items)
+    assert all(x.grammar.metric_role is MetricRole.HARMONIC_ANCHOR for x in items)
 
 
 def test_inferred_harmony_has_precedence_without_reimplementing_harmony():
@@ -67,7 +70,24 @@ def test_late_measure_can_prepare_next_harmony_but_not_a_future_line():
     roles = {x.harmonic_role for x in items}
     assert BassHarmonicRole.CHROMATIC_APPROACH in roles
     assert BassHarmonicRole.ANTICIPATION in roles
+    assert all(x.grammar.metric_role is MetricRole.PREPARATION for x in items)
     assert all(not hasattr(x, "future_line") for x in items)
+
+
+def test_register_intent_reaches_immediate_candidate_policy():
+    frame = HarmonicFrame(
+        expected=ev(HarmonySource.EXPECTED, 0, "Cmaj7", {0, 4, 7, 11}),
+    )
+    items = generate_immediate_bass_candidates(
+        frame,
+        BassContext(
+            mode=BassMode.WALKING,
+            beat_in_measure=1.0,
+            previous_pitch_midi=36,
+            register_intent=RegisterIntent.ASCEND,
+        ),
+    )
+    assert any("supports ascending register trajectory" in x.reasons for x in items)
 
 
 def test_two_feel_realizes_longer_immediate_action():
@@ -80,6 +100,7 @@ def test_two_feel_realizes_longer_immediate_action():
     )
     assert items
     assert all(x.event.duration_beats == 2.0 for x in items)
+    assert all(x.grammar.metric_role is MetricRole.TWO_FEEL_ANCHOR for x in items)
 
 
 def test_pedal_mode_stays_on_current_root():
@@ -93,3 +114,4 @@ def test_pedal_mode_stays_on_current_root():
     assert len(items) == 1
     assert items[0].harmonic_role is BassHarmonicRole.PEDAL
     assert items[0].target_pitch_class == 7
+    assert items[0].grammar.metric_role is MetricRole.PEDAL_ANCHOR
