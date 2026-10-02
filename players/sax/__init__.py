@@ -1,3 +1,5 @@
+from .candidates import SaxLegendCandidateContext, SaxLegendCandidateMaterial, collect_legend_candidate_material
+from .policy import SaxLegendPolicyDecision, choose_legend_memory_intention
 from .legend_context import SaxLegendContext, SaxMemoryIntention
 from .physical import SaxPhysicalAssessment, SaxPhysicalConstraints, assess_sax_transition
 from .articulation import SoloArticulation
@@ -19,6 +21,11 @@ from .phrase import (
 )
 
 __all__ = [
+    "SaxLegendCandidateContext",
+    "SaxLegendCandidateMaterial",
+    "collect_legend_candidate_material",
+    "SaxLegendPolicyDecision",
+    "choose_legend_memory_intention",
     "SaxLegendContext",
     "SaxMemoryIntention",
     "SaxPhysicalAssessment",
