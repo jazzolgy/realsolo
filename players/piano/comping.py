@@ -72,6 +72,7 @@ from .bebop_harmonic_turn_comping import (
 from .ensemble_role import PianoEnsembleMode
 from .lh_texture import evaluate_lh_texture_bias
 from .lh_voice_leading import evaluate_lh_voice_leading
+from .rh_lh_interaction import evaluate_rh_lh_interaction
 
 
 class InteractionRole(str, Enum):
@@ -100,6 +101,9 @@ class PianoCompingContext:
     soloist_activity: float = 0.5
     piano_foreground_activity: float = 0.0
     piano_foreground_register_midi: float | None = None
+    piano_foreground_onset_proximity_beats: float | None = None
+    piano_foreground_gap_beats: float = 0.0
+    piano_foreground_rhythm_match_confidence: float = 0.0
     phrase_boundary_probability: float = 0.0
     available_space_beats: float = 0.0
     bass_activity: float = 0.5
@@ -127,6 +131,7 @@ class PianoCompingContext:
         for name in (
             "soloist_activity",
             "piano_foreground_activity",
+            "piano_foreground_rhythm_match_confidence",
             "phrase_boundary_probability",
             "bass_activity",
             "drummer_activity",
@@ -146,6 +151,13 @@ class PianoCompingContext:
                 raise ValueError(f"{name} must be within 0..1")
         if self.available_space_beats < 0:
             raise ValueError("available_space_beats cannot be negative")
+        if self.piano_foreground_gap_beats < 0:
+            raise ValueError("piano_foreground_gap_beats cannot be negative")
+        if (
+            self.piano_foreground_onset_proximity_beats is not None
+            and self.piano_foreground_onset_proximity_beats < 0
+        ):
+            raise ValueError("piano_foreground_onset_proximity_beats cannot be negative")
         if self.soloist_register_midi is not None and not 0 <= self.soloist_register_midi <= 127:
             raise ValueError("soloist_register_midi must be within MIDI range")
         if (
@@ -491,6 +503,15 @@ class PianoCompingEvaluator:
             for key, value in lh_voice_leading_bias.components.items():
                 components[key] = components.get(key,0.0) + value
             reasons.extend(lh_voice_leading_bias.reasons)
+
+            rh_lh_bias = evaluate_rh_lh_interaction(
+                candidate,
+                comping_context,
+            )
+            score += rh_lh_bias.score_delta
+            for key, value in rh_lh_bias.components.items():
+                components[key] = components.get(key,0.0) + value
+            reasons.extend(rh_lh_bias.reasons)
 
             event = candidate.realization.event
             if harmonic_reasoning is not None:
