@@ -8,6 +8,7 @@ from music_intelligence.transcribe.engraving import (
     VerticalPlacement,
     beam_group_intents,
     build_default_engraving_plan,
+    cross_staff_tie_placement,
     tuplet_group_placement,
 )
 from music_intelligence.transcribe.notation import NotatedAtomKind, ScoreSpan, TupletRatio
@@ -228,3 +229,40 @@ def test_tuplet_can_be_separated_from_adjacent_notes_by_profile():
     assert joined["trip"][0] is BeamState.END
     assert separated["n"] == (BeamState.NONE, None)
     assert separated["trip"] == (BeamState.NONE, None)
+
+
+
+def test_cross_staff_tie_can_reuse_normal_tie_position_rules():
+    tied = ScoreEvent(
+        event_id="tie:1",
+        part_id="piano",
+        staff_id="piano:upper",
+        voice_id="voice1",
+        kind=NotatedAtomKind.NOTE,
+        span=ScoreSpan(Fraction(0), Fraction(1)),
+        source_event_ids=("src:tie",),
+        written_pitch=WrittenPitch("C", 0, 5),
+        tie_to_next=True,
+    )
+    intent = __import__(
+        "music_intelligence.transcribe.engraving",
+        fromlist=["EngravingIntent"],
+    ).EngravingIntent(
+        "tie:1",
+        stem_direction=StemDirection.UP,
+        cross_staff_target="piano:lower",
+    )
+
+    placement = cross_staff_tie_placement(
+        tied,
+        intent,
+        EngravingProfile(apply_tie_rules_to_cross_staff=True),
+    )
+    legacy = cross_staff_tie_placement(
+        tied,
+        intent,
+        EngravingProfile(apply_tie_rules_to_cross_staff=False),
+    )
+
+    assert placement is VerticalPlacement.BELOW
+    assert legacy is VerticalPlacement.AUTO
