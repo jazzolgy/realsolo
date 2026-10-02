@@ -1,5 +1,12 @@
 """Instrument-specific AI Drummer realization layer."""
 
+from .bass_coupling import (
+    BassDrumsCoupling,
+    BassPulseProjection,
+    coupling_score_adjustment,
+    infer_bass_drums_coupling,
+    project_bass_pulse,
+)
 from .bebop import (
     BassDrumIntent,
     BebopCompIntent,
@@ -97,6 +104,11 @@ from .timing import (
 )
 
 __all__ = [
+    "BassDrumsCoupling",
+    "BassPulseProjection",
+    "coupling_score_adjustment",
+    "infer_bass_drums_coupling",
+    "project_bass_pulse",
     "BassDrumIntent",
     "BebopCompIntent",
     "BebopInteractionDecision",
