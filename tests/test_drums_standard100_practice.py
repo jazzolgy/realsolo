@@ -60,3 +60,21 @@ def test_runner_uses_walking_bass_and_exercises_multiple_interaction_states(tmp_
     assert result.come_down_states > 0
     assert result.handoff_states > 0
     assert result.ride_quarter_actions > 0
+
+
+def test_aggregate_json_can_contain_many_standard_charts(tmp_path):
+    root = tmp_path / "corpus"
+    charts = root / "symbolic" / "irealb_v1_0" / "standard100"
+    charts.mkdir(parents=True)
+    payload = {
+        "songs": [
+            {"title": "A", "bar_count": 8, "meter": "4/4", "tempo": 150},
+            {"title": "B", "bar_count": 12, "meter": "3/4", "tempo": 140},
+        ]
+    }
+    (charts / "standard100.json").write_text(json.dumps(payload), encoding="utf-8")
+
+    loaded = load_standard100(root)
+    assert [x.title for x in loaded] == ["A", "B"]
+    assert loaded[1].meter_numerator == 3
+    assert loaded[1].meter_denominator == 4
