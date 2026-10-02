@@ -100,3 +100,31 @@ def test_magnetic_layout_repositions_attached_objects_without_changing_note_spac
     assert any(a.kind is LayoutActionKind.MAGNETIC_REPOSITION for a in actions)
     assert not any(a.kind is LayoutActionKind.HORIZONTAL_RESPACING for a in actions)
     assert event.span.duration == Fraction(1)
+
+
+
+def test_auto_respace_off_preserves_horizontal_spacing_even_when_pressure_exists():
+    event = ScoreEvent(
+        event_id="space:off",
+        part_id="piano",
+        staff_id="upper",
+        voice_id="v1",
+        kind=NotatedAtomKind.NOTE,
+        span=ScoreSpan(Fraction(0), Fraction(1, 2)),
+        source_event_ids=("src:space",),
+        written_pitch=WrittenPitch("C", 1, 5),
+    )
+    part = ScorePart("piano", "Piano", "piano", ("upper",), (event,))
+    score = assemble_score(score_id="layout:off", title="No Respace", parts=(part,))
+
+    from music_intelligence.transcribe.engraving import EngravingProfile
+    plan = EngravingPlan(
+        score_id=score.score_id,
+        profile=EngravingProfile(auto_respace=False),
+    )
+
+    actions = layout_actions(score, plan)
+    decision = optical_spacing_decisions(score, plan)[0]
+
+    assert not any(a.kind is LayoutActionKind.HORIZONTAL_RESPACING for a in actions)
+    assert decision.spacing_weight == 1.0
