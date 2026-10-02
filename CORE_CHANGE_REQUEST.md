@@ -86,3 +86,57 @@ performance evidence. Provisional future player intent remains in
 This is not a request for Shared Core to own notation. It is only a request for
 a common immutable description of **what was actually committed/performed** so
 all downstream consumers can share one UMR-compatible performance boundary.
+
+
+## CCR-TRANSCRIBE-002 — Shared form execution state
+
+### Status
+
+Pending.
+
+### Motivation
+
+RealSolo's live ChordChart, Player Part highlighting, AI ensemble navigation,
+and future full-score following must not each execute repeats / endings /
+D.S. / Coda independently.
+
+The notation layer can represent form symbols, but the authoritative current
+musical location belongs in an instrument-neutral Shared Core / transport-facing
+state.
+
+### Requested Shared Core contract
+
+Provide an immutable current form execution state with at least:
+
+- form_state_id
+- transport position reference
+- displayed/source measure number
+- executed measure occurrence / pass count
+- beat within measure
+- current section / rehearsal region reference
+- active ending number when applicable
+- repeat stack / repeat iteration state
+- Segno / Coda jump state
+- D.C. / D.S. traversal state
+- Fine / terminal state
+- provenance and confidence when form location is inferred rather than explicit
+
+### Ownership rule
+
+Shared Core decides **where the ensemble currently is in musical form**.
+
+Transcribe / Notation owns only:
+
+- the written form symbols;
+- compact ChordChart presentation;
+- mapping a Core form cursor to a highlighted measure / chord;
+- resolving notation shorthand such as one-bar repeats for display.
+
+Player branches consume the Shared Core form state and must not maintain a
+different private interpretation of the song form.
+
+### Why this matters
+
+Without one authoritative form cursor, RealSolo could show one chord while the
+AI players believe they are in another chorus / ending / coda.  The chart,
+players, and transport must share the same executed-form identity.
