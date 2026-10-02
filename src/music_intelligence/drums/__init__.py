@@ -1,5 +1,22 @@
 """Instrument-specific AI Drummer realization layer."""
 
+from .bebop import (
+    BassDrumIntent,
+    BebopCompIntent,
+    BebopInteractionDecision,
+    BebopInteractionState,
+    BebopPhraseMemory,
+    BebopTimeIntent,
+    SoloistEnergyProjection,
+    choose_comp_intent,
+    infer_bebop_interaction_state,
+)
+from .bebop_annotation import (
+    BebopEventAnnotation,
+    BebopPhraseAnnotation,
+    DrumEventKind,
+    EvidenceConfidence,
+)
 from .comping import CompingPropensity, comping_propensity
 from .model import (
     DrumGesture,
@@ -67,6 +84,19 @@ from .timing import (
 )
 
 __all__ = [
+    "BassDrumIntent",
+    "BebopCompIntent",
+    "BebopInteractionDecision",
+    "BebopInteractionState",
+    "BebopPhraseMemory",
+    "BebopTimeIntent",
+    "SoloistEnergyProjection",
+    "choose_comp_intent",
+    "infer_bebop_interaction_state",
+    "BebopEventAnnotation",
+    "BebopPhraseAnnotation",
+    "DrumEventKind",
+    "EvidenceConfidence",
     "CompingPropensity",
     "comping_propensity",
     "DrumGesture",
