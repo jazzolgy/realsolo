@@ -105,11 +105,20 @@ def infer_interaction_episode(
     else:
         episode_type = InteractionEpisodeType.UNCLASSIFIED
 
+    trailing_no_response = 0
+    for turn in reversed(turns):
+        if turn.observation.response_type is ResponseType.NO_CLEAR_RESPONSE:
+            trailing_no_response += 1
+        else:
+            break
+
+    active = trailing_no_response < 2
+
     return InteractionEpisode(
         episode_type=episode_type,
         turns=turns,
         confidence=confidence,
-        active=True,
+        active=active,
     )
 
 
