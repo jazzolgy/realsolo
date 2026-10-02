@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from .models import BeatState, MidiObservation, PhraseState
+from .models import BeatState, PhraseState
 
 
 class PhraseTracker:
-    """Online activity/space tracker. Phrase end is emitted once per silence."""
+    """Input-agnostic online activity/space tracker."""
 
     def __init__(self, *, phrase_end_beats: float = 1.15, fallback_phrase_end_s: float = 0.8) -> None:
         self.phrase_end_beats = phrase_end_beats
@@ -14,17 +14,18 @@ class PhraseTracker:
         self.state = PhraseState()
         self._end_emitted = False
 
-    def update(self, obs: MidiObservation, beat: BeatState) -> PhraseState:
+    def update(self, obs, beat: BeatState) -> PhraseState:
         s = self.state
         if obs.is_attack:
             n = s.attack_count + 1
-            mean_velocity = ((s.mean_velocity * s.attack_count) + obs.velocity) / n
+            velocity = getattr(obs, "velocity", 0)
+            mean_velocity = ((s.mean_velocity * s.attack_count) + velocity) / n
             self._end_emitted = False
             self.state = PhraseState(
                 active=True,
                 attack_count=n,
                 last_attack_time=obs.timestamp,
-                last_pitch=obs.note,
+                last_pitch=getattr(obs, "note", None) or s.last_pitch,
                 mean_velocity=mean_velocity,
                 phrase_end=False,
                 silence_beats=0.0,

@@ -4,11 +4,11 @@ from collections import deque
 from dataclasses import replace
 from statistics import median
 
-from .models import BeatState, MidiObservation
+from .models import BeatState
 
 
 class AdaptiveBeatTracker:
-    """MIDI pulse tracker that treats near-simultaneous piano notes as one onset."""
+    """Online pulse tracker for MIDI attacks and microphone onset evidence."""
 
     def __init__(
         self,
@@ -24,7 +24,7 @@ class AdaptiveBeatTracker:
         self.onsets: deque[float] = deque(maxlen=window)
         self.state = BeatState()
 
-    def update(self, obs: MidiObservation) -> BeatState:
+    def update(self, obs) -> BeatState:
         if obs.is_attack:
             if not self.onsets or obs.timestamp - self.onsets[-1] >= self.chord_cluster_s:
                 self.onsets.append(obs.timestamp)
@@ -37,20 +37,16 @@ class AdaptiveBeatTracker:
                 self.state = replace(self.state, anchor_time=self.onsets[-1], confidence=0.08)
             return
 
-        intervals = [b - a for a, b in zip(self.onsets, list(self.onsets)[1:]) if b > a]
+        onsets = list(self.onsets)
+        intervals = [b - a for a, b in zip(onsets, onsets[1:]) if b > a]
         target = self.state.beat_period_s
         candidates: list[float] = []
         for dt in intervals[-10:]:
-            # Human attacks can be beats, subdivisions or skipped beats.
             hypotheses = (dt, dt * 2.0, dt * 3.0, dt * 4.0, dt / 2.0)
             valid = [x for x in hypotheses if self.min_period <= x <= self.max_period]
             if not valid:
                 continue
-            if target is None:
-                # Prefer a quarter-note pulse near the middle of the practical range.
-                reference = 0.5
-            else:
-                reference = target
+            reference = 0.5 if target is None else target
             candidates.append(min(valid, key=lambda x: abs(x - reference)))
 
         if not candidates:

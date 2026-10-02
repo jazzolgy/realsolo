@@ -12,7 +12,7 @@ from .scheduler import RealtimeScheduler
 
 
 class EnsembleEngine:
-    """Perceive -> state -> Core immediate choice -> schedule -> listen again."""
+    """Audio/MIDI -> state -> Core immediate choice -> schedule -> listen again."""
 
     def __init__(
         self,
@@ -39,7 +39,7 @@ class EnsembleEngine:
     def stop(self) -> None:
         self.scheduler.stop()
 
-    def ingest(self, obs: MidiObservation) -> EnsembleState:
+    def ingest(self, obs) -> EnsembleState:
         beat = self.beat.update(obs)
         phrase = self.phrase.update(obs, beat)
         state = self.ensemble.update(obs, beat, phrase)

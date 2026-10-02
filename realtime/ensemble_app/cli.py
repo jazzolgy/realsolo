@@ -5,6 +5,7 @@ import time
 
 from music_intelligence.reasoning.online_improviser import OnlineMusicalEvaluator, PerformanceMemory
 
+from .audio_io import list_audio_inputs, live_audio_poll
 from .core_bridge import CoreImmediateBridge, DiagnosticResponseFactory
 from .engine import EnsembleEngine
 from .midi_io import MidoSink, list_ports, live_poll
@@ -22,48 +23,61 @@ def _core() -> CoreImmediateBridge:
 def _print_state(state) -> None:
     bpm = f"{state.beat.tempo_bpm:6.1f}" if state.beat.tempo_bpm else "   ?  "
     phase = f"{state.beat.phase:.2f}" if state.beat.phase is not None else "?"
+    pitch = f"{state.audio_pitch_hz:.1f}Hz" if state.audio_pitch_hz else "-"
     print(
-        f"rev={state.revision:05d} bpm={bpm} phase={phase} "
-        f"notes={sorted(state.active_notes)} activity={state.human_activity:.2f} "
-        f"phrase_end={state.phrase.phrase_end}",
+        f"rev={state.revision:06d} in={state.input_mode:6s} bpm={bpm} phase={phase} "
+        f"activity={state.human_activity:.2f} rms={state.audio_rms:.4f} "
+        f"pitch={pitch} phrase_end={state.phrase.phrase_end}",
         end="\r",
         flush=True,
     )
 
 
 def command_ports() -> None:
-    ins, outs = list_ports()
-    print("MIDI inputs:")
-    print("\n".join(f"  {x}" for x in ins) or "  (none)")
-    print("MIDI outputs:")
-    print("\n".join(f"  {x}" for x in outs) or "  (none)")
-
-
-def command_monitor(input_name: str) -> None:
-    engine = EnsembleEngine(_core(), lambda _: None)
-    last_print = 0.0
-
-    def show(obs):
-        nonlocal last_print
-        state = engine.ingest(obs)
-        if time.monotonic() - last_print > 0.08:
-            _print_state(state)
-            last_print = time.monotonic()
-
-    def tick(now):
-        nonlocal last_print
-        state = engine.tick(now)
-        if state.phrase.phrase_end or now - last_print > 0.12:
-            _print_state(state)
-            last_print = now
+    try:
+        ins, outs = list_ports()
+        print("MIDI inputs:")
+        print("\n".join(f"  {x}" for x in ins) or "  (none)")
+        print("MIDI outputs:")
+        print("\n".join(f"  {x}" for x in outs) or "  (none)")
+    except Exception as exc:
+        print(f"MIDI unavailable: {exc}")
 
     try:
-        live_poll(input_name, show, tick)
+        print("Audio inputs:")
+        for index, name, rate in list_audio_inputs():
+            print(f"  [{index}] {name} ({rate:.0f} Hz)")
+    except Exception as exc:
+        print(f"Audio unavailable: {exc}")
+
+
+def command_monitor_midi(input_name: str) -> None:
+    engine = EnsembleEngine(_core(), lambda _: None)
+    try:
+        live_poll(input_name, lambda obs: _print_state(engine.ingest(obs)), lambda now: engine.tick(now))
     except KeyboardInterrupt:
         print("\nStopped.")
 
 
-def command_probe(input_name: str, output_name: str) -> None:
+def command_monitor_audio(device) -> None:
+    engine = EnsembleEngine(_core(), lambda _: None)
+    last_print = 0.0
+
+    def observe(obs):
+        nonlocal last_print
+        state = engine.ingest(obs)
+        now = time.monotonic()
+        if obs.onset or state.phrase.phrase_end or now - last_print > 0.08:
+            _print_state(state)
+            last_print = now
+
+    try:
+        live_audio_poll(observe, engine.tick, device=device)
+    except KeyboardInterrupt:
+        print("\nStopped.")
+
+
+def command_probe_audio(device, output_name: str) -> None:
     sink = MidoSink(output_name).open()
 
     def audible(event: TransportEvent) -> None:
@@ -72,9 +86,9 @@ def command_probe(input_name: str, output_name: str) -> None:
 
     engine = EnsembleEngine(_core(), audible)
     engine.start()
-    print("Closed-loop diagnostic probe running. Play phrases; pause to invite a response. Ctrl-C to stop.")
+    print("Audio-first closed loop running. Play into the microphone; pause to invite a response.")
     try:
-        live_poll(input_name, engine.ingest, engine.tick)
+        live_audio_poll(engine.ingest, engine.tick, device=device)
     except KeyboardInterrupt:
         pass
     finally:
@@ -87,19 +101,28 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="RealSolo live ensemble runtime")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("ports")
-    monitor = sub.add_parser("monitor")
-    monitor.add_argument("--input", required=True)
-    probe = sub.add_parser("probe")
-    probe.add_argument("--input", required=True)
-    probe.add_argument("--output", required=True)
-    args = parser.parse_args()
 
+    mm = sub.add_parser("monitor-midi")
+    mm.add_argument("--input", required=True)
+
+    ma = sub.add_parser("monitor-audio")
+    ma.add_argument("--device", default=None)
+
+    pa = sub.add_parser("probe-audio")
+    pa.add_argument("--device", default=None)
+    pa.add_argument("--output", required=True)
+
+    args = parser.parse_args()
     if args.command == "ports":
         command_ports()
-    elif args.command == "monitor":
-        command_monitor(args.input)
+    elif args.command == "monitor-midi":
+        command_monitor_midi(args.input)
+    elif args.command == "monitor-audio":
+        device = int(args.device) if args.device is not None and str(args.device).isdigit() else args.device
+        command_monitor_audio(device)
     else:
-        command_probe(args.input, args.output)
+        device = int(args.device) if args.device is not None and str(args.device).isdigit() else args.device
+        command_probe_audio(device, args.output)
 
 
 if __name__ == "__main__":

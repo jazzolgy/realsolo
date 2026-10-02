@@ -8,6 +8,7 @@ class ObservationKind(str, Enum):
     NOTE_ON = "note_on"
     NOTE_OFF = "note_off"
     CONTROL_CHANGE = "control_change"
+    AUDIO_FRAME = "audio_frame"
     CLOCK_TICK = "clock_tick"
 
 
@@ -24,6 +25,36 @@ class MidiObservation:
     @property
     def is_attack(self) -> bool:
         return self.kind == ObservationKind.NOTE_ON and self.note is not None and self.velocity > 0
+
+
+@dataclass(frozen=True, slots=True)
+class AudioObservation:
+    """Low-latency audio evidence, not a transcription result."""
+
+    timestamp: float
+    rms: float
+    peak: float
+    onset_strength: float = 0.0
+    onset: bool = False
+    pitch_hz: float | None = None
+    pitch_confidence: float = 0.0
+    kind: ObservationKind = ObservationKind.AUDIO_FRAME
+
+    @property
+    def is_attack(self) -> bool:
+        return self.onset
+
+    @property
+    def velocity(self) -> int:
+        # A bounded perceptual proxy; Core should use continuous audio evidence too.
+        return int(max(0, min(127, round(self.rms * 420.0))))
+
+    @property
+    def note(self) -> int | None:
+        if self.pitch_hz is None or self.pitch_hz <= 0 or self.pitch_confidence < 0.45:
+            return None
+        import math
+        return int(round(69 + 12 * math.log2(self.pitch_hz / 440.0)))
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,6 +87,12 @@ class EnsembleState:
     leader: str = "human"
     ai_role: str = "following"
     revision: int = 0
+    input_mode: str = "unknown"
+    audio_rms: float = 0.0
+    audio_peak: float = 0.0
+    audio_onset_strength: float = 0.0
+    audio_pitch_hz: float | None = None
+    audio_pitch_confidence: float = 0.0
 
 
 @dataclass(frozen=True, slots=True)
