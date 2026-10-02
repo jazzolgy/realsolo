@@ -20,6 +20,7 @@ from .chord_chart import (
     NavigationMark,
     chart_position,
     parse_chord_symbol,
+    resolved_measure_chords,
 )
 from .events import (
     CommittedPerformanceEvent,
@@ -166,6 +167,7 @@ __all__ = [
     "NavigationMark",
     "chart_position",
     "parse_chord_symbol",
+    "resolved_measure_chords",
     "CommittedPerformanceEvent",
     "ConfidenceBundle",
     "EventAlternative",
