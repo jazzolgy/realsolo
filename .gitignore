@@ -16,3 +16,8 @@ venv/
 *.zip
 build/
 dist/
+# Private shared corpus payloads (metadata/manifests may live in repo)
+corpus_data/
+private_corpus/
+data/corpus/raw/
+
