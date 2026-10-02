@@ -39,6 +39,7 @@ from .rhythmic_language import (
     motif_from_committed_events,
     motif_from_normalized_vocabulary,
     motif_phase_unit,
+    rhythmic_motif_from_shared,
     realize_motif_now,
     transform_motif,
 )
@@ -389,11 +390,15 @@ def _motif_for_development(
             key=lambda item: (item.confidence, -item.recent_usage_count),
             reverse=True,
         ):
-            recalled = motif_from_normalized_vocabulary(
-                vocabulary_id=intent.vocabulary_id,
-                source_id=intent.source_id,
-                normalized_representation=intent.normalized_representation,
-                provenance=intent.provenance,
+            recalled = (
+                rhythmic_motif_from_shared(intent.shared_motif_identity)
+                if intent.shared_motif_identity is not None
+                else motif_from_normalized_vocabulary(
+                    vocabulary_id=intent.vocabulary_id,
+                    source_id=intent.source_id,
+                    normalized_representation=intent.normalized_representation,
+                    provenance=intent.provenance,
+                )
             )
             if recalled is not None:
                 base = recalled
