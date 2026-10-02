@@ -349,3 +349,14 @@ class PianoNativeDecider:
             tags=frozenset(set(event.tags) | set(candidate.tags) | {candidate.role.value}),
             provenance=("piano_comping_policy",),
         )
+
+def build_native_trio_runtime():
+    """Construct the current executable piano/bass/drums runtime loop."""
+    from .runtime_loop import EnsembleRuntimeLoop
+    from .trio_adapters import PianoRuntimeAdapter, BassRuntimeAdapter, DrumsRuntimeAdapter
+
+    return EnsembleRuntimeLoop((
+        PianoRuntimeAdapter(PianoNativeDecider()),
+        BassRuntimeAdapter(BassNativeDecider()),
+        DrumsRuntimeAdapter(DrumsNativeDecider()),
+    ))
