@@ -6,11 +6,18 @@ It is intentionally small enough to feed MusicXML or another engraving adapter.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 from fractions import Fraction
 
 from .events import UnpitchedToken
 from .notation import NotatedAtomKind, ScoreSpan, TupletRatio
 from .spelling import WrittenPitch
+
+
+class GraceNoteKind(str, Enum):
+    ACCIACCATURA = "acciaccatura"
+    APPOGGIATURA = "appoggiatura"
+    UNSLASHED = "unslashed"
 
 
 @dataclass(frozen=True)
@@ -27,6 +34,7 @@ class ScoreEvent:
     tie_from_previous: bool = False
     tie_to_next: bool = False
     tuplet: TupletRatio | None = None
+    grace_kind: GraceNoteKind | None = None
     articulations: tuple[str, ...] = ()
     markings: tuple[str, ...] = ()
     confidence: float | None = None
@@ -52,6 +60,8 @@ class ScoreEvent:
                 self.unpitched.validate()
         if self.tuplet is not None:
             self.tuplet.validate()
+        if self.grace_kind is not None and self.kind is NotatedAtomKind.REST:
+            raise ValueError("rest may not be a grace note")
         if self.confidence is not None and not 0.0 <= self.confidence <= 1.0:
             raise ValueError("score-event confidence must be within 0..1")
 
