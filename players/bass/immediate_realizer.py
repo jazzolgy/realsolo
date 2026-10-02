@@ -57,8 +57,6 @@ class BassMode(str, Enum):
     WALKING = "walking"
     TWO_FEEL = "two_feel"
     PEDAL = "pedal"
-    MELODIC_TENSION = "melodic_tension"
-    REST = "rest"
     OSTINATO = "ostinato"
     SOLO = "solo"
 
@@ -73,6 +71,8 @@ class BassHarmonicRole(str, Enum):
     NEIGHBOR = "neighbor"
     SCALE_COLOR = "scale_color"
     PEDAL = "pedal"
+    MELODIC_TENSION = "melodic_tension"
+    REST = "rest"
 
 
 @dataclass(frozen=True)
