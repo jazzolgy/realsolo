@@ -89,3 +89,47 @@ The first implementation supports a medium-swing online policy:
 
 This is deliberately a small, inspectable baseline for later learned candidate
 priors and real-time listening.
+
+
+## Tempo-conditioned swing and restrained microtiming
+
+The second implementation step replaces a fixed 2:1 triplet assumption with a
+tempo-conditioned swing prior.
+
+Friberg & Sundström (2002) reported that ride-cymbal swing ratios vary
+substantially with tempo: strongly unequal at slow tempi and approaching even
+eighths at fast tempi.  Therefore RealSolo must not encode "swing = 2:1" as an
+instrument invariant.
+
+The timing prior is intentionally conservative.  Published perception work also
+shows that simply expanding natural microtiming deviations does not reliably
+increase perceived swing.  Consequently RealSolo does **not** use unconstrained
+random humanization.  Expressive offsets are bounded and should eventually be
+conditioned by drummer/style/tempo learned from licensed performance data.
+
+The Groove MIDI Dataset is particularly useful for the learned-prior phase:
+13.6 hours, 1,150 MIDI performances, more than 22,000 measures, professional
+drummers, genre/tempo/drummer metadata, velocity, and aligned expressive timing
+under CC BY 4.0.  It contains a jazz primary genre and distinct ride/pedal-hi-hat
+MIDI mappings.
+
+Current engineering anchors are explicitly provisional.  They encode the
+documented monotonic tempo relationship but are not presented as measurements
+of a universal jazz drummer.  They should be replaced or offset by empirical
+drummer/style profiles when the dataset pipeline is introduced.
+
+## Comping independence
+
+Snare and bass-drum comping are now separate candidate priors rather than one
+coupled comping switch.  Their propensities respond independently to:
+
+- intended comping density
+- ensemble activity/headroom
+- soloist activity
+- energy target
+- phrase/section boundary
+- explicit ensemble kick cue
+
+This remains a deterministic baseline policy.  A later statistical model may
+provide context-conditioned probabilities, but runtime selection will still be
+one immediate gesture followed by listen/re-plan.
