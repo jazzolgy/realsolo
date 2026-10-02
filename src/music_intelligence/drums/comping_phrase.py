@@ -63,6 +63,71 @@ class SnareMotifIdentity:
 
 
 @dataclass(frozen=True)
+@dataclass(frozen=True)
+class CommittedSnareEvent:
+    """One already-played snare event used for retrospective motif discovery."""
+    bar_index: int
+    phase: float
+    accent: float = 0.5
+
+    def validate(self) -> None:
+        if self.bar_index < 0:
+            raise ValueError("bar_index may not be negative")
+        if not 0.0 <= self.phase <= 1.0:
+            raise ValueError("phase must be normalized to 0..1")
+        if not 0.0 <= self.accent <= 1.0:
+            raise ValueError("accent must be within 0..1")
+
+
+def motif_from_recent_events(
+    events: tuple[CommittedSnareEvent, ...],
+    *,
+    max_hits: int = 4,
+    max_span_bars: float = 1.0,
+) -> SnareMotifIdentity | None:
+    """Build a motif only from already committed snare events.
+
+    This is retrospective: it never schedules future hits.  The most recent
+    2..max_hits events are considered when they fall inside max_span_bars.
+    """
+    if max_hits < 2:
+        raise ValueError("max_hits must be at least 2")
+    if max_span_bars <= 0:
+        raise ValueError("max_span_bars must be positive")
+    if len(events) < 2:
+        return None
+    for event in events:
+        event.validate()
+
+    ordered = tuple(sorted(events, key=lambda e: (e.bar_index, e.phase)))
+    last = ordered[-1]
+    recent: list[CommittedSnareEvent] = []
+    last_abs = last.bar_index + last.phase
+    for event in reversed(ordered):
+        event_abs = event.bar_index + event.phase
+        if last_abs - event_abs > max_span_bars:
+            break
+        recent.append(event)
+        if len(recent) >= max_hits:
+            break
+    recent.reverse()
+    if len(recent) < 2:
+        return None
+
+    onset_phases = tuple(event.phase for event in recent)
+    accent_phases = tuple(event.phase for event in recent if event.accent >= 0.72)
+    density = min(1.0, len(recent) / max(1.0, max_span_bars * 8.0))
+    motif = SnareMotifIdentity(
+        onset_phases=onset_phases,
+        accent_phases=accent_phases,
+        density=density,
+        source="retrospective_local_execution",
+    )
+    motif.validate()
+    return motif
+
+
+@dataclass(frozen=True)
 class SnarePhraseMemory:
     motif: SnareMotifIdentity | None = None
     bars_since_motif_statement: float = 999.0
@@ -70,6 +135,7 @@ class SnarePhraseMemory:
     bars_since_any_snare_statement: float = 999.0
     last_statement_phase: float | None = None
     recent_space_bars: float = 0.0
+    recent_events: tuple[CommittedSnareEvent, ...] = ()
 
     def validate(self) -> None:
         if self.motif is not None:
@@ -85,6 +151,8 @@ class SnarePhraseMemory:
             raise ValueError("consecutive_related_statements may not be negative")
         if self.last_statement_phase is not None and not 0.0 <= self.last_statement_phase <= 1.0:
             raise ValueError("last_statement_phase must be normalized to 0..1")
+        for event in self.recent_events:
+            event.validate()
 
 
 @dataclass(frozen=True)
@@ -332,9 +400,13 @@ def update_snare_phrase_memory(
             bars_since_any_snare_statement=bars_any,
             last_statement_phase=last_phase,
             recent_space_bars=recent_space,
+            recent_events=memory.recent_events,
         )
 
+    recent_events = memory.recent_events
     if action is CompPhraseAction.STATE:
+        # The first committed hit is not yet a multi-hit motif. Keep the
+        # one-onset fallback until enough executed evidence accumulates.
         motif = SnareMotifIdentity((phase,), density=0.25)
         related = 1
     elif action in {
@@ -354,4 +426,30 @@ def update_snare_phrase_memory(
         bars_since_any_snare_statement=0.0,
         last_statement_phase=phase,
         recent_space_bars=0.0,
+        recent_events=recent_events,
+    )
+
+
+def record_committed_snare_event(
+    memory: SnarePhraseMemory,
+    *,
+    bar_index: int,
+    phase: float,
+    accent: float,
+    max_event_history: int = 8,
+) -> SnarePhraseMemory:
+    """Record an actually played snare event and refresh retrospective motif."""
+    memory.validate()
+    event = CommittedSnareEvent(bar_index=bar_index, phase=phase, accent=accent)
+    event.validate()
+    history = (memory.recent_events + (event,))[-max_event_history:]
+    retrospective = motif_from_recent_events(history)
+    return SnarePhraseMemory(
+        motif=retrospective if retrospective is not None else memory.motif,
+        bars_since_motif_statement=memory.bars_since_motif_statement,
+        consecutive_related_statements=memory.consecutive_related_statements,
+        bars_since_any_snare_statement=memory.bars_since_any_snare_statement,
+        last_statement_phase=phase,
+        recent_space_bars=memory.recent_space_bars,
+        recent_events=history,
     )
