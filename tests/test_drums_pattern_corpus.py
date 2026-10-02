@@ -43,3 +43,31 @@ def test_riley_swing_offbeat_is_tempo_warped_at_runtime():
     assert medium is not None
     assert fast is None
     assert any(hit.voice is DrumVoice.RIDE for hit in medium.hits)
+
+
+def test_style_gating_prevents_big_band_setup_in_bop_only_plan():
+    from music_intelligence.drums.model import DrummerSoftPlan
+    from music_intelligence.drums.pattern_runtime import source_pattern_candidates
+
+    plan = DrummerSoftPlan(style_tags=frozenset({"jazz", "bop"}))
+    ctx = DrummerRuntimeContext(
+        position_in_bar_beats=0.0,
+        phrase_position=0.95,
+        section_transition=True,
+    )
+    candidates = source_pattern_candidates(plan, ctx)
+    assert all("big_band" not in g.tags for g in candidates)
+
+
+def test_big_band_plan_can_retrieve_big_band_setup():
+    from music_intelligence.drums.model import DrummerSoftPlan
+    from music_intelligence.drums.pattern_runtime import source_pattern_candidates
+
+    plan = DrummerSoftPlan(style_tags=frozenset({"jazz", "big_band"}))
+    ctx = DrummerRuntimeContext(
+        position_in_bar_beats=0.0,
+        phrase_position=0.95,
+        section_transition=True,
+    )
+    candidates = source_pattern_candidates(plan, ctx)
+    assert any("big_band" in g.tags for g in candidates)
