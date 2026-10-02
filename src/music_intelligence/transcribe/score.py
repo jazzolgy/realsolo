@@ -35,6 +35,7 @@ class ScoreEvent:
     tie_to_next: bool = False
     tuplet: TupletRatio | None = None
     grace_kind: GraceNoteKind | None = None
+    simultaneity_group_id: str | None = None
     dynamic_marking: str | None = None
     articulations: tuple[str, ...] = ()
     markings: tuple[str, ...] = ()
@@ -63,6 +64,11 @@ class ScoreEvent:
             self.tuplet.validate()
         if self.grace_kind is not None and self.kind is NotatedAtomKind.REST:
             raise ValueError("rest may not be a grace note")
+        if self.simultaneity_group_id is not None:
+            if self.kind is NotatedAtomKind.REST:
+                raise ValueError("rest may not belong to a simultaneity group")
+            if not self.simultaneity_group_id.strip():
+                raise ValueError("simultaneity_group_id may not be blank")
         if self.dynamic_marking is not None and not self.dynamic_marking.strip():
             raise ValueError("dynamic_marking may not be blank")
         if self.confidence is not None and not 0.0 <= self.confidence <= 1.0:
@@ -86,6 +92,7 @@ class ScorePart:
         if len(self.staff_ids) != len(set(self.staff_ids)):
             raise ValueError("staff_ids must be unique")
         previous: dict[tuple[str, str], Fraction] = {}
+        simultaneity_groups: dict[str, list[ScoreEvent]] = {}
         for event in self.events:
             event.validate()
             if event.part_id != self.part_id:
@@ -97,6 +104,38 @@ class ScorePart:
             if prior is not None and event.span.onset < prior:
                 raise ValueError("events must be ordered within each staff/voice")
             previous[key] = event.span.onset
+            if event.simultaneity_group_id is not None:
+                simultaneity_groups.setdefault(
+                    event.simultaneity_group_id,
+                    [],
+                ).append(event)
+
+        for group_id, members in simultaneity_groups.items():
+            if len(members) < 2:
+                raise ValueError(
+                    f"simultaneity group {group_id} requires at least two notes"
+                )
+            first = members[0]
+            expected = (
+                first.part_id,
+                first.staff_id,
+                first.voice_id,
+                first.span.onset,
+                first.span.duration,
+            )
+            for member in members[1:]:
+                actual = (
+                    member.part_id,
+                    member.staff_id,
+                    member.voice_id,
+                    member.span.onset,
+                    member.span.duration,
+                )
+                if actual != expected:
+                    raise ValueError(
+                        f"simultaneity group {group_id} must share "
+                        "part/staff/voice/onset/duration"
+                    )
 
 
 @dataclass(frozen=True)
