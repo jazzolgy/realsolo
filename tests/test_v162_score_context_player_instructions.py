@@ -15,7 +15,7 @@ def test_betty_score_context_exposes_bass_walk_instruction():
         ScorePosition(page=8),
     )
     assert ("bass", "bass walks") in snap.player_instructions
-    assert "walking bass" in (snap.written_part_role or "")
+    assert snap.written_part_role is None
 
 
 def test_actual_proof_score_context_preserves_interpretive_written_part_policy():
