@@ -29,6 +29,10 @@ __all__ = [
     "append_interaction",
     "player_view",
     "update_player_intent",
+    "InteractionDirective",
+    "directive_to_intent",
+    "schedule_ensemble",
+    "schedule_player",
 ]
 
 from .ensemble_state import (
@@ -45,4 +49,11 @@ from .ensemble_state import (
     append_interaction,
     player_view,
     update_player_intent,
+)
+
+from .interaction_scheduler import (
+    InteractionDirective,
+    directive_to_intent,
+    schedule_ensemble,
+    schedule_player,
 )
