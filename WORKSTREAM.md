@@ -1,5 +1,13 @@
-# Workstream: Legend Intelligence
+# Workstream: AI Saxophonist
 
-Owns SharedJazzGrammar research, multi-legend evidence/provenance, LegendProfile design, Online Musical Evaluator, Slow Brain/Fast Hands contracts, and Parker deep study as the first benchmark.
+Owns saxophone-specific melodic realization and performance grammar.
 
-Runtime work must not precompose complete solos. Shared-core changes require tests before integration.
+Shared harmony, phrase/form, narrative, memory, interaction semantics, and
+multi-legend abstractions come from Core. Shared-core changes should be proposed
+through CORE_CHANGE_REQUEST.md rather than silently duplicated here.
+
+Prior Parker research is reference material, not the definition of this branch.
+The long-term target is a multi-legend AI saxophonist.
+
+Runtime invariant: plan intention, not a prerecorded solo; commit one immediate
+event, then listen/re-plan.
