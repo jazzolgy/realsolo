@@ -123,12 +123,14 @@ class NotationEngine:
         position: ChordChartPosition | None = None,
         measures_per_row: int = 4,
         transpose_semitones: int = 0,
+        enharmonic_policy: EnharmonicPolicy | None = None,
     ) -> ChordChartRenderModel:
         return build_chord_chart_render_model(
             chart,
             position=position,
             measures_per_row=measures_per_row,
             transpose_semitones=transpose_semitones,
+            enharmonic_policy=enharmonic_policy,
         )
 
     def chart_viewport(
