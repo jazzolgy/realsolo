@@ -21,6 +21,8 @@ class BebopPhraseSpaceEvidence:
     energy_drop: float = 0.0
     attack_persistence: float = 0.0
     reentry_contrast: float = 0.0
+    percussive_support: float = 0.0
+    harmonic_support: float = 0.0
     confidence: float = 0.0
     actor_attribution_confidence: float = 0.0
 
@@ -29,6 +31,8 @@ class BebopPhraseSpaceEvidence:
             "energy_drop",
             "attack_persistence",
             "reentry_contrast",
+            "percussive_support",
+            "harmonic_support",
             "confidence",
             "actor_attribution_confidence",
         ):
@@ -42,12 +46,32 @@ def classify_phrase_space(
     energy_ratio_to_context: float,
     attack_ratio_to_context: float,
     reentry_ratio: float,
+    percussive_ratio_to_context: float | None = None,
+    harmonic_ratio_to_context: float | None = None,
     confidence: float = 0.8,
 ) -> BebopPhraseSpaceEvidence:
     """Classify a local activity reduction without claiming who caused it."""
     energy_drop=max(0.0,min(1.0,1.0-energy_ratio_to_context))
     attack_persistence=max(0.0,min(1.0,attack_ratio_to_context))
     reentry_contrast=max(0.0,min(1.0,reentry_ratio-1.0))
+    percussive_support=max(
+        0.0,
+        min(
+            1.0,
+            attack_persistence
+            if percussive_ratio_to_context is None
+            else percussive_ratio_to_context,
+        ),
+    )
+    harmonic_support=max(
+        0.0,
+        min(
+            1.0,
+            energy_ratio_to_context
+            if harmonic_ratio_to_context is None
+            else harmonic_ratio_to_context,
+        ),
+    )
 
     if energy_drop >= 0.60 and attack_persistence <= 0.75:
         space_type=PhraseSpaceType.DEEP_RELEASE
@@ -61,6 +85,8 @@ def classify_phrase_space(
         energy_drop=energy_drop,
         attack_persistence=attack_persistence,
         reentry_contrast=reentry_contrast,
+        percussive_support=percussive_support,
+        harmonic_support=harmonic_support,
         confidence=max(0.0,min(1.0,confidence)),
         actor_attribution_confidence=0.0,
     )
