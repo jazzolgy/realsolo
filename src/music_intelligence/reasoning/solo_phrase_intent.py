@@ -46,6 +46,7 @@ def derive_solo_phrase_intent(harmonic_turn:HarmonicTurnContext,turn:TurnTakingE
     elif harmonic_turn.phase is HarmonicTurnPhase.FORM_BOUNDARY:
         entry=SoloEntryMode.NEW_PHRASE; target=SoloTargetMode.OPEN; density=SoloDensityDirection.RELEASE; families=("phrase_entry","pickup","guide_tone"); horizon=1.5; reasons.append("form boundary permits phrase reset")
     if turn.episode_type is TurnTakingType.SUPPORTED_HANDOFF_REENTRY:
+        entry=SoloEntryMode.CONTINUE
         reasons.append("foreground has already re-entered after supported handoff")
     elif turn.episode_type is TurnTakingType.COLLECTIVE_RELEASE_REENTRY:
         entry=SoloEntryMode.NEW_PHRASE if harmonic_turn.phase is HarmonicTurnPhase.FORM_BOUNDARY else SoloEntryMode.CONTINUE; reasons.append("collective release has already resolved into re-entry")
