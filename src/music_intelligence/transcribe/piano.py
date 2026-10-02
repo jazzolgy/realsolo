@@ -6,9 +6,10 @@ gesture, or separated onset notation.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from .events import CommittedPerformanceEvent
+from .score import ScoreEvent
 
 
 @dataclass(frozen=True)
@@ -99,3 +100,79 @@ def piano_gesture_candidates(
     for candidate in candidates:
         candidate.validate()
     return tuple(sorted(candidates, key=lambda c: (c.cost, -c.confidence, c.kind)))
+
+
+
+def apply_piano_gesture_candidate(
+    candidate: PianoGestureCandidate,
+    score_events: tuple[ScoreEvent, ...],
+    *,
+    simultaneity_group_id: str | None = None,
+) -> tuple[ScoreEvent, ...]:
+    """Apply a chosen piano notation gesture to already-projected score events.
+
+    The gesture decision never re-quantizes or re-voices notes.  A simultaneous
+    chord may be grouped only when the target score events already share the
+    same staff, voice, onset and duration after notation projection.
+    """
+
+    candidate.validate()
+    if not score_events:
+        raise ValueError("score_events are required")
+
+    source_ids = set(candidate.source_event_ids)
+    matched = tuple(
+        event
+        for event in score_events
+        if source_ids.intersection(event.source_event_ids)
+    )
+    if len(matched) != len(candidate.source_event_ids):
+        raise ValueError("score events do not cover the piano gesture sources")
+
+    if candidate.kind == "simultaneous_chord":
+        if len(matched) < 2:
+            raise ValueError("simultaneous chord requires at least two score notes")
+        first = matched[0]
+        expected = (
+            first.part_id,
+            first.staff_id,
+            first.voice_id,
+            first.span.onset,
+            first.span.duration,
+        )
+        for event in matched[1:]:
+            actual = (
+                event.part_id,
+                event.staff_id,
+                event.voice_id,
+                event.span.onset,
+                event.span.duration,
+            )
+            if actual != expected:
+                raise ValueError(
+                    "simultaneous piano gesture requires a common "
+                    "part/staff/voice/onset/duration after projection"
+                )
+        group_id = simultaneity_group_id or (
+            "piano:simultaneity:" + ":".join(candidate.source_event_ids)
+        )
+        return tuple(
+            replace(event, simultaneity_group_id=group_id)
+            if event in matched
+            else event
+            for event in score_events
+        )
+
+    if candidate.kind == "arpeggiated_chord":
+        first_id = matched[0].event_id
+        return tuple(
+            replace(
+                event,
+                markings=tuple(dict.fromkeys(event.markings + candidate.markings)),
+            )
+            if event.event_id == first_id
+            else event
+            for event in score_events
+        )
+
+    return score_events
