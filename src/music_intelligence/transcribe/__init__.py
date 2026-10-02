@@ -56,6 +56,19 @@ from .allocation import (
     preferred_allocation,
 )
 from .piano import PianoGestureCandidate, piano_gesture_candidates
+from .instrument_profiles import (
+    ALTO,
+    BASS,
+    PERCUSSION,
+    TENOR,
+    TREBLE,
+    ClefSpec,
+    InstrumentProfile,
+    TranspositionSpec,
+    all_instrument_profiles,
+    resolve_instrument_profile,
+    written_range_warning,
+)
 from .instrument_rules import (
     InstrumentNotationDirective,
     NoteheadStyle,
@@ -112,8 +125,18 @@ from .layout import (
     notehead_displacements,
     optical_spacing_decisions,
 )
+from .quality import (
+    QualityIssueSeverity,
+    ScoreQualityIssue,
+    ScoreQualityReport,
+    audit_score_for_performance,
+)
 from .sequence import assemble_monophonic_voice
-from .projection import EventProjectionResult, project_pitched_event
+from .projection import (
+    EventProjectionResult,
+    dynamic_marking_from_level,
+    project_pitched_event,
+)
 
 __all__ = [
     "CommittedPerformanceEvent",
@@ -153,6 +176,17 @@ __all__ = [
     "preferred_allocation",
     "PianoGestureCandidate",
     "piano_gesture_candidates",
+    "ALTO",
+    "BASS",
+    "PERCUSSION",
+    "TENOR",
+    "TREBLE",
+    "ClefSpec",
+    "InstrumentProfile",
+    "TranspositionSpec",
+    "all_instrument_profiles",
+    "resolve_instrument_profile",
+    "written_range_warning",
     "InstrumentNotationDirective",
     "NoteheadStyle",
     "bass_notation_directive",
@@ -201,7 +235,12 @@ __all__ = [
     "layout_pressures",
     "notehead_displacements",
     "optical_spacing_decisions",
+    "QualityIssueSeverity",
+    "ScoreQualityIssue",
+    "ScoreQualityReport",
+    "audit_score_for_performance",
     "assemble_monophonic_voice",
     "EventProjectionResult",
+    "dynamic_marking_from_level",
     "project_pitched_event",
 ]
