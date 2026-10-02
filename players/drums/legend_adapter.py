@@ -36,6 +36,7 @@ DRUM_LEGEND_DOMAINS: tuple[LegendDomain, ...] = (
     LegendDomain.RHYTHM_SUBDIVISION,
     LegendDomain.MICROTIMING_SWING,
     LegendDomain.ARTICULATION,
+    LegendDomain.BREATH_SPACE,
     LegendDomain.MOTIF_DEVELOPMENT,
     LegendDomain.REPETITION_VARIATION,
     LegendDomain.FORM_AWARENESS,
