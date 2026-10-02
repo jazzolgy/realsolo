@@ -191,6 +191,7 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                 and groove is not None
                 and groove.feel.value in {"swing","shuffle"}
                 and abs(beat-round(beat)) < 1e-6
+                and int(round(beat)) % 2 == 1
             ):
                 offbeat=groove.swing_offbeat_fraction
                 sub=self.trio.decide(
