@@ -38,6 +38,10 @@ from .scorebook_practice import (
     evaluate_practice_results,
     run_scorebook_practice,
 )
+from .written_part_measurement import (
+    StructuredBassNote,
+    measure_written_bass_part,
+)
 from .written_part_evidence import (
     MeasuredWrittenPartEvidence,
     WrittenPartMeasurementStatus,
@@ -108,6 +112,7 @@ __all__ = [
     "BassLineComparison",
     "BassLineObservation",
     "MeasuredWrittenPartEvidence",
+    "StructuredBassNote",
     "WrittenPartMeasurementStatus",
     "BassPracticePassResult",
     "BassPracticePulse",
@@ -144,6 +149,7 @@ __all__ = [
     "generate_immediate_bass_candidates",
     "realize_bass_expression",
     "project_bass_candidate_to_render_event",
+    "measure_written_bass_part",
     "promote_written_part_prior",
     "run_scorebook_practice",
     "written_part_prior_from_profile",
