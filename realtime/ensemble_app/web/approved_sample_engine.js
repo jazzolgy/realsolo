@@ -60,9 +60,29 @@ export class RealSoloApprovedSampleEngine {
     return true;
   }
 
-  async bass(midi, velocity, when, duration) {
+  async bass(midi, velocity, when, duration, articulation = []) {
     const rows = this.manifest.packs.bass.regions;
-    return this._play(this._select(rows, midi, velocity, "bass"), midi, velocity, when, duration, true);
+    const tags = new Set(articulation || []);
+    // Articulation is currently a renderer hint. We do not pretend that the
+    // pizzicato pack contains a dedicated ghost/dead-note sample that it does not.
+    let playedVelocity = velocity;
+    let playedDuration = duration;
+    if (tags.has("short")) playedDuration *= 0.68;
+    if (tags.has("connected")) playedDuration *= 1.04;
+    if (tags.has("ghosted") || tags.has("dead")) {
+      playedVelocity *= 0.72;
+      playedDuration *= 0.46;
+    }
+    playedVelocity = Math.max(1, Math.min(127, Math.round(playedVelocity)));
+    playedDuration = Math.max(0.04, playedDuration);
+    return this._play(
+      this._select(rows, midi, playedVelocity, "bass"),
+      midi,
+      playedVelocity,
+      when,
+      playedDuration,
+      true
+    );
   }
 
   async drum(midi, velocity, when, duration) {
