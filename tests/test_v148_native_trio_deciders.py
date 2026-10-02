@@ -11,6 +11,7 @@ from realtime.ensemble_app.native_deciders import (
     BassNativeDecider,
     DrumsNativeDecider,
     PianoNativeDecider,
+    build_native_trio_runtime,
 )
 from realtime.ensemble_app.runtime_loop import EnsembleRuntimeLoop
 from realtime.ensemble_app.trio_adapters import (
@@ -148,3 +149,8 @@ def test_deciders_do_not_freeze_future_sequence():
         assert not hasattr(decider, "future_notes")
         assert not hasattr(decider, "future_bar")
         assert not hasattr(decider, "future_score")
+
+
+def test_factory_builds_executable_trio_runtime():
+    loop = build_native_trio_runtime()
+    assert set(loop.provider_ids) == {"piano", "bass", "drums"}
