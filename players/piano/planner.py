@@ -16,6 +16,7 @@ from .comping import (
     PianoCompingCandidate,
     PianoCompingContext,
 )
+from .rhythm import expand_rhythmic_variants
 from .voicing import (
     PianoVoicingRequest,
     generate_extended_voicing_families,
@@ -150,4 +151,28 @@ def build_contextual_comping_candidates(
                 )
             )
 
+    return PianoCompingCandidateSet(tuple(out))
+
+
+def expand_candidate_set_rhythmically(
+    candidate_set: PianoCompingCandidateSet,
+    context: PianoCompingContext,
+) -> PianoCompingCandidateSet:
+    """Expand sounding candidates into immediate timing alternatives.
+
+    Silence remains one explicit candidate and is never converted into a fake event.
+    """
+    context.validate()
+    out: list[PianoCompingCandidate] = []
+    for candidate in candidate_set.candidates:
+        if candidate.realization is None:
+            out.append(candidate)
+            continue
+        variants = expand_rhythmic_variants(
+            candidate,
+            phrase_boundary_probability=context.phrase_boundary_probability,
+            available_space_beats=context.available_space_beats,
+            drummer_activity=context.drummer_activity,
+        )
+        out.extend(variants or (candidate,))
     return PianoCompingCandidateSet(tuple(out))
