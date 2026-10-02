@@ -112,8 +112,10 @@ class DrumsNativeDecider:
         phrase_position = _latest_other_phrase_maturity(snapshot, "drums")
         energy = max(0.0, min(1.0, snapshot.ensemble_energy + directive.energy_delta))
 
+        shared_feel = snapshot.groove.feel.value if snapshot.groove is not None else self.feel.value
+        drum_feel = TimeFeel.SWING if shared_feel in {"swing","shuffle"} else TimeFeel.STRAIGHT
         plan = DrummerSoftPlan(
-            feel=self.feel,
+            feel=drum_feel,
             energy=energy,
             comping_density=max(.12, min(.82, .34 + directive.density_delta)),
             interaction_intent=directive.interaction.value,
@@ -134,6 +136,7 @@ class DrumsNativeDecider:
             requested_kick="ensemble_kick" in directive.tags,
             harmonic_transition_confidence=float(context.get("harmonic_transition_confidence", 0.0)),
             harmony=context.get("harmonic_frame"),
+            groove=snapshot.groove,
         )
         chosen = perform_one_gesture(plan, dctx, self.memory)
         hits = tuple(
@@ -194,6 +197,7 @@ class PianoNativeDecider:
             ensemble_density=snapshot.ensemble_density,
             recent_piano_density=min(1.0, self.state.recent_density.voice_count / 6.0),
             section_energy=snapshot.ensemble_energy,
+            time_feel=(snapshot.groove.feel.value if snapshot.groove is not None else "swing"),
         )
         interaction_state = self.state.interaction_state_from_context(comping_context)
         slate = build_immediate_performance_candidates(
