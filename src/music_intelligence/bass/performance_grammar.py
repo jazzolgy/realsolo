@@ -173,12 +173,15 @@ def evaluate_bass_grammar(
             reasons.append("pedal sustains a stable bass anchor")
 
     else:
-        if motion_strategy in {
-            MotionStrategy.CHORDAL,
-            MotionStrategy.SHARED_SCALE_OR_COLOR,
-        }:
-            score += .05
-            reasons.append("middle-beat line continuation")
+        if target_strategy is TargetStrategy.CURRENT_ROOT:
+            score -= .08
+            reasons.append("middle walking beat avoids redundant root re-anchoring")
+        elif motion_strategy is MotionStrategy.CHORDAL:
+            score += .10
+            reasons.append("middle walking beat develops through chord members")
+        elif motion_strategy is MotionStrategy.SHARED_SCALE_OR_COLOR:
+            score += .08
+            reasons.append("middle walking beat supports shared linear color")
 
     if ctx.previous_pitch_midi is not None:
         delta = candidate_pitch_midi - ctx.previous_pitch_midi
