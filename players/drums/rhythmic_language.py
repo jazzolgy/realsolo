@@ -68,6 +68,62 @@ class RhythmicMotifIdentity:
         )
 
 
+@dataclass(frozen=True)
+class CommittedRhythmicEvent:
+    """One already-played event used only for retrospective motif discovery."""
+
+    unit: int
+    accent: float
+    orchestration_slot: int
+
+    def validate(self, cycle_units: int) -> None:
+        if not 0 <= self.unit < cycle_units:
+            raise ValueError("committed event unit must lie inside cycle")
+        if not 0.0 <= self.accent <= 1.0:
+            raise ValueError("committed event accent must be within 0..1")
+        if self.orchestration_slot < 0:
+            raise ValueError("orchestration_slot may not be negative")
+
+
+def motif_from_committed_events(
+    events: tuple[CommittedRhythmicEvent, ...],
+    *,
+    cycle_units: int = 12,
+    subdivision: str = "eighth_triplet_grid",
+    min_events: int = 2,
+) -> RhythmicMotifIdentity | None:
+    """Infer motif identity only from events that have already happened."""
+    if cycle_units <= 0:
+        raise ValueError("cycle_units must be positive")
+    if min_events < 2:
+        raise ValueError("min_events must be at least 2")
+    if len(events) < min_events:
+        return None
+    for event in events:
+        event.validate(cycle_units)
+
+    # Keep the most recent realization at duplicate phase positions.
+    by_unit: dict[int, CommittedRhythmicEvent] = {}
+    for event in events:
+        by_unit[event.unit] = event
+    if len(by_unit) < min_events:
+        return None
+
+    ordered = tuple(by_unit[u] for u in sorted(by_unit))
+    motif = RhythmicMotifIdentity(
+        motif_id="retrospective_committed_motif",
+        cycle_units=cycle_units,
+        onset_units=tuple(e.unit for e in ordered),
+        subdivision=subdivision,
+        accent_vector=tuple(e.accent for e in ordered),
+        orchestration_contour=tuple(e.orchestration_slot for e in ordered),
+        source="retrospective_local_execution",
+        provenance=("drum_rhythmic_language", "committed_execution"),
+    )
+    motif.validate()
+    return motif
+
+
 def engineering_seed_motif() -> RhythmicMotifIdentity:
     """Small non-legend engineering seed used until executed material exists."""
     motif = RhythmicMotifIdentity(
