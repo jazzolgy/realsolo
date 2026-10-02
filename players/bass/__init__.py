@@ -1,5 +1,9 @@
 """AI Bassist instrument-specific realization layer."""
 
+from .ensemble_adapter import (
+    BassEnsembleSignals,
+    derive_bass_ensemble_signals,
+)
 from .interaction_grammar import (
     BassInteractionContext,
     BassInteractionDecision,
@@ -112,6 +116,7 @@ __all__ = [
     "BassCommittedAction",
     "BassInteractionContext",
     "BassInteractionDecision",
+    "BassEnsembleSignals",
     "BassExpressionProfile",
     "BassInteractionIntent",
     "BassPerformanceMemory",
@@ -166,6 +171,7 @@ __all__ = [
     "compare_partial_bass_profiles",
     "choose_immediate_bass_action",
     "curriculum_feature_weights",
+    "derive_bass_ensemble_signals",
     "derive_bass_score_context",
     "derive_bass_score_evidence",
     "evidence_candidate_score",
