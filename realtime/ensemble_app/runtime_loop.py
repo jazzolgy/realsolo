@@ -18,6 +18,7 @@ from music_intelligence.reasoning.interaction_scheduler import (
 )
 
 from .player_contract import RenderGesture
+from .portable_protocol import PortableRenderPacket
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,6 +71,23 @@ class RuntimeTickResult:
     decisions: tuple[PlayerRuntimeDecision, ...]
     gestures: tuple[RenderGesture, ...]
     skipped_player_ids: tuple[str, ...] = ()
+
+    def to_portable_packets(self, *, sequence_start: int = 0) -> tuple[PortableRenderPacket, ...]:
+        """Project committed gestures to the mobile/native runtime boundary."""
+        if sequence_start < 0:
+            raise ValueError("sequence_start cannot be negative")
+        tempo_bpm = float(self.state.transport.tempo_bpm)
+        anchor_beat = float(self.state.transport.beat)
+        return tuple(
+            PortableRenderPacket(
+                sequence_id=sequence_start + index,
+                generation=self.snapshot_generation,
+                tempo_bpm=tempo_bpm,
+                anchor_beat=anchor_beat,
+                gesture=gesture,
+            )
+            for index, gesture in enumerate(self.gestures)
+        )
 
 
 class EnsembleRuntimeLoop:
