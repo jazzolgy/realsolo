@@ -14,6 +14,23 @@ from .events import (
     PerformanceTimeSpan,
     UnpitchedToken,
 )
+from .notation import (
+    NotatedAtom,
+    NotatedAtomKind,
+    NotationCandidate,
+    NotationIntent,
+    NotationRelevance,
+    ScoreSpan,
+    TupletRatio,
+    choose_preferred_candidate,
+)
+from .rhythm import (
+    QuantizationGrid,
+    quantize_score_span,
+    rest_for_gap,
+    split_note_across_bars,
+    tuplet_note,
+)
 
 __all__ = [
     "CommittedPerformanceEvent",
@@ -24,4 +41,17 @@ __all__ = [
     "PerformedPitch",
     "PerformanceTimeSpan",
     "UnpitchedToken",
+    "NotatedAtom",
+    "NotatedAtomKind",
+    "NotationCandidate",
+    "NotationIntent",
+    "NotationRelevance",
+    "ScoreSpan",
+    "TupletRatio",
+    "choose_preferred_candidate",
+    "QuantizationGrid",
+    "quantize_score_span",
+    "rest_for_gap",
+    "split_note_across_bars",
+    "tuplet_note",
 ]
