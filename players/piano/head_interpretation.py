@@ -8,6 +8,12 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 
 from music_intelligence.reasoning.legend_style_core import CandidateEvent
+from music_intelligence.reasoning.head_fidelity import (
+    HeadFidelityContext,
+    HeadFidelityMode,
+    enforce_head_fidelity,
+    generate_head_candidate_variants,
+)
 
 from .rh_swing import RHSwingContext, SwingRole, apply_rh_swing
 
@@ -22,10 +28,21 @@ class HeadInterpretationContext:
     bass_activity: float = 0.5
     drummer_activity: float = 0.5
     ensemble_density: float = 0.5
+    fidelity_mode: HeadFidelityMode = HeadFidelityMode.NATURAL
+    strong_beat: bool = False
+    phrase_anchor: bool = False
+    previous_written_pitch_midi: int | None = None
+    next_written_pitch_midi: int | None = None
+    harmonic_pitch_classes: frozenset[int] = frozenset()
 
     def validate(self) -> None:
         if not 40 <= self.tempo_bpm <= 360:
             raise ValueError("tempo_bpm outside supported range")
+        for pitch in (self.previous_written_pitch_midi, self.next_written_pitch_midi):
+            if pitch is not None and not 0 <= pitch <= 127:
+                raise ValueError("written melody pitch must be in MIDI range")
+        if any(not 0 <= pc <= 11 for pc in self.harmonic_pitch_classes):
+            raise ValueError("harmonic_pitch_classes must be within 0..11")
         for name in (
             "subdivision_phase",
             "phrase_maturity",
@@ -83,9 +100,48 @@ def interpret_head_event(
         duration *= 1.08
         tags.add("head_rhythm_section_carried")
 
-    return replace(
+    proposed = replace(
         event,
         onset_offset_beats=onset,
         duration_beats=max(.0625,duration),
         tags=frozenset(tags),
     )
+    return enforce_head_fidelity(
+        written_event,
+        proposed,
+        HeadFidelityContext(
+            mode=context.fidelity_mode,
+            strong_beat=context.strong_beat,
+            phrase_anchor=context.phrase_anchor,
+            phrase_end=context.phrase_end_pressure >= .7,
+            previous_written_pitch_midi=context.previous_written_pitch_midi,
+            next_written_pitch_midi=context.next_written_pitch_midi,
+            harmonic_pitch_classes=context.harmonic_pitch_classes,
+        ),
+    )
+
+
+def head_event_candidates(
+    written_event: CandidateEvent,
+    context: HeadInterpretationContext,
+) -> tuple[CandidateEvent, ...]:
+    """Return conservative head alternatives around the written melody event.
+
+    The written pitch remains the reference.  NATURAL mode permits only local
+    rhythmic repeat/split and nearby ornament candidates on unprotected notes.
+    """
+    context.validate()
+    base = interpret_head_event(written_event, context)
+    variants = generate_head_candidate_variants(
+        base,
+        HeadFidelityContext(
+            mode=context.fidelity_mode,
+            strong_beat=context.strong_beat,
+            phrase_anchor=context.phrase_anchor,
+            phrase_end=context.phrase_end_pressure >= .7,
+            previous_written_pitch_midi=context.previous_written_pitch_midi,
+            next_written_pitch_midi=context.next_written_pitch_midi,
+            harmonic_pitch_classes=context.harmonic_pitch_classes,
+        ),
+    )
+    return variants
