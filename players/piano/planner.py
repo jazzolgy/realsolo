@@ -17,6 +17,7 @@ from .comping import (
     PianoCompingContext,
 )
 from .expression import expand_expression_variants
+from .harmonic_semantics import annotate_harmonic_semantics
 from .rhythm import expand_rhythmic_variants
 from .voicing import (
     PianoVoicingRequest,
@@ -69,7 +70,7 @@ def build_contextual_comping_candidates(
         )
     ]
 
-    shells = generate_shell_voicings(request)
+    shells = tuple(annotate_harmonic_semantics(x) for x in generate_shell_voicings(request))
     for realization in shells:
         out.append(
             PianoCompingCandidate(
@@ -92,7 +93,7 @@ def build_contextual_comping_candidates(
             )
         )
 
-    rootless = generate_rootless_voicings(request)
+    rootless = tuple(annotate_harmonic_semantics(x) for x in generate_rootless_voicings(request))
     for realization in rootless:
         if context.phrase_boundary_probability >= 0.45 or context.available_space_beats >= 0.5:
             out.append(
@@ -125,7 +126,7 @@ def build_contextual_comping_candidates(
         )
 
     if static_or_modal:
-        for realization in generate_extended_voicing_families(request):
+        for realization in (annotate_harmonic_semantics(x) for x in generate_extended_voicing_families(request)):
             family = realization.event.source_family.removeprefix("piano_")
             if family in {"quartal", "inverted_quartal", "mixed"}:
                 role = InteractionRole.BUILD if context.section_energy >= 0.55 else InteractionRole.ANCHOR
