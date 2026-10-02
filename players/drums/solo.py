@@ -35,6 +35,7 @@ from .rhythmic_language import (
     RhythmicMotifIdentity,
     RhythmicTransform,
     engineering_seed_motif,
+    grouping_boundary_motif,
     motif_from_committed_events,
     motif_phase_unit,
     realize_motif_now,
@@ -346,12 +347,40 @@ def _limb_for_voice(voice: DrumVoice, index: int) -> Limb:
     return Limb.RIGHT_HAND if index % 2 == 0 else Limb.LEFT_HAND
 
 
+def _seed_motif_for_cell(cell: SoloVocabularyCell) -> RhythmicMotifIdentity:
+    """Create nonliteral rhythmic topology from source-supported structure."""
+    cell.validate()
+    if cell.cell_id == "riley_three_beat_cycle":
+        return grouping_boundary_motif(
+            motif_id="riley_three_beat_cycle:abstract_boundaries",
+            grouping=(1, 1, 1),
+            subdivision="beat_boundary",
+            source="riley_three_beat_span_abstracted",
+        )
+    if cell.cell_id == "beyond_bop_triplets_groups_of_four":
+        return grouping_boundary_motif(
+            motif_id="beyond_bop_group4:abstract_boundaries",
+            grouping=(1, 1, 1, 1),
+            subdivision="triplet_note_boundary",
+            source="beyond_bop_group_of_four_abstracted",
+        )
+    if cell.cell_id == "unreel_america_5_5_5_6":
+        return grouping_boundary_motif(
+            motif_id="unreel_5_5_5_6:group_boundaries",
+            grouping=cell.grouping,
+            subdivision=cell.subdivision,
+            source="unreel_grouping_boundaries_only",
+        )
+    return engineering_seed_motif()
+
+
 def _motif_for_development(
+    plan: DrumSoloPlan,
     state: DrumSoloState,
     development: SoloDevelopment,
 ) -> RhythmicMotifIdentity:
     """Return transformed motif identity for this development decision."""
-    base = state.motif_identity or engineering_seed_motif()
+    base = state.motif_identity or _seed_motif_for_cell(solo_cell(plan.motif_cell_id))
     transform = rhythmic_transform_for_development(development)
     if transform is None:
         return base
@@ -376,7 +405,7 @@ def _statement_gesture(
     development: SoloDevelopment,
 ) -> tuple[DrumGesture, RhythmicMotifIdentity]:
     """Realize one current event from a genuinely transformed rhythmic motif."""
-    motif = _motif_for_development(state, development)
+    motif = _motif_for_development(plan, state, development)
     tolerance_units = 0
     if development in {SoloDevelopment.RECAP, SoloDevelopment.RESOLVE} and (
         plan.target_reentry or context.section_transition or context.phrase_position >= 0.9
