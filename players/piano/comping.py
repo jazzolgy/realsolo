@@ -46,6 +46,10 @@ from .interaction_episode import (
     evaluate_episode_bias,
     infer_interaction_episode,
 )
+from .role_occupancy import (
+    CompingRoleOccupancy,
+    evaluate_role_occupancy_bias,
+)
 
 
 class InteractionRole(str, Enum):
@@ -83,6 +87,7 @@ class PianoCompingContext:
     variation_pressure: float = 0.5
     groove_lock_strength: float = 0.0
     motif_continuity_strength: float = 0.0
+    role_occupancy: CompingRoleOccupancy = field(default_factory=CompingRoleOccupancy)
     time_feel: str = "swing"
 
     def validate(self) -> None:
@@ -105,6 +110,7 @@ class PianoCompingContext:
             raise ValueError("available_space_beats cannot be negative")
         if self.soloist_register_midi is not None and not 0 <= self.soloist_register_midi <= 127:
             raise ValueError("soloist_register_midi must be within MIDI range")
+        self.role_occupancy.validate()
 
 
 @dataclass(frozen=True)
@@ -532,6 +538,17 @@ class PianoCompingEvaluator:
                     score, components, reasons, "release_fit", 0.10,
                     "sparse gesture supports release intention",
                 )
+
+        occupancy_bias = evaluate_role_occupancy_bias(
+            candidate,
+            comping_context.role_occupancy,
+        )
+        score += occupancy_bias.total
+        for key, value in occupancy_bias.components.items():
+            components[f"role_occupancy:{key}"] = components.get(
+                f"role_occupancy:{key}", 0.0
+            ) + value
+        reasons.extend(occupancy_bias.reasons)
 
         episode_bias = evaluate_episode_bias(candidate, state.active_episode)
         score += episode_bias.total
