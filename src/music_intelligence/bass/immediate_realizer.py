@@ -18,6 +18,10 @@ from music_intelligence.harmony.voice_leading import (
 )
 from music_intelligence.reasoning.legend_style_core import CandidateEvent
 
+from .interaction_grammar import (
+    BassInteractionDecision,
+    BassInteractionIntent,
+)
 from .performance_grammar import (
     BassGrammarContext,
     BassGrammarDecision,
@@ -26,6 +30,7 @@ from .performance_grammar import (
     TargetStrategy,
     evaluate_bass_grammar,
 )
+from .performance_memory import BassPerformanceSnapshot
 
 
 class BassMode(str, Enum):
@@ -58,6 +63,8 @@ class BassContext:
     stepwise_preference: float = 0.45
     contour_reversal_pressure: float = 0.45
     ensemble_activity: float = 0.5
+    memory_snapshot: BassPerformanceSnapshot = BassPerformanceSnapshot()
+    interaction_decision: BassInteractionDecision | None = None
 
     def validate(self) -> None:
         if self.meter_numerator <= 0:
@@ -204,6 +211,108 @@ def _grammar_context(ctx: BassContext) -> BassGrammarContext:
     )
 
 
+def _interaction_memory_score(
+    *,
+    ctx: BassContext,
+    pitch: int,
+    role: BassHarmonicRole,
+) -> tuple[float, tuple[str, ...]]:
+    """Score one current candidate using bass-local causal memory/intent.
+
+    No future note sequence is stored. The function only asks whether this
+    immediate candidate supports or violates the current bass role and recent
+    performance trajectory.
+    """
+    score = 0.0
+    reasons: list[str] = []
+    memory = ctx.memory_snapshot
+    decision = ctx.interaction_decision
+
+    previous = ctx.previous_pitch_midi
+    if previous is None:
+        previous = memory.previous_pitch_midi
+    delta = pitch - previous if previous is not None else None
+
+    if memory.consecutive_step_count >= 3 and delta is not None and 0 < abs(delta) <= 2:
+        score -= .08
+        reasons.append("stepwise momentum saturation")
+
+    if (
+        memory.consecutive_direction_count >= 3
+        and memory.previous_interval_semitones not in (None, 0)
+        and delta not in (None, 0)
+    ):
+        same_direction = (memory.previous_interval_semitones > 0) == (delta > 0)
+        if same_direction:
+            score -= .08
+            reasons.append("prolonged same-direction contour")
+        else:
+            score += .05
+            reasons.append("contour recovery")
+
+    if decision is not None:
+        intent = decision.intent
+        stable_roles = {
+            BassHarmonicRole.ROOT,
+            BassHarmonicRole.FIFTH,
+            BassHarmonicRole.CHORD_TONE,
+            BassHarmonicRole.PEDAL,
+        }
+        directed_roles = {
+            BassHarmonicRole.CHROMATIC_APPROACH,
+            BassHarmonicRole.ANTICIPATION,
+        }
+
+        if intent in {
+            BassInteractionIntent.ANCHOR,
+            BassInteractionIntent.HOLD,
+            BassInteractionIntent.YIELD,
+            BassInteractionIntent.RESET,
+            BassInteractionIntent.RELEASE,
+        }:
+            if role is BassHarmonicRole.ROOT:
+                score += .07
+                reasons.append(f"{intent.value} favors harmonic floor")
+            elif role in directed_roles:
+                score -= .05
+                reasons.append(f"{intent.value} reduces decorative direction")
+
+        elif intent in {
+            BassInteractionIntent.CONNECT,
+            BassInteractionIntent.PROPEL,
+            BassInteractionIntent.ANSWER,
+            BassInteractionIntent.FILL,
+            BassInteractionIntent.BUILD,
+        }:
+            if role in directed_roles:
+                score += .06
+                reasons.append(f"{intent.value} supports directional connection")
+            elif role in stable_roles:
+                score += .01
+
+        if decision.complexity_delta < 0 and role in directed_roles:
+            score += .08 * decision.complexity_delta
+            reasons.append("interaction complexity reduction")
+        elif decision.complexity_delta > 0 and role in directed_roles:
+            score += .05 * decision.complexity_delta
+
+        if (
+            decision.register_recovery > 0
+            and delta not in (None, 0)
+            and memory.phrase_register_slope != 0
+        ):
+            wants_down = memory.phrase_register_slope > 0
+            recovers = (delta < 0) if wants_down else (delta > 0)
+            amount = .10 * decision.register_recovery
+            score += amount if recovers else -amount
+            reasons.append(
+                "supports register recovery" if recovers
+                else "extends register excursion"
+            )
+
+    return score, tuple(reasons)
+
+
 def generate_immediate_bass_candidates(
     frame: HarmonicFrame,
     ctx: BassContext,
@@ -292,7 +401,12 @@ def generate_immediate_bass_candidates(
             if role is BassHarmonicRole.ANTICIPATION:
                 tags.add("anticipation")
 
-            score = base + vl + grammar.score_delta - motion_penalty
+            interaction_score, interaction_reasons = _interaction_memory_score(
+                ctx=ctx,
+                pitch=pitch,
+                role=role,
+            )
+            score = base + vl + grammar.score_delta + interaction_score - motion_penalty
             candidates.append(BassActionCandidate(
                 event=CandidateEvent(
                     pitch_midi=pitch,
@@ -304,7 +418,12 @@ def generate_immediate_bass_candidates(
                 target_pitch_class=pc % 12,
                 score=score,
                 grammar=grammar,
-                reasons=reasons + grammar.reasons + (f"shared voice-leading={vl:.3f}",),
+                reasons=(
+                    reasons
+                    + grammar.reasons
+                    + interaction_reasons
+                    + (f"shared voice-leading={vl:.3f}",)
+                ),
             ))
 
     return tuple(sorted(candidates, key=lambda x: x.score, reverse=True))
