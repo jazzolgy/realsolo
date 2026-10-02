@@ -115,10 +115,16 @@ def _pitch_realizations_for_pc(pc: int, ctx: BassContext) -> tuple[int, ...]:
     if target is None:
         target = (ctx.register_low_midi + ctx.register_high_midi) / 2
         ordered = sorted(options, key=lambda p: (abs(p - target), p))
+        # Pedal is a single sustained/recurring anchor; octave alternatives
+        # belong to later pedal-register planning, not immediate branching.
+        if ctx.mode is BassMode.PEDAL:
+            return (ordered[0],)
         return tuple(ordered[:2])
 
     # Keep the nearest realization and, when available, one on the opposite side.
     nearest = min(options, key=lambda p: (abs(p - target), p))
+    if ctx.mode is BassMode.PEDAL:
+        return (nearest,)
     below = [p for p in options if p < target]
     above = [p for p in options if p > target]
     selected = [nearest]
