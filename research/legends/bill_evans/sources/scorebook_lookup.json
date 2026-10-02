@@ -21,9 +21,12 @@
           "book": "NewReal1",
           "page": "387",
           "available_in_project": true,
-          "file": "NewReal1.pdf"
+          "file": "NewReal1.pdf",
+          "visual_verified": true
         }
-      ]
+      ],
+      "score_visual_verification": "verified_in_uploaded_pdf",
+      "score_visual_verification_note": "Title/form/harmony page visually checked in project scorebook; page location may be used as score-alignment anchor."
     },
     {
       "track_id": "BE-002",
@@ -38,9 +41,12 @@
           "book": "Realbk1",
           "page": "307",
           "available_in_project": true,
-          "file": "Realbk1.pdf"
+          "file": "Realbk1.pdf",
+          "visual_verified": true
         }
-      ]
+      ],
+      "score_visual_verification": "verified_in_uploaded_pdf",
+      "score_visual_verification_note": "Title/form/harmony page visually checked in project scorebook; page location may be used as score-alignment anchor."
     },
     {
       "track_id": "BE-003",
@@ -60,15 +66,19 @@
           "book": "NewReal1",
           "page": "12",
           "available_in_project": true,
-          "file": "NewReal1.pdf"
+          "file": "NewReal1.pdf",
+          "visual_verified": true
         },
         {
           "book": "Realbk1",
           "page": "36",
           "available_in_project": true,
-          "file": "Realbk1.pdf"
+          "file": "Realbk1.pdf",
+          "visual_verified": true
         }
-      ]
+      ],
+      "score_visual_verification": "verified_in_uploaded_pdf",
+      "score_visual_verification_note": "Title/form/harmony page visually checked in project scorebook; page location may be used as score-alignment anchor."
     },
     {
       "track_id": "BE-004",
@@ -88,9 +98,12 @@
           "book": "Realbk1",
           "page": "53",
           "available_in_project": true,
-          "file": "Realbk1.pdf"
+          "file": "Realbk1.pdf",
+          "visual_verified": true
         }
-      ]
+      ],
+      "score_visual_verification": "verified_in_uploaded_pdf",
+      "score_visual_verification_note": "Title/form/harmony page visually checked in project scorebook; page location may be used as score-alignment anchor."
     },
     {
       "track_id": "BE-005",
@@ -116,15 +129,19 @@
           "book": "NewReal1",
           "page": "326",
           "available_in_project": true,
-          "file": "NewReal1.pdf"
+          "file": "NewReal1.pdf",
+          "visual_verified": true
         },
         {
           "book": "Realbk1",
           "page": "388",
           "available_in_project": true,
-          "file": "Realbk1.pdf"
+          "file": "Realbk1.pdf",
+          "visual_verified": true
         }
-      ]
+      ],
+      "score_visual_verification": "verified_in_uploaded_pdf",
+      "score_visual_verification_note": "Title/form/harmony page visually checked in project scorebook; page location may be used as score-alignment anchor."
     },
     {
       "track_id": "BE-007",
@@ -186,9 +203,12 @@
           "book": "Realbk1",
           "page": "316",
           "available_in_project": true,
-          "file": "Realbk1.pdf"
+          "file": "Realbk1.pdf",
+          "visual_verified": true
         }
-      ]
+      ],
+      "score_visual_verification": "verified_in_uploaded_pdf",
+      "score_visual_verification_note": "Title/form/harmony page visually checked in project scorebook; page location may be used as score-alignment anchor."
     },
     {
       "track_id": "BE-011",
@@ -198,9 +218,12 @@
           "book": "Realbk1",
           "page": "12",
           "available_in_project": true,
-          "file": "Realbk1.pdf"
+          "file": "Realbk1.pdf",
+          "visual_verified": true
         }
-      ]
+      ],
+      "score_visual_verification": "verified_in_uploaded_pdf",
+      "score_visual_verification_note": "Title/form/harmony page visually checked in project scorebook; page location may be used as score-alignment anchor."
     },
     {
       "track_id": "BE-012",
@@ -251,9 +274,12 @@
           "book": "Realbk1",
           "page": "240",
           "available_in_project": true,
-          "file": "Realbk1.pdf"
+          "file": "Realbk1.pdf",
+          "visual_verified": true
         }
-      ]
+      ],
+      "score_visual_verification": "verified_in_uploaded_pdf",
+      "score_visual_verification_note": "Title/form/harmony page visually checked in project scorebook; page location may be used as score-alignment anchor."
     },
     {
       "track_id": "BE-016",
@@ -268,15 +294,19 @@
           "book": "NewReal2",
           "page": "288",
           "available_in_project": true,
-          "file": "NewReal2.pdf"
+          "file": "NewReal2.pdf",
+          "visual_verified": true
         },
         {
           "book": "Realbk1",
           "page": "347",
           "available_in_project": true,
-          "file": "Realbk1.pdf"
+          "file": "Realbk1.pdf",
+          "visual_verified": true
         }
-      ]
+      ],
+      "score_visual_verification": "verified_in_uploaded_pdf",
+      "score_visual_verification_note": "Title/form/harmony page visually checked in project scorebook; page location may be used as score-alignment anchor."
     },
     {
       "track_id": "BE-017",
