@@ -770,3 +770,176 @@ compatibility fallback.
   supporting evidence;
 - existing v1.54 no-invented-scale behavior remains unchanged;
 - all instrument consumers can reuse the same shared fields.
+
+
+## CR-008 — Shared abstract written-line comparator
+
+### Status
+
+Requested from player/piano after scorebook practice on:
+
+- Anthropology
+- Autumn Leaves
+- Actual Proof
+- Asa (The Zoo Blues)
+
+Current implementation is a Piano-side **research/evaluation harness** only:
+
+- `players/piano/linear_practice_comparator.py`
+- `research/linear_scale/scorebook_abstract_comparator_batch_001.json`
+
+It does not alter Piano musical policy.
+
+### Requested shared capability
+
+Provide an instrument-neutral comparator between:
+
+1. an abstract observation of a written line / remembered vocabulary item; and
+2. Shared Linear/Scale candidate route families.
+
+The comparator must not require or retain a complete copyrighted melody.
+
+Recommended abstract dimensions:
+
+- route family
+- structural target class
+- interval-motion class
+- chromatic vs field motion
+- contour class
+- target-arrival horizon
+- section role
+- rhythmic density class
+- confidence
+- provenance
+
+### Musical reason
+
+Exact-note similarity is the wrong primary metric for jazz learning.
+
+The useful question is whether the system has learned the **musical operation**:
+
+- chordal outlining
+- diatonic or chromatic passing
+- approach
+- enclosure
+- common-tone retention
+- scale fragment
+- arpeggio fragment
+- anticipation
+
+and whether it applies that operation toward the right structural target and at the
+right harmonic/form moment.
+
+This also provides a common evaluation layer for Legend Vocabulary.
+
+Example:
+
+```
+Parker fragment
+-> abstract route / target / contour observation
+-> Shared Linear candidate routes
+-> compare musical operation
+```
+
+without requiring literal phrase reproduction.
+
+### Scorebook practice findings
+
+#### Anthropology
+
+High-confidence abstract evidence supports a combination of:
+
+- chordal;
+- diatonic passing;
+- chromatic passing;
+- approach;
+- enclosure-like directed connection;
+
+under short target horizons and high rhythmic density.
+
+#### Autumn Leaves
+
+The written head provides a useful benchmark for:
+
+- chordal target stability;
+- diatonic passing;
+- approach;
+- common-tone / sustained target behavior;
+
+under medium swing and recurring functional cycles.
+
+#### Actual Proof
+
+The page demonstrates why a comparator must allow:
+
+- chordal / color anchoring;
+- scale fragments;
+- arpeggio fragments;
+- common-tone behavior;
+
+while remaining aware of:
+
+- NC;
+- vamp-until-cue;
+- written keyboard figures;
+- meter changes;
+- section-role changes.
+
+#### Asa
+
+The page supports abstract comparison of:
+
+- chordal motion;
+- scale fragments;
+- chromatic passing;
+- arpeggio fragments;
+- altered-dominant target behavior.
+
+### Proposed metrics
+
+Useful shared metrics include:
+
+- route-family recall;
+- route-family over-generation;
+- target-class alignment;
+- contour compatibility;
+- horizon compatibility;
+- section-role compatibility;
+- provenance-weighted confidence.
+
+These should remain diagnostics/evaluation and should not by themselves force runtime
+actions.
+
+### Legend Intelligence compatibility
+
+The comparator should work for all six approved vocabulary-use types:
+
+- LITERAL_QUOTE
+- TRANSPOSED_LICK
+- ADAPTED_LICK
+- FRAGMENT_RECALL
+- ABSTRACTED_PATTERN
+- HYBRID_COMPOSITION
+
+A literal quote may be evaluated for source similarity separately, while this comparator
+measures whether its **musical function** fits the current context.
+
+### Copyright / memory boundary
+
+The shared comparator must be able to operate on derived observations that contain no:
+
+- full melody;
+- exact phrase sequence;
+- full copyrighted rhythm transcription.
+
+Provenance may point back to a private score/source when authorized research requires
+manual verification.
+
+### Tests requested
+
+- comparator operates without literal pitch sequence;
+- route-family recall is independent of transposition;
+- target alignment is separable from route-family match;
+- confidence/provenance survive comparison;
+- scorebook and Legend Vocabulary observations can use the same schema;
+- no comparator field schedules future notes.
