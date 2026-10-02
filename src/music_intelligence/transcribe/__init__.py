@@ -55,3 +55,33 @@ __all__ = [
     "split_note_across_bars",
     "tuplet_note",
 ]
+
+from .spelling import (
+    AccidentalPreference,
+    PitchSpellingCandidate,
+    PitchSpellingContext,
+    WrittenPitch,
+    preferred_spelling,
+    spelling_candidates,
+)
+from .allocation import (
+    AllocationEvidence,
+    StaffProfile,
+    VoiceStaffCandidate,
+    allocation_candidates,
+    preferred_allocation,
+)
+
+__all__ += [
+    "AccidentalPreference",
+    "PitchSpellingCandidate",
+    "PitchSpellingContext",
+    "WrittenPitch",
+    "preferred_spelling",
+    "spelling_candidates",
+    "AllocationEvidence",
+    "StaffProfile",
+    "VoiceStaffCandidate",
+    "allocation_candidates",
+    "preferred_allocation",
+]
