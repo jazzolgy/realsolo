@@ -99,7 +99,7 @@ def derive_bebop_harmonic_turn_context(
 
     if boundary >= 0.65:
         phase=BebopHarmonicPhase.FORM_BOUNDARY
-    elif anticipation >= 0.70:
+    elif anticipation >= 0.65:
         phase=BebopHarmonicPhase.ANTICIPATORY
     elif resolution >= 0.65:
         phase=BebopHarmonicPhase.DIRECTED_RESOLUTION
