@@ -35,6 +35,7 @@ class ScoreEvent:
     tie_to_next: bool = False
     tuplet: TupletRatio | None = None
     grace_kind: GraceNoteKind | None = None
+    dynamic_marking: str | None = None
     articulations: tuple[str, ...] = ()
     markings: tuple[str, ...] = ()
     confidence: float | None = None
@@ -62,6 +63,8 @@ class ScoreEvent:
             self.tuplet.validate()
         if self.grace_kind is not None and self.kind is NotatedAtomKind.REST:
             raise ValueError("rest may not be a grace note")
+        if self.dynamic_marking is not None and not self.dynamic_marking.strip():
+            raise ValueError("dynamic_marking may not be blank")
         if self.confidence is not None and not 0.0 <= self.confidence <= 1.0:
             raise ValueError("score-event confidence must be within 0..1")
 
