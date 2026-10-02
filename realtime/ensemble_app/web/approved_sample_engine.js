@@ -91,7 +91,7 @@ export class RealSoloApprovedSampleEngine {
     return "sustain";
   }
 
-  async _playSolo(row, midi, velocity, when, duration, articulation, family) {
+  async _playSolo(row, midi, velocity, when, duration, articulation, family, hints = {}) {
     if (!row) return false;
     const buffer = await this._buffer(row.sample);
     const src = this.context.createBufferSource();
@@ -102,12 +102,19 @@ export class RealSoloApprovedSampleEngine {
     const tags = new Set((articulation || []).map(x => String(x).toLowerCase()));
     let level = Math.max(0.03, Math.min(1, velocity / 127));
     if (tags.has("breathy") || tags.has("breath")) level *= 0.88;
-    gain.gain.value = level;
+    gain.gain.value = .0001;
 
     src.connect(gain);
     gain.connect(this.context.destination);
     const start = Math.max(this.context.currentTime + 0.005, when);
-    const end = start + Math.max(.08, duration);
+    const releaseShape = hints.release_shape || "normal";
+    const connected = tags.has("legato") || releaseShape === "connected";
+    const effectiveDuration = connected ? duration * 1.08 : duration;
+    const end = start + Math.max(.08, effectiveDuration);
+    const attackScale = Math.max(.2, Math.min(1.5, hints.attack_scale || 1));
+    const attackTime = connected ? .018 : (.008 + (1 - Math.min(1, attackScale)) * .045);
+    gain.gain.setValueAtTime(.0001, start);
+    gain.gain.exponentialRampToValueAtTime(Math.max(.001, level), start + attackTime);
 
     if (src.detune) {
       if (tags.has("scoop")) {
@@ -137,20 +144,22 @@ export class RealSoloApprovedSampleEngine {
     }
 
     src.start(start);
-    gain.gain.setValueAtTime(level, Math.max(start, end - .05));
+    const releaseTime = releaseShape === "open" ? .11 : (connected ? .025 : .05);
+    const releaseStart = Math.max(start + attackTime, end - releaseTime);
+    gain.gain.setValueAtTime(level, releaseStart);
     gain.gain.exponentialRampToValueAtTime(.0001, end);
     src.stop(end + .03);
     return true;
   }
 
-  async solo(instrument, midi, velocity, when, duration, articulation = []) {
+  async solo(instrument, midi, velocity, when, duration, articulation = [], hints = {}) {
     const key = instrument === "trumpet" ? "solo_trumpet" : "solo_sax";
     const pack = this.manifest.packs[key];
     if (!pack || !pack.articulations) return false;
     const family = this._soloFamily(pack, articulation);
     const rows = pack.articulations[family] || pack.articulations.sustain || [];
     const selected = this._select(rows, midi, velocity, key + ":" + family);
-    return this._playSolo(selected, midi, velocity, when, duration, articulation, family);
+    return this._playSolo(selected, midi, velocity, when, duration, articulation, family, hints);
   }
 
   async bass(midi, velocity, when, duration, articulation = []) {
