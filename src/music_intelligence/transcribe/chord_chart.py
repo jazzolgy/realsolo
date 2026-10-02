@@ -273,6 +273,35 @@ class ChordChart:
         )
 
 
+def resolved_measure_chords(
+    chart: ChordChart,
+    measure_number: int,
+) -> tuple[ChordChange, ...]:
+    """Resolve repeat-shorthand content without executing musical form.
+
+    ONE_BAR copies the immediately preceding resolved measure.
+    TWO_BAR copies the measure two bars earlier.  This function only resolves
+    displayed harmonic content; it never decides playback/navigation order.
+    """
+
+    chart.validate()
+    if not 1 <= measure_number <= len(chart.measures):
+        raise ValueError("measure_number outside chart")
+
+    measure = chart.measures[measure_number - 1]
+    if measure.repeat_shorthand is MeasureRepeatKind.NONE:
+        return measure.chords
+
+    source_number = (
+        measure_number - 1
+        if measure.repeat_shorthand is MeasureRepeatKind.ONE_BAR
+        else measure_number - 2
+    )
+    if source_number < 1:
+        raise ValueError("repeat shorthand has no prior source measure")
+    return resolved_measure_chords(chart, source_number)
+
+
 @dataclass(frozen=True)
 class ChordChartPosition:
     measure_number: int
@@ -300,7 +329,7 @@ def chart_position(
     active: ChordSymbol | None = None
     next_chord: ChordSymbol | None = None
 
-    for change in measure.chords:
+    for change in resolved_measure_chords(chart, measure_number):
         if change.beat <= beat:
             active = change.chord
         elif next_chord is None:
@@ -308,15 +337,17 @@ def chart_position(
             break
 
     if active is None:
-        for prior_measure in reversed(chart.measures[: measure_number - 1]):
-            if prior_measure.chords:
-                active = prior_measure.chords[-1].chord
+        for prior_number in range(measure_number - 1, 0, -1):
+            prior_chords = resolved_measure_chords(chart, prior_number)
+            if prior_chords:
+                active = prior_chords[-1].chord
                 break
 
     if next_chord is None:
-        for later_measure in chart.measures[measure_number:]:
-            if later_measure.chords:
-                next_chord = later_measure.chords[0].chord
+        for later_number in range(measure_number + 1, len(chart.measures) + 1):
+            later_chords = resolved_measure_chords(chart, later_number)
+            if later_chords:
+                next_chord = later_chords[0].chord
                 break
 
     return ChordChartPosition(
