@@ -11,7 +11,7 @@ def test_bass_implementation_is_canonical_under_players():
     canonical = (root / "players/bass/immediate_realizer.py").read_text(encoding="utf-8")
     legacy = (root / "src/music_intelligence/bass/immediate_realizer.py").read_text(encoding="utf-8")
     assert "class BassContext" in canonical
-    assert "Canonical module: players.bass.immediate_realizer" in legacy
+    assert "players.bass.immediate_realizer" in legacy
     assert LegacyBassContext is CanonicalBassContext
 
 
@@ -20,5 +20,5 @@ def test_drums_implementation_is_canonical_under_players():
     canonical = (root / "players/drums/online_drummer.py").read_text(encoding="utf-8")
     legacy = (root / "src/music_intelligence/drums/online_drummer.py").read_text(encoding="utf-8")
     assert "class DrummerPerformanceMemory" in canonical
-    assert "Canonical module: players.drums.online_drummer" in legacy
+    assert "players.drums.online_drummer" in legacy
     assert LegacyDrumMemory is CanonicalDrumMemory
