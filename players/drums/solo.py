@@ -384,6 +384,8 @@ def _statement_gesture(
         # Re-entry is an explicit role boundary: allow the nearest motif event
         # to act as immediate punctuation without scheduling any future phrase.
         tolerance_units = max(1, motif.cycle_units // 6)
+        if development is SoloDevelopment.RESOLVE:
+            tolerance_units = max(tolerance_units, motif.cycle_units // 4)
 
     gesture = realize_motif_now(
         motif,
