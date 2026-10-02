@@ -461,5 +461,50 @@
       "statement": "Turn-taking classification can change when a fixed handoff window includes part of the re-entry.",
       "implication": "Prefer boundary-aligned variable-duration handoff intervals in runtime."
     }
-  ]
+  ],
+  "whole_album_turn_taking_scan": {
+    "method": {
+      "sample_rate_hz": 8000,
+      "block_seconds": 0.25,
+      "foreground_band_hz": [
+        500,
+        2500
+      ],
+      "low_support_band_hz": [
+        60,
+        500
+      ],
+      "attack_proxy": "broadband_positive_spectral_flux",
+      "candidate_durations_seconds": [
+        0.75,
+        1,
+        1.5,
+        2
+      ],
+      "foreground_drop_threshold": 0.45,
+      "reentry_threshold": 2,
+      "nonmax_suppression_seconds": 4,
+      "retained_candidates": 200
+    },
+    "counts": {
+      "SUPPORTED_HANDOFF_REENTRY": 152,
+      "COLLECTIVE_RELEASE_REENTRY": 43,
+      "AMBIGUOUS": 5
+    },
+    "medians": {
+      "SUPPORTED_HANDOFF_REENTRY": {
+        "foreground_during_pre": 0.171,
+        "low_support_during_pre": 0.912,
+        "attack_support_during_pre": 0.521,
+        "foreground_post_during": 9.16
+      },
+      "COLLECTIVE_RELEASE_REENTRY": {
+        "foreground_during_pre": 0.105,
+        "low_support_during_pre": 0.438,
+        "attack_support_during_pre": 0.252,
+        "foreground_post_during": 11.61
+      }
+    },
+    "caution": "Detector-selected top-200 morphology sample; not an album-wide prevalence estimate or actor-level transcription."
+  }
 }
