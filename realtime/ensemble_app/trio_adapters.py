@@ -109,6 +109,7 @@ class _BaseRuntimeAdapter:
                     native.gesture,
                     anchor_beat=snapshot.transport.beat,
                     groove=snapshot.groove,
+                    phrase_maturity=native.phrase_maturity,
                 ),
                 density=native.density,
                 energy=native.energy,
