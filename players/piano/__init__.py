@@ -5,6 +5,13 @@ polyphonic evaluation come from Core. This package owns piano-specific
 realization, comping, and interaction policy.
 """
 
+from .bebop_phrase_intent import (
+    BebopDensityDirection,
+    BebopEntryMode,
+    BebopPhraseIntent,
+    BebopTargetMode,
+    derive_bebop_phrase_intent,
+)
 from .bebop_harmonic_turn import (
     BebopHarmonicPhase,
     BebopHarmonicTurnContext,
@@ -147,6 +154,11 @@ __all__ = [
     "PianoActionScore",
     "PianoPerformanceState",
     "PianoPolicyEvaluator",
+    "BebopDensityDirection",
+    "BebopEntryMode",
+    "BebopPhraseIntent",
+    "BebopTargetMode",
+    "derive_bebop_phrase_intent",
     "BebopHarmonicPhase",
     "BebopHarmonicTurnContext",
     "derive_bebop_harmonic_turn_context",
