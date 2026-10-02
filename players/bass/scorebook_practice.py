@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from music_intelligence.harmony.jazz_harmony_core import HarmonicFrame
 
 from .immediate_realizer import BassHarmonicRole, BassMode
+from .scorebook_evidence import BassScoreEvidenceDirective
 from .sequential_runner import BassSequentialRunner, BassStepInput, BassStepResult
 
 
@@ -29,6 +30,7 @@ class BassPracticePulse:
     phrase_boundary: bool = False
     form_boundary: bool = False
     ensemble_activity: float = 0.5
+    score_evidence: BassScoreEvidenceDirective = BassScoreEvidenceDirective()
 
 
 @dataclass(frozen=True)
@@ -208,6 +210,7 @@ def run_scorebook_practice(
                 form_boundary=p.form_boundary,
                 ensemble_activity=p.ensemble_activity,
                 local_key_pitch_classes=p.local_key_pitch_classes,
+                score_evidence=p.score_evidence,
             )
             for p in song.pulses
         )
