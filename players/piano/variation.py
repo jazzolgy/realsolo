@@ -61,12 +61,14 @@ class VariationContext:
     variation_pressure: float = 0.5
     groove_lock_strength: float = 0.0
     motif_continuity_strength: float = 0.0
+    pattern_consistency_strength: float = 0.0
 
     def validate(self) -> None:
         for name in (
             "variation_pressure",
             "groove_lock_strength",
             "motif_continuity_strength",
+            "pattern_consistency_strength",
         ):
             value = getattr(self, name)
             if not 0.0 <= value <= 1.0:
@@ -106,7 +108,8 @@ def evaluate_variation(
     if similarity >= 0.999:
         lay_out_repeat = current.role == "lay_out" and current.family is None
         scale = 0.25 if lay_out_repeat else 1.0
-        penalty = -0.16 * context.variation_pressure * scale
+        consistency_relief = 1.0 - 0.75 * context.pattern_consistency_strength
+        penalty = -0.16 * context.variation_pressure * scale * consistency_relief
         add(
             "exact_repetition",
             penalty,
@@ -115,10 +118,22 @@ def evaluate_variation(
             else "exact recent gesture repetition is mechanically redundant",
         )
     elif similarity >= 0.66:
-        penalty = -0.07 * context.variation_pressure
+        consistency_relief = 1.0 - 0.55 * context.pattern_consistency_strength
+        penalty = -0.07 * context.variation_pressure * consistency_relief
         add("high_similarity", penalty, "highly similar recent gesture receives mild variation pressure")
     elif 0.25 <= similarity <= 0.65:
         add("balanced_variation", 0.04, "partial continuity with variation preserves identity without cloning")
+
+    if (
+        context.pattern_consistency_strength > 0
+        and similarity >= 0.66
+        and current.role != "lay_out"
+    ):
+        add(
+            "pattern_consistency",
+            0.06 * context.pattern_consistency_strength,
+            "stable local comping pattern can support groove/form continuity",
+        )
 
     # Groove continuity: allow same rhythmic placement if other dimensions move.
     if current.rhythm is not None and current.rhythm == last.rhythm:
