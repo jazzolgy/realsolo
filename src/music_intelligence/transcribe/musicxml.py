@@ -13,7 +13,7 @@ from xml.etree import ElementTree as ET
 from .engraving import BeamState, EngravingIntent, EngravingPlan, StemDirection
 from .instrument_profiles import InstrumentProfile, resolve_instrument_profile
 from .notation import NotatedAtomKind
-from .score import ReadableScore, ScoreEvent, ScorePart
+from .score import ReadableScore, ScoreEvent, ScorePart, ScoreSpanner
 
 
 def _divisions_for_score(score: ReadableScore) -> int:
@@ -84,6 +84,41 @@ def _append_dynamic_direction(
     dynamics = ET.SubElement(direction_type, "dynamics")
     ET.SubElement(dynamics, event.dynamic_marking)
     ET.SubElement(direction, "staff").text = str(staff_number)
+
+
+
+def _append_wedge_direction(
+    measure: ET.Element,
+    spanner: ScoreSpanner,
+    *,
+    staff_number: int,
+    number: int,
+    stop: bool = False,
+) -> None:
+    direction = ET.SubElement(measure, "direction", {"placement": spanner.placement})
+    direction_type = ET.SubElement(direction, "direction-type")
+    wedge_type = "stop" if stop else spanner.kind.value
+    ET.SubElement(
+        direction_type,
+        "wedge",
+        {"type": wedge_type, "number": str(number)},
+    )
+    ET.SubElement(direction, "staff").text = str(staff_number)
+
+
+def _spanner_events_for_part(
+    score: ReadableScore,
+    part: ScorePart,
+) -> dict[str, list[tuple[ScoreSpanner, int, bool]]]:
+    by_event: dict[str, list[tuple[ScoreSpanner, int, bool]]] = defaultdict(list)
+    part_spanners = sorted(
+        (s for s in score.spanners if s.part_id == part.part_id),
+        key=lambda s: s.spanner_id,
+    )
+    for number, spanner in enumerate(part_spanners, start=1):
+        by_event[spanner.start_event_id].append((spanner, number, False))
+        by_event[spanner.end_event_id].append((spanner, number, True))
+    return by_event
 
 
 def _append_note(
@@ -287,6 +322,7 @@ def score_to_musicxml(
         max_measure = max(measures, default=0)
         staff_numbers = {sid: i + 1 for i, sid in enumerate(part.staff_ids)}
         dynamic_event_ids = _dynamic_event_ids_to_emit(part, engraving_plan)
+        spanner_events = _spanner_events_for_part(score, part)
 
         for measure_index in range(max_measure + 1):
             measure = ET.SubElement(
@@ -350,6 +386,18 @@ def score_to_musicxml(
                         event.simultaneity_group_id is not None
                         and event.simultaneity_group_id in emitted_simultaneity_groups
                     )
+                    if not chord_member:
+                        for spanner, number, stop in spanner_events.get(
+                            event.event_id,
+                            (),
+                        ):
+                            _append_wedge_direction(
+                                measure,
+                                spanner,
+                                staff_number=staff_numbers[rendered_staff_id],
+                                number=number,
+                                stop=stop,
+                            )
                     if not chord_member and event.event_id in dynamic_event_ids:
                         _append_dynamic_direction(
                             measure,
