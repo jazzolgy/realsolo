@@ -5,6 +5,15 @@ polyphonic evaluation come from Core. This package owns piano-specific
 realization, comping, and interaction policy.
 """
 
+from .linear_practice_comparator import (
+    AbstractWrittenLineObservation,
+    ContourClass,
+    IntervalMotionClass,
+    LinearPracticeComparison,
+    MotionSourceClass,
+    TargetHorizonClass,
+    compare_abstract_routes,
+)
 from .scorebook_evidence import (
     PianoScorebookEvidenceView,
     build_piano_scorebook_evidence_view,
@@ -165,6 +174,13 @@ __all__ = [
     "PianoActionScore",
     "PianoPerformanceState",
     "PianoPolicyEvaluator",
+    "AbstractWrittenLineObservation",
+    "ContourClass",
+    "IntervalMotionClass",
+    "LinearPracticeComparison",
+    "MotionSourceClass",
+    "TargetHorizonClass",
+    "compare_abstract_routes",
     "PianoScorebookEvidenceView",
     "build_piano_scorebook_evidence_view",
     "realize_shared_linear_affordances",
