@@ -93,7 +93,7 @@ _PROFILES = (
     InstrumentProfile(
         "double_bass", "Double Bass", "strings", 1, (BASS,),
         TranspositionSpec(octave_change=-1),
-        written_low_midi=28, written_high_midi=72,
+        written_low_midi=36, written_high_midi=84,
         aliases=("upright_bass", "contrabass"),
     ),
     InstrumentProfile(
@@ -107,7 +107,7 @@ _PROFILES = (
     InstrumentProfile(
         "clarinet_bb", "Clarinet in Bb", "woodwind", 1, (TREBLE,),
         TranspositionSpec(chromatic_semitones=-2, diatonic_steps=-1),
-        written_low_midi=50, written_high_midi=96,
+        written_low_midi=52, written_high_midi=96,
         aliases=("bb_clarinet", "clarinet_in_bb", "clarinet"),
     ),
     InstrumentProfile(
@@ -123,7 +123,7 @@ _PROFILES = (
     InstrumentProfile(
         "trumpet_bb", "Trumpet in Bb", "brass", 1, (TREBLE,),
         TranspositionSpec(chromatic_semitones=-2, diatonic_steps=-1),
-        written_low_midi=54, written_high_midi=82,
+        written_low_midi=54, written_high_midi=86,
         aliases=("bb_trumpet", "trumpet"),
     ),
     InstrumentProfile(
