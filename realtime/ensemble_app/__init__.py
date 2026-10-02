@@ -19,6 +19,9 @@ __all__ = [
     "PianoRuntimeAdapter",
     "TrioAdapterStatus",
     "trio_adapter_status",
+    "BassNativeDecider",
+    "DrumsNativeDecider",
+    "PianoNativeDecider",
 ]
 
 from .runtime_loop import (
@@ -36,4 +39,10 @@ from .trio_adapters import (
     PianoRuntimeAdapter,
     TrioAdapterStatus,
     trio_adapter_status,
+)
+
+from .native_deciders import (
+    BassNativeDecider,
+    DrumsNativeDecider,
+    PianoNativeDecider,
 )
