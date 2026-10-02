@@ -6,6 +6,10 @@ from .interaction_grammar import (
     BassInteractionIntent,
     choose_bass_interaction_intent,
 )
+from .performance_expression import (
+    BassExpressionProfile,
+    realize_bass_expression,
+)
 from .performance_memory import (
     BassArticulation,
     BassCommittedAction,
@@ -39,6 +43,7 @@ __all__ = [
     "BassCommittedAction",
     "BassInteractionContext",
     "BassInteractionDecision",
+    "BassExpressionProfile",
     "BassInteractionIntent",
     "BassPerformanceMemory",
     "BassPerformanceSnapshot",
@@ -58,5 +63,6 @@ __all__ = [
     "choose_immediate_bass_action",
     "evaluate_bass_grammar",
     "generate_immediate_bass_candidates",
+    "realize_bass_expression",
     "metric_role",
 ]
