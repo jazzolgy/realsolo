@@ -15,6 +15,7 @@ from .chord_chart import (
     EnharmonicPolicy,
     chart_position,
 )
+from .chord_chart_quality import ChordChartAudit, audit_chord_chart
 from .engraving import EngravingPlan, EngravingProfile, build_default_engraving_plan
 from .events import CommittedPerformanceEvent
 from .instrument_profiles import InstrumentProfile, resolve_instrument_profile
@@ -105,6 +106,9 @@ class NotationEngine:
 
     def audit(self, score: ReadableScore) -> ScoreQualityReport:
         return audit_score_for_performance(score)
+
+    def audit_chart(self, chart: ChordChart) -> ChordChartAudit:
+        return audit_chord_chart(chart)
 
     def musicxml(
         self,
