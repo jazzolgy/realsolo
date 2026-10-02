@@ -82,3 +82,28 @@ actions, the realtime app should project those outputs into `RenderGesture`
 and remove the corresponding fallback policy.
 
 See `docs/PLAYER_APP_CONTRACT.md`.
+
+
+## Install the approved jazz sample pack
+
+The Stage-1 app can now use the approved CC0 sample set directly instead of
+oscillator placeholders:
+
+```bash
+realsolo-ensemble install-assets
+realsolo-ensemble stage1
+```
+
+The installer downloads the official upstream releases into
+`~/.cache/realsolo/assets` (or `REALSOLO_ASSET_ROOT`), verifies the published
+Virtuosity Drums SHA-256, extracts the packs, and builds a local runtime manifest.
+
+Current direct-sample routing:
+- bass -> Karoryfer Meatbass pizzicato, velocity layers + round robin
+- GM 51 -> Virtuosity room ride
+- GM 42 -> Virtuosity room closed hi-hat
+- GM 36 -> Virtuosity room kick
+- GM 38 -> Virtuosity room snare center
+
+Piano and solo voices continue through SoundFont/fallback until their approved
+product assets are selected.

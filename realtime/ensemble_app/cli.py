@@ -11,6 +11,7 @@ from .engine import EnsembleEngine
 from .midi_io import MidoSink, list_ports, live_poll
 from .models import TransportEvent
 from .stage1_web import run_stage1_web
+from .asset_installer import install_assets
 
 
 def _core() -> CoreImmediateBridge:

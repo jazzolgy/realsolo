@@ -55,6 +55,7 @@ h1{margin:0;font-size:clamp(25px,4vw,38px);letter-spacing:-.03em}.sub{color:#9ba
 <div class="footer"><span id="audioText">Audio engine: oscillator fallback</span><span id="bankText">Load an SF2/SF3/DLS bank for sample playback</span></div>
 <div class="footer"><span id="providerText">Players: checking integration status…</span><span>App renders committed gestures; players own musical policy</span></div>
 <script type="module" src="/soundfont_engine.js"></script>
+<script type="module" src="/approved_sample_engine.js"></script>
 </main>
 <script>
 (function(){
@@ -64,14 +65,18 @@ transpose:document.querySelector("#transpose"),choruses:document.querySelector("
 aiRole:document.querySelector("#aiRole"),position:document.querySelector("#position"),currentChord:document.querySelector("#currentChord"),chorus:document.querySelector("#chorus"),stateText:document.querySelector("#stateText"),audioText:document.querySelector("#audioText"),
 soundMode:document.querySelector("#soundMode"),soundfont:document.querySelector("#soundfont"),bankText:document.querySelector("#bankText"),providerText:document.querySelector("#providerText")
 };
-var audioCtx=null,master=null,sampler=null,lastScheduledBeat=-1,soloStep=0;
+var audioCtx=null,master=null,sampler=null,approvedSamples=null,lastScheduledBeat=-1,soloStep=0;
 for(var i=-12;i<=12;i++){var opt=document.createElement("option");opt.value=String(i);opt.textContent=i===0?"0":(i>0?"+"+i:String(i));els.transpose.appendChild(opt);}
 var chart=null,playing=false,startedAt=0,offsetBeats=0,raf=0;
 function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
 function ensureAudio(){
 if(!audioCtx){audioCtx=new (window.AudioContext||window.webkitAudioContext)();master=audioCtx.createGain();master.gain.value=.22;master.connect(audioCtx.destination);}
 if(audioCtx.state==="suspended")audioCtx.resume();
-els.audioText.textContent=sampler&&sampler.ready?"Audio engine: SoundFont sampler":"Audio engine: oscillator fallback";
+if(!approvedSamples&&window.RealSoloApprovedSampleEngine){
+approvedSamples=new window.RealSoloApprovedSampleEngine(audioCtx);
+approvedSamples.init().then(function(){els.audioText.textContent="Audio engine: CC0 jazz samples";els.bankText.textContent="Meatbass + Virtuosity Drums installed";return approvedSamples.warmup();}).catch(function(){approvedSamples=null;});
+}
+els.audioText.textContent=approvedSamples&&approvedSamples.ready?"Audio engine: CC0 jazz samples":(sampler&&sampler.ready?"Audio engine: SoundFont sampler":"Audio engine: oscillator fallback");
 }
 async function loadSoundFont(file){
 ensureAudio();
@@ -114,7 +119,8 @@ function renderGesture(gesture,when,beatDur){
 if(!gesture)return;
 (gesture.voices||[]).forEach(function(v){
 var t=when+(v.onset_offset_beats||0)*beatDur,d=Math.max(.03,(v.duration_beats||.5)*beatDur),role=v.instrument_role||"solo";
-if(sampleReady()){
+if(role==="bass"&&approvedSamples&&approvedSamples.ready){approvedSamples.bass(v.pitch_midi,v.velocity||88,t,d);}
+else if(sampleReady()){
 if(role==="bass")sampler.bass(v.pitch_midi,v.velocity||88,t,d);
 else if(role==="piano")sampler.piano(v.pitch_midi,v.velocity||72,t,d);
 else sampler.solo(v.pitch_midi,v.velocity||82,t,d);
@@ -125,7 +131,9 @@ tone(v.pitch_midi,t,d,type,role==="bass"?.075:(role==="piano"?.035:.045));
 });
 (gesture.drum_hits||[]).forEach(function(v){
 var t=when+(v.onset_offset_beats||0)*beatDur,d=Math.max(.03,(v.duration_beats||.1)*beatDur);
-if(sampleReady())sampler.drum(v.pitch_midi,v.velocity||70,t,d);else noiseHit(t,Math.min(.08,d),.025);
+if(approvedSamples&&approvedSamples.ready)approvedSamples.drum(v.pitch_midi,v.velocity||70,t,d);
+else if(sampleReady())sampler.drum(v.pitch_midi,v.velocity||70,t,d);
+else noiseHit(t,Math.min(.08,d),.025);
 });
 }
 function nextChordAt(barIndex,beatInBar){

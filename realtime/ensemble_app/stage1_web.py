@@ -6,6 +6,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from .chart import ChartBar, SongChart
+from .asset_installer import ASSET_ROOT
 from .harmony_display import transpose_chord
 from .stage1_music import Stage1Soloist, accompaniment_frame
 from .player_contract import fallback_accompaniment_gesture, monophonic_solo_gesture
@@ -63,6 +64,25 @@ class Stage1Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
+        if parsed.path.startswith("/assets/"):
+            rel = parsed.path[len("/assets/"):].lstrip("/")
+            target = (ASSET_ROOT / rel).resolve()
+            root = ASSET_ROOT.resolve()
+            if root not in target.parents and target != root:
+                self.send_error(403)
+                return
+            if not target.is_file():
+                self.send_error(404)
+                return
+            ctype = self.guess_type(str(target))
+            data = target.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Cache-Control", "public, max-age=31536000")
+            self.end_headers()
+            self.wfile.write(data)
+            return
         if parsed.path == "/api/player-status":
             body = json.dumps(
                 [status.to_dict() for status in current_stage1_provider_status()]
