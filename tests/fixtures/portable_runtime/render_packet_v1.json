@@ -1,0 +1,37 @@
+{
+  "protocol_version": 1,
+  "message_type": "render_gesture",
+  "sequence_id": 42,
+  "generation": 7,
+  "transport": {
+    "tempo_bpm": 132.0,
+    "anchor_beat": 16.0
+  },
+  "gesture": {
+    "role": "soloist",
+    "voices": [
+      {
+        "pitch_midi": 69,
+        "velocity": 82,
+        "duration_beats": 0.75,
+        "onset_offset_beats": 0.0,
+        "articulation": ["legato", "vibrato"],
+        "instrument_role": "tenor_sax",
+        "breath_before_beats": 0.0,
+        "attack_scale": 0.62,
+        "release_shape": "connected",
+        "expression_controls": {
+          "vibrato_depth": 0.65,
+          "vibrato_rate_hz": 5.4,
+          "expression": 0.92
+        }
+      }
+    ],
+    "drum_hits": [],
+    "source": "player/sax",
+    "tags": ["committed"],
+    "annotations": {
+      "fixture": "portable_v1"
+    }
+  }
+}
