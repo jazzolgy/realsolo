@@ -74,6 +74,85 @@ export class RealSoloApprovedSampleEngine {
     );
   }
 
+
+  _soloFamily(pack, articulation) {
+    const tags = new Set((articulation || []).map(x => String(x).toLowerCase()));
+    const order = [
+      ["growl", "growl"],
+      ["subtone", "subtone"],
+      ["short", "short"],
+      ["staccato", "short"],
+      ["accent", "short"],
+      ["vibrato", "vibrato"],
+    ];
+    for (const [tag, family] of order) {
+      if (tags.has(tag) && pack.articulations && pack.articulations[family]) return family;
+    }
+    return "sustain";
+  }
+
+  async _playSolo(row, midi, velocity, when, duration, articulation) {
+    if (!row) return false;
+    const buffer = await this._buffer(row.sample);
+    const src = this.context.createBufferSource();
+    const gain = this.context.createGain();
+    src.buffer = buffer;
+    src.playbackRate.value = Math.pow(2, (midi - row.pitch_keycenter) / 12);
+
+    const tags = new Set((articulation || []).map(x => String(x).toLowerCase()));
+    let level = Math.max(0.03, Math.min(1, velocity / 127));
+    if (tags.has("breathy") || tags.has("breath")) level *= 0.88;
+    gain.gain.value = level;
+
+    src.connect(gain);
+    gain.connect(this.context.destination);
+    const start = Math.max(this.context.currentTime + 0.005, when);
+    const end = start + Math.max(.08, duration);
+
+    if (src.detune) {
+      if (tags.has("scoop")) {
+        src.detune.setValueAtTime(-90, start);
+        src.detune.linearRampToValueAtTime(0, start + Math.min(.12, duration * .28));
+      } else {
+        src.detune.setValueAtTime(0, start);
+      }
+      if (tags.has("fall")) {
+        const fallStart = Math.max(start, end - Math.min(.18, duration * .3));
+        src.detune.setValueAtTime(0, fallStart);
+        src.detune.exponentialRampToValueAtTime(-280, end);
+      }
+    }
+
+    let vibrato = null, vibratoDepth = null;
+    if (tags.has("vibrato") && src.detune) {
+      vibrato = this.context.createOscillator();
+      vibratoDepth = this.context.createGain();
+      vibrato.frequency.value = 5.2;
+      vibratoDepth.gain.setValueAtTime(0, start);
+      vibratoDepth.gain.linearRampToValueAtTime(14, start + Math.min(.35, duration * .45));
+      vibrato.connect(vibratoDepth);
+      vibratoDepth.connect(src.detune);
+      vibrato.start(start);
+      vibrato.stop(end + .02);
+    }
+
+    src.start(start);
+    gain.gain.setValueAtTime(level, Math.max(start, end - .05));
+    gain.gain.exponentialRampToValueAtTime(.0001, end);
+    src.stop(end + .03);
+    return true;
+  }
+
+  async solo(instrument, midi, velocity, when, duration, articulation = []) {
+    const key = instrument === "trumpet" ? "solo_trumpet" : "solo_sax";
+    const pack = this.manifest.packs[key];
+    if (!pack || !pack.articulations) return false;
+    const family = this._soloFamily(pack, articulation);
+    const rows = pack.articulations[family] || pack.articulations.sustain || [];
+    const selected = this._select(rows, midi, velocity, key + ":" + family);
+    return this._playSolo(selected, midi, velocity, when, duration, articulation);
+  }
+
   async bass(midi, velocity, when, duration, articulation = []) {
     const rows = this.manifest.packs.bass.regions;
     const tags = new Set(articulation || []);
@@ -113,6 +192,14 @@ export class RealSoloApprovedSampleEngine {
     for (const midi of [48,55,60,64,67,72,76,79]) {
       const row = this._select(piano, midi, 76, "warmpiano");
       if (row) jobs.push(this._buffer(row.sample));
+    }
+    for (const key of ["solo_sax", "solo_trumpet"]) {
+      const pack = this.manifest.packs[key];
+      const rows = pack && pack.articulations && pack.articulations.sustain || [];
+      for (const midi of [48,55,60,64,67,72]) {
+        const row = this._select(rows, midi, 80, "warm:"+key);
+        if (row) jobs.push(this._buffer(row.sample));
+      }
     }
     const bass = this.manifest.packs.bass.regions;
     for (const midi of [28, 31, 33, 36, 40, 43, 45, 48]) {
