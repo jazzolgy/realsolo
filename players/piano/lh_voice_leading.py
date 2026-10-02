@@ -6,8 +6,10 @@ This is piano-local realization logic and does not infer harmony.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-from .comping import PianoCompingCandidate, PianoCompingState
+if TYPE_CHECKING:
+    from .comping import PianoCompingCandidate, PianoCompingState
 
 
 @dataclass(frozen=True)
