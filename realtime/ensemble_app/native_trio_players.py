@@ -129,10 +129,18 @@ class Stage1BassNativeDecider:
             ensemble,
             bass_player_id="bass",
         )
+        requested_mode = str(context.get("bass_mode", "walking")).lower()
+        mode = BassMode.SOLO if requested_mode == "solo" else BassMode.WALKING
+
+        musical_context = context.get("musical_context")
+        own_phrase_progress = getattr(musical_context, "phrase_maturity", None)
+        if own_phrase_progress is None and "phrase_position" in context:
+            own_phrase_progress = float(context["phrase_position"])
+
         self.runner.tempo_bpm = tempo
         result = self.runner.step(BassStepInput(
             frame=_frame(chord, next_chord),
-            mode=BassMode.WALKING,
+            mode=mode,
             beat_in_measure=beat % meter,
             absolute_beat=float(ensemble.transport.beat),
             phrase_boundary=bool(context.get("phrase_boundary", False)),
@@ -142,14 +150,38 @@ class Stage1BassNativeDecider:
             piano_fill_active=signals.piano_fill_active,
             low_register_conflict=signals.low_register_conflict,
             ensemble_activity=signals.ensemble_activity,
-            phrase_progress=signals.phrase_progress,
+            phrase_progress=(
+                own_phrase_progress
+                if mode is BassMode.SOLO
+                else signals.phrase_progress
+            ),
             directive=directive,
         ))
 
         event = result.candidate.event
         if event.pitch_midi is None:
-            return None
+            return NativeImmediateResult(
+                gesture=None,
+                density=0.0,
+                energy=max(.18, result.phrase_intent.articulation_energy * .55),
+                tension=.42,
+                leadership=.68 if mode is BassMode.SOLO else .04,
+                phrase_maturity=float(own_phrase_progress or 0.0),
+                tags=frozenset({
+                    "bass_space",
+                    mode.value,
+                    result.phrase_intent.kind.value,
+                    result.solo_plan.operation.value if result.solo_plan else "none",
+                }),
+                provenance=(
+                    "stage1_bass_native",
+                    "player/bass:sequential_runner",
+                    "active_space_event",
+                    *signals.provenance,
+                ),
+            )
         rendered = result.render_event
+        assert rendered is not None
 
         gesture = RenderGesture(
             role="bass",
@@ -174,6 +206,15 @@ class Stage1BassNativeDecider:
                 "harmonic_role": result.candidate.harmonic_role.value,
                 "phrase_intent": result.phrase_intent.kind.value,
                 "interaction_intent": result.interaction.intent.value,
+                "bass_mode": mode.value,
+                "solo_operation": (
+                    result.solo_plan.operation.value
+                    if result.solo_plan is not None else ""
+                ),
+                "solo_family": (
+                    result.solo_plan.family.value
+                    if result.solo_plan is not None else ""
+                ),
             },
         )
 
@@ -202,11 +243,14 @@ class Stage1BassNativeDecider:
             density=density,
             energy=energy,
             tension=.34 if stable else .57,
-            leadership=.04,
+            leadership=.68 if mode is BassMode.SOLO else .04,
+            phrase_maturity=float(own_phrase_progress or 0.0),
             tags=frozenset({
                 "bass_sequential",
+                mode.value,
                 directive.interaction.value,
                 result.phrase_intent.kind.value,
+                result.solo_plan.operation.value if result.solo_plan else "none",
             }),
             provenance=(
                 "stage1_bass_native",
