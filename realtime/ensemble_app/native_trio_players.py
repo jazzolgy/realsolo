@@ -281,7 +281,7 @@ class Stage1DrumsNativeDecider:
         energy = max(.15, min(.9, ensemble.ensemble_energy + directive.energy_delta))
         density = max(.08, min(.82, .30 + directive.density_delta))
         plan = DrummerSoftPlan(
-            feel=TimeFeel.SWING,
+            feel=(TimeFeel.SWING if ensemble.groove is None or ensemble.groove.feel.value in {"swing","shuffle"} else TimeFeel.STRAIGHT),
             energy=energy,
             comping_density=density,
             interaction_intent=directive.interaction.value,
@@ -301,6 +301,7 @@ class Stage1DrumsNativeDecider:
             requested_kick="explicit_kick" in directive.tags,
             harmonic_transition_confidence=.75 if "form_boundary" in directive.tags else .25,
             harmony=context.get("harmonic_frame"),
+            groove=ensemble.groove,
         )
         chosen = perform_one_gesture(plan, runtime, self.memory)
         g = chosen.gesture
@@ -313,7 +314,7 @@ class Stage1DrumsNativeDecider:
                 pitch_midi=midi,
                 velocity=hit.velocity,
                 duration_beats=.12,
-                onset_offset_beats=hit.microtiming_ms / 1000.0,
+                onset_offset_beats=(hit.microtiming_ms / 1000.0) * tempo / 60.0 + getattr(hit, "onset_offset_beats", 0.0),
                 articulation=(hit.articulation,),
                 instrument_role="drums",
             ))
