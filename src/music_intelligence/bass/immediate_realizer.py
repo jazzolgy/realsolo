@@ -9,6 +9,10 @@ from dataclasses import dataclass
 from enum import Enum
 
 from music_intelligence.harmony.jazz_harmony_core import HarmonicFrame, build_basic_affordances
+from music_intelligence.harmony.scale_linear_core import (
+    LinearRouteKind,
+    build_linear_connection_affordances,
+)
 from music_intelligence.harmony.voice_leading import (
     TargetRole,
     VoiceLeadingContext,
@@ -47,6 +51,9 @@ class BassHarmonicRole(str, Enum):
     CHORD_TONE = "chord_tone"
     CHROMATIC_APPROACH = "chromatic_approach"
     ANTICIPATION = "anticipation"
+    DIATONIC_PASSING = "diatonic_passing"
+    NEIGHBOR = "neighbor"
+    SCALE_COLOR = "scale_color"
     PEDAL = "pedal"
 
 
@@ -66,6 +73,7 @@ class BassContext:
     ensemble_activity: float = 0.5
     memory_snapshot: BassPerformanceSnapshot = BassPerformanceSnapshot()
     interaction_decision: BassInteractionDecision | None = None
+    local_key_pitch_classes: frozenset[int] = frozenset()
 
     def validate(self) -> None:
         if self.meter_numerator <= 0:
@@ -76,6 +84,8 @@ class BassContext:
             raise ValueError("invalid bass register")
         if self.previous_pitch_midi is not None and not 0 <= self.previous_pitch_midi <= 127:
             raise ValueError("previous_pitch_midi must be in MIDI range")
+        if any(not 0 <= pc <= 11 for pc in self.local_key_pitch_classes):
+            raise ValueError("local_key_pitch_classes must be in 0..11")
         for name, value in (
             ("repeated_note_tolerance", self.repeated_note_tolerance),
             ("stepwise_preference", self.stepwise_preference),
@@ -157,6 +167,12 @@ def _voice_role_for(candidate: BassHarmonicRole) -> TargetRole:
         return TargetRole.FIFTH
     if candidate in {BassHarmonicRole.CHROMATIC_APPROACH, BassHarmonicRole.ANTICIPATION}:
         return TargetRole.STRUCTURAL
+    if candidate in {
+        BassHarmonicRole.DIATONIC_PASSING,
+        BassHarmonicRole.NEIGHBOR,
+        BassHarmonicRole.SCALE_COLOR,
+    }:
+        return TargetRole.TENSION
     return TargetRole.UNKNOWN
 
 
@@ -169,6 +185,12 @@ def _grammar_mapping(role: BassHarmonicRole) -> tuple[MotionStrategy, TargetStra
         return MotionStrategy.CHROMATIC_APPROACH, TargetStrategy.NEXT_ROOT
     if role is BassHarmonicRole.ANTICIPATION:
         return MotionStrategy.DIRECT_ANTICIPATION, TargetStrategy.NEXT_ROOT
+    if role in {
+        BassHarmonicRole.DIATONIC_PASSING,
+        BassHarmonicRole.NEIGHBOR,
+        BassHarmonicRole.SCALE_COLOR,
+    }:
+        return MotionStrategy.SHARED_SCALE_OR_COLOR, TargetStrategy.NONE
     if role is BassHarmonicRole.PEDAL:
         return MotionStrategy.PEDAL, TargetStrategy.CURRENT_ROOT
     raise ValueError(f"unsupported bass harmonic role: {role}")
@@ -297,6 +319,9 @@ def _interaction_memory_score(
         directed_roles = {
             BassHarmonicRole.CHROMATIC_APPROACH,
             BassHarmonicRole.ANTICIPATION,
+            BassHarmonicRole.DIATONIC_PASSING,
+            BassHarmonicRole.NEIGHBOR,
+            BassHarmonicRole.SCALE_COLOR,
         }
 
         if intent in {
@@ -412,6 +437,50 @@ def generate_immediate_bass_candidates(
             ("second two-feel pulse may anticipate next expected root",),
         ))
 
+    # Walking alone consumes Shared Scale/Linear Core in this slice.
+    # Two-feel deliberately stays conservative after listening feedback.
+    if ctx.mode is BassMode.WALKING:
+        current_pc = (
+            ctx.previous_pitch_midi % 12
+            if ctx.previous_pitch_midi is not None
+            else None
+        )
+        routes = build_linear_connection_affordances(
+            frame,
+            current_pitch_class=current_pc,
+            local_key_pitch_classes=ctx.local_key_pitch_classes,
+        )
+        for route in routes:
+            if route.route is LinearRouteKind.DIATONIC_PASSING:
+                for pc in sorted(route.immediate_pitch_classes):
+                    raw.append((
+                        pc,
+                        BassHarmonicRole.DIATONIC_PASSING,
+                        0.095 + route.weight,
+                        ("shared Core diatonic passing affordance",),
+                    ))
+            elif route.route is LinearRouteKind.NEIGHBOR and ctx.beat_in_measure in {1.0, 2.0}:
+                for pc in sorted(route.immediate_pitch_classes):
+                    raw.append((
+                        pc,
+                        BassHarmonicRole.NEIGHBOR,
+                        0.02 + route.weight,
+                        ("shared Core neighbor affordance",),
+                    ))
+            elif (
+                route.route is LinearRouteKind.SCALE_FRAGMENT
+                and ctx.local_key_pitch_classes
+                and ctx.beat_in_measure in {1.0, 2.0}
+            ):
+                structural = _active_pitch_classes(frame)
+                for pc in sorted(route.immediate_pitch_classes - structural):
+                    raw.append((
+                        pc,
+                        BassHarmonicRole.SCALE_COLOR,
+                        0.035 + route.weight,
+                        ("shared Core contextual scale-color affordance",),
+                    ))
+
     candidates: list[BassActionCandidate] = []
     seen: set[tuple[int, BassHarmonicRole, int]] = set()
     grammar_ctx = _grammar_context(ctx)
@@ -448,8 +517,20 @@ def generate_immediate_bass_candidates(
                 BassHarmonicRole.CHORD_TONE, BassHarmonicRole.PEDAL,
             }:
                 tags.add("chord_tone")
-            if role in {BassHarmonicRole.CHROMATIC_APPROACH, BassHarmonicRole.ANTICIPATION}:
+            if role in {
+                BassHarmonicRole.CHROMATIC_APPROACH,
+                BassHarmonicRole.ANTICIPATION,
+                BassHarmonicRole.DIATONIC_PASSING,
+                BassHarmonicRole.NEIGHBOR,
+                BassHarmonicRole.SCALE_COLOR,
+            }:
                 tags.add("directed_target")
+            if role in {
+                BassHarmonicRole.DIATONIC_PASSING,
+                BassHarmonicRole.NEIGHBOR,
+                BassHarmonicRole.SCALE_COLOR,
+            }:
+                tags.add("shared_scale_linear")
             if role is BassHarmonicRole.ANTICIPATION:
                 tags.add("anticipation")
 
