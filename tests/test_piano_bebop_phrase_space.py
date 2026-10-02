@@ -91,3 +91,36 @@ def test_phrase_space_evidence_claims_no_actor_by_default():
         reentry_ratio=1.5,
     )
     assert evidence.actor_attribution_confidence == 0.0
+
+
+def test_percussive_support_can_favor_rhythmic_reentry_without_forcing_fill():
+    evaluator = PianoSoloEvaluator()
+    ctx = PianoSoloContext(
+        phrase_space=BebopPhraseSpaceEvidence(
+            space_type=PhraseSpaceType.QUIET_ACTIVE,
+            energy_drop=0.5,
+            attack_persistence=0.9,
+            percussive_support=0.9,
+            harmonic_support=0.4,
+            confidence=1.0,
+        )
+    )
+    entry = CandidateEvent(
+        69,
+        0.5,
+        onset_offset_beats=-0.125,
+        tags=frozenset({"pickup", "anticipation", "syncopated_entry"}),
+    )
+    score = evaluator.evaluate(entry, ctx)
+    assert score.components.get("rhythm_section_carried_space", 0) > 0
+
+
+def test_classifier_keeps_harmonic_and_percussive_support_separate():
+    evidence = classify_phrase_space(
+        energy_ratio_to_context=0.4,
+        attack_ratio_to_context=0.9,
+        reentry_ratio=1.5,
+        percussive_ratio_to_context=0.95,
+        harmonic_ratio_to_context=0.35,
+    )
+    assert evidence.percussive_support > evidence.harmonic_support
