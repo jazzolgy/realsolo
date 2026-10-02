@@ -27,6 +27,7 @@ from .bebop_complementarity import (
     EnsembleBreathType,
     EnsembleComplementarityEvidence,
 )
+from .bebop_turn_taking import BebopTurnTakingEvidence, BebopTurnTakingType
 
 
 def default_bebop_legend_blend() -> LegendBlend:
@@ -49,6 +50,17 @@ class PianoSoloContext:
     )
     ensemble_complementarity: EnsembleComplementarityEvidence = field(
         default_factory=EnsembleComplementarityEvidence
+    )
+    turn_taking: BebopTurnTakingEvidence = field(
+        default_factory=lambda: BebopTurnTakingEvidence(
+            BebopTurnTakingType.AMBIGUOUS,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.0,
+            0.0,
+        )
     )
 
     def validate(self) -> None:
@@ -75,6 +87,7 @@ class PianoSoloContext:
             raise ValueError("left_hand_register_top_midi must be within MIDI range")
         self.phrase_space.validate()
         self.ensemble_complementarity.validate()
+        self.turn_taking.validate()
 
 
 @dataclass
@@ -276,6 +289,50 @@ class PianoSoloEvaluator:
                 score += v
                 components["collective_release_hold"] = v
                 reasons.append("collective release may be allowed to breathe")
+
+        turn = context.turn_taking
+        if (
+            turn.episode_type is BebopTurnTakingType.SUPPORTED_HANDOFF_REENTRY
+            and turn.confidence > 0
+        ):
+            weight = turn.confidence * min(1.0, turn.reentry_strength / 4.0)
+            if {"continuation", "connector", "directed_target"} & tags:
+                v = 0.05 * weight
+                score += v
+                components["turn_reentry_continuation"] = v
+                reasons.append("recent supported handoff already re-entered; continue rather than restart")
+            if "phrase_entry" in tags:
+                v = -0.03 * weight
+                score += v
+                components["turn_duplicate_entry"] = v
+                reasons.append("avoid treating an already-reentered phrase as another fresh entry")
+
+        elif (
+            turn.episode_type is BebopTurnTakingType.COLLECTIVE_RELEASE_REENTRY
+            and turn.confidence > 0
+        ):
+            weight = turn.confidence * min(1.0, turn.reentry_strength / 4.0)
+            if {"continuation", "resolution_path"} & tags:
+                v = 0.04 * weight
+                score += v
+                components["collective_reentry_continuation"] = v
+                reasons.append("collective release has already resolved into re-entry; support phrase continuation")
+
+        elif (
+            turn.episode_type is BebopTurnTakingType.FOREGROUND_CONTINUES
+            and turn.confidence > 0
+        ):
+            weight = turn.confidence
+            if candidate.pitch_midi is None or "rest" in tags:
+                v = 0.05 * weight
+                score += v
+                components["foreground_continues_contrast"] = v
+                reasons.append("continued foreground activity can justify immediate contrast or space")
+            if "dense_run" in tags:
+                v = -0.04 * weight
+                score += v
+                components["foreground_continues_overdensity"] = v
+                reasons.append("continued foreground activity argues against another dense layer")
 
         return CandidateScore(candidate, score, components, tuple(reasons))
 
