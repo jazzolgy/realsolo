@@ -128,6 +128,7 @@ class Stage1TrioRuntime:
         chorus: int = 0,
         bass_solo: bool = False,
         active_player_ids: frozenset[str] | None = None,
+        bass_ghost_only: bool = False,
     ):
         form_position = 0.0 if total_bars <= 1 else bar_index / max(1, total_bars - 1)
         phrase_position = ((bar_index % 4) + beat_in_bar / 4.0) / 4.0
@@ -228,6 +229,7 @@ class Stage1TrioRuntime:
                 "bass_mode": "solo" if bass_solo else "walking",
                 "groove_context": groove,
                 "time_feel": groove.feel.value,
+                "bass_ghost_only": bass_ghost_only,
             },
         )
         self.state = result.state

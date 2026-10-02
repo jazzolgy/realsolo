@@ -19,6 +19,12 @@ from dataclasses import dataclass, field
 from music_intelligence.harmony.jazz_harmony_core import HarmonicFrame
 from music_intelligence.reasoning.interaction_scheduler import InteractionDirective
 
+from .ghost_notes import (
+    BassGhostContext,
+    BassGhostDecision,
+    choose_walking_ghost_note,
+    commit_walking_ghost,
+)
 from .immediate_realizer import (
     BassActionCandidate,
     BassContext,
@@ -90,6 +96,8 @@ class BassSequentialRunner:
     memory: BassPerformanceMemory = field(default_factory=BassPerformanceMemory)
     phrase_state: BassPhraseState = field(default_factory=BassPhraseState)
     solo_memory: BassSoloMemory = field(default_factory=BassSoloMemory)
+    last_interaction: BassInteractionDecision | None = None
+    last_ghost_opportunity: float = 0.0
 
     def step(self, item: BassStepInput) -> BassStepResult:
         if self.tempo_bpm <= 0:
@@ -150,6 +158,8 @@ class BassSequentialRunner:
                 phrase_direction=phrase_intent.direction.value,
             )
 
+        self.last_interaction = interaction
+
         candidate = choose_immediate_bass_action(
             item.frame,
             BassContext(
@@ -173,6 +183,7 @@ class BassSequentialRunner:
                 solo_snapshot=solo_snapshot,
             ),
         )
+        self.last_ghost_opportunity = candidate.expression.ghost_opportunity
         render = (
             project_bass_candidate_to_render_event(
                 candidate,
@@ -203,6 +214,37 @@ class BassSequentialRunner:
             phrase_intent=phrase_intent,
             solo_plan=solo_plan,
         )
+
+
+    def ghost_step(
+        self,
+        *,
+        beat_in_measure: float,
+        absolute_beat: float,
+        mode: BassMode = BassMode.WALKING,
+        ensemble_activity: float = 0.5,
+        groove=None,
+    ) -> BassGhostDecision:
+        """Commit at most one percussive ghost event at the current offbeat.
+
+        This path never chooses a harmonic pitch. It uses the previous physical
+        string/pitch only as a renderer reference while memory records an
+        unpitched event, so walking contour and voice leading remain intact.
+        """
+        decision = choose_walking_ghost_note(BassGhostContext(
+            mode=mode.value,
+            beat_in_measure=beat_in_measure,
+            meter_numerator=4,
+            tempo_bpm=self.tempo_bpm,
+            groove=groove,
+            memory=self.memory.snapshot(),
+            interaction=self.last_interaction,
+            ensemble_activity=ensemble_activity,
+            opportunity_hint=self.last_ghost_opportunity,
+        ))
+        if decision.play:
+            commit_walking_ghost(self.memory, decision)
+        return decision
 
     def run(self, steps: tuple[BassStepInput, ...]) -> tuple[BassStepResult, ...]:
         out: list[BassStepResult] = []
