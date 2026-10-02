@@ -10,6 +10,10 @@ from .performance_expression import (
     BassExpressionProfile,
     realize_bass_expression,
 )
+from .render_projection import (
+    BassRenderEvent,
+    project_bass_candidate_to_render_event,
+)
 from .performance_memory import (
     BassArticulation,
     BassCommittedAction,
@@ -47,6 +51,7 @@ __all__ = [
     "BassInteractionIntent",
     "BassPerformanceMemory",
     "BassPerformanceSnapshot",
+    "BassRenderEvent",
     "ArticulationIntent",
     "BassActionCandidate",
     "BassContext",
@@ -64,5 +69,6 @@ __all__ = [
     "evaluate_bass_grammar",
     "generate_immediate_bass_candidates",
     "realize_bass_expression",
+    "project_bass_candidate_to_render_event",
     "metric_role",
 ]
