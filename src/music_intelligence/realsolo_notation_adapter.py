@@ -103,6 +103,7 @@ def live_chart_render_model(
     *,
     measures_per_row: int = 4,
     transpose_semitones: int = 0,
+    enharmonic_policy: EnharmonicPolicy | None = None,
 ) -> ChordChartRenderModel:
     """Build the complete renderer-neutral live chart projection."""
 
@@ -112,6 +113,7 @@ def live_chart_render_model(
         position=state.position,
         measures_per_row=measures_per_row,
         transpose_semitones=transpose_semitones,
+        enharmonic_policy=enharmonic_policy,
     )
 
 
@@ -121,6 +123,7 @@ def live_chart_viewport(
     *,
     measures_per_row: int = 4,
     transpose_semitones: int = 0,
+    enharmonic_policy: EnharmonicPolicy | None = None,
     viewport_config: ChordChartViewportConfig = ChordChartViewportConfig(),
     previous: ChordChartViewport | None = None,
     previous_section: str | None = None,
@@ -132,6 +135,7 @@ def live_chart_viewport(
         cursor,
         measures_per_row=measures_per_row,
         transpose_semitones=transpose_semitones,
+        enharmonic_policy=enharmonic_policy,
     )
     return build_chord_chart_viewport(
         model,
