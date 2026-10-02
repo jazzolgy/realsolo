@@ -93,8 +93,11 @@ def _append_note(
     divisions: int,
     staff_number: int,
     engraving: EngravingIntent | None = None,
+    chord_member: bool = False,
 ) -> None:
     note = ET.SubElement(measure, "note")
+    if chord_member:
+        ET.SubElement(note, "chord")
     if event.grace_kind is not None:
         grace_attrs = {"slash": "yes"} if event.grace_kind.value == "acciaccatura" else {}
         ET.SubElement(note, "grace", grace_attrs)
@@ -267,6 +270,7 @@ def score_to_musicxml(
                         )
                 first_group = False
 
+                emitted_simultaneity_groups: set[str] = set()
                 for event in voice_events:
                     if event.span.onset > cursor:
                         forward = ET.SubElement(measure, "forward")
@@ -287,19 +291,28 @@ def score_to_musicxml(
                         raise ValueError(
                             f"engraving cross_staff_target is not in part: {rendered_staff_id}"
                         )
-                    _append_dynamic_direction(
-                        measure,
-                        event,
-                        staff_number=staff_numbers[rendered_staff_id],
+                    chord_member = (
+                        event.simultaneity_group_id is not None
+                        and event.simultaneity_group_id in emitted_simultaneity_groups
                     )
+                    if not chord_member:
+                        _append_dynamic_direction(
+                            measure,
+                            event,
+                            staff_number=staff_numbers[rendered_staff_id],
+                        )
                     _append_note(
                         measure,
                         event,
                         divisions=divisions,
                         staff_number=staff_numbers[rendered_staff_id],
                         engraving=engraving,
+                        chord_member=chord_member,
                     )
-                    cursor = event.span.offset
+                    if event.simultaneity_group_id is not None:
+                        emitted_simultaneity_groups.add(event.simultaneity_group_id)
+                    if not chord_member:
+                        cursor = event.span.offset
                 previous_group_cursor = cursor
 
     ET.indent(root, space="  ")
