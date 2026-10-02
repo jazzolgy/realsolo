@@ -1,5 +1,7 @@
-# Workstream: Legend Intelligence
+# Workstream: AI Bassist
 
-Owns SharedJazzGrammar research, multi-legend evidence/provenance, LegendProfile design, Online Musical Evaluator, Slow Brain/Fast Hands contracts, and Parker deep study as the first benchmark.
+Owns bass-line realization, walking-bass grammar, pedal/ostinato behavior, register, articulation, note length, groove placement, bass-specific interaction, and physical/instrument realization.
 
-Runtime work must not precompose complete solos. Shared-core changes require tests before integration.
+Shared harmony, voice-leading, phrase, form, memory, narrative, ensemble state, and legend intelligence come from Core. Shared-core changes should be proposed via CORE_CHANGE_REQUEST.md.
+
+Runtime invariant: plan intention and route, commit one immediate bass action, then listen/re-plan.
