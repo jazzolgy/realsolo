@@ -17,6 +17,18 @@ class BarlineStyle(str, Enum):
     FINAL = "final"
 
 
+class EnharmonicPolicy(str, Enum):
+    AUTO = "auto"
+    PREFER_FLATS = "prefer_flats"
+    PREFER_SHARPS = "prefer_sharps"
+
+
+class MeasureRepeatKind(str, Enum):
+    NONE = "none"
+    ONE_BAR = "one_bar"
+    TWO_BAR = "two_bar"
+
+
 class NavigationMark(str, Enum):
     SEGNO = "segno"
     CODA = "coda"
@@ -34,7 +46,7 @@ class ChordSymbol:
     quality: str = ""
     bass_pc: int | None = None
     no_chord: bool = False
-    preferred_sharps: bool = False
+    enharmonic_policy: EnharmonicPolicy = EnharmonicPolicy.AUTO
 
     def validate(self) -> None:
         if self.no_chord:
@@ -61,7 +73,7 @@ class ChordSymbol:
                 else None
             ),
             no_chord=False,
-            preferred_sharps=self.preferred_sharps,
+            enharmonic_policy=self.enharmonic_policy,
         )
 
     def display(self) -> str:
@@ -70,7 +82,11 @@ class ChordSymbol:
             return "N.C."
         sharp_names = ("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
         flat_names = ("C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B")
-        names = sharp_names if self.preferred_sharps else flat_names
+        names = (
+            sharp_names
+            if self.enharmonic_policy is EnharmonicPolicy.PREFER_SHARPS
+            else flat_names
+        )
         text = names[self.root_pc] + self.quality
         if self.bass_pc is not None:
             text += "/" + names[self.bass_pc]
@@ -98,6 +114,7 @@ class ChartMeasure:
     repeat_end: bool = False
     ending_numbers: tuple[int, ...] = ()
     navigation_marks: tuple[NavigationMark, ...] = ()
+    repeat_shorthand: MeasureRepeatKind = MeasureRepeatKind.NONE
     barline: BarlineStyle = BarlineStyle.NORMAL
 
     def validate(self, beats_per_bar: Fraction) -> None:
@@ -105,6 +122,8 @@ class ChartMeasure:
             raise ValueError("measure number must be positive")
         if len(set(self.ending_numbers)) != len(self.ending_numbers):
             raise ValueError("ending numbers must be unique")
+        if self.repeat_shorthand is not MeasureRepeatKind.NONE and self.chords:
+            raise ValueError("repeat-shorthand measure may not redefine chords")
         previous: Fraction | None = None
         for change in self.chords:
             change.validate(beats_per_bar)
@@ -155,6 +174,7 @@ class ChordChart:
                 repeat_end=m.repeat_end,
                 ending_numbers=m.ending_numbers,
                 navigation_marks=m.navigation_marks,
+                repeat_shorthand=m.repeat_shorthand,
                 barline=m.barline,
             )
             for m in self.measures
