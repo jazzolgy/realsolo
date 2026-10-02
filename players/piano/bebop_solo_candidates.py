@@ -7,13 +7,16 @@ from __future__ import annotations
 
 from typing import Iterable
 
+from music_intelligence.harmony.scale_linear_core import LinearConnectionAffordance
 from music_intelligence.reasoning.legend_style_core import CandidateEvent
+from music_intelligence.reasoning.solo_grammar import SoloDevelopmentOperation
 
 from .bebop_phrase_intent import (
     BebopEntryMode,
     BebopPhraseIntent,
     BebopTargetMode,
 )
+from .shared_linear_adapter import realize_shared_linear_affordances
 from .voicing import ResolvedHarmonicMaterial
 
 
@@ -75,6 +78,7 @@ def generate_immediate_bebop_candidates(
     low_midi: int = 48,
     high_midi: int = 96,
     duration_beats: float = 0.5,
+    linear_affordances: tuple[LinearConnectionAffordance, ...] = (),
 ) -> tuple[CandidateEvent,...]:
     """Generate a bounded set of immediate melodic candidates."""
     current_material.validate()
@@ -101,6 +105,20 @@ def generate_immediate_bebop_candidates(
     target_roles=_role_pitch_classes(target_material,STRUCTURAL_ROLE_NAMES)
     events=[]
 
+    # When Shared Scale/Linear Intelligence is available, consume its route
+    # affordances instead of independently inventing piano-local connector logic.
+    shared_linear_events = ()
+    if linear_affordances:
+        shared_linear_events = realize_shared_linear_affordances(
+            linear_affordances,
+            anchor_midi=anchor,
+            low_midi=low_midi,
+            high_midi=high_midi,
+            duration_beats=duration_beats,
+            pickup=intent.entry_mode is BebopEntryMode.PICKUP,
+        )
+        events.extend(shared_linear_events)
+
     for role,pc in target_roles:
         pitch=_nearest_pitch_for_pc(
             pc,
@@ -124,6 +142,12 @@ def generate_immediate_bebop_candidates(
             tags |= {"anticipation","next_harmony_target"}
 
         onset=0.0
+        tags.add(f"solo_method:{intent.solo_method.value}")
+        if intent.solo_method is SoloDevelopmentOperation.DISPLACE:
+            onset += 0.125
+            tags.add("rhythmic_displacement")
+        if intent.solo_method is SoloDevelopmentOperation.ANSWER:
+            tags.add("response")
         if intent.entry_mode is BebopEntryMode.PICKUP:
             onset=-0.125
             tags |= {"pickup","syncopated_entry","anticipation"}
@@ -137,8 +161,9 @@ def generate_immediate_bebop_candidates(
             )
         )
 
-        # Immediate chromatic approach options around the same target.
-        if "close_approach" in intent.connector_families:
+        # Compatibility fallback only. Shared Core owns connector semantics when
+        # linear_affordances are supplied.
+        if not linear_affordances and "close_approach" in intent.connector_families:
             for offset in (-1,1):
                 approach=pitch+offset
                 if low_midi <= approach <= high_midi:
@@ -158,7 +183,7 @@ def generate_immediate_bebop_candidates(
                     )
 
     # Neighbor/passing candidates are relative to the actually played previous note.
-    if previous_pitch_midi is not None:
+    if previous_pitch_midi is not None and not linear_affordances:
         if "neighbor" in intent.connector_families:
             for offset in (-2,-1,1,2):
                 pitch=previous_pitch_midi+offset
@@ -181,6 +206,19 @@ def generate_immediate_bebop_candidates(
                             tags=frozenset({"passing","connector"}),
                         )
                     )
+
+    if intent.solo_method is SoloDevelopmentOperation.ADD_SPACE:
+        events.append(
+            CandidateEvent(
+                None,
+                duration_beats,
+                tags=frozenset({
+                    "rest",
+                    "ensemble_space",
+                    "solo_method:add_space",
+                }),
+            )
+        )
 
     if intent.entry_mode is BebopEntryMode.HOLD_SPACE:
         events.append(

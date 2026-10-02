@@ -110,14 +110,21 @@ def _event_from_roles(
         )
         for i, (role, pitch) in enumerate(ordered)
     )
+    tension_roles = {"9th","9","b9","#9","11th","11","#11","13th","13","b13"}
+    tension_count = sum(1 for role, _ in ordered if role in tension_roles)
+    event_tags = {family, "sparse" if len(voices) <= 3 else "dense"}
+    event_tags.add(f"tension_count:{tension_count}")
     event = PolyphonicEventCandidate(
         voices=voices,
         duration_beats=request.duration_beats,
-        tags=frozenset({family, "sparse" if len(voices) <= 3 else "dense"}),
+        tags=frozenset(event_tags),
         role="comping",
         source_family=f"piano_{family}",
         provenance=("piano_voicing_generator", request.material.affordance_id),
-        annotations={"harmonic_affordance_id": request.material.affordance_id},
+        annotations={
+            "harmonic_affordance_id": request.material.affordance_id,
+            "tension_count": tension_count,
+        },
     )
     hands = tuple(
         (voice.voice_id, "LH" if voice.pitch_midi < 60 else "RH")
@@ -165,9 +172,11 @@ def generate_rootless_voicings(request: PianoVoicingRequest) -> tuple[PianoReali
         return ()
 
     colors: list[tuple[str, int]] = []
+    # Prefer common color tensions before stronger altered colors. Altered roles
+    # remain available when Shared Core explicitly supplies them.
     preferred_roles = (
-        "9th", "b9", "#9", "11th", "#11", "13th", "b13",
-        "9", "11", "13",
+        "9th", "9", "13th", "13", "#11", "11th", "11",
+        "b9", "#9", "b13",
     )
     for role in preferred_roles:
         for pc in request.material.role_pitch_classes.get(role, ()):
@@ -183,8 +192,8 @@ def generate_rootless_voicings(request: PianoVoicingRequest) -> tuple[PianoReali
         variants.append(_event_from_roles(request, base_roles, family="rootless"))
         return tuple(variants)
 
-    for role, pc in colors[:4]:
-        color_pitch = _nearest_in_range(pc, 67, request.low_midi, request.high_midi)
+    for role, pc in colors[:5]:
+        color_pitch = _nearest_in_range(pc, 66, request.low_midi, request.high_midi)
         roles = [*base_roles, (role, color_pitch)]
         if (
             request.top_note_pitch_class is not None
@@ -199,7 +208,43 @@ def generate_rootless_voicings(request: PianoVoicingRequest) -> tuple[PianoReali
             roles.append(("top_constraint", target))
         variants.append(_event_from_roles(request, roles, family="rootless"))
 
-    return tuple(variants)
+    for i, (role_a, pc_a) in enumerate(colors[:5]):
+        for role_b, pc_b in colors[i + 1 : 5]:
+            if pc_a == pc_b:
+                continue
+            a = _nearest_in_range(pc_a, 63, request.low_midi, request.high_midi)
+            b = _nearest_in_range(pc_b, 69, request.low_midi, request.high_midi)
+            roles = [*base_roles, (role_a, a), (role_b, b)]
+            variants.append(_event_from_roles(request, roles, family="rootless"))
+
+    return tuple(variants[:10])
+
+
+def generate_root_anchor_voicings(
+    request: PianoVoicingRequest,
+) -> tuple[PianoRealizationCandidate, ...]:
+    """Generate a sparse root-only structural anchor.
+
+    This is intentionally rare policy material. Piano does not decide whether the
+    root is harmonically correct; it only realizes an explicit Core-resolved root.
+    """
+    request.validate()
+    root = _role_pcs(request.material, "root")
+    if not root:
+        return ()
+    pitch = _nearest_in_range(
+        root[0],
+        48,
+        request.low_midi,
+        min(request.high_midi, 60),
+    )
+    return (
+        _event_from_roles(
+            request,
+            (("root", pitch),),
+            family="root_anchor",
+        ),
+    )
 
 
 def generate_minimal_voicing_families(

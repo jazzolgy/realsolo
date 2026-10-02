@@ -6,7 +6,7 @@ families/roles and lets context-sensitive evaluation choose among them.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from music_intelligence.harmony.jazz_harmony_core import HarmonicAffordance
 
@@ -18,12 +18,14 @@ from .comping import (
 )
 from .expression import expand_expression_variants
 from .candidate_diversity import select_diverse_candidates
+from .ensemble_role import PianoEnsembleMode
 from .harmonic_semantics import annotate_harmonic_semantics
 from .rhythm import expand_rhythmic_variants
 from .voicing import (
     PianoVoicingRequest,
     generate_extended_voicing_families,
     generate_rootless_voicings,
+    generate_root_anchor_voicings,
     generate_shell_voicings,
 )
 
@@ -94,8 +96,36 @@ def build_contextual_comping_candidates(
             )
         )
 
+    root_anchors = tuple(
+        annotate_harmonic_semantics(x)
+        for x in generate_root_anchor_voicings(request)
+    )
+    for realization in root_anchors:
+        out.append(
+            PianoCompingCandidate(
+                action_type=CompingActionType.PUNCTUATION,
+                role=InteractionRole.ANCHOR,
+                duration_beats=min(request.duration_beats,0.5),
+                realization=realization,
+                harmonic_affordance_id=affordance_id,
+                tags=frozenset({"root_anchor","structural_reset","candidate_factory"}),
+            )
+        )
+
     rootless = tuple(annotate_harmonic_semantics(x) for x in generate_rootless_voicings(request))
     for realization in rootless:
+        # Rootless color voicings are ordinary comping material, not only a
+        # response/build effect. This keeps 9th/13th color present in normal time.
+        out.append(
+            PianoCompingCandidate(
+                action_type=CompingActionType.SPARSE_SUPPORT,
+                role=InteractionRole.SUPPORT,
+                duration_beats=request.duration_beats,
+                realization=realization,
+                harmonic_affordance_id=affordance_id,
+                tags=frozenset({"rootless", "tension_support", "candidate_factory"}),
+            )
+        )
         if context.phrase_boundary_probability >= 0.45 or context.available_space_beats >= 0.5:
             out.append(
                 PianoCompingCandidate(
@@ -154,6 +184,36 @@ def build_contextual_comping_candidates(
                 )
             )
 
+    if context.ensemble_mode in {
+        PianoEnsembleMode.PIANO_HEAD_TRIO,
+        PianoEnsembleMode.PIANO_SOLO_TRIO,
+    }:
+        # Add physically compact LH-only realizations so the evaluator has genuine
+        # accompaniment options while RH carries melody/solo foreground.
+        lh_foreground_variants: list[PianoCompingCandidate] = []
+        for candidate in out:
+            if candidate.realization is None:
+                continue
+            pitches=candidate.realization.event.pitches_midi
+            if not pitches:
+                continue
+            if max(pitches) <= 67 and (max(pitches)-min(pitches)) <= 16:
+                realization=replace(
+                    candidate.realization,
+                    hand_assignment=tuple(
+                        (voice.voice_id,"LH")
+                        for voice in candidate.realization.event.voices
+                    ),
+                )
+                lh_foreground_variants.append(
+                    replace(
+                        candidate,
+                        realization=realization,
+                        tags=frozenset(set(candidate.tags)|{"lh_comping","foreground_support"}),
+                    )
+                )
+        out.extend(lh_foreground_variants)
+
     return PianoCompingCandidateSet(tuple(out))
 
 
@@ -194,11 +254,18 @@ def expand_candidate_set_expressively(
         if candidate.realization is None:
             out.append(candidate)
             continue
+        foreground_register = context.soloist_register_midi
+        if context.ensemble_mode in {
+            PianoEnsembleMode.PIANO_HEAD_TRIO,
+            PianoEnsembleMode.PIANO_SOLO_TRIO,
+        } and context.piano_foreground_register_midi is not None:
+            foreground_register = context.piano_foreground_register_midi
+
         variants = expand_expression_variants(
             candidate,
             interaction_state,
             bass_activity=context.bass_activity,
-            soloist_register_midi=context.soloist_register_midi,
+            soloist_register_midi=foreground_register,
         )
         out.extend(variants or (candidate,))
     return PianoCompingCandidateSet(tuple(out))

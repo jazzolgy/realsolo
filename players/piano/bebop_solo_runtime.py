@@ -6,6 +6,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from music_intelligence.harmony.jazz_harmony_core import HarmonicFrame
+from music_intelligence.harmony.scale_linear_core import (
+    build_linear_connection_affordances,
+)
 from music_intelligence.reasoning.legend_style_core import CandidateScore
 
 from .bebop_complementarity import EnsembleComplementarityEvidence
@@ -46,12 +50,35 @@ def build_bebop_solo_tick(
     next_material: ResolvedHarmonicMaterial | None = None,
     low_midi: int = 48,
     high_midi: int = 96,
+    harmonic_frame: HarmonicFrame | None = None,
+    local_key_pitch_classes: frozenset[int] = frozenset(),
 ) -> BebopSoloTickPlan:
     intent=derive_bebop_phrase_intent(
         harmonic_turn,
         turn,
         complementarity,
     )
+
+    linear_affordances = ()
+    if harmonic_frame is not None:
+        target_pcs = set()
+        if next_material is not None:
+            for pcs in next_material.role_pitch_classes.values():
+                target_pcs.update(pcs)
+        elif intent.target_mode.value in {"resolution", "guide_tone"}:
+            for role in ("3rd", "b3", "7th", "b7"):
+                target_pcs.update(current_material.role_pitch_classes.get(role, ()))
+
+        linear_affordances = build_linear_connection_affordances(
+            harmonic_frame,
+            current_pitch_class=(
+                previous_pitch_midi % 12
+                if previous_pitch_midi is not None
+                else None
+            ),
+            target_pitch_classes=frozenset(target_pcs),
+            local_key_pitch_classes=local_key_pitch_classes,
+        )
     candidates=generate_immediate_bebop_candidates(
         current_material=current_material,
         next_material=next_material,
@@ -59,6 +86,7 @@ def build_bebop_solo_tick(
         previous_pitch_midi=previous_pitch_midi,
         low_midi=low_midi,
         high_midi=high_midi,
+        linear_affordances=linear_affordances,
     )
     plan=BebopSoloTickPlan(intent,candidates)
     plan.validate()

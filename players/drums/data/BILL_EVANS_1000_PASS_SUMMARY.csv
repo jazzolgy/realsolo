@@ -1,0 +1,25 @@
+track,title,drum_valid,mid_gt_early_pct,late_lt_mid_pct,late_gt_mid_pct,peak_first30_pct,peak_mid40_70_pct,peak_last30_pct,mean_mid_minus_early,mean_late_minus_mid
+1,Waltz For Debby,True,100.0,100.0,0.0,0.0,100.0,0.0,1.060,-0.271
+2,My Foolish Heart,True,100.0,92.8,7.2,0.0,32.1,67.9,0.333,-0.130
+3,Autumn Leaves,True,100.0,100.0,0.0,0.0,100.0,0.0,1.145,-1.426
+4,Blue In Green,True,100.0,100.0,0.0,0.0,100.0,0.0,0.885,-0.692
+5,Peace Piece,False,100.0,100.0,0.0,0.0,100.0,0.0,1.008,-0.718
+6,Someday My Prince Will Come,True,100.0,100.0,0.0,16.5,73.9,9.6,0.875,-0.513
+7,The Peacocks,True,100.0,98.0,2.0,0.0,97.8,2.2,0.509,-0.440
+8,Spring Is Here,True,100.0,100.0,0.0,3.4,96.6,0.0,0.585,-0.361
+9,If You Could See Me Now,True,100.0,99.0,1.0,0.0,0.0,100.0,0.156,-0.429
+10,Nardis,True,0.0,0.0,100.0,0.0,100.0,0.0,-0.409,0.506
+11,Alice In Wonderland,True,100.0,20.1,79.9,67.9,9.0,23.1,0.538,0.180
+12,How Deep Is The Ocean,True,100.0,100.0,0.0,0.0,100.0,0.0,0.508,-0.834
+13,When I Fall In Love,True,100.0,100.0,0.0,0.0,100.0,0.0,0.805,-0.978
+14,Isn't It Romantic,True,100.0,89.0,11.0,0.0,98.8,1.2,0.272,-0.247
+15,Israel,True,30.8,15.3,84.7,68.5,15.8,15.7,-0.085,0.150
+16,Peri's Scope,True,100.0,100.0,0.0,0.0,100.0,0.0,0.888,-1.091
+17,B Minor Waltz,True,100.0,100.0,0.0,0.0,100.0,0.0,0.519,-0.804
+18,Without A Song,True,100.0,100.0,0.0,0.0,0.0,100.0,1.355,-0.641
+19,Come Rain or Come Shine,True,100.0,100.0,0.0,0.0,86.2,13.8,0.243,-0.702
+20,You Must Believe In Spring,True,85.5,49.8,50.2,0.0,28.4,71.6,0.193,-0.035
+21,Garys Theme,True,100.0,100.0,0.0,0.0,100.0,0.0,0.210,-1.043
+22,Some Other Time,False,100.0,100.0,0.0,0.0,99.9,0.1,0.514,-0.757
+23,In Your Own Sweet Way [Take 1],True,0.0,0.0,100.0,56.3,31.1,12.6,-0.621,0.209
+24,Re: The Person I Knew,True,100.0,100.0,0.0,0.0,100.0,0.0,0.719,-0.521

@@ -37,6 +37,8 @@ from .bebop_runtime import (
     perform_one_bebop_gesture,
     score_bebop_gesture,
 )
+from .calibration import BebopCalibrationTelemetry
+from .chorus_memory import BebopChorusMemory, chorus_gesture_adjustment
 from .comping_phrase import (
     CommittedSnareEvent,
     CompPhraseAction,
@@ -64,6 +66,17 @@ from .standard100_practice import (
     standard100_root,
 )
 from .comping import CompingPropensity, comping_propensity
+from .legend_adapter import (
+    DRUM_LEGEND_DOMAINS,
+    DrumLegendFeature,
+    DrumLegendProjection,
+    DrumVocabularyIntent,
+    drum_vocabulary_intent,
+    legend_gesture_adjustment,
+    project_legend_views,
+    vocabulary_reuse_bias,
+    vocabulary_gesture_adjustment,
+)
 from .model import (
     DrumGesture,
     DrumHit,
@@ -167,6 +180,9 @@ __all__ = [
     "build_bebop_candidates",
     "perform_one_bebop_gesture",
     "score_bebop_gesture",
+    "BebopCalibrationTelemetry",
+    "BebopChorusMemory",
+    "chorus_gesture_adjustment",
     "CommittedSnareEvent",
     "CompPhraseAction",
     "CompPhraseCandidate",
@@ -189,6 +205,15 @@ __all__ = [
     "practice_chart",
     "practice_standard100",
     "standard100_root",
+    "DRUM_LEGEND_DOMAINS",
+    "DrumLegendFeature",
+    "DrumLegendProjection",
+    "DrumVocabularyIntent",
+    "drum_vocabulary_intent",
+    "legend_gesture_adjustment",
+    "project_legend_views",
+    "vocabulary_reuse_bias",
+    "vocabulary_gesture_adjustment",
     "CompingPropensity",
     "comping_propensity",
     "DrumGesture",

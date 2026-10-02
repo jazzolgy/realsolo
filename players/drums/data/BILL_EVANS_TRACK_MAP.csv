@@ -1,0 +1,25 @@
+track,title,start_s,end_s,recording_context,bass,drums,drum_study_status
+1,Waltz For Debby,0,413,1961 Village Vanguard,Scott LaFaro,Paul Motian,core
+2,My Foolish Heart,413,708,1961 Village Vanguard,Scott LaFaro,Paul Motian,core
+3,Autumn Leaves,708,1069,Portrait in Jazz,Scott LaFaro,Paul Motian,core
+4,Blue In Green,1069,1393,Portrait in Jazz,Scott LaFaro,Paul Motian,core
+5,Peace Piece,1393,1797,solo piano,,none,exclude_no_drums
+6,Someday My Prince Will Come,1797,2093,Portrait in Jazz,Scott LaFaro,Paul Motian,core
+7,The Peacocks,2093,2459,You Must Believe in Spring,Eddie Gomez,Eliot Zigmund,comparison
+8,Spring Is Here,2459,2764,Portrait in Jazz,Scott LaFaro,Paul Motian,core
+9,If You Could See Me Now,2764,3034,Moon Beams,Chuck Israels,Paul Motian,core
+10,Nardis,3034,3388,Explorations,Scott LaFaro,Paul Motian,core
+11,Alice In Wonderland,3388,3809,1961 Village Vanguard,Scott LaFaro,Paul Motian,core
+12,How Deep Is The Ocean,3809,4023,Explorations,Scott LaFaro,Paul Motian,core
+13,When I Fall In Love,4023,4321,Portrait in Jazz,Scott LaFaro,Paul Motian,core
+14,Isn't It Romantic,4321,4603,1963 trio context,Chuck Israels,Larry Bunker,comparison
+15,Israel,4603,4976,Explorations,Scott LaFaro,Paul Motian,core
+16,Peri's Scope,4976,5172,Portrait in Jazz,Scott LaFaro,Paul Motian,core
+17,B Minor Waltz,5172,5368,You Must Believe in Spring,Eddie Gomez,Eliot Zigmund,comparison
+18,Without A Song,5368,5859,You Must Believe in Spring bonus,Eddie Gomez,Eliot Zigmund,comparison_drum_solo
+19,Come Rain or Come Shine,5859,6063,Portrait in Jazz,Scott LaFaro,Paul Motian,core
+20,You Must Believe In Spring,6063,6407,You Must Believe in Spring,Eddie Gomez,Eliot Zigmund,comparison
+21,Garys Theme,6407,6669,You Must Believe in Spring,Eddie Gomez,Eliot Zigmund,comparison
+22,Some Other Time,6669,6955,Tony Bennett Bill Evans duo,,none,exclude_no_drums
+23,In Your Own Sweet Way [Take 1],6955,7374,How My Heart Sings,Chuck Israels,Paul Motian,core
+24,Re: The Person I Knew,7374,7717.956,Moon Beams,Chuck Israels,Paul Motian,core

@@ -69,6 +69,11 @@ from .bebop_harmonic_turn import BebopHarmonicTurnContext
 from .bebop_harmonic_turn_comping import (
     evaluate_bebop_harmonic_turn_comping_bias,
 )
+from .ensemble_role import PianoEnsembleMode
+from .lh_texture import evaluate_lh_texture_bias
+from .lh_voice_leading import evaluate_lh_voice_leading
+from .rh_lh_interaction import evaluate_rh_lh_interaction
+from .texture_control import PianoTextureIntent, evaluate_texture_intent
 
 
 class InteractionRole(str, Enum):
@@ -95,6 +100,11 @@ class PianoCompingContext:
     """Piano-local experimental projection of currently perceived ensemble state."""
 
     soloist_activity: float = 0.5
+    piano_foreground_activity: float = 0.0
+    piano_foreground_register_midi: float | None = None
+    piano_foreground_onset_proximity_beats: float | None = None
+    piano_foreground_gap_beats: float = 0.0
+    piano_foreground_rhythm_match_confidence: float = 0.0
     phrase_boundary_probability: float = 0.0
     available_space_beats: float = 0.0
     bass_activity: float = 0.5
@@ -110,15 +120,20 @@ class PianoCompingContext:
     auto_pattern_consistency: bool = True
     creativity_strength: float = 0.55
     creativity_coherence_floor: float = 0.30
+    tension_preference: float = 0.62
+    texture_intent: PianoTextureIntent = field(default_factory=PianoTextureIntent)
     role_occupancy: CompingRoleOccupancy = field(default_factory=CompingRoleOccupancy)
     harmonic_turn: BebopHarmonicTurnContext = field(
         default_factory=BebopHarmonicTurnContext
     )
+    ensemble_mode: PianoEnsembleMode = PianoEnsembleMode.EXTERNAL_MELODY_SUPPORT
     time_feel: str = "swing"
 
     def validate(self) -> None:
         for name in (
             "soloist_activity",
+            "piano_foreground_activity",
+            "piano_foreground_rhythm_match_confidence",
             "phrase_boundary_probability",
             "bass_activity",
             "drummer_activity",
@@ -131,14 +146,28 @@ class PianoCompingContext:
             "pattern_consistency_strength",
             "creativity_strength",
             "creativity_coherence_floor",
+            "tension_preference",
         ):
             value = getattr(self, name)
             if not 0.0 <= value <= 1.0:
                 raise ValueError(f"{name} must be within 0..1")
         if self.available_space_beats < 0:
             raise ValueError("available_space_beats cannot be negative")
+        if self.piano_foreground_gap_beats < 0:
+            raise ValueError("piano_foreground_gap_beats cannot be negative")
+        if (
+            self.piano_foreground_onset_proximity_beats is not None
+            and self.piano_foreground_onset_proximity_beats < 0
+        ):
+            raise ValueError("piano_foreground_onset_proximity_beats cannot be negative")
         if self.soloist_register_midi is not None and not 0 <= self.soloist_register_midi <= 127:
             raise ValueError("soloist_register_midi must be within MIDI range")
+        if (
+            self.piano_foreground_register_midi is not None
+            and not 0 <= self.piano_foreground_register_midi <= 127
+        ):
+            raise ValueError("piano_foreground_register_midi must be within MIDI range")
+        self.texture_intent.validate()
         self.role_occupancy.validate()
         self.harmonic_turn.validate()
 
@@ -377,7 +406,16 @@ class PianoCompingEvaluator:
         reasons: list[str] = []
         piano_score: PianoActionScore | None = None
 
-        busy_solo = comping_context.soloist_activity >= 0.72
+        foreground_activity = comping_context.soloist_activity
+        if comping_context.ensemble_mode in {
+            PianoEnsembleMode.PIANO_HEAD_TRIO,
+            PianoEnsembleMode.PIANO_SOLO_TRIO,
+        }:
+            foreground_activity = max(
+                foreground_activity,
+                comping_context.piano_foreground_activity,
+            )
+        busy_solo = foreground_activity >= 0.72
         phrase_open = comping_context.phrase_boundary_probability >= 0.65
         useful_space = comping_context.available_space_beats >= 0.5
         crowded = comping_context.ensemble_density >= 0.72
@@ -422,6 +460,70 @@ class PianoCompingEvaluator:
             score += piano_score.total
             components.update(piano_score.components)
             reasons.extend(piano_score.reasons)
+
+            hands = dict(candidate.realization.hand_assignment)
+            piano_foreground = comping_context.ensemble_mode in {
+                PianoEnsembleMode.PIANO_HEAD_TRIO,
+                PianoEnsembleMode.PIANO_SOLO_TRIO,
+            }
+            if piano_foreground:
+                # In a piano-led trio the RH owns melody/solo foreground. Comping
+                # should normally be a LH function; RH chordal occupation competes
+                # with the line unless explicitly realized as a two-hand texture.
+                if any(hand == "RH" for hand in hands.values()):
+                    score = self._add(
+                        score, components, reasons,
+                        "foreground_hand_contract", -0.34,
+                        "RH is reserved for melody/solo foreground in piano-led trio mode",
+                    )
+                elif hands and all(hand == "LH" for hand in hands.values()):
+                    score = self._add(
+                        score, components, reasons,
+                        "left_hand_comping_fit", 0.12,
+                        "LH-only comping supports RH foreground ownership",
+                    )
+                if candidate.action_type is CompingActionType.SUSTAINED_SUPPORT:
+                    score = self._add(
+                        score, components, reasons,
+                        "foreground_sustain_restraint", -0.05,
+                        "continuous LH sustain can make piano-trio solo texture too static",
+                    )
+
+            lh_texture_bias = evaluate_lh_texture_bias(
+                candidate,
+                comping_context,
+            )
+            score += lh_texture_bias.score_delta
+            for key, value in lh_texture_bias.components.items():
+                components[key] = components.get(key,0.0) + value
+            reasons.extend(lh_texture_bias.reasons)
+
+            lh_voice_leading_bias = evaluate_lh_voice_leading(
+                candidate,
+                state,
+            )
+            score += lh_voice_leading_bias.score_delta
+            for key, value in lh_voice_leading_bias.components.items():
+                components[key] = components.get(key,0.0) + value
+            reasons.extend(lh_voice_leading_bias.reasons)
+
+            rh_lh_bias = evaluate_rh_lh_interaction(
+                candidate,
+                comping_context,
+            )
+            score += rh_lh_bias.score_delta
+            for key, value in rh_lh_bias.components.items():
+                components[key] = components.get(key,0.0) + value
+            reasons.extend(rh_lh_bias.reasons)
+
+            texture_intent_bias = evaluate_texture_intent(
+                candidate,
+                comping_context.texture_intent,
+            )
+            score += texture_intent_bias.score_delta
+            for key, value in texture_intent_bias.components.items():
+                components[key] = components.get(key,0.0) + value
+            reasons.extend(texture_intent_bias.reasons)
 
             event = candidate.realization.event
             if harmonic_reasoning is not None:
@@ -502,6 +604,28 @@ class PianoCompingEvaluator:
                 )
 
             family_tags = set(event.tags) | set(candidate.tags)
+
+            if {"extension", "color_tone", "tension"} & family_tags:
+                color_bonus = 0.07 * comping_context.tension_preference
+                score = self._add(
+                    score, components, reasons,
+                    "color_tension_preference", color_bonus,
+                    "piano comping favors a moderate amount of extension/color",
+                )
+
+            if "high_tension" in family_tags:
+                if busy_solo or crowded:
+                    score = self._add(
+                        score, components, reasons,
+                        "altered_tension_restraint", -0.05,
+                        "strong altered tension is restrained when foreground/ensemble is busy",
+                    )
+                else:
+                    score = self._add(
+                        score, components, reasons,
+                        "altered_tension_color", 0.025 * comping_context.tension_preference,
+                        "explicit Core-supplied altered color can enrich open comping space",
+                    )
 
             if interaction_state is not None:
                 if (

@@ -41,7 +41,6 @@ class RideSurfaceAction(str, Enum):
     LIFT_SKIP = "lift_skip"
     OMIT_SKIP = "omit_skip"
     ACCENT_QUARTER = "accent_quarter"
-    ACCENT_SKIP = "accent_skip"
     RELAX_SURFACE = "relax_surface"
     REASSERT_TIME = "reassert_time"
 
@@ -229,7 +228,7 @@ def build_ride_candidates(
             BebopInteractionState.COME_DOWN,
             BebopInteractionState.LISTEN,
         }:
-            omit_bias += 0.14
+            omit_bias += 0.22
         if memory.recent_skip_omissions >= 2:
             omit_bias -= 0.18
         out.append(RideCandidate(
@@ -242,24 +241,6 @@ def build_ride_candidates(
             omit_bias,
             ("skip surface is flexible and may be omitted without losing deep pulse",),
         ))
-
-        if interaction in {
-            BebopInteractionState.BUILD,
-            BebopInteractionState.HANDOFF,
-        } or context.phrase_position >= 0.9:
-            out.append(RideCandidate(
-                DrumGesture(
-                    hits=(_context_ride_hit(
-                        plan, context, velocity_delta=10, articulation="accent_skip"
-                    ),),
-                    role=GestureRole.TIME,
-                    tags=frozenset({"bebop", "ride_continuity", "skip", "accent_skip"}),
-                    provenance=("drum_player", "ride_continuity"),
-                ),
-                RideSurfaceAction.ACCENT_SKIP,
-                0.24,
-                ("skip accent can lift phrase energy or punctuation",),
-            ))
 
     for candidate in out:
         candidate.gesture.validate()
@@ -295,10 +276,7 @@ def update_ride_memory(
             since_q += 1.0
     elif phase is RidePhase.SKIP:
         since_q += 0.5
-        if action in {
-            RideSurfaceAction.LIFT_SKIP,
-            RideSurfaceAction.ACCENT_SKIP,
-        }:
+        if action is RideSurfaceAction.LIFT_SKIP:
             s_hits = min(8, s_hits + 1)
             s_omit = max(0, s_omit - 1)
         elif action is RideSurfaceAction.OMIT_SKIP:

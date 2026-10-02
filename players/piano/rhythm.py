@@ -1,13 +1,12 @@
-"""Experimental rhythmic placement grammar for jazz-piano comping.
+"""Contextual rhythmic placement grammar for jazz-piano comping.
 
-Source basis: McNeely repeatedly varies rhythmic placement, anticipation, duration,
-offbeat activity, and phrase-response timing while holding harmonic material stable.
-
-These are candidate descriptors for one immediate gesture, not multi-bar patterns.
+Comping rhythm must stay conversational rather than collapse into a single repeated
+on-beat pattern. This module exposes plural one-gesture timing choices; it never
+precomposes a future comping sequence.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum
 
 from .comping import CompingActionType, InteractionRole, PianoCompingCandidate
@@ -27,6 +26,7 @@ class PianoRhythmicIntent:
     onset_offset_beats: float = 0.0
     duration_scale: float = 1.0
     confidence: float = 1.0
+    cell_id: str = ""
     source: str = "piano_rhythm_grammar"
 
     def validate(self) -> None:
@@ -38,6 +38,22 @@ class PianoRhythmicIntent:
             raise ValueError("onset_offset_beats outside immediate-gesture range")
 
 
+def _intent(
+    placement: RhythmicPlacement,
+    onset: float,
+    duration: float,
+    confidence: float,
+    cell_id: str,
+) -> PianoRhythmicIntent:
+    return PianoRhythmicIntent(
+        placement=placement,
+        onset_offset_beats=onset,
+        duration_scale=duration,
+        confidence=confidence,
+        cell_id=cell_id,
+    )
+
+
 def rhythmic_intents_for_candidate(
     candidate: PianoCompingCandidate,
     *,
@@ -45,78 +61,100 @@ def rhythmic_intents_for_candidate(
     available_space_beats: float,
     drummer_activity: float,
 ) -> tuple[PianoRhythmicIntent, ...]:
-    """Return plural immediate-placement options for the current candidate.
-
-    This does not choose a placement. It only exposes contextually plausible timing
-    alternatives to a later evaluator.
-    """
+    """Expose varied immediate placements for one current comping gesture."""
     if not 0.0 <= phrase_boundary_probability <= 1.0:
         raise ValueError("phrase_boundary_probability must be within 0..1")
     if available_space_beats < 0:
         raise ValueError("available_space_beats cannot be negative")
     if not 0.0 <= drummer_activity <= 1.0:
         raise ValueError("drummer_activity must be within 0..1")
-
     if candidate.action_type is CompingActionType.SILENCE:
         return ()
 
+    active_drums = drummer_activity >= 0.5
+    phrase_open = phrase_boundary_probability >= 0.55 and available_space_beats >= 0.5
+
+    # On-beat is now only one option, not the privileged default solution.
     out: list[PianoRhythmicIntent] = [
-        PianoRhythmicIntent(RhythmicPlacement.ON_BEAT, 0.0, 1.0, 0.8),
+        _intent(RhythmicPlacement.ON_BEAT, 0.0, 0.75, 0.56, "beat_short"),
+        _intent(RhythmicPlacement.ON_BEAT, 0.0, 1.20, 0.48, "beat_long"),
     ]
 
-    if candidate.role in {InteractionRole.PUNCTUATE, InteractionRole.ANCHOR}:
-        out.append(
-            PianoRhythmicIntent(
-                RhythmicPlacement.ANTICIPATED,
-                onset_offset_beats=-0.125,
-                duration_scale=0.65,
-                confidence=0.72 if drummer_activity >= 0.5 else 0.58,
-            )
-        )
-        out.append(
-            PianoRhythmicIntent(
-                RhythmicPlacement.OFFBEAT,
-                onset_offset_beats=0.125,
-                duration_scale=0.55,
-                confidence=0.70 if drummer_activity >= 0.5 else 0.55,
-            )
-        )
+    # General support must have real rhythmic vocabulary; previously it had
+    # effectively only ON_BEAT and therefore converged to mechanical regularity.
+    if candidate.role in {
+        InteractionRole.SUPPORT,
+        InteractionRole.ANCHOR,
+        InteractionRole.PUNCTUATE,
+        InteractionRole.BUILD,
+        InteractionRole.RELEASE,
+    }:
+        out.extend((
+            _intent(
+                RhythmicPlacement.ANTICIPATED, -0.5, 0.55,
+                0.62 if active_drums else 0.52, "anticipate_eighth",
+            ),
+            _intent(
+                RhythmicPlacement.ANTICIPATED, -0.125, 0.68,
+                0.68 if active_drums else 0.54, "anticipate_small",
+            ),
+            _intent(
+                RhythmicPlacement.OFFBEAT, 0.5, 0.50,
+                0.64 if active_drums else 0.52, "offbeat_eighth",
+            ),
+            _intent(
+                RhythmicPlacement.OFFBEAT, 0.125, 0.58,
+                0.60 if active_drums else 0.50, "offbeat_small",
+            ),
+            _intent(
+                RhythmicPlacement.DELAYED, 0.25, 0.70,
+                0.58, "delayed_quarter",
+            ),
+        ))
 
-    if (
-        candidate.role in {InteractionRole.ANSWER, InteractionRole.FILL}
-        and phrase_boundary_probability >= 0.55
-        and available_space_beats >= 0.5
-    ):
-        out.append(
-            PianoRhythmicIntent(
-                RhythmicPlacement.DELAYED,
-                onset_offset_beats=0.25,
-                duration_scale=min(1.5, max(0.5, available_space_beats)),
-                confidence=min(1.0, phrase_boundary_probability),
-            )
-        )
+    if candidate.role in {InteractionRole.ANSWER, InteractionRole.FILL} and phrase_open:
+        out.extend((
+            _intent(
+                RhythmicPlacement.DELAYED, 0.25,
+                min(1.3, max(0.55, available_space_beats)),
+                min(1.0, phrase_boundary_probability),
+                "answer_delayed",
+            ),
+            _intent(
+                RhythmicPlacement.OFFBEAT, 0.5,
+                min(1.0, max(0.45, available_space_beats * 0.75)),
+                min(0.95, phrase_boundary_probability),
+                "answer_offbeat",
+            ),
+        ))
 
     if candidate.action_type is CompingActionType.SUSTAINED_SUPPORT:
         out.append(
-            PianoRhythmicIntent(
+            _intent(
                 RhythmicPlacement.SUSTAINED,
-                onset_offset_beats=0.0,
-                duration_scale=1.6,
-                confidence=0.82,
+                0.0,
+                1.7,
+                0.68 if not phrase_open else 0.54,
+                "sustain_open",
             )
         )
 
-    return tuple(out)
-
-
-from dataclasses import replace
+    # Deterministic de-duplication by actual timing identity.
+    unique: list[PianoRhythmicIntent] = []
+    seen = set()
+    for item in out:
+        key=(item.placement,item.onset_offset_beats,item.duration_scale,item.cell_id)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(item)
+    return tuple(unique)
 
 
 def apply_rhythmic_intent(
     candidate: PianoCompingCandidate,
     intent: PianoRhythmicIntent,
 ) -> PianoCompingCandidate:
-    """Apply one immediate rhythmic interpretation without changing pitch content."""
     intent.validate()
     candidate.validate()
     if candidate.realization is None:
@@ -131,14 +169,20 @@ def apply_rhythmic_intent(
         annotations={
             **dict(old_event.annotations),
             "rhythmic_placement": intent.placement.value,
+            "rhythm_cell": intent.cell_id,
+            "rhythmic_intent_confidence": intent.confidence,
         },
     )
     new_realization = replace(candidate.realization, event=new_event)
+    tags=set(candidate.tags)
+    tags.add(f"rhythm:{intent.placement.value}")
+    if intent.cell_id:
+        tags.add(f"rhythm_cell:{intent.cell_id}")
     return replace(
         candidate,
         duration_beats=new_duration,
         realization=new_realization,
-        tags=frozenset(set(candidate.tags) | {f"rhythm:{intent.placement.value}"}),
+        tags=frozenset(tags),
     )
 
 
@@ -149,7 +193,6 @@ def expand_rhythmic_variants(
     available_space_beats: float,
     drummer_activity: float,
 ) -> tuple[PianoCompingCandidate, ...]:
-    """Expand one sounding candidate into plural immediate timing variants."""
     intents = rhythmic_intents_for_candidate(
         candidate,
         phrase_boundary_probability=phrase_boundary_probability,
