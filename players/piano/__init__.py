@@ -12,6 +12,16 @@ from .ensemble_role import (
     PianoHandRolePlan,
     derive_piano_hand_role_plan,
 )
+from .lh_texture import (
+    LHTextureBias,
+    LHTextureClass,
+    classify_lh_texture,
+    evaluate_lh_texture_bias,
+)
+from .lh_voice_leading import (
+    LHVoiceLeadingBias,
+    evaluate_lh_voice_leading,
+)
 from .linear_practice_comparator import (
     AbstractWrittenLineObservation,
     ContourClass,
@@ -186,6 +196,12 @@ __all__ = [
     "PianoHandFunction",
     "PianoHandRolePlan",
     "derive_piano_hand_role_plan",
+    "LHTextureBias",
+    "LHTextureClass",
+    "classify_lh_texture",
+    "evaluate_lh_texture_bias",
+    "LHVoiceLeadingBias",
+    "evaluate_lh_voice_leading",
     "AbstractWrittenLineObservation",
     "ContourClass",
     "IntervalMotionClass",
