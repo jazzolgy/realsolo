@@ -14,9 +14,11 @@ from .events import (
     EventAlternative,
     EvidenceKind,
     EvidenceRef,
+    PerformanceCommitment,
     PerformedPitch,
     PerformanceTimeSpan,
     UnpitchedToken,
+    commitment_value,
 )
 from .notation import (
     NotatedAtom,
@@ -144,9 +146,11 @@ __all__ = [
     "EventAlternative",
     "EvidenceKind",
     "EvidenceRef",
+    "PerformanceCommitment",
     "PerformedPitch",
     "PerformanceTimeSpan",
     "UnpitchedToken",
+    "commitment_value",
     "NotatedAtom",
     "NotatedAtomKind",
     "NotationCandidate",
