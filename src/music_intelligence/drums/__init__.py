@@ -22,6 +22,23 @@ from .pattern_corpus import (
     patterns_with_tags,
 )
 from .pattern_runtime import pattern_gesture_now, source_pattern_candidates
+from .interaction import (
+    EnsembleMotifProjection,
+    ResponseRelation,
+    TradeCandidate,
+    TradeLength,
+    TradingPlan,
+    build_trade_candidates,
+    motif_similarity,
+    perform_one_trade_gesture,
+)
+from .physical import (
+    DEFAULT_LIMB_CAPABILITIES,
+    LimbCapability,
+    four_limb_solo_gesture,
+    limb_can_play,
+    validate_kit_reachability,
+)
 from .online_drummer import (
     DrummerPerformanceMemory,
     ScoredDrumGesture,
@@ -80,6 +97,19 @@ __all__ = [
     "build_solo_candidates",
     "perform_one_solo_gesture",
     "solo_cell",
+    "EnsembleMotifProjection",
+    "ResponseRelation",
+    "TradeCandidate",
+    "TradeLength",
+    "TradingPlan",
+    "build_trade_candidates",
+    "motif_similarity",
+    "perform_one_trade_gesture",
+    "DEFAULT_LIMB_CAPABILITIES",
+    "LimbCapability",
+    "four_limb_solo_gesture",
+    "limb_can_play",
+    "validate_kit_reachability",
     "DrummerPerformanceMemory",
     "ScoredDrumGesture",
     "build_immediate_candidates",
