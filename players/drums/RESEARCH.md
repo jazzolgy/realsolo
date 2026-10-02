@@ -133,3 +133,30 @@ coupled comping switch.  Their propensities respond independently to:
 This remains a deterministic baseline policy.  A later statistical model may
 provide context-conditioned probabilities, but runtime selection will still be
 one immediate gesture followed by listen/re-plan.
+
+
+## Source Pattern Corpus
+
+RealSolo stores **actual source patterns as patterns**, not only abstract rules.
+Storage and runtime commitment are separate:
+
+- the corpus may contain a complete one-beat, two-beat, bar, or multi-bar source pattern;
+- each item keeps source/provenance and rights/use metadata;
+- runtime retrieves only the hit(s) relevant to the current decision instant;
+- future events in the stored pattern are not automatically committed;
+- after every gesture the player listens and may continue, transform, combine,
+  interrupt, ignore the source pattern, or leave space.
+
+Initial source-derived seeds include John Riley's bop ride/time-playing examples
+and Ron Spagnardi's upbeat-figure setup/fill examples from the uploaded
+materials.
+
+A literal stored pattern is tagged `exact_source_pattern=True`.  This does not
+make it universal grammar.  Source patterns and derived grammar remain separate
+knowledge layers so the system can know both *what has actually been taught or
+transcribed* and *why/when a drummer might choose something like it*.
+
+Per project data policy, corpus presence does not itself imply permission for
+training, redistribution, or commercial use.  Uploaded teaching material is
+therefore marked reference/research by default until rights are separately
+cleared.
