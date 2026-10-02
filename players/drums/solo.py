@@ -17,6 +17,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
+from music_intelligence.reasoning.solo_grammar import (
+    SoloArc as SharedSoloArc,
+    SoloDevelopmentOperation,
+    SoloMethodContext,
+    shared_solo_method_options,
+)
+
 from .legend_adapter import (
     DrumLegendProjection,
     DrumVocabularyIntent,
@@ -56,6 +63,57 @@ class SoloArc(str, Enum):
     CLIMAX = "climax"
     RELEASE = "release"
     REENTRY = "reentry"
+
+
+_SHARED_DEVELOPMENT_MAP = {
+    SoloDevelopment.STATE: SoloDevelopmentOperation.STATE,
+    SoloDevelopment.REPEAT: SoloDevelopmentOperation.REPEAT,
+    SoloDevelopment.ORCHESTRATE: SoloDevelopmentOperation.REORCHESTRATE,
+    SoloDevelopment.ADD_SPACE: SoloDevelopmentOperation.ADD_SPACE,
+    SoloDevelopment.INTERNAL_REST: SoloDevelopmentOperation.INTERNAL_REST,
+    SoloDevelopment.ELASTICITY_EXPAND: SoloDevelopmentOperation.EXTEND,
+    SoloDevelopment.ELASTICITY_CONTRACT: SoloDevelopmentOperation.CONTRACT,
+    SoloDevelopment.DISPLACE: SoloDevelopmentOperation.DISPLACE,
+    SoloDevelopment.THREE_BEAT_CYCLE: SoloDevelopmentOperation.DISPLACE,
+    SoloDevelopment.METRIC_ILLUSION: SoloDevelopmentOperation.DISPLACE,
+    SoloDevelopment.CONTRAST: SoloDevelopmentOperation.CONTRAST,
+    SoloDevelopment.RECAP: SoloDevelopmentOperation.RECAP,
+    SoloDevelopment.RESOLVE: SoloDevelopmentOperation.RESOLVE,
+}
+
+
+def shared_operation_for_drum_development(
+    development: SoloDevelopment,
+) -> SoloDevelopmentOperation:
+    return _SHARED_DEVELOPMENT_MAP[development]
+
+
+def _shared_method_bonus(
+    plan: "DrumSoloPlan",
+    context: DrummerRuntimeContext,
+    state: "DrumSoloState",
+    development: SoloDevelopment,
+) -> tuple[float, tuple[str, ...]]:
+    shared_context = SoloMethodContext(
+        phrase_maturity=max(0.0, min(1.0, context.phrase_position)),
+        tension=max(0.0, min(1.0, plan.intensity)),
+        ensemble_activity=max(0.0, min(1.0, context.ensemble_activity)),
+        recent_repetition_count=state.motif_repetitions,
+        phrase_space_available=max(0.0, min(1.0, plan.space_probability)),
+        form_boundary_pressure=1.0 if context.section_transition else 0.0,
+        future_harmony_available=False,
+        interaction_role="",
+    )
+    shared_arc = SharedSoloArc(plan.arc.value)
+    desired = shared_operation_for_drum_development(development)
+    matches = [
+        option for option in shared_solo_method_options(shared_context, arc=shared_arc)
+        if option.operation is desired
+    ]
+    if not matches:
+        return 0.0, ()
+    best = max(matches, key=lambda option: option.weight)
+    return 0.25 * best.weight, best.reasons
 
 
 @dataclass(frozen=True)
@@ -362,6 +420,13 @@ def build_solo_candidates(
                 v += 0.25
             score += v
             reasons.append(("ensemble_reentry", v))
+
+        shared_bonus, shared_reasons = _shared_method_bonus(
+            plan, context, state, development
+        )
+        if shared_bonus:
+            score += shared_bonus
+            reasons.append((f"shared_solo:{shared_operation_for_drum_development(development).value}", shared_bonus))
 
         # Arc-specific shaping.
         if plan.arc is SoloArc.OPEN and development in {
