@@ -134,6 +134,14 @@ from .solo import (
     perform_one_solo_gesture,
     solo_cell,
 )
+from .rhythmic_language import (
+    RhythmicMotifIdentity,
+    RhythmicTransform,
+    engineering_seed_motif,
+    motif_phase_unit,
+    realize_motif_now,
+    transform_motif,
+)
 from .ride_continuity import (
     RideCandidate,
     RideContinuityMemory,
@@ -257,6 +265,12 @@ __all__ = [
     "four_limb_solo_gesture",
     "limb_can_play",
     "validate_kit_reachability",
+    "RhythmicMotifIdentity",
+    "RhythmicTransform",
+    "engineering_seed_motif",
+    "motif_phase_unit",
+    "realize_motif_now",
+    "transform_motif",
     "RideCandidate",
     "RideContinuityMemory",
     "RidePhase",
