@@ -38,6 +38,7 @@ from .bebop_runtime import (
     score_bebop_gesture,
 )
 from .comping_phrase import (
+    CommittedSnareEvent,
     CompPhraseAction,
     CompPhraseCandidate,
     SnareMotifIdentity,
@@ -46,8 +47,21 @@ from .comping_phrase import (
     circular_phase_distance,
     displaced_motif_match,
     motif_match_at_phase,
+    motif_from_recent_events,
     normalized_bar_phase,
+    record_committed_snare_event,
     update_snare_phrase_memory,
+)
+from .standard100_practice import (
+    ChartSection,
+    SongPracticeResult,
+    Standard100PracticeReport,
+    StandardChart,
+    discover_standard100_files,
+    load_standard100,
+    practice_chart,
+    practice_standard100,
+    standard100_root,
 )
 from .comping import CompingPropensity, comping_propensity
 from .model import (
@@ -153,6 +167,7 @@ __all__ = [
     "build_bebop_candidates",
     "perform_one_bebop_gesture",
     "score_bebop_gesture",
+    "CommittedSnareEvent",
     "CompPhraseAction",
     "CompPhraseCandidate",
     "SnareMotifIdentity",
@@ -161,8 +176,19 @@ __all__ = [
     "circular_phase_distance",
     "displaced_motif_match",
     "motif_match_at_phase",
+    "motif_from_recent_events",
     "normalized_bar_phase",
+    "record_committed_snare_event",
     "update_snare_phrase_memory",
+    "ChartSection",
+    "SongPracticeResult",
+    "Standard100PracticeReport",
+    "StandardChart",
+    "discover_standard100_files",
+    "load_standard100",
+    "practice_chart",
+    "practice_standard100",
+    "standard100_root",
     "CompingPropensity",
     "comping_propensity",
     "DrumGesture",
