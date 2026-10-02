@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from fractions import Fraction
+import re
 
 
 class BarlineStyle(str, Enum):
@@ -91,6 +92,68 @@ class ChordSymbol:
         if self.bass_pc is not None:
             text += "/" + names[self.bass_pc]
         return text
+
+
+_NOTE_TO_PC = {
+    "C": 0,
+    "C#": 1,
+    "Db": 1,
+    "D": 2,
+    "D#": 3,
+    "Eb": 3,
+    "E": 4,
+    "F": 5,
+    "F#": 6,
+    "Gb": 6,
+    "G": 7,
+    "G#": 8,
+    "Ab": 8,
+    "A": 9,
+    "A#": 10,
+    "Bb": 10,
+    "B": 11,
+}
+
+
+def parse_chord_symbol(label: str) -> ChordSymbol:
+    """Parse a practical chord-chart label while preserving arbitrary suffix.
+
+    Root and optional slash bass are structured for transposition.  The quality
+    suffix remains verbatim so jazz extensions/alterations do not require a
+    closed vocabulary.
+    """
+
+    text = label.strip()
+    if text.upper().replace(" ", "") in {"NC", "N.C.", "N.C"}:
+        return ChordSymbol(None, no_chord=True)
+
+    match = re.fullmatch(
+        r"([A-G](?:#|b)?)(.*?)(?:/([A-G](?:#|b)?))?",
+        text,
+    )
+    if match is None:
+        raise ValueError(f"unsupported chord symbol: {label!r}")
+
+    root_name, quality, bass_name = match.groups()
+    if root_name not in _NOTE_TO_PC:
+        raise ValueError(f"unsupported chord root: {root_name}")
+
+    accidental_tokens = root_name + (bass_name or "")
+    if "#" in accidental_tokens:
+        policy = EnharmonicPolicy.PREFER_SHARPS
+    elif "b" in accidental_tokens:
+        policy = EnharmonicPolicy.PREFER_FLATS
+    else:
+        policy = EnharmonicPolicy.AUTO
+
+    chord = ChordSymbol(
+        root_pc=_NOTE_TO_PC[root_name],
+        quality=quality,
+        bass_pc=_NOTE_TO_PC[bass_name] if bass_name else None,
+        enharmonic_policy=policy,
+    )
+    chord.validate()
+    return chord
 
 
 @dataclass(frozen=True)
