@@ -17,6 +17,19 @@ from .bebop_annotation import (
     DrumEventKind,
     EvidenceConfidence,
 )
+from .bebop_profile import (
+    BebopPrior,
+    BebopStyleProfile,
+    DEFAULT_BEBOP_PROFILE,
+    PriorEvidence,
+)
+from .bebop_runtime import (
+    BebopRuntimeProjection,
+    BebopScoredGesture,
+    build_bebop_candidates,
+    perform_one_bebop_gesture,
+    score_bebop_gesture,
+)
 from .comping import CompingPropensity, comping_propensity
 from .model import (
     DrumGesture,
@@ -97,6 +110,15 @@ __all__ = [
     "BebopPhraseAnnotation",
     "DrumEventKind",
     "EvidenceConfidence",
+    "BebopPrior",
+    "BebopStyleProfile",
+    "DEFAULT_BEBOP_PROFILE",
+    "PriorEvidence",
+    "BebopRuntimeProjection",
+    "BebopScoredGesture",
+    "build_bebop_candidates",
+    "perform_one_bebop_gesture",
+    "score_bebop_gesture",
     "CompingPropensity",
     "comping_propensity",
     "DrumGesture",
