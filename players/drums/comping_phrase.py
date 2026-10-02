@@ -252,7 +252,9 @@ def build_snare_phrase_candidates(
     out: list[CompPhraseCandidate] = []
 
     # Silence is always a deliberate phrase-level alternative.
-    space_bias = 0.10 + 0.10 * min(1.0, memory.consecutive_related_statements / 2.0)
+    space_bias = 0.16 + 0.14 * min(1.0, memory.consecutive_related_statements / 2.0)
+    if memory.bars_since_any_snare_statement < 0.75:
+        space_bias += 0.18
     if interaction in {
         BebopInteractionState.COAST,
         BebopInteractionState.LISTEN,
@@ -279,9 +281,11 @@ def build_snare_phrase_candidates(
     if memory.motif is None:
         # A first statement is most useful when the interaction state permits
         # foreground commentary.
-        bias = 0.16
+        bias = 0.10
         if interaction in {BebopInteractionState.SUPPORT, BebopInteractionState.BUILD}:
-            bias += 0.20
+            bias += 0.16
+        if memory.bars_since_any_snare_statement < 0.75:
+            bias -= 0.22
         if comp_intent in {BebopCompIntent.ANSWER, BebopCompIntent.STIMULATE}:
             bias += 0.16
         out.append(CompPhraseCandidate(
@@ -297,10 +301,10 @@ def build_snare_phrase_candidates(
     displaced = displaced_motif_match(memory.motif, phase)
 
     if exact > 0:
-        repeat_bias = 0.10 + 0.30 * exact
+        repeat_bias = 0.04 + 0.24 * exact
         # Immediate/parroting repetition becomes less attractive.
         if memory.bars_since_motif_statement < 0.75:
-            repeat_bias -= 0.26
+            repeat_bias -= 0.34
         if memory.consecutive_related_statements >= 2:
             repeat_bias -= 0.22
         out.append(CompPhraseCandidate(
@@ -312,7 +316,7 @@ def build_snare_phrase_candidates(
         ))
 
         if memory.bars_since_motif_statement >= 1.0:
-            return_bias = 0.24 + 0.28 * exact + 0.10 * min(memory.recent_space_bars, 2.0)
+            return_bias = 0.32 + 0.32 * exact + 0.14 * min(memory.recent_space_bars, 2.0)
             out.append(CompPhraseCandidate(
                 _snare_gesture(plan, context, CompPhraseAction.RETURN, velocity_delta=3),
                 CompPhraseAction.RETURN,
@@ -322,7 +326,7 @@ def build_snare_phrase_candidates(
             ))
 
     if displaced > 0:
-        disp_bias = 0.20 + 0.30 * displaced
+        disp_bias = 0.26 + 0.32 * displaced
         if memory.bars_since_motif_statement >= 0.75:
             disp_bias += 0.12
         if interaction in {BebopInteractionState.BUILD, BebopInteractionState.SUPPORT}:
