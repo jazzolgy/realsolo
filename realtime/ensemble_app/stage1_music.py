@@ -13,6 +13,7 @@ from music_intelligence.reasoning.online_improviser import (
     SoftPlan,
     perform_one_event,
 )
+from players.sax import SaxExpressionContext, choose_sax_expression
 
 ROOTS = {
     "C": 0, "C#": 1, "Db": 1, "D": 2, "D#": 3, "Eb": 3,
@@ -175,10 +176,30 @@ class Stage1Soloist:
         )
         chosen = perform_one_event(plan, self.evaluator, candidates, context, self.memory)
         event = chosen.candidate
+        previous_pitch = self.previous_pitch
+        phrase_maturity = context.phrase_maturity
+        tension = context.tension
+        expression = (
+            choose_sax_expression(
+                SaxExpressionContext(
+                    pitch_midi=event.pitch_midi,
+                    previous_pitch_midi=previous_pitch,
+                    duration_beats=event.duration_beats,
+                    beat_in_bar=beat_in_bar,
+                    phrase_maturity=phrase_maturity,
+                    tension=tension,
+                )
+            )
+            if event.pitch_midi is not None
+            else None
+        )
         self.previous_pitch = event.pitch_midi
         return {
             "pitch": event.pitch_midi,
             "duration_beats": event.duration_beats,
+            "velocity": expression.velocity if expression is not None else 82,
+            "articulation": list(expression.tags) if expression is not None else [],
+            "expression_reasons": list(expression.reason) if expression is not None else [],
             "reasons": list(chosen.reasons),
             "source_family": event.source_family,
             "committed_count": len(self.memory.committed),
