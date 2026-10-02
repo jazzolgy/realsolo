@@ -1,4 +1,4 @@
-"""Shared corpus registry for RealSolo."""
+"""Shared corpus registry snapshot consumed by the Sax branch."""
 
 from .registry import (
     CorpusAccess,
@@ -9,6 +9,29 @@ from .registry import (
     RightsProfile,
     corpus_root_from_env,
 )
+from .scorebooks import (
+    SCOREBOOK_SPECS,
+    SEED_SONG_LOCATORS,
+    ScoreEvidence,
+    ScoreEvidenceKind,
+    ScoreIngestStatus,
+    ScorebookFamily,
+    ScorebookSongLocator,
+    ScorebookSpec,
+    ingestion_queue,
+    register_scorebooks,
+    scorebook_corpus_items,
+    songs_for_book,
+    validate_song_locators,
+)
+from .score_context import (
+    ScoreContextSnapshot,
+    ScorePosition,
+    ScoreSpan,
+    StructuredScoreEvidence,
+    resolve_score_context,
+    structured_evidence_from_locator,
+)
 
 __all__ = [
     "CorpusAccess",
@@ -18,4 +41,23 @@ __all__ = [
     "CorpusUse",
     "RightsProfile",
     "corpus_root_from_env",
+    "SCOREBOOK_SPECS",
+    "SEED_SONG_LOCATORS",
+    "ScoreEvidence",
+    "ScoreEvidenceKind",
+    "ScoreIngestStatus",
+    "ScorebookFamily",
+    "ScorebookSongLocator",
+    "ScorebookSpec",
+    "ingestion_queue",
+    "register_scorebooks",
+    "scorebook_corpus_items",
+    "songs_for_book",
+    "validate_song_locators",
+    "ScoreContextSnapshot",
+    "ScorePosition",
+    "ScoreSpan",
+    "StructuredScoreEvidence",
+    "resolve_score_context",
+    "structured_evidence_from_locator",
 ]

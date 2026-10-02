@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True, slots=True)
@@ -11,6 +11,8 @@ class SaxPhraseContext:
     beat_in_bar: float
     phrase_maturity: float
     source_family: str = ""
+    score_phrase_boundary_before: bool = False
+    score_phrase_boundary_after: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,8 +50,16 @@ class SaxPhraseMemory:
         )
         reasons: list[str] = []
 
-        phrase_start = context.previous_pitch_midi is None or maturity <= 0.08
-        phrase_end = maturity >= 0.9 and context.duration_beats >= 0.75
+        heuristic_start = context.previous_pitch_midi is None or maturity <= 0.08
+        heuristic_end = maturity >= 0.9 and context.duration_beats >= 0.75
+
+        phrase_start = context.score_phrase_boundary_before or heuristic_start
+        phrase_end = context.score_phrase_boundary_after or heuristic_end
+
+        if context.score_phrase_boundary_before:
+            reasons.append("explicit score phrase-start boundary")
+        if context.score_phrase_boundary_after:
+            reasons.append("explicit score phrase-end boundary")
 
         breath_due = (
             self.notes_since_breath >= 7
