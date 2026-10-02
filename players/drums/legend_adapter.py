@@ -70,6 +70,7 @@ class DrumVocabularyIntent:
     rhythm_descriptor: str = ""
     articulation_descriptor: str = ""
     contour_descriptor: str = ""
+    normalized_representation: str = ""
     literal_similarity: float | None = None
     structural_similarity: float | None = None
     confidence: float = 1.0
@@ -151,6 +152,7 @@ def drum_vocabulary_intent(
         rhythm_descriptor=item.rhythm,
         articulation_descriptor=item.articulation,
         contour_descriptor=item.contour,
+        normalized_representation=item.transposition_normalized_representation,
         literal_similarity=item.literal_similarity,
         structural_similarity=item.structural_similarity,
         confidence=item.confidence,
