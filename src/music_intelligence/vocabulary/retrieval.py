@@ -12,6 +12,7 @@ from music_intelligence.legends.interfaces import (
     VocabularyQuery,
 )
 from .affinity import vocabulary_affinity
+from .usage_policy import vocabulary_use_score
 
 
 @dataclass(frozen=True)
@@ -21,6 +22,9 @@ class VocabularyRankingBreakdown:
     instrument_affinity: float
     dimension_affinity: float
     recent_use_penalty: float
+    signature_bias: float
+    use_bias: float
+    scarcity_penalty: float
 
     @property
     def total(self) -> float:
@@ -30,6 +34,9 @@ class VocabularyRankingBreakdown:
             + self.instrument_affinity
             + self.dimension_affinity
             - self.recent_use_penalty
+            + self.signature_bias
+            + self.use_bias
+            - self.scarcity_penalty
         )
 
 
@@ -38,6 +45,11 @@ def _is_eligible(item: VocabularyMemoryItem, request: VocabularyQuery) -> bool:
     if request.domain is not None and item.domains and request.domain not in item.domains:
         return False
     if not item.candidate_uses.intersection(request.allowed_uses):
+        return False
+    if (
+        request.preferred_use is not None
+        and request.preferred_use not in item.candidate_uses
+    ):
         return False
     if request.context_tags and not request.context_tags.issubset(item.context_tags):
         return False
@@ -74,6 +86,7 @@ def score_vocabulary_item(
 
     affinity = vocabulary_affinity(item, request)
     recent_use_penalty = min(.25, .04 * item.recent_usage_count)
+    use_score = vocabulary_use_score(item, request)
 
     return VocabularyRankingBreakdown(
         confidence=item.confidence,
@@ -81,6 +94,9 @@ def score_vocabulary_item(
         instrument_affinity=affinity.source_instrument,
         dimension_affinity=affinity.dimensions,
         recent_use_penalty=recent_use_penalty,
+        signature_bias=use_score.signature_bias,
+        use_bias=use_score.use_bias,
+        scarcity_penalty=use_score.scarcity_penalty,
     )
 
 
