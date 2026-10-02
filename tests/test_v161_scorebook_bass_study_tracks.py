@@ -9,9 +9,9 @@ def seed(title):
     return next(x for x in SEED_SONG_LOCATORS if x.title == title)
 
 
-def test_along_came_betty_routes_to_walking_comparator():
+def test_along_came_betty_routes_to_walking_instruction_not_written_part():
     decision = classify_scorebook_bass_study(seed("Along Came Betty").evidence)
-    assert decision.track is BassScorebookStudyTrack.WALKING_COMPARATOR
+    assert decision.track is BassScorebookStudyTrack.WALKING_INSTRUCTION
 
 
 def test_asa_routes_to_funk_written_part_not_walking():
