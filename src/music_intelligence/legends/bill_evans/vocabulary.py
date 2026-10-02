@@ -27,6 +27,14 @@ class BillEvansVocabularyIndex:
                 continue
             if request.context_tags and not request.context_tags.issubset(item.context_tags):
                 continue
+            if request.required_dimensions and not request.required_dimensions.issubset(item.dimensions):
+                continue
+            if (
+                request.target_instrument
+                and item.transferable_to
+                and request.target_instrument not in item.transferable_to
+            ):
+                continue
 
             score = item.confidence
             for wanted, actual, reward in (
