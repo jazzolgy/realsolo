@@ -21,9 +21,10 @@ def test_130_bpm_rh_eighth_is_swung_not_straight():
             subdivision_phase=.5,
         ),
     )
-    assert swung.onset_offset_beats > .10
+    assert swung.onset_offset_beats > .15
     assert "swing_offbeat" in swung.tags
-    assert 1.6 < swing_ratio_for_tempo(130) < 1.9
+    # Swing ratio is now owned by Shared GrooveTemporalContext.
+    assert 2.0 < swing_ratio_for_tempo(130) < 2.3
 
 
 def test_faster_swing_is_less_exaggerated_than_slow_swing():
