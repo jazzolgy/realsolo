@@ -11,7 +11,7 @@ from .engine import EnsembleEngine
 from .midi_io import MidoSink, list_ports, live_poll
 from .models import TransportEvent
 from .stage1_web import run_stage1_web
-from .asset_installer import install_assets
+from .asset_installer import PROFILES, activate_profile, install_assets
 
 
 def _core() -> CoreImmediateBridge:
@@ -103,9 +103,14 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="RealSolo live ensemble runtime")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("ports")
+    assets = sub.add_parser("install-assets")
+    assets.add_argument("--profile", choices=PROFILES, default="full")
+    use_assets = sub.add_parser("use-assets")
+    use_assets.add_argument("--profile", choices=PROFILES, required=True)
     stage1 = sub.add_parser("stage1")
     stage1.add_argument("--host", default="127.0.0.1")
     stage1.add_argument("--port", type=int, default=8765)
+    stage1.add_argument("--asset-profile", choices=PROFILES, default=None)
 
     mm = sub.add_parser("monitor-midi")
     mm.add_argument("--input", required=True)
@@ -120,7 +125,13 @@ def main() -> None:
     args = parser.parse_args()
     if args.command == "ports":
         command_ports()
+    elif args.command == "install-assets":
+        install_assets(args.profile)
+    elif args.command == "use-assets":
+        activate_profile(args.profile)
     elif args.command == "stage1":
+        if args.asset_profile:
+            activate_profile(args.asset_profile)
         run_stage1_web(args.host, args.port)
     elif args.command == "monitor-midi":
         command_monitor_midi(args.input)
