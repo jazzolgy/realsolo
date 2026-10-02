@@ -31,12 +31,11 @@ class DrumSoloRealizer:
         if context.groove is not None: context.groove.validate()
         dx=realize_drum_solo_expression(expression,context.tempo_bpm)
         groove_offset_beats=groove_timing_offset_beats(context.beat_position_beats+candidate.onset_offset_beats,context.groove)
-        groove_ms=groove_offset_beats*(60000.0/context.tempo_bpm)
         groove_tag=f"groove:{context.groove.feel.value}" if context.groove is not None else "groove:player_default"
         if candidate.pitch_class is None and "rest" in candidate.tags:
             gesture=DrumGesture(hits=(),role=GestureRole.SPACE,tags=frozenset(set(candidate.tags)|{"drum_solo","space",groove_tag}),provenance=("shared_solo_candidate","drum_realizer"))
         else:
-            hit=DrumHit(context.primary_voice,context.primary_limb,dx.velocity,dx.microtiming_ms+groove_ms,dx.articulation)
+            hit=DrumHit(context.primary_voice,context.primary_limb,dx.velocity,dx.microtiming_ms,dx.articulation,onset_offset_beats=groove_offset_beats)
             gesture=DrumGesture(hits=(hit,),role=context.role,tags=frozenset(set(candidate.tags)|{"drum_solo",groove_tag}),provenance=("shared_solo_candidate","drum_realizer"))
         gesture.validate()
         return DrumSoloRealization(gesture,dx)
