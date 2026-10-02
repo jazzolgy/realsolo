@@ -8,9 +8,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from typing import TYPE_CHECKING
 
-from .comping import CompingActionType, PianoCompingCandidate, PianoCompingContext
 from .ensemble_role import PianoEnsembleMode
+
+if TYPE_CHECKING:
+    from .comping import PianoCompingCandidate, PianoCompingContext
 
 
 class LHTextureClass(str, Enum):
@@ -55,10 +58,10 @@ def classify_lh_texture(candidate: PianoCompingCandidate) -> LHTextureClass:
     if tension_count>=2:
         return LHTextureClass.TWO_TENSION
     if tension_count==1:
-        if candidate.action_type is CompingActionType.SUSTAINED_SUPPORT:
+        if getattr(candidate.action_type,"value",candidate.action_type) == "sustained_support":
             return LHTextureClass.SUSTAINED_COLOR
         return LHTextureClass.ONE_TENSION
-    if candidate.action_type is CompingActionType.SUSTAINED_SUPPORT and len(voices)>=3:
+    if getattr(candidate.action_type,"value",candidate.action_type) == "sustained_support" and len(voices)>=3:
         return LHTextureClass.SUSTAINED_COLOR
     return LHTextureClass.OTHER
 
