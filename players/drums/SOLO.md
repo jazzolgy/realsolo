@@ -85,3 +85,41 @@ Technical complexity is not the target.  A strong solo should demonstrate:
 - optional advanced metric/subdivision language when stylistically justified
 
 This gives evaluation targets beyond raw speed or note density.
+
+
+## Shared motif / Legend vocabulary path
+
+The current canonical path is:
+
+`Legend VocabularyMemoryItem`
+→ `Shared MotifIdentity`
+→ drummer rhythmic projection
+→ one current drum event
+→ listen
+→ re-plan
+
+The Drum Player must not parse a legend source into a private competing memory
+schema when Shared Motif Intelligence can represent the same identity.
+
+### Promotion gate
+
+A detected rhythmic cell is **not** automatically runtime vocabulary.
+
+Promotion requires enough evidence to distinguish:
+- stable drummer language
+- tune/session-specific behavior
+- generic swing/subdivision structure
+- onset-detector or source-separation artifact
+
+Preferred evidence order:
+1. manually verified drum transcription or isolated/source-separated drums
+2. recurrence in an independent recording by the same drummer
+3. robustness across detector/grid settings
+4. context/form annotation
+
+A cell that fails robustness remains in `research/legends/.../observations` or
+a provisional vocabulary set and must not enter the active Legend runtime index.
+
+The Eliot Zigmund `Without a Song` 2-3-1 / 1-3-2 / 3-1-2 cells are the first
+explicit example: they were initially promoted, then demoted after a broader
+robustness check showed detector sensitivity and low recurrence.
