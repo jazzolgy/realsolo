@@ -23,6 +23,11 @@ from .scorebook_evidence import (
     derive_bass_score_evidence,
     evidence_candidate_score,
 )
+from .scorebook_study import (
+    BassScorebookStudyDecision,
+    BassScorebookStudyTrack,
+    classify_scorebook_bass_study,
+)
 from .scorebook_practice import (
     BassPracticeMetrics as ScorebookBassPracticeMetrics,
     BassPracticePassResult,
@@ -90,6 +95,8 @@ __all__ = [
     "BassPracticeExercise",
     "BassPracticeLevel",
     "BassScoreEvidenceDirective",
+    "BassScorebookStudyDecision",
+    "BassScorebookStudyTrack",
     "BassWrittenPartPrior",
     "BassLineAbstractProfile",
     "BassLineComparison",
@@ -117,6 +124,7 @@ __all__ = [
     "bebop_walking_practice_curriculum",
     "analyze_bass_line",
     "choose_bass_interaction_intent",
+    "classify_scorebook_bass_study",
     "compare_bass_lines",
     "choose_immediate_bass_action",
     "curriculum_feature_weights",
