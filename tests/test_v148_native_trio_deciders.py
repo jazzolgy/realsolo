@@ -77,7 +77,7 @@ def piano_request():
     )
 
 
-def test_bass_native_decider_uses_real_immediate_realizer():
+def test_bass_native_decider_uses_canonical_sequential_player():
     decider = BassNativeDecider()
     out = decider({
         "ensemble_snapshot": state(),
@@ -89,7 +89,7 @@ def test_bass_native_decider_uses_real_immediate_realizer():
     })
     assert out is not None
     assert out.gesture is not None
-    assert out.gesture.source == "player/bass:immediate_realizer"
+    assert out.gesture.source == "player/bass:sequential_runner"
     assert len(out.gesture.voices) == 1
 
 
