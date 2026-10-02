@@ -153,6 +153,16 @@ class PianoSoloEvaluator:
                 score += v
                 components["quiet_active_density"] = v
                 reasons.append("dense run may erase quiet-active ensemble space")
+            if (
+                space.percussive_support >= 0.65
+                and {"anticipation", "pickup", "syncopated_entry"} & tags
+            ):
+                v = 0.05 * weight * space.percussive_support
+                score += v
+                components["rhythm_section_carried_space"] = v
+                reasons.append(
+                    "percussive support remains active, favoring a rhythmic re-entry"
+                )
 
         elif space.space_type is PhraseSpaceType.DEEP_RELEASE:
             weight = space.confidence * max(space.energy_drop, 0.5)
