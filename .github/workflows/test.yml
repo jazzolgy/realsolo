@@ -6,6 +6,8 @@ on:
       - main
       - research/legend-intelligence
       - player/piano
+      - player/bass
+      - player/drums
       - realtime/ensemble-app
   pull_request:
     branches: [main]
