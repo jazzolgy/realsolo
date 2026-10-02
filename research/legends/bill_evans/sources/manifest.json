@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "bill_evans",
+  "handling": "private_sources_not_committed",
+  "sources": [
+    {
+      "source_id": "be_playlist_project_audio",
+      "type": "audio_compilation",
+      "status": "private_project_source",
+      "path_hint": "Bill Evans playlist / multi-track compilation uploaded to project",
+      "intended_use": [
+        "track identification",
+        "repeated listening",
+        "trio role analysis",
+        "score-position comparison",
+        "vocabulary extraction"
+      ]
+    },
+    {
+      "source_id": "master_index_project",
+      "type": "scorebook_index",
+      "status": "private_project_source",
+      "path_hint": "master_index.xlsx",
+      "intended_use": [
+        "locate tune in scorebooks",
+        "resolve book and page",
+        "support score-position alignment"
+      ]
+    }
+  ]
+}
