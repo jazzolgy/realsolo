@@ -5,6 +5,7 @@ from .interfaces import (
     LegendProfileView,
     VocabularyMemoryItem,
     VocabularyQuery,
+    VocabularyProvider,
     VocabularyUseType,
 )
 
@@ -13,5 +14,6 @@ __all__ = [
     "LegendProfileView",
     "VocabularyMemoryItem",
     "VocabularyQuery",
+    "VocabularyProvider",
     "VocabularyUseType",
 ]
