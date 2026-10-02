@@ -71,6 +71,21 @@ def _append_notations(note: ET.Element, event: ScoreEvent) -> None:
         ET.SubElement(notations, "other-notation").text = marking
 
 
+def _append_dynamic_direction(
+    measure: ET.Element,
+    event: ScoreEvent,
+    *,
+    staff_number: int,
+) -> None:
+    if event.dynamic_marking is None:
+        return
+    direction = ET.SubElement(measure, "direction", {"placement": "below"})
+    direction_type = ET.SubElement(direction, "direction-type")
+    dynamics = ET.SubElement(direction_type, "dynamics")
+    ET.SubElement(dynamics, event.dynamic_marking)
+    ET.SubElement(direction, "staff").text = str(staff_number)
+
+
 def _append_note(
     measure: ET.Element,
     event: ScoreEvent,
@@ -272,6 +287,11 @@ def score_to_musicxml(
                         raise ValueError(
                             f"engraving cross_staff_target is not in part: {rendered_staff_id}"
                         )
+                    _append_dynamic_direction(
+                        measure,
+                        event,
+                        staff_number=staff_numbers[rendered_staff_id],
+                    )
                     _append_note(
                         measure,
                         event,
