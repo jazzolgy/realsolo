@@ -188,6 +188,60 @@ def _append_profile_attributes(
             )
 
 
+def _dynamic_event_ids_to_emit(
+    part: ScorePart,
+    engraving_plan: EngravingPlan | None,
+) -> set[str]:
+    """Choose only initial/changed dynamics for each rendered staff.
+
+    Score events retain their performed dynamic projection.  This function only
+    controls notation output so repeated identical markings do not clutter the
+    readable score.
+    """
+
+    ordered = sorted(
+        part.events,
+        key=lambda event: (
+            event.span.onset,
+            event.staff_id,
+            event.voice_id,
+            event.event_id,
+        ),
+    )
+    last_by_staff: dict[str, str] = {}
+    emitted: set[str] = set()
+    seen_at_onset: set[tuple[str, Fraction, str]] = set()
+
+    for event in ordered:
+        marking = event.dynamic_marking
+        if marking is None:
+            continue
+
+        engraving = (
+            engraving_plan.for_event(event.event_id)
+            if engraving_plan is not None
+            else None
+        )
+        rendered_staff = (
+            engraving.cross_staff_target
+            if engraving is not None and engraving.cross_staff_target is not None
+            else event.staff_id
+        )
+
+        onset_key = (rendered_staff, event.span.onset, marking)
+        if onset_key in seen_at_onset:
+            continue
+        seen_at_onset.add(onset_key)
+
+        if last_by_staff.get(rendered_staff) == marking:
+            continue
+
+        emitted.add(event.event_id)
+        last_by_staff[rendered_staff] = marking
+
+    return emitted
+
+
 def _part_measures(
     part: ScorePart,
     *,
@@ -232,6 +286,7 @@ def score_to_musicxml(
         measures = _part_measures(part, bar_length=bar_length)
         max_measure = max(measures, default=0)
         staff_numbers = {sid: i + 1 for i, sid in enumerate(part.staff_ids)}
+        dynamic_event_ids = _dynamic_event_ids_to_emit(part, engraving_plan)
 
         for measure_index in range(max_measure + 1):
             measure = ET.SubElement(
@@ -295,7 +350,7 @@ def score_to_musicxml(
                         event.simultaneity_group_id is not None
                         and event.simultaneity_group_id in emitted_simultaneity_groups
                     )
-                    if not chord_member:
+                    if not chord_member and event.event_id in dynamic_event_ids:
                         _append_dynamic_direction(
                             measure,
                             event,
