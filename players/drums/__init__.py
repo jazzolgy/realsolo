@@ -1,12 +1,187 @@
-"""Public Drum player namespace.
+"""Instrument-specific AI Drummer realization layer."""
 
-Safe-migration facade: instrument policy is still implemented in
-music_intelligence.drums so existing imports and realtime integration remain
-stable. Do not add a second Drum policy here; migrate implementation only in a
-separately tested change.
-"""
+from .bass_coupling import (
+    BassDrumsCoupling,
+    BassPulseProjection,
+    coupling_score_adjustment,
+    infer_bass_drums_coupling,
+    project_bass_pulse,
+)
+from .bebop import (
+    BassDrumIntent,
+    BebopCompIntent,
+    BebopInteractionDecision,
+    BebopInteractionState,
+    BebopPhraseMemory,
+    BebopTimeIntent,
+    SoloistEnergyProjection,
+    choose_comp_intent,
+    infer_bebop_interaction_state,
+)
+from .bebop_annotation import (
+    BebopEventAnnotation,
+    BebopPhraseAnnotation,
+    DrumEventKind,
+    EvidenceConfidence,
+)
+from .bebop_profile import (
+    BebopPrior,
+    BebopStyleProfile,
+    DEFAULT_BEBOP_PROFILE,
+    PriorEvidence,
+)
+from .bebop_runtime import (
+    BebopRuntimeProjection,
+    BebopScoredGesture,
+    build_bebop_candidates,
+    perform_one_bebop_gesture,
+    score_bebop_gesture,
+)
+from .comping import CompingPropensity, comping_propensity
+from .model import (
+    DrumGesture,
+    DrumHit,
+    DrummerRuntimeContext,
+    DrummerSoftPlan,
+    DrumVoice,
+    GestureRole,
+    Limb,
+    TimeFeel,
+)
+from .pattern_corpus import (
+    PATTERN_CORPUS,
+    PatternHit,
+    PatternUse,
+    SourceRights,
+    StoredDrumPattern,
+    get_pattern,
+    hits_at_current_position,
+    patterns_with_tags,
+)
+from .pattern_runtime import pattern_gesture_now, source_pattern_candidates
+from .interaction import (
+    EnsembleMotifProjection,
+    ResponseRelation,
+    TradeCandidate,
+    TradeLength,
+    TradingPlan,
+    build_trade_candidates,
+    motif_similarity,
+    perform_one_trade_gesture,
+)
+from .physical import (
+    DEFAULT_LIMB_CAPABILITIES,
+    LimbCapability,
+    four_limb_solo_gesture,
+    limb_can_play,
+    validate_kit_reachability,
+)
+from .online_drummer import (
+    DrummerPerformanceMemory,
+    ScoredDrumGesture,
+    build_immediate_candidates,
+    perform_one_gesture,
+    score_gesture,
+)
+from .solo import (
+    DrumSoloPlan,
+    DrumSoloState,
+    SoloArc,
+    SoloCandidate,
+    SoloDevelopment,
+    SOLO_VOCABULARY,
+    SoloVocabularyCell,
+    build_solo_candidates,
+    perform_one_solo_gesture,
+    solo_cell,
+)
+from .timing import (
+    SwingTimingPrior,
+    bounded_timing_offset_ms,
+    is_ride_anchor,
+    ride_positions_in_two_beat_cell,
+    tempo_conditioned_swing_prior,
+)
 
-from music_intelligence import drums as _impl
-from music_intelligence.drums import *  # noqa: F401,F403
-
-__all__ = tuple(_impl.__all__)
+__all__ = [
+    "BassDrumsCoupling",
+    "BassPulseProjection",
+    "coupling_score_adjustment",
+    "infer_bass_drums_coupling",
+    "project_bass_pulse",
+    "BassDrumIntent",
+    "BebopCompIntent",
+    "BebopInteractionDecision",
+    "BebopInteractionState",
+    "BebopPhraseMemory",
+    "BebopTimeIntent",
+    "SoloistEnergyProjection",
+    "choose_comp_intent",
+    "infer_bebop_interaction_state",
+    "BebopEventAnnotation",
+    "BebopPhraseAnnotation",
+    "DrumEventKind",
+    "EvidenceConfidence",
+    "BebopPrior",
+    "BebopStyleProfile",
+    "DEFAULT_BEBOP_PROFILE",
+    "PriorEvidence",
+    "BebopRuntimeProjection",
+    "BebopScoredGesture",
+    "build_bebop_candidates",
+    "perform_one_bebop_gesture",
+    "score_bebop_gesture",
+    "CompingPropensity",
+    "comping_propensity",
+    "DrumGesture",
+    "DrumHit",
+    "DrummerRuntimeContext",
+    "DrummerSoftPlan",
+    "DrumVoice",
+    "GestureRole",
+    "Limb",
+    "TimeFeel",
+    "PATTERN_CORPUS",
+    "PatternHit",
+    "PatternUse",
+    "SourceRights",
+    "StoredDrumPattern",
+    "get_pattern",
+    "hits_at_current_position",
+    "patterns_with_tags",
+    "pattern_gesture_now",
+    "source_pattern_candidates",
+    "DrumSoloPlan",
+    "DrumSoloState",
+    "SoloArc",
+    "SoloCandidate",
+    "SoloDevelopment",
+    "SOLO_VOCABULARY",
+    "SoloVocabularyCell",
+    "build_solo_candidates",
+    "perform_one_solo_gesture",
+    "solo_cell",
+    "EnsembleMotifProjection",
+    "ResponseRelation",
+    "TradeCandidate",
+    "TradeLength",
+    "TradingPlan",
+    "build_trade_candidates",
+    "motif_similarity",
+    "perform_one_trade_gesture",
+    "DEFAULT_LIMB_CAPABILITIES",
+    "LimbCapability",
+    "four_limb_solo_gesture",
+    "limb_can_play",
+    "validate_kit_reachability",
+    "DrummerPerformanceMemory",
+    "ScoredDrumGesture",
+    "build_immediate_candidates",
+    "perform_one_gesture",
+    "score_gesture",
+    "SwingTimingPrior",
+    "bounded_timing_offset_ms",
+    "is_ride_anchor",
+    "ride_positions_in_two_beat_cell",
+    "tempo_conditioned_swing_prior",
+]
