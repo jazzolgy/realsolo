@@ -88,6 +88,18 @@ def expression_intents_for_candidate(
             )
         )
 
+    if interaction.ensemble_density >= 0.7 or interaction.soloist_activity >= 0.75:
+        out.append(
+            PianoExpressionIntent(
+                RegisterDirection.HIGHER
+                if bass_activity >= 0.6
+                else RegisterDirection.STAY,
+                DynamicLevel.SOFT,
+                TouchType.NEUTRAL,
+                confidence=0.80,
+            )
+        )
+
     if interaction.energy_direction is EnergyDirection.DOWN:
         out.append(
             PianoExpressionIntent(
