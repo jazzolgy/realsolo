@@ -63,7 +63,6 @@ class SnareMotifIdentity:
 
 
 @dataclass(frozen=True)
-@dataclass(frozen=True)
 class CommittedSnareEvent:
     """One already-played snare event used for retrospective motif discovery."""
     bar_index: int
