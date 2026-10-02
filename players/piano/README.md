@@ -61,3 +61,25 @@ not recreate chord-scale, tension, substitution, or harmonic-function theory.
 
 Research rule: same harmony must be able to yield different immediate actions when
 ensemble/phrase context changes, including choosing silence.
+
+
+## Boundary with Bill Evans Legend research
+
+Bill Evans source listening, score-position alignment, trio role analysis,
+legend-specific tendencies, and provenance are owned by
+`research/legends/bill_evans/`.
+
+Piano consumes those results through shared Legend interfaces and owns only the
+piano-side realization:
+
+- hand allocation
+- voicing realization
+- playable register choice
+- pedal/touch/articulation
+- physical feasibility
+- piano-specific candidate generation/ranking
+- immediate commit
+
+Piano should not independently create a private Bill Evans profile. If piano-side
+study reveals a possibly Bill Evans-specific musical behavior, document the
+observation and return it to Legend research for cross-track/source validation.
