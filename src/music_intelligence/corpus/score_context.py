@@ -128,6 +128,8 @@ class ScoreContextSnapshot:
     phrase_boundary_after: bool = False
     written_melody_active: bool = False
     written_part_role: str | None = None
+    written_part_policy: str | None = None
+    player_instructions: tuple[tuple[str, str], ...] = ()
     solo_indication: str | None = None
     navigation: tuple[str, ...] = ()
     unresolved_evidence: tuple[StructuredScoreEvidence, ...] = ()
@@ -234,7 +236,20 @@ def resolve_score_context(
     )
     written_part = _best(
         x for x in active
-        if x.kind in {ScoreEvidenceKind.WRITTEN_PART, ScoreEvidenceKind.WRITTEN_MELODY}
+        if x.kind in {
+            ScoreEvidenceKind.WRITTEN_PART,
+            ScoreEvidenceKind.WRITTEN_MELODY,
+            ScoreEvidenceKind.WRITTEN_BASS_PART,
+        }
+    )
+    written_policy = _best(
+        x for x in active
+        if x.kind is ScoreEvidenceKind.WRITTEN_PART_POLICY
+    )
+    player_instructions = tuple(
+        ("bass", x.value)
+        for x in active
+        if x.kind is ScoreEvidenceKind.BASS_INSTRUCTION
     )
     solo = _best(
         x for x in active
@@ -275,6 +290,8 @@ def resolve_score_context(
         phrase_boundary_after=boundary_after,
         written_melody_active=written_melody,
         written_part_role=(written_part.value if written_part is not None else None),
+        written_part_policy=(written_policy.value if written_policy is not None else None),
+        player_instructions=player_instructions,
         solo_indication=(solo.value if solo is not None else None),
         navigation=values(ScoreEvidenceKind.NAVIGATION),
         unresolved_evidence=unresolved,
