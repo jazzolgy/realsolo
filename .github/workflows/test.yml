@@ -9,6 +9,7 @@ on:
       - player/bass
       - player/drums
       - player/sax
+      - transcribe
       - realtime/ensemble-app
   pull_request:
     branches: [main]
