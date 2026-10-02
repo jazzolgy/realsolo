@@ -58,6 +58,8 @@ class EngravingProfile:
     apply_voice_position_rules_to_cross_staff: bool = True
     apply_tie_rules_to_cross_staff: bool = True
     hide_cross_staff_bar_rests: bool = True
+    separate_tuplets_from_adjacent_notes: bool = False
+    position_tuplets_as_if_all_notes_beamed: bool = True
     default_tuplet_bracket: TupletBracketMode = TupletBracketMode.AUTO
     minimum_note_spacing: float = 1.0
 
@@ -171,12 +173,27 @@ def meter_beam_group(
     meter_numerator: int,
     meter_denominator: int,
 ) -> Fraction:
-    """Return the primary beat grouping in quarter-note units."""
+    """Return the default primary beam grouping in quarter-note units.
+
+    Verified Sibelius-style defaults:
+    - 2/4 and 4/4: eighth notes beam in groups of four;
+    - 2/2: four eighths form one half-note beat;
+    - 6/8, 9/8, 12/8: dotted-quarter compound beats.
+
+    Other meters fall back to the written beat unit until an explicit grouping
+    profile is supplied.
+    """
 
     if meter_numerator <= 0 or meter_denominator <= 0:
         raise ValueError("meter must be positive")
+
+    if meter_denominator == 4 and meter_numerator in {2, 4}:
+        return Fraction(2, 1)
+    if meter_denominator == 2 and meter_numerator == 2:
+        return Fraction(2, 1)
+
     written_beat = Fraction(4, meter_denominator)
-    if meter_numerator in {6, 9, 12}:
+    if meter_denominator == 8 and meter_numerator in {6, 9, 12}:
         return 3 * written_beat
     return written_beat
 
@@ -185,38 +202,141 @@ def beam_group_intents(
     events: tuple[ScoreEvent, ...],
     *,
     beat_group: Fraction = Fraction(1, 1),
+    separate_tuplets_from_adjacent_notes: bool = False,
+    break_on_rhythm_change: bool = True,
 ) -> dict[str, tuple[BeamState, str | None]]:
-    """Group short notes by beat-domain grouping instead of raw timestamps."""
+    """Group short notes by written meter and rhythmic shape."""
 
     if beat_group <= 0:
         raise ValueError("beat_group must be positive")
 
-    groups: dict[tuple[str, str, int], list[ScoreEvent]] = {}
+    buckets: dict[tuple[str, str, int], list[ScoreEvent]] = {}
     for event in events:
-        # Quarter-note beat or shorter values are eligible for initial beaming.
         if event.span.duration > Fraction(1, 2):
             continue
         bucket = int(event.span.onset // beat_group)
-        groups.setdefault((event.staff_id, event.voice_id, bucket), []).append(event)
+        buckets.setdefault((event.staff_id, event.voice_id, bucket), []).append(event)
 
     result: dict[str, tuple[BeamState, str | None]] = {
         event.event_id: (BeamState.NONE, None) for event in events
     }
-    for (staff_id, voice_id, bucket), group in groups.items():
-        group.sort(key=lambda e: (e.span.onset, e.event_id))
-        if len(group) < 2:
-            continue
-        group_id = f"beam:{staff_id}:{voice_id}:{bucket}"
-        for index, event in enumerate(group):
-            if index == 0:
-                state = BeamState.BEGIN
-            elif index == len(group) - 1:
-                state = BeamState.END
+
+    for (staff_id, voice_id, bucket), bucket_events in buckets.items():
+        bucket_events.sort(key=lambda e: (e.span.onset, e.event_id))
+        segments: list[list[ScoreEvent]] = []
+        current: list[ScoreEvent] = []
+
+        for event in bucket_events:
+            if not current:
+                current = [event]
+                continue
+
+            previous = current[-1]
+            contiguous = previous.span.offset == event.span.onset
+            rhythm_changed = (
+                break_on_rhythm_change
+                and previous.span.duration != event.span.duration
+            )
+            tuplet_boundary = (
+                separate_tuplets_from_adjacent_notes
+                and (previous.tuplet is None) != (event.tuplet is None)
+            )
+
+            if not contiguous or rhythm_changed or tuplet_boundary:
+                segments.append(current)
+                current = [event]
             else:
-                state = BeamState.CONTINUE
-            result[event.event_id] = (state, group_id)
+                current.append(event)
+
+        if current:
+            segments.append(current)
+
+        for segment_index, group in enumerate(segments):
+            if len(group) < 2:
+                continue
+            group_id = f"beam:{staff_id}:{voice_id}:{bucket}:{segment_index}"
+            for index, event in enumerate(group):
+                if index == 0:
+                    state = BeamState.BEGIN
+                elif index == len(group) - 1:
+                    state = BeamState.END
+                else:
+                    state = BeamState.CONTINUE
+                result[event.event_id] = (state, group_id)
 
     return result
+
+
+def _midi_like_position(event: ScoreEvent) -> int | None:
+    pitch = event.written_pitch
+    if pitch is None:
+        return None
+    natural_pc = {
+        "C": 0,
+        "D": 2,
+        "E": 4,
+        "F": 5,
+        "G": 7,
+        "A": 9,
+        "B": 11,
+    }[pitch.step]
+    return (pitch.octave + 1) * 12 + natural_pc + pitch.alter
+
+
+def tuplet_group_placement(
+    events: tuple[ScoreEvent, ...],
+    *,
+    position_as_if_all_notes_beamed: bool = True,
+) -> dict[str, VerticalPlacement]:
+    """Choose one consistent placement for each contiguous tuplet group."""
+
+    groups: list[list[ScoreEvent]] = []
+    current: list[ScoreEvent] = []
+
+    for event in sorted(events, key=lambda e: (e.staff_id, e.voice_id, e.span.onset)):
+        if event.tuplet is None:
+            if current:
+                groups.append(current)
+                current = []
+            continue
+
+        if not current:
+            current = [event]
+            continue
+
+        previous = current[-1]
+        same_context = (
+            previous.staff_id == event.staff_id
+            and previous.voice_id == event.voice_id
+            and previous.tuplet == event.tuplet
+            and previous.span.offset == event.span.onset
+        )
+        if same_context:
+            current.append(event)
+        else:
+            groups.append(current)
+            current = [event]
+
+    if current:
+        groups.append(current)
+
+    placements: dict[str, VerticalPlacement] = {}
+    for group in groups:
+        reference = group if position_as_if_all_notes_beamed else group[:1]
+        positions = [p for e in reference if (p := _midi_like_position(e)) is not None]
+        if not positions:
+            placement = VerticalPlacement.AUTO
+        else:
+            average = sum(positions) / len(positions)
+            placement = (
+                VerticalPlacement.BELOW
+                if average >= 71
+                else VerticalPlacement.ABOVE
+            )
+        for event in group:
+            placements[event.event_id] = placement
+
+    return placements
 
 
 def build_default_engraving_plan(
@@ -236,6 +356,11 @@ def build_default_engraving_plan(
             score.meter_numerator,
             score.meter_denominator,
         ),
+        separate_tuplets_from_adjacent_notes=profile.separate_tuplets_from_adjacent_notes,
+    )
+    tuplet_placements = tuplet_group_placement(
+        all_events,
+        position_as_if_all_notes_beamed=profile.position_tuplets_as_if_all_notes_beamed,
     )
 
     intents: list[EngravingIntent] = []
@@ -256,6 +381,10 @@ def build_default_engraving_plan(
             beam_state=beam_state,
             beam_group_id=beam_group_id,
             cross_staff_target=cross_staff,
+            tuplet_placement=tuplet_placements.get(
+                event.event_id,
+                VerticalPlacement.AUTO,
+            ),
             tuplet_bracket=profile.default_tuplet_bracket,
             horizontal_spacing_weight=max(
                 profile.minimum_note_spacing,
