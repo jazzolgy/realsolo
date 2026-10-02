@@ -9,6 +9,9 @@ from typing import Protocol
 from music_intelligence.corpus.registry import CorpusItem, CorpusUse
 from .representation import LearningArtifact, StructuralPerformanceData
 from .extractors import DEFAULT_EXTRACTORS, LearningExtractor, extract_learning_artifacts
+from .style import build_style_artifact
+from .genre import build_genre_artifact
+from .groove import build_groove_artifact
 
 
 class AudioAnalysisAdapter(Protocol):
@@ -68,7 +71,13 @@ def convert_audio_to_learning_data(
     structural.validate()
     if structural.source_id != item.item_id:
         raise ValueError("structural source_id must match CorpusItem.item_id")
-    artifacts=extract_learning_artifacts(structural,extractors)
+    base_artifacts=extract_learning_artifacts(structural,extractors)
+    extras=tuple(x for x in (
+        build_style_artifact(structural,base_artifacts),
+        build_genre_artifact(structural,base_artifacts),
+        build_groove_artifact(structural),
+    ) if x is not None)
+    artifacts=base_artifacts+extras
     disposition,reason=_rights(item)
     return LearningConversion(
         source_item_id=item.item_id,
