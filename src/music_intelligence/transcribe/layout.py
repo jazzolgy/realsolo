@@ -161,7 +161,7 @@ def layout_actions(
             action.validate()
             actions.append(action)
 
-        if pressure.horizontal_pressure and plan.profile.optical_note_spacing:
+        if (\n            pressure.horizontal_pressure\n            and plan.profile.optical_note_spacing\n            and plan.profile.auto_respace\n        ):
             reasons: list[str] = []
             if pressure.accidental_pressure:
                 reasons.append("accidental clearance")
@@ -212,7 +212,7 @@ def optical_spacing_decisions(
     for pressure in pressures:
         intent = intents.get(pressure.event_id)
         base = intent.horizontal_spacing_weight if intent is not None else 1.0
-        horizontal = pressure.horizontal_pressure if plan.profile.optical_note_spacing else 0.0
+        horizontal = (\n            pressure.horizontal_pressure\n            if plan.profile.optical_note_spacing and plan.profile.auto_respace\n            else 0.0\n        )
         reasons: list[str] = []
         if pressure.accidental_pressure:
             reasons.append("accidental needs horizontal clearance")
