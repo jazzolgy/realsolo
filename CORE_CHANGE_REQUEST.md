@@ -943,3 +943,111 @@ manual verification.
 - confidence/provenance survive comparison;
 - scorebook and Legend Vocabulary observations can use the same schema;
 - no comparator field schedules future notes.
+
+
+## CR-009 — Bill Evans Legend Intelligence: aligned vocabulary provider
+
+### Status
+
+Requested after take-specific alignment and first abstract vocabulary extraction for:
+
+- Bill Evans Trio — Autumn Leaves
+- Portrait in Jazz / Take 1 context
+
+Research records:
+
+- `research/legends/bill_evans/observations/alignment/AUTUMN_LEAVES_TAKE1_ALIGNMENT_V0_1.json`
+- `research/legends/bill_evans/vocabulary/AUTUMN_LEAVES_ABSTRACT_VOCABULARY_SEED_V0_1.json`
+
+### Why this belongs in Shared Legend Intelligence
+
+Piano must not own Bill Evans-specific memory.
+
+The player should consume:
+
+```
+LegendProfileView("bill_evans")
+VocabularyQuery(legend_id="bill_evans", ...)
+```
+
+in the same way it consumes Parker.
+
+### First extracted domains
+
+Current Autumn Leaves evidence already supports abstract items for:
+
+- phrase entrance
+- form awareness
+- ensemble interaction
+- linear connection
+- harmonic target selection
+- interval/leap grammar
+- rhythm subdivision
+- motif development
+- repetition/variation
+- rhythmic displacement
+
+### Important take-specific rule
+
+Do not merge evidence across recordings merely because tune and artist match.
+
+Required provenance keys:
+
+- recording_id
+- take/version
+- timestamp
+- chorus
+- bar
+- source/alignment confidence
+
+### Proposed Shared structure
+
+```
+src/music_intelligence/legends/evans/
+    __init__.py
+    profile.py
+    vocabulary.py
+    motif_prior.py
+    rhythm_prior.py
+    harmony_prior.py
+    interaction_prior.py
+    data/
+```
+
+### Runtime philosophy
+
+Evans vocabulary should not become a hard style preset.
+
+It should supply conditional priors such as:
+
+- motif transformation before unrelated material
+- rhythmic displacement of remembered material
+- phrase entrance / continuation behavior
+- harmonic color / target behavior
+- RH-LH interaction
+- voice-leading continuity
+- form-aware density development
+
+Piano remains responsible for physical realization and hand coordination.
+
+### Compatibility with Parker
+
+The system must allow:
+
+```
+Parker linear connector / enclosure / target logic
++
+Evans motif/rhythm/harmony development prior
+```
+
+without forcing a scalar percentage blend across all domains.
+
+Domain/context-conditioned mixture is preferred.
+
+### Tests requested
+
+- Bill Evans provider uses generic Legend interfaces.
+- Take-specific provenance is mandatory.
+- No frozen future note sequence is exposed.
+- Abstract vocabulary can be queried by domain/context.
+- Parker and Evans may contribute to different domains in the same immediate decision.
