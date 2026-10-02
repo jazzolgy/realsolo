@@ -144,7 +144,7 @@ class DrumsNativeDecider:
                 _DRUM_MIDI[h.voice],
                 h.velocity,
                 .10,
-                _ms_to_beats(h.microtiming_ms, snapshot.transport.tempo_bpm),
+                _ms_to_beats(h.microtiming_ms, snapshot.transport.tempo_bpm) + getattr(h, "onset_offset_beats", 0.0),
                 articulation=(h.articulation,),
                 instrument_role="drums",
             )
