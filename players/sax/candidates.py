@@ -497,11 +497,38 @@ def generate_immediate_sax_candidates(
             reasons=tuple(rest_reasons),
         ))
 
-    return tuple(sorted(
+    ranked = sorted(
         out,
         key=lambda x: (x.score, x.event.pitch_midi is not None),
         reverse=True,
-    )[:ctx.max_candidates])
+    )
+
+    # Preserve route diversity before filling the remaining beam by score.
+    # Otherwise a large high-scoring route family (for example APPROACH) can
+    # crowd future-harmony ANTICIPATION or another legitimate route completely
+    # out of the immediate candidate set.
+    selected: list[SaxActionCandidate] = []
+    selected_keys: set[tuple[LinearRouteKind | None, int | None, str]] = set()
+    route_seen: set[LinearRouteKind | None] = set()
+    for item in ranked:
+        if item.route in route_seen:
+            continue
+        route_seen.add(item.route)
+        key = (item.route, item.event.pitch_midi, item.event.source_family)
+        selected.append(item)
+        selected_keys.add(key)
+        if len(selected) >= ctx.max_candidates:
+            return tuple(selected)
+
+    for item in ranked:
+        key = (item.route, item.event.pitch_midi, item.event.source_family)
+        if key in selected_keys:
+            continue
+        selected.append(item)
+        selected_keys.add(key)
+        if len(selected) >= ctx.max_candidates:
+            break
+    return tuple(selected)
 
 
 def _pitch_realizations_for_route(
