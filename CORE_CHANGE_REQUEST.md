@@ -2,6 +2,18 @@
 
 ## CR-001 — Shared polyphonic voicing / orchestration representation
 
+### Status
+
+Implemented in shared Core and synced additively to player/piano.
+
+- shared types: VoiceEvent, PolyphonicEventCandidate, InstrumentAssignment, DoublingRelation, VoiceLeadingRelation, TopNoteConstraint, BassRelation
+- shared online path: PolyphonicOnlineEvaluator, PolyphonicPerformanceMemory, perform_one_polyphonic_event
+- monophonic CandidateEvent and existing online API remain unchanged
+- one polyphonic sonority is treated as one immediate action, followed by listen/re-plan
+- SoftPlan still rejects exact_future_notes
+- piano-specific range, hand distribution, pedal, touch, and feasibility remain in players/piano
+- implementation is documented in docs/CR-001_SHARED_POLYPHONIC_REPRESENTATION.md
+
 ### Requested core change
 
 Introduce a shared polyphonic event / voicing representation in Core rather than
