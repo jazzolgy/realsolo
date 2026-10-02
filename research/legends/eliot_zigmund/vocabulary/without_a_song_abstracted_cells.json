@@ -1,0 +1,71 @@
+[
+  {
+    "vocabulary_id": "ez_without_a_song_231",
+    "source_id": "bill_evans_without_a_song_1977",
+    "recording_id": "bill_evans_without_a_song_1977",
+    "tune_id": "without_a_song",
+    "timestamp": "06:42-07:07 analysis window; drum solo entry documented near 06:52",
+    "rhythm": "triplet-grid IOI cell 2-3-1",
+    "contour": "four-event cell; abstracted from repeated onset-spacing recurrence",
+    "articulation": "mixed-kit solo surface; exact voices not asserted from full mix",
+    "source_instrument": "drums",
+    "dimensions": ["rhythm", "accent", "phrase_shape"],
+    "domains": ["rhythm_subdivision", "motif_development", "repetition_variation"],
+    "context_tags": ["drum_solo", "jazz_trio", "late_foreground_allocation", "triplet_grid"],
+    "candidate_uses": ["adapted_lick", "fragment_recall", "abstracted_pattern", "hybrid_composition"],
+    "confidence": 0.82,
+    "provenance": [
+      "user_provided_bill_evans_compilation",
+      "without_a_song_1977",
+      "eliot_zigmund",
+      "full_mix_signal_analysis",
+      "abstracted_ioi_not_literal_transcription"
+    ]
+  },
+  {
+    "vocabulary_id": "ez_without_a_song_132",
+    "source_id": "bill_evans_without_a_song_1977",
+    "recording_id": "bill_evans_without_a_song_1977",
+    "tune_id": "without_a_song",
+    "timestamp": "06:42-07:07 analysis window; drum solo entry documented near 06:52",
+    "rhythm": "triplet-grid IOI cell 1-3-2",
+    "contour": "four-event cell with comparatively even later accents",
+    "articulation": "mixed-kit solo surface; exact voices not asserted from full mix",
+    "source_instrument": "drums",
+    "dimensions": ["rhythm", "accent", "phrase_shape"],
+    "domains": ["rhythm_subdivision", "motif_development", "repetition_variation"],
+    "context_tags": ["drum_solo", "jazz_trio", "late_foreground_allocation", "triplet_grid"],
+    "candidate_uses": ["adapted_lick", "fragment_recall", "abstracted_pattern", "hybrid_composition"],
+    "confidence": 0.80,
+    "provenance": [
+      "user_provided_bill_evans_compilation",
+      "without_a_song_1977",
+      "eliot_zigmund",
+      "full_mix_signal_analysis",
+      "abstracted_ioi_not_literal_transcription"
+    ]
+  },
+  {
+    "vocabulary_id": "ez_without_a_song_312",
+    "source_id": "bill_evans_without_a_song_1977",
+    "recording_id": "bill_evans_without_a_song_1977",
+    "tune_id": "without_a_song",
+    "timestamp": "06:42-07:07 analysis window; drum solo entry documented near 06:52",
+    "rhythm": "triplet-grid IOI cell 3-1-2",
+    "contour": "four-event cell with strong opening accent and later recovery",
+    "articulation": "mixed-kit solo surface; exact voices not asserted from full mix",
+    "source_instrument": "drums",
+    "dimensions": ["rhythm", "accent", "phrase_shape"],
+    "domains": ["rhythm_subdivision", "motif_development", "repetition_variation"],
+    "context_tags": ["drum_solo", "jazz_trio", "late_foreground_allocation", "triplet_grid"],
+    "candidate_uses": ["adapted_lick", "fragment_recall", "abstracted_pattern", "hybrid_composition"],
+    "confidence": 0.76,
+    "provenance": [
+      "user_provided_bill_evans_compilation",
+      "without_a_song_1977",
+      "eliot_zigmund",
+      "full_mix_signal_analysis",
+      "abstracted_ioi_not_literal_transcription"
+    ]
+  }
+]
