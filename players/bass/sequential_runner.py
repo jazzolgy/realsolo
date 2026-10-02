@@ -41,6 +41,12 @@ from .phrase_intent import (
     choose_bass_phrase_intent,
 )
 from .scorebook_evidence import BassScoreEvidenceDirective
+from .solo_method import bass_shared_solo_options
+from .solo_runtime import (
+    BassSoloMemory,
+    BassSoloPlan,
+    choose_bass_solo_plan,
+)
 from .render_projection import (
     BassRenderEvent,
     project_bass_candidate_to_render_event,
@@ -71,8 +77,9 @@ class BassStepResult:
     absolute_beat: float
     candidate: BassActionCandidate
     interaction: BassInteractionDecision
-    render_event: BassRenderEvent
+    render_event: BassRenderEvent | None
     phrase_intent: BassPhraseIntent
+    solo_plan: BassSoloPlan | None = None
 
 
 @dataclass
@@ -82,6 +89,7 @@ class BassSequentialRunner:
     register_high_midi: int = 52
     memory: BassPerformanceMemory = field(default_factory=BassPerformanceMemory)
     phrase_state: BassPhraseState = field(default_factory=BassPhraseState)
+    solo_memory: BassSoloMemory = field(default_factory=BassSoloMemory)
 
     def step(self, item: BassStepInput) -> BassStepResult:
         if self.tempo_bpm <= 0:
@@ -119,6 +127,29 @@ class BassSequentialRunner:
         if phrase_intent != self.phrase_state.current:
             self.phrase_state.replace(phrase_intent)
 
+        solo_plan: BassSoloPlan | None = None
+        solo_snapshot = self.solo_memory.snapshot()
+        if item.mode is BassMode.SOLO:
+            options = bass_shared_solo_options(
+                BassPhraseContext(
+                    memory=snap,
+                    interaction=interaction,
+                    phrase_boundary=item.phrase_boundary,
+                    form_boundary=item.form_boundary,
+                    soloist_phrase_ending=item.soloist_phrase_ending,
+                    phrase_progress=item.phrase_progress,
+                    ensemble_activity=item.ensemble_activity,
+                ),
+                phrase_intent,
+                recent_repetition_count=solo_snapshot.repetition_count,
+                future_harmony_available=item.frame.next_expected is not None,
+            )
+            solo_plan = choose_bass_solo_plan(
+                options,
+                solo_snapshot,
+                phrase_direction=phrase_intent.direction.value,
+            )
+
         candidate = choose_immediate_bass_action(
             item.frame,
             BassContext(
@@ -127,18 +158,28 @@ class BassSequentialRunner:
                 previous_pitch_midi=snap.previous_pitch_midi,
                 previous_motion_semitones=snap.previous_interval_semitones,
                 register_low_midi=self.register_low_midi,
-                register_high_midi=self.register_high_midi,
+                register_high_midi=(
+                    max(self.register_high_midi, 64)
+                    if item.mode is BassMode.SOLO
+                    else self.register_high_midi
+                ),
                 ensemble_activity=item.ensemble_activity,
                 memory_snapshot=snap,
                 interaction_decision=interaction,
                 local_key_pitch_classes=item.local_key_pitch_classes,
                 score_evidence=item.score_evidence,
                 phrase_intent=phrase_intent,
+                solo_plan=solo_plan,
+                solo_snapshot=solo_snapshot,
             ),
         )
-        render = project_bass_candidate_to_render_event(
-            candidate,
-            tempo_bpm=self.tempo_bpm,
+        render = (
+            project_bass_candidate_to_render_event(
+                candidate,
+                tempo_bpm=self.tempo_bpm,
+            )
+            if candidate.event.pitch_midi is not None
+            else None
         )
 
         self.memory.commit(BassCommittedAction(
@@ -150,6 +191,9 @@ class BassSequentialRunner:
             harmonic_role=candidate.harmonic_role.value,
             metric_role=candidate.grammar.metric_role.value,
         ))
+        if item.mode is BassMode.SOLO and solo_plan is not None:
+            self.solo_memory.commit(candidate.event, solo_plan.operation)
+
         self.phrase_state.commit()
         return BassStepResult(
             absolute_beat=item.absolute_beat,
@@ -157,6 +201,7 @@ class BassSequentialRunner:
             interaction=interaction,
             render_event=render,
             phrase_intent=phrase_intent,
+            solo_plan=solo_plan,
         )
 
     def run(self, steps: tuple[BassStepInput, ...]) -> tuple[BassStepResult, ...]:
