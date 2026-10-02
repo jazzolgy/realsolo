@@ -13,6 +13,12 @@ __all__ = [
     "PlayerRuntimeDecision",
     "RuntimeTickResult",
     "committed_intent",
+    "BassRuntimeAdapter",
+    "DrumsRuntimeAdapter",
+    "NativeImmediateResult",
+    "PianoRuntimeAdapter",
+    "TrioAdapterStatus",
+    "trio_adapter_status",
 ]
 
 from .runtime_loop import (
@@ -21,4 +27,13 @@ from .runtime_loop import (
     PlayerRuntimeDecision,
     RuntimeTickResult,
     committed_intent,
+)
+
+from .trio_adapters import (
+    BassRuntimeAdapter,
+    DrumsRuntimeAdapter,
+    NativeImmediateResult,
+    PianoRuntimeAdapter,
+    TrioAdapterStatus,
+    trio_adapter_status,
 )
