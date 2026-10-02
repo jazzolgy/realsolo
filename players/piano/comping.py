@@ -41,6 +41,11 @@ from .ensemble_response import (
     evaluate_response_bias,
     infer_coarse_responses,
 )
+from .interaction_episode import (
+    InteractionEpisode,
+    evaluate_episode_bias,
+    infer_interaction_episode,
+)
 
 
 class InteractionRole(str, Enum):
@@ -151,6 +156,7 @@ class PianoCompingState:
     last_section_energy: float | None = None
     recent_signatures: list[GestureSignature] = field(default_factory=list)
     recent_responses: list[GestureResponseRecord] = field(default_factory=list)
+    active_episode: InteractionEpisode | None = None
 
     @staticmethod
     def _estimate_density(candidate: PianoCompingCandidate) -> PianoDensity:
@@ -231,6 +237,7 @@ class PianoCompingState:
         )
         if len(self.recent_responses) > 8:
             del self.recent_responses[:-8]
+        self.active_episode = infer_interaction_episode(self.recent_responses)
 
     def observe_context_transition(
         self,
@@ -525,6 +532,14 @@ class PianoCompingEvaluator:
                     score, components, reasons, "release_fit", 0.10,
                     "sparse gesture supports release intention",
                 )
+
+        episode_bias = evaluate_episode_bias(candidate, state.active_episode)
+        score += episode_bias.total
+        for key, value in episode_bias.components.items():
+            components[f"interaction_episode:{key}"] = components.get(
+                f"interaction_episode:{key}", 0.0
+            ) + value
+        reasons.extend(episode_bias.reasons)
 
         response_bias = evaluate_response_bias(
             candidate,
