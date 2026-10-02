@@ -85,6 +85,7 @@ from .engraving import (
     VerticalPlacement,
     beam_group_intents,
     build_default_engraving_plan,
+    meter_beam_group,
     voice_stem_directions,
 )
 from .layout import (
@@ -158,6 +159,7 @@ __all__ = [
     "VerticalPlacement",
     "beam_group_intents",
     "build_default_engraving_plan",
+    "meter_beam_group",
     "voice_stem_directions",
     "LayoutPressure",
     "OpticalSpacingDecision",
