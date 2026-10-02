@@ -113,3 +113,69 @@ Parker studies may contribute melodic/linear priors. Bill Evans studies may
 contribute motif, harmony, rhythm, space, and interaction priors. Any Player
 may consume the transferable dimensions and realize them through its own
 instrument grammar.
+
+
+## Shared Solo Realization Boundary
+
+Solo intelligence is split by **musical meaning** versus **instrument realization**.
+
+### Shared Core owns
+
+`src/music_intelligence/reasoning/`
+
+- `solo_grammar.py` — general improvisation development operations
+- `solo_phrase_intent.py` — short-horizon solo intention
+- `solo_candidates.py` — instrument-neutral semantic candidate specs
+- `solo_runtime.py` — one-event online solo planning
+- `solo_expression.py` — instrument-neutral expressive intention
+- `solo_realizer.py` — common realizer protocol/registry
+- `feasibility.py` — common feasibility assessment schema/protocol
+- `turn_taking.py`
+- `ensemble_complementarity.py`
+- `phrase_space.py`
+- `harmonic_turn.py`
+
+These layers must not branch on `if instrument == "piano"` or import a Player.
+
+### Players own physical realization
+
+Each Player supplies its own:
+
+- `solo_realizer.py`
+- `solo_expression.py`
+- `feasibility.py`
+
+Current implementations exist for Piano, Sax, Bass and Drums.
+
+The flow is:
+
+```text
+Shared Solo Candidate
+        +
+Shared Solo Expression Intent
+        ↓
+registered instrument SoloRealizer
+        ↓
+instrument-specific realization
+        ↓
+instrument-specific Feasibility
+        ↓
+evaluation / ONE EVENT commit
+        ↓
+listen and re-plan
+```
+
+The source instrument of an idea does not own the musical idea. A drum-derived
+rhythmic/displacement pattern, Parker-derived linear idea, or Bill Evans-derived
+motif/space behavior may enter Shared Solo intelligence and then be realized by
+any Player.
+
+### Piano ownership is intentionally narrow
+
+Piano-specific ownership is limited to concepts that are actually piano-specific,
+especially register realization, voicing, two-hand comping, left-hand comping,
+right-hand comping, hand allocation, pedal/touch and physical keyboard feasibility.
+
+General solo phrasing, rhythm, interaction, variation, narrative, turn-taking,
+space and candidate meaning belong in Shared Core when they do not depend on the
+physical piano.
