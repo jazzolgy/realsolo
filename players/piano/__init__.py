@@ -13,7 +13,9 @@ from .bebop_turn_taking import (
 from .bebop_complementarity import (
     EnsembleBreathType,
     EnsembleComplementarityEvidence,
+    SupportCarryMode,
     classify_ensemble_complementarity,
+    support_carry_mode,
 )
 from .bebop_comping_breath import (
     BebopBreathCompingBias,
@@ -141,7 +143,9 @@ __all__ = [
     "classify_bebop_turn_taking",
     "EnsembleBreathType",
     "EnsembleComplementarityEvidence",
+    "SupportCarryMode",
     "classify_ensemble_complementarity",
+    "support_carry_mode",
     "BebopBreathCompingBias",
     "evaluate_bebop_breath_comping_bias",
     "BebopPhraseSpaceEvidence",
