@@ -19,7 +19,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import re
+import tempfile
 import unicodedata
+import urllib.request
 import zipfile
 
 from .registry import (
@@ -35,6 +37,9 @@ from .registry import (
 
 IREALB_V1_DOI = "10.5281/zenodo.3546040"
 IREALB_V1_URL = "https://zenodo.org/records/3546040"
+IREALB_V1_ARCHIVE_URL = (
+    "https://zenodo.org/records/3546040/files/shanahdt/irealb-v1.0.zip?download=1"
+)
 IREALB_V1_LICENSE = "CC BY 4.0"
 IREALB_V1_DATASET_ID = "symbolic.irealb.v1"
 
@@ -327,3 +332,29 @@ def install_standard_100_from_archive(
     missing = tuple(title for title in STANDARD_100_TITLES if title not in found)
     installed = tuple(title for title in STANDARD_100_TITLES if title in found)
     return StandardChartInstallReport(installed, missing, destination)
+
+
+def download_and_install_standard_100(
+    *,
+    root: str | Path | None = None,
+    archive_url: str = IREALB_V1_ARCHIVE_URL,
+) -> StandardChartInstallReport:
+    """Download the official CC-BY archive and install the shared Standard 100.
+
+    Network access belongs to installation/setup, never to realtime player
+    decision logic. The downloaded archive is temporary; canonical raw chart
+    files are preserved in the shared corpus root.
+    """
+    request = urllib.request.Request(
+        archive_url,
+        headers={"User-Agent": "RealSolo-Music-Intelligence/1.52"},
+    )
+    with tempfile.TemporaryDirectory(prefix="realsolo-standard100-") as tmp:
+        archive = Path(tmp) / "irealb-v1.0.zip"
+        with urllib.request.urlopen(request) as src, archive.open("wb") as dst:
+            while True:
+                chunk = src.read(1024 * 1024)
+                if not chunk:
+                    break
+                dst.write(chunk)
+        return install_standard_100_from_archive(archive, root=root)
