@@ -110,7 +110,7 @@ def build_immediate_candidates(
     # Stored pedagogical/transcribed patterns are a real candidate source.
     # Only their current slice is exposed; the rest of the pattern is not
     # committed, preserving listen -> re-plan semantics.
-    out.extend(source_pattern_candidates(context))
+    out.extend(source_pattern_candidates(plan, context))
 
     # Snare and bass drum are independent candidate families.  Neither implies
     # the other, and neither is generated as a pre-written comping pattern.
