@@ -52,3 +52,11 @@ def test_solo_reset_clears_phrase_memory():
     solo.reset()
     assert solo.phrase_memory.notes_since_breath == 0
     assert solo.phrase_memory.beats_since_breath == 0.0
+
+
+def test_stage1_solo_exposes_causal_articulation_arc():
+    solo = Stage1Soloist()
+    event = solo.choose("Dm7", "G7", beat_in_bar=0.0, phrase_step=0)
+    assert event["arc_phase"] in {"attack", "body", "peak", "release"}
+    assert 0.2 <= event["attack_scale"] <= 1.5
+    assert isinstance(event["arc_reasons"], list)
