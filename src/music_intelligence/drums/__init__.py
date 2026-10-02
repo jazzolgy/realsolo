@@ -95,6 +95,16 @@ from .solo import (
     perform_one_solo_gesture,
     solo_cell,
 )
+from .ride_continuity import (
+    RideCandidate,
+    RideContinuityMemory,
+    RidePhase,
+    RideSurfaceAction,
+    build_ride_candidates,
+    classify_ride_phase,
+    score_ride_surface_gesture,
+    update_ride_memory,
+)
 from .timing import (
     SwingTimingPrior,
     bounded_timing_offset_ms,
@@ -174,6 +184,14 @@ __all__ = [
     "four_limb_solo_gesture",
     "limb_can_play",
     "validate_kit_reachability",
+    "RideCandidate",
+    "RideContinuityMemory",
+    "RidePhase",
+    "RideSurfaceAction",
+    "build_ride_candidates",
+    "classify_ride_phase",
+    "score_ride_surface_gesture",
+    "update_ride_memory",
     "DrummerPerformanceMemory",
     "ScoredDrumGesture",
     "build_immediate_candidates",
