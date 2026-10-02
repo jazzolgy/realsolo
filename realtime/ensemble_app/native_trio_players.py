@@ -122,6 +122,9 @@ class Stage1BassNativeDecider:
     def __call__(self, context: Mapping[str, object]) -> NativeImmediateResult | None:
         chord = str(context.get("chord_symbol", "Cmaj7"))
         next_chord = str(context.get("next_chord", ""))
+        harmonic_frame = context.get("harmonic_frame")
+        if harmonic_frame is None:
+            harmonic_frame = _frame(chord, next_chord)
         beat = float(context.get("beat_in_bar", 0.0))
         meter = int(context.get("beats_per_bar", 4))
         tempo = float(context.get("tempo_bpm", 140.0))
