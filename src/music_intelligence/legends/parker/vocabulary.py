@@ -1,13 +1,13 @@
 """Charlie Parker vocabulary memory interface.
 
-Stored licks, motifs, fragments, cliches, and quotations are legitimate jazz
-memory. The public repository may contain metadata/derived evidence while literal
-payloads can remain in the private corpus when source rights require it.
+Parker owns the source/provenance of Parker vocabulary. Shared Vocabulary owns
+cross-instrument filtering, affinity, repetition pressure and ranking.
 """
 from __future__ import annotations
 from dataclasses import dataclass
 
 from music_intelligence.legends.interfaces import VocabularyMemoryItem, VocabularyQuery
+from music_intelligence.vocabulary import rank_vocabulary_items
 
 
 @dataclass(frozen=True)
@@ -15,46 +15,9 @@ class ParkerVocabularyIndex:
     items: tuple[VocabularyMemoryItem, ...] = ()
 
     def query(self, request: VocabularyQuery) -> tuple[VocabularyMemoryItem, ...]:
-        if request.legend_id != "charlie_parker" or request.limit <= 0:
+        if request.legend_id != "charlie_parker":
             return ()
-
-        ranked: list[tuple[float, VocabularyMemoryItem]] = []
-        for item in self.items:
-            item.validate()
-            if request.domain is not None and item.domains and request.domain not in item.domains:
-                continue
-            if not item.candidate_uses.intersection(request.allowed_uses):
-                continue
-            if request.context_tags and not request.context_tags.issubset(item.context_tags):
-                continue
-            if request.required_dimensions and not request.required_dimensions.issubset(item.dimensions):
-                continue
-            if (
-                request.target_instrument
-                and item.transferable_to
-                and request.target_instrument not in item.transferable_to
-            ):
-                continue
-
-            score = item.confidence
-            for wanted, actual, reward in (
-                (request.harmony_context, item.harmony_context, .12),
-                (request.harmonic_function, item.harmonic_function, .12),
-                (request.local_key, item.local_key, .06),
-                (request.phrase_position, item.phrase_position, .08),
-            ):
-                if wanted:
-                    if actual == wanted:
-                        score += reward
-                    elif actual:
-                        score -= reward
-
-            if item.recent_usage_count:
-                score -= min(.25, .04 * item.recent_usage_count)
-            ranked.append((score, item))
-
-        ranked.sort(key=lambda pair: (pair[0], pair[1].vocabulary_id), reverse=True)
-        return tuple(item for _, item in ranked[: request.limit])
+        return rank_vocabulary_items(self.items, request)
 
 
 PARKER_VOCABULARY_INDEX = ParkerVocabularyIndex()
