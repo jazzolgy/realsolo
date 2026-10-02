@@ -22,6 +22,12 @@ from .chord_chart import (
     parse_chord_symbol,
     resolved_measure_chords,
 )
+from .chord_chart_quality import (
+    ChartIssueSeverity,
+    ChordChartAudit,
+    ChordChartIssue,
+    audit_chord_chart,
+)
 from .events import (
     CommittedPerformanceEvent,
     ConfidenceBundle,
@@ -168,6 +174,10 @@ __all__ = [
     "chart_position",
     "parse_chord_symbol",
     "resolved_measure_chords",
+    "ChartIssueSeverity",
+    "ChordChartAudit",
+    "ChordChartIssue",
+    "audit_chord_chart",
     "CommittedPerformanceEvent",
     "ConfidenceBundle",
     "EventAlternative",
