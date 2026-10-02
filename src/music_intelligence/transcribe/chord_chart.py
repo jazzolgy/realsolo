@@ -61,7 +61,12 @@ class ChordSymbol:
         if self.bass_pc is not None and not 0 <= self.bass_pc <= 11:
             raise ValueError("bass_pc must be within 0..11")
 
-    def transpose(self, semitones: int) -> "ChordSymbol":
+    def transpose(
+        self,
+        semitones: int,
+        *,
+        enharmonic_policy: EnharmonicPolicy | None = None,
+    ) -> "ChordSymbol":
         self.validate()
         if self.no_chord:
             return self
@@ -74,7 +79,11 @@ class ChordSymbol:
                 else None
             ),
             no_chord=False,
-            enharmonic_policy=self.enharmonic_policy,
+            enharmonic_policy=(
+                self.enharmonic_policy
+                if enharmonic_policy is None
+                else enharmonic_policy
+            ),
         )
 
     def display(self) -> str:
@@ -222,13 +231,24 @@ class ChordChart:
         for measure in self.measures:
             measure.validate(self.beats_per_bar)
 
-    def transpose(self, semitones: int) -> "ChordChart":
+    def transpose(
+        self,
+        semitones: int,
+        *,
+        enharmonic_policy: EnharmonicPolicy | None = None,
+    ) -> "ChordChart":
         self.validate()
         measures = tuple(
             ChartMeasure(
                 number=m.number,
                 chords=tuple(
-                    ChordChange(c.beat, c.chord.transpose(semitones))
+                    ChordChange(
+                        c.beat,
+                        c.chord.transpose(
+                            semitones,
+                            enharmonic_policy=enharmonic_policy,
+                        ),
+                    )
                     for c in m.chords
                 ),
                 section=m.section,
