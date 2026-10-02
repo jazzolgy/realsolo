@@ -184,9 +184,52 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                 combined["tags"].extend(payload["tags"])
                 combined["annotations"].update(payload["annotations"])
 
+            swing_subbeat = None
+            groove=self.trio.state.groove
+            if (
+                active_player_ids is None
+                and groove is not None
+                and groove.feel.value in {"swing","shuffle"}
+                and abs(beat-round(beat)) < 1e-6
+            ):
+                offbeat=groove.swing_offbeat_fraction
+                sub=self.trio.decide(
+                    chord,
+                    next_chord,
+                    beat_in_bar=(beat+offbeat) % self.chart.beats_per_bar,
+                    bar_index=bar_index,
+                    total_bars=len(self.chart.bars),
+                    tempo_bpm=tempo_bpm,
+                    section=bar.section or "",
+                    chorus=chorus,
+                    active_player_ids=frozenset({"drums"}),
+                )
+                sub_combined={
+                    "role":"drums",
+                    "voices":[],
+                    "drum_hits":[],
+                    "source":"native_trio_runtime:shared_swing_subbeat",
+                    "tags":[],
+                    "annotations":{
+                        "snapshot_generation":str(sub.snapshot_generation),
+                        "shared_subbeat":"true",
+                    },
+                }
+                for gesture in sub.gestures:
+                    payload=gesture.to_dict()
+                    sub_combined["voices"].extend(payload["voices"])
+                    sub_combined["drum_hits"].extend(payload["drum_hits"])
+                    sub_combined["tags"].extend(payload["tags"])
+                    sub_combined["annotations"].update(payload["annotations"])
+                swing_subbeat={
+                    "offset_beats":offbeat,
+                    "gesture":sub_combined,
+                }
+
             body = json.dumps(
                 {
                     "gesture": combined,
+                    "swing_subbeat": swing_subbeat,
                     "players": [d.player_id for d in result.decisions],
                     "skipped": list(result.skipped_player_ids),
                 }
