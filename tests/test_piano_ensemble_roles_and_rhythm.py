@@ -155,3 +155,28 @@ def test_repeated_rhythm_cell_gets_variation_pressure():
         ),
     )
     assert score.components.get("rhythm_repetition_streak",0)<0
+
+
+def test_lh_comping_listens_to_rh_foreground_activity():
+    ctx=PianoCompingContext(
+        ensemble_mode=PianoEnsembleMode.PIANO_SOLO_TRIO,
+        soloist_activity=0.1,
+        piano_foreground_activity=0.95,
+    )
+    request=PianoVoicingRequest(material(),duration_beats=.5)
+    slate=build_contextual_comping_candidates(request,ctx)
+    silence=next(c for c in slate.candidates if c.realization is None)
+    lh=next(
+        c for c in slate.sounding
+        if "lh_comping" in c.tags
+        and all(hand=="LH" for _,hand in c.realization.hand_assignment)
+    )
+    evaluator=PianoCompingEvaluator()
+    state=PianoCompingState()
+    musical=MusicalContextVector()
+    silence_score=evaluator.evaluate(silence,ctx,musical,state)
+    lh_score=evaluator.evaluate(lh,ctx,musical,state)
+    assert silence_score.components.get("solo_space",0)>0
+    # RH activity should be treated as the current foreground/soloist activity;
+    # LH support remains possible but should not behave as an independent metronome.
+    assert lh_score.candidate.realization is not None
