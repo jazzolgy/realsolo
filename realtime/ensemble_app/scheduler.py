@@ -5,7 +5,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 from itertools import count
-from typing import Callable
+from typing import Callable, Sequence
 
 from .models import MusicalAction, TransportEvent
 
