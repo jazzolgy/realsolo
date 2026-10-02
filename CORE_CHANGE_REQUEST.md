@@ -119,3 +119,94 @@ requirements.
 - committing a polyphonic candidate still commits only one immediate action before
   listen/re-plan
 - no API permits a full future chord sequence to be frozen inside `SoftPlan`
+
+
+## CR-002 — Resolved harmonic-role pitch-class material for instrument realization
+
+### Status
+
+Requested from player/piano; not implemented in Core yet.
+
+### Requested Core capability
+
+Provide an instrument-neutral resolved harmonic-role representation that can bridge
+`HarmonicAffordance` to instrument candidate generation without forcing each
+instrument to parse chord symbols or reconstruct jazz harmony rules independently.
+
+Minimum useful information:
+
+- active/root pitch class when known
+- one or more pitch-class candidates for structural roles such as 3rd / 7th
+- resolved pitch classes for selected tension roles exposed by the current affordance
+- confidence/provenance for each role resolution
+- optional indication of whether a role is required, preferred, contextual, or merely available
+- preservation of Expected / Observed / Inferred distinctions where ambiguity remains
+
+The representation should remain instrument-neutral and must not contain piano register,
+hand assignment, spacing, fingering, pedal, or concrete voicing layout.
+
+### Musical reason
+
+v1.34 correctly gives instruments semantic affordances such as:
+
+- `dominant.stable_identity`
+- `dominant.altered_color`
+- `major7.color_field`
+
+and role labels such as `3rd`, `b7`, `b9`, `#9`, `b13`.
+
+However, the current affordance does not expose the actual pitch classes that realize
+those roles in the current harmonic frame.
+
+If piano derives those pitch classes by parsing `G7`, `Cmaj7`, etc., then the piano
+workstream silently becomes a second jazz-harmony engine, violating the shared-Core
+source-of-truth boundary. The same duplication would later appear in guitar, arranging,
+bass, horns, and vocal harmony.
+
+### Current piano-side bridge
+
+`players/piano/voicing.py` currently defines a deliberately thin
+`ResolvedHarmonicMaterial` input containing:
+
+- `affordance_id`
+- `root_pitch_class`
+- `role_pitch_classes`
+
+The piano generator does **not** parse chord symbols. It returns no shell candidate
+when required guide-tone roles are absent rather than guessing the harmony.
+
+This is an adapter/provisional boundary, not intended as the permanent owner of the
+shared representation.
+
+### Likely Core boundary
+
+Core owns:
+
+- mapping current harmonic evidence/affordance to pitch-class role possibilities
+- uncertainty/confidence/provenance
+- role semantics and tension availability
+
+Instrument layers own:
+
+- octave/register placement
+- physical realization
+- spacing and hand/fingering constraints
+- instrument-specific family selection
+- touch/articulation/pedal
+
+### Regression risk
+
+Low if introduced additively.
+
+Do not remove or repurpose the existing `HarmonicAffordance` API. A resolved-role
+object can be optional/downstream so existing sax and harmony tests remain unchanged.
+
+### Tests required
+
+- dominant frame can resolve structural roles without instrument knowledge
+- altered tension choices resolve relative to root correctly
+- Expected / Observed / Inferred ambiguity is not silently collapsed
+- unresolved or low-confidence roles may remain plural
+- no field contains piano register/hand/voicing layout
+- no chord-symbol parsing is required in `players/piano/`
+- representation contains no exact future note sequence
