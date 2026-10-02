@@ -79,13 +79,17 @@ def _append_note(
     engraving: EngravingIntent | None = None,
 ) -> None:
     note = ET.SubElement(measure, "note")
+    if event.grace_kind is not None:
+        grace_attrs = {"slash": "yes"} if event.grace_kind.value == "acciaccatura" else {}
+        ET.SubElement(note, "grace", grace_attrs)
     if event.kind is NotatedAtomKind.REST:
         ET.SubElement(note, "rest")
     else:
         _append_pitch(note, event)
 
-    duration = int(event.span.duration * divisions)
-    ET.SubElement(note, "duration").text = str(duration)
+    if event.grace_kind is None:
+        duration = int(event.span.duration * divisions)
+        ET.SubElement(note, "duration").text = str(duration)
     ET.SubElement(note, "voice").text = event.voice_id
     ET.SubElement(note, "staff").text = str(staff_number)
 
@@ -94,6 +98,10 @@ def _append_note(
             ET.SubElement(note, "stem").text = engraving.stem_direction.value
         if engraving.beam_state is not BeamState.NONE:
             ET.SubElement(note, "beam", {"number": "1"}).text = engraving.beam_state.value
+        if engraving.secondary_beam_state is not BeamState.NONE:
+            ET.SubElement(note, "beam", {"number": "2"}).text = (
+                engraving.secondary_beam_state.value
+            )
 
     if event.tie_from_previous:
         ET.SubElement(note, "tie", {"type": "stop"})
