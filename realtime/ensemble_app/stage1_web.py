@@ -10,6 +10,7 @@ from .harmony_display import transpose_chord
 from .stage1_music import Stage1Soloist, accompaniment_frame
 from .player_contract import fallback_accompaniment_gesture, monophonic_solo_gesture
 from .player_provider import current_stage1_provider_status
+from .stage1_piano import Stage1PianoPlayer
 
 WEB_ROOT = Path(__file__).with_name("web")
 
@@ -55,6 +56,7 @@ def chart_payload(chart: SongChart, *, transpose: int = 0) -> dict:
 class Stage1Handler(SimpleHTTPRequestHandler):
     chart = demo_chart()
     soloist = Stage1Soloist()
+    pianist = Stage1PianoPlayer.create()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(WEB_ROOT), **kwargs)
@@ -74,6 +76,7 @@ class Stage1Handler(SimpleHTTPRequestHandler):
 
         if parsed.path == "/api/reset-solo":
             self.soloist.reset()
+            self.pianist.reset()
             body = b'{"ok": true}'
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
@@ -90,10 +93,47 @@ class Stage1Handler(SimpleHTTPRequestHandler):
             except ValueError:
                 beat = 0
             frame = accompaniment_frame(chord, beat)
+            base = fallback_accompaniment_gesture(frame)
+            # Bass/drums remain fallback. Piano is now supplied by player/piano.
+            rhythm_voices = tuple(v for v in base.voices if v.instrument_role == "bass")
+            try:
+                bar_index = int(query.get("bar_index", ["0"])[0])
+            except ValueError:
+                bar_index = 0
+            next_chord = query.get("next_chord", [""])[0]
+            piano = self.pianist.decide(
+                chord,
+                next_chord,
+                beat_in_bar=float(beat),
+                bar_index=bar_index,
+            )
+            combined = {
+                "role": "accompaniment",
+                "voices": [
+                    {
+                        "pitch_midi": v.pitch_midi,
+                        "velocity": v.velocity,
+                        "duration_beats": v.duration_beats,
+                        "onset_offset_beats": v.onset_offset_beats,
+                        "articulation": list(v.articulation),
+                        "instrument_role": v.instrument_role,
+                    }
+                    for v in rhythm_voices
+                ],
+                "drum_hits": base.to_dict()["drum_hits"],
+                "source": "mixed_player_runtime",
+                "tags": ["bass_drums_fallback", "piano_player"],
+                "annotations": {},
+            }
+            if piano is not None:
+                pp = piano.to_dict()
+                combined["voices"].extend(pp["voices"])
+                combined["annotations"].update(pp["annotations"])
+                combined["source"] = pp["source"]
             body = json.dumps(
                 {
                     "legacy": frame,
-                    "gesture": fallback_accompaniment_gesture(frame).to_dict(),
+                    "gesture": combined,
                 }
             ).encode("utf-8")
             self.send_response(200)

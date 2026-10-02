@@ -97,12 +97,13 @@ if(!audioCtx)return;var len=Math.max(32,Math.floor(audioCtx.sampleRate*dur)),buf
 for(var i=0;i<len;i++)data[i]=Math.random()*2-1;var src=audioCtx.createBufferSource(),g=audioCtx.createGain();src.buffer=buf;g.gain.setValueAtTime(gain||.035,when);g.gain.exponentialRampToValueAtTime(.0001,when+dur);src.connect(g);g.connect(master);src.start(when);
 }
 async function playAccompaniment(chord,beatIndex,when,beatDur){
-try{var r=await fetch("/api/accompaniment?chord="+encodeURIComponent(chord)+"&beat="+beatIndex);var payload=await r.json();renderGesture(payload.gesture,when,beatDur);
+try{var r=await fetch("/api/accompaniment?chord="+encodeURIComponent(chord)+"&beat="+beatIndex+"&bar_index="+Math.floor(currentBeat(performance.now())/chart.beats_per_bar)%chart.bars.length+"&next_chord="+encodeURIComponent(nextChordAt(Math.floor(currentBeat(performance.now())/chart.beats_per_bar)%chart.bars.length,beatIndex)));var payload=await r.json();renderGesture(payload.gesture,when,beatDur);
 }catch(e){els.audioText.textContent="Audio error: "+e.message;}
 }
 async function playSolo(chord,nextChord,beatInBar,when,beatDur){
 try{
-var rhythmReq=fetch("/api/accompaniment?chord="+encodeURIComponent(chord)+"&beat="+Math.floor(beatInBar));
+var currentBar=Math.floor(currentBeat(performance.now())/chart.beats_per_bar)%chart.bars.length;
+var rhythmReq=fetch("/api/accompaniment?chord="+encodeURIComponent(chord)+"&beat="+Math.floor(beatInBar)+"&bar_index="+currentBar+"&next_chord="+encodeURIComponent(nextChord));
 var url="/api/solo-event?chord="+encodeURIComponent(chord)+"&next_chord="+encodeURIComponent(nextChord)+"&beat_in_bar="+beatInBar+"&phrase_step="+soloStep++;
 var soloReq=fetch(url);var both=await Promise.all([rhythmReq,soloReq]);var rhythmPayload=await both[0].json();var ev=await both[1].json();
 var rhythmOnly=JSON.parse(JSON.stringify(rhythmPayload.gesture));rhythmOnly.voices=(rhythmOnly.voices||[]).filter(function(v){return v.instrument_role==="bass";});renderGesture(rhythmOnly,when,beatDur);
