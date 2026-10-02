@@ -112,9 +112,18 @@ export class RealSoloApprovedSampleEngine {
     const effectiveDuration = connected ? duration * 1.08 : duration;
     const end = start + Math.max(.08, effectiveDuration);
     const attackScale = Math.max(.2, Math.min(1.5, hints.attack_scale || 1));
-    const attackTime = connected ? .018 : (.008 + (1 - Math.min(1, attackScale)) * .045);
+    const tongued = tags.has("tongued");
+    const attackTime = tongued
+      ? Math.max(.003, .007 / attackScale)
+      : (connected ? .018 : (.008 + (1 - Math.min(1, attackScale)) * .045));
     gain.gain.setValueAtTime(.0001, start);
-    gain.gain.exponentialRampToValueAtTime(Math.max(.001, level), start + attackTime);
+    if (tongued) {
+      const tonguePeak = Math.min(1, level * 1.07);
+      gain.gain.exponentialRampToValueAtTime(Math.max(.001, tonguePeak), start + attackTime);
+      gain.gain.linearRampToValueAtTime(level, start + attackTime + .014);
+    } else {
+      gain.gain.exponentialRampToValueAtTime(Math.max(.001, level), start + attackTime);
+    }
 
     if (src.detune) {
       if (tags.has("scoop")) {
