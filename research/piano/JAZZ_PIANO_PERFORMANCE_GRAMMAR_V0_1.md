@@ -715,3 +715,61 @@ These mappings are RealSolo policy hypotheses, not source-stated rules.
 
 The observation itself is likely instrument-independent and has been proposed as
 CR-003. Piano-specific interpretation should remain in the piano policy.
+
+
+## 19. Short interaction episodes
+
+### SOURCE-DERIVED
+
+The comping source treats interaction as something that may unfold over more than one
+isolated event: imitation/call-response, reciprocal ensemble figures, groove-based
+exchange, bass/drum interaction, and phrase-level give-and-take all imply short
+multi-turn musical contexts.
+
+The source does not provide a computational episode taxonomy.
+
+### DESIGN INFERENCE
+
+RealSolo therefore experiments with a bounded summary of **already observed**
+gesture-response turns:
+
+```
+performed gesture
+  -> observed ensemble response
+  -> next performed gesture
+  -> next observed response
+  -> short interaction episode summary
+```
+
+Current provisional episode types:
+
+- `OPEN_DIALOGUE`
+- `SOLOIST_LEAD`
+- `DENSITY_SHIFT`
+- `UNCLASSIFIED`
+
+These labels are implementation hypotheses, not source terminology.
+
+### Episode policy
+
+An episode may bias only the current candidate:
+
+- open dialogue can favor answer/punctuation and partial rhythmic continuity;
+- soloist-led episodes can favor lay-out/restrained support;
+- density-shift episodes can favor recovery space, softening, or restrained re-entry.
+
+An episode contains no next action, future notes, or planned sequence.
+
+### Lifecycle
+
+Interaction memory must decay.
+
+Current experiment deactivates an episode after two consecutive
+`NO_CLEAR_RESPONSE` observations. This prevents a short earlier dialogue from
+continuing to bias the pianist after the interaction has evidently dissolved.
+
+### Core boundary
+
+Episode abstraction may eventually be instrument-independent, but it is **not yet
+proposed as a Core contract**. CR-003 requests only generic ensemble-response evidence.
+Episode taxonomy should wait for cross-instrument evidence before promotion.
