@@ -87,6 +87,7 @@ class PianoCompingContext:
     variation_pressure: float = 0.5
     groove_lock_strength: float = 0.0
     motif_continuity_strength: float = 0.0
+    pattern_consistency_strength: float = 0.0
     role_occupancy: CompingRoleOccupancy = field(default_factory=CompingRoleOccupancy)
     time_feel: str = "swing"
 
@@ -102,6 +103,7 @@ class PianoCompingContext:
             "variation_pressure",
             "groove_lock_strength",
             "motif_continuity_strength",
+            "pattern_consistency_strength",
         ):
             value = getattr(self, name)
             if not 0.0 <= value <= 1.0:
@@ -576,6 +578,7 @@ class PianoCompingEvaluator:
                 variation_pressure=comping_context.variation_pressure,
                 groove_lock_strength=comping_context.groove_lock_strength,
                 motif_continuity_strength=comping_context.motif_continuity_strength,
+                pattern_consistency_strength=comping_context.pattern_consistency_strength,
             ),
         )
         score += variation.total
