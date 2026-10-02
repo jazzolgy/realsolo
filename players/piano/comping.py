@@ -65,6 +65,10 @@ from .harmonic_creativity import (
     adapt_continuity_profile_for_harmony,
     adapt_creativity_context_for_harmony,
 )
+from .bebop_harmonic_turn import BebopHarmonicTurnContext
+from .bebop_harmonic_turn_comping import (
+    evaluate_bebop_harmonic_turn_comping_bias,
+)
 
 
 class InteractionRole(str, Enum):
@@ -107,6 +111,9 @@ class PianoCompingContext:
     creativity_strength: float = 0.55
     creativity_coherence_floor: float = 0.30
     role_occupancy: CompingRoleOccupancy = field(default_factory=CompingRoleOccupancy)
+    harmonic_turn: BebopHarmonicTurnContext = field(
+        default_factory=BebopHarmonicTurnContext
+    )
     time_feel: str = "swing"
 
     def validate(self) -> None:
@@ -133,6 +140,7 @@ class PianoCompingContext:
         if self.soloist_register_midi is not None and not 0 <= self.soloist_register_midi <= 127:
             raise ValueError("soloist_register_midi must be within MIDI range")
         self.role_occupancy.validate()
+        self.harmonic_turn.validate()
 
 
 @dataclass(frozen=True)
@@ -630,6 +638,17 @@ class PianoCompingEvaluator:
                 f"role_occupancy:{key}", 0.0
             ) + value
         reasons.extend(occupancy_bias.reasons)
+
+        harmonic_turn_bias = evaluate_bebop_harmonic_turn_comping_bias(
+            candidate,
+            comping_context.harmonic_turn,
+        )
+        score += harmonic_turn_bias.total
+        for key, value in harmonic_turn_bias.components.items():
+            components[f"bebop_harmonic_turn:{key}"] = components.get(
+                f"bebop_harmonic_turn:{key}", 0.0
+            ) + value
+        reasons.extend(harmonic_turn_bias.reasons)
 
         episode_bias = evaluate_episode_bias(candidate, state.active_episode)
         score += episode_bias.total
