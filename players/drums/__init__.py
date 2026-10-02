@@ -135,9 +135,11 @@ from .solo import (
     solo_cell,
 )
 from .rhythmic_language import (
+    CommittedRhythmicEvent,
     RhythmicMotifIdentity,
     RhythmicTransform,
     engineering_seed_motif,
+    motif_from_committed_events,
     motif_phase_unit,
     realize_motif_now,
     transform_motif,
@@ -265,9 +267,11 @@ __all__ = [
     "four_limb_solo_gesture",
     "limb_can_play",
     "validate_kit_reachability",
+    "CommittedRhythmicEvent",
     "RhythmicMotifIdentity",
     "RhythmicTransform",
     "engineering_seed_motif",
+    "motif_from_committed_events",
     "motif_phase_unit",
     "realize_motif_now",
     "transform_motif",
