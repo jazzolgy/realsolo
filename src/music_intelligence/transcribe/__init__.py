@@ -1,7 +1,11 @@
 """Transcription / notation workstream public API.
 
-This package consumes committed performance evidence and later projects it into
-readable notation.  It must not contain player generation policy.
+Performance Representation != Notation Representation.
+
+This package consumes committed performance evidence and projects it through
+notation intent/candidates into readable score structures and output adapters.
+It must not contain player generation policy or duplicate Shared Core harmony /
+ensemble reasoning.
 """
 
 from .events import (
@@ -31,6 +35,42 @@ from .rhythm import (
     split_note_across_bars,
     tuplet_note,
 )
+from .pipeline import (
+    basic_rhythm_candidates,
+    notation_intent_from_event,
+    rhythm_candidate_from_event,
+)
+from .spelling import (
+    AccidentalPreference,
+    PitchSpellingCandidate,
+    PitchSpellingContext,
+    WrittenPitch,
+    preferred_spelling,
+    spelling_candidates,
+)
+from .allocation import (
+    AllocationEvidence,
+    StaffProfile,
+    VoiceStaffCandidate,
+    allocation_candidates,
+    preferred_allocation,
+)
+from .piano import PianoGestureCandidate, piano_gesture_candidates
+from .instrument_rules import (
+    InstrumentNotationDirective,
+    NoteheadStyle,
+    bass_notation_directive,
+    drum_notation_directive,
+    sax_notation_directive,
+)
+from .score import (
+    ReadableScore,
+    ScoreEvent,
+    ScorePart,
+    assemble_score,
+    extract_individual_part,
+)
+from .musicxml import score_to_musicxml
 
 __all__ = [
     "CommittedPerformanceEvent",
@@ -54,25 +94,9 @@ __all__ = [
     "rest_for_gap",
     "split_note_across_bars",
     "tuplet_note",
-]
-
-from .spelling import (
-    AccidentalPreference,
-    PitchSpellingCandidate,
-    PitchSpellingContext,
-    WrittenPitch,
-    preferred_spelling,
-    spelling_candidates,
-)
-from .allocation import (
-    AllocationEvidence,
-    StaffProfile,
-    VoiceStaffCandidate,
-    allocation_candidates,
-    preferred_allocation,
-)
-
-__all__ += [
+    "basic_rhythm_candidates",
+    "notation_intent_from_event",
+    "rhythm_candidate_from_event",
     "AccidentalPreference",
     "PitchSpellingCandidate",
     "PitchSpellingContext",
@@ -84,4 +108,17 @@ __all__ += [
     "VoiceStaffCandidate",
     "allocation_candidates",
     "preferred_allocation",
+    "PianoGestureCandidate",
+    "piano_gesture_candidates",
+    "InstrumentNotationDirective",
+    "NoteheadStyle",
+    "bass_notation_directive",
+    "drum_notation_directive",
+    "sax_notation_directive",
+    "ReadableScore",
+    "ScoreEvent",
+    "ScorePart",
+    "assemble_score",
+    "extract_individual_part",
+    "score_to_musicxml",
 ]
