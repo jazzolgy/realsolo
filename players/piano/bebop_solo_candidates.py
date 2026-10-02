@@ -60,6 +60,32 @@ def _nearest_pitch_for_pc(
     return min(choices,key=lambda n:abs(n-anchor_midi))
 
 
+def _annotate_motion_tags(
+    event: CandidateEvent,
+    previous_pitch_midi: int | None,
+) -> CandidateEvent:
+    """Expose interval-motion tags so shared Parker motion priors can actually fire."""
+    if previous_pitch_midi is None or event.pitch_midi is None:
+        return event
+    interval=abs(event.pitch_midi-previous_pitch_midi)
+    tags=set(event.tags)
+    if interval <= 2:
+        tags.add("step_motion")
+    if interval <= 5:
+        tags.add("within_p4_motion")
+    if interval >= 7:
+        tags.add("wide_leap")
+    if interval >= 12:
+        tags.add("compound_span_pressure")
+    return CandidateEvent(
+        event.pitch_midi,
+        event.duration_beats,
+        onset_offset_beats=event.onset_offset_beats,
+        tags=frozenset(tags),
+        source_family=event.source_family,
+    )
+
+
 def _event_key(event: CandidateEvent) -> tuple:
     return (
         event.pitch_midi,
@@ -238,6 +264,8 @@ def generate_immediate_bebop_candidates(
                 tags=frozenset({"rest","ensemble_space"}),
             )
         )
+
+    events=[_annotate_motion_tags(event,previous_pitch_midi) for event in events]
 
     # Deterministic dedupe.
     unique=[]
