@@ -1,5 +1,42 @@
 """Instrument-specific AI Drummer realization layer."""
 
+from .bass_coupling import (
+    BassDrumsCoupling,
+    BassPulseProjection,
+    coupling_score_adjustment,
+    infer_bass_drums_coupling,
+    project_bass_pulse,
+)
+from .bebop import (
+    BassDrumIntent,
+    BebopCompIntent,
+    BebopInteractionDecision,
+    BebopInteractionState,
+    BebopPhraseMemory,
+    BebopTimeIntent,
+    SoloistEnergyProjection,
+    choose_comp_intent,
+    infer_bebop_interaction_state,
+)
+from .bebop_annotation import (
+    BebopEventAnnotation,
+    BebopPhraseAnnotation,
+    DrumEventKind,
+    EvidenceConfidence,
+)
+from .bebop_profile import (
+    BebopPrior,
+    BebopStyleProfile,
+    DEFAULT_BEBOP_PROFILE,
+    PriorEvidence,
+)
+from .bebop_runtime import (
+    BebopRuntimeProjection,
+    BebopScoredGesture,
+    build_bebop_candidates,
+    perform_one_bebop_gesture,
+    score_bebop_gesture,
+)
 from .comping import CompingPropensity, comping_propensity
 from .model import (
     DrumGesture,
@@ -67,6 +104,33 @@ from .timing import (
 )
 
 __all__ = [
+    "BassDrumsCoupling",
+    "BassPulseProjection",
+    "coupling_score_adjustment",
+    "infer_bass_drums_coupling",
+    "project_bass_pulse",
+    "BassDrumIntent",
+    "BebopCompIntent",
+    "BebopInteractionDecision",
+    "BebopInteractionState",
+    "BebopPhraseMemory",
+    "BebopTimeIntent",
+    "SoloistEnergyProjection",
+    "choose_comp_intent",
+    "infer_bebop_interaction_state",
+    "BebopEventAnnotation",
+    "BebopPhraseAnnotation",
+    "DrumEventKind",
+    "EvidenceConfidence",
+    "BebopPrior",
+    "BebopStyleProfile",
+    "DEFAULT_BEBOP_PROFILE",
+    "PriorEvidence",
+    "BebopRuntimeProjection",
+    "BebopScoredGesture",
+    "build_bebop_candidates",
+    "perform_one_bebop_gesture",
+    "score_bebop_gesture",
     "CompingPropensity",
     "comping_propensity",
     "DrumGesture",
