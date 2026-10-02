@@ -29,6 +29,12 @@ from .chord_chart_render import (
     MeasureRenderCell,
     build_chord_chart_render_model,
 )
+from .chord_chart_viewport import (
+    ChordChartViewport,
+    ChordChartViewportConfig,
+    active_row_index,
+    build_chord_chart_viewport,
+)
 from .chord_chart_quality import (
     ChartIssueSeverity,
     ChordChartAudit,
@@ -186,6 +192,10 @@ __all__ = [
     "ChordRenderCell",
     "MeasureRenderCell",
     "build_chord_chart_render_model",
+    "ChordChartViewport",
+    "ChordChartViewportConfig",
+    "active_row_index",
+    "build_chord_chart_viewport",
     "ChartIssueSeverity",
     "ChordChartAudit",
     "ChordChartIssue",
