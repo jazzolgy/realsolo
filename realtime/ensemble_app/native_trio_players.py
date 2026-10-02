@@ -4,9 +4,10 @@ from dataclasses import dataclass, field
 from typing import Mapping
 
 from players.bass import (
-    BassContext,
     BassMode,
-    choose_immediate_bass_action,
+    BassSequentialRunner,
+    BassStepInput,
+    derive_bass_ensemble_signals,
 )
 from players.drums import (
     DrummerPerformanceMemory,
@@ -110,60 +111,107 @@ class Stage1PianoNativeDecider:
 
 @dataclass
 class Stage1BassNativeDecider:
-    previous_pitch: int | None = None
-    previous_interval: int | None = None
+    """Realtime integration wrapper around the canonical Bass player."""
+
+    runner: BassSequentialRunner = field(default_factory=BassSequentialRunner)
 
     def __call__(self, context: Mapping[str, object]) -> NativeImmediateResult | None:
         chord = str(context.get("chord_symbol", "Cmaj7"))
         next_chord = str(context.get("next_chord", ""))
         beat = float(context.get("beat_in_bar", 0.0))
         meter = int(context.get("beats_per_bar", 4))
+        tempo = float(context.get("tempo_bpm", 140.0))
         ensemble = context["ensemble_snapshot"]
         directive = context["interaction_directive"]
 
-        bass_context = BassContext(
+        signals = derive_bass_ensemble_signals(
+            ensemble,
+            bass_player_id="bass",
+        )
+        self.runner.tempo_bpm = tempo
+        result = self.runner.step(BassStepInput(
+            frame=_frame(chord, next_chord),
             mode=BassMode.WALKING,
             beat_in_measure=beat % meter,
-            meter_numerator=meter,
-            previous_pitch_midi=self.previous_pitch,
-            previous_motion_semitones=self.previous_interval,
-            ensemble_activity=ensemble.ensemble_density,
-        )
-        chosen = choose_immediate_bass_action(_frame(chord, next_chord), bass_context)
-        event = chosen.event
+            absolute_beat=float(ensemble.transport.beat),
+            phrase_boundary=bool(context.get("phrase_boundary", False)),
+            form_boundary="form_boundary" in directive.tags,
+            soloist_phrase_ending=signals.soloist_phrase_ending,
+            drum_fill_active=signals.drum_fill_active,
+            piano_fill_active=signals.piano_fill_active,
+            low_register_conflict=signals.low_register_conflict,
+            ensemble_activity=signals.ensemble_activity,
+            phrase_progress=signals.phrase_progress,
+            directive=directive,
+        ))
+
+        event = result.candidate.event
         if event.pitch_midi is None:
             return None
+        rendered = result.render_event
 
-        pitch = event.pitch_midi
-        if self.previous_pitch is not None:
-            self.previous_interval = pitch - self.previous_pitch
-        self.previous_pitch = pitch
-
-        expr = chosen.expression
-        velocity = int(round(38 + 70 * expr.accent))
-        duration = max(.12, event.duration_beats * expr.sounding_length_ratio)
         gesture = RenderGesture(
             role="bass",
             voices=(RenderVoice(
-                pitch_midi=pitch,
-                velocity=max(1, min(127, velocity)),
-                duration_beats=duration,
-                onset_offset_beats=expr.microtiming_ms / 1000.0,
-                articulation=(expr.articulation.value,),
-                instrument_role="bass",
+                pitch_midi=rendered.pitch_midi,
+                velocity=rendered.velocity,
+                duration_beats=rendered.duration_beats,
+                onset_offset_beats=rendered.onset_offset_beats,
+                articulation=rendered.articulation,
+                instrument_role=rendered.instrument_role,
             ),),
-            source="player/bass:immediate_realizer",
-            tags=tuple(sorted(event.tags | frozenset({chosen.harmonic_role.value}))),
-            annotations={"harmonic_role": chosen.harmonic_role.value},
+            source="player/bass:sequential_runner",
+            tags=tuple(sorted(
+                event.tags
+                | frozenset({
+                    result.candidate.harmonic_role.value,
+                    result.phrase_intent.kind.value,
+                    result.interaction.intent.value,
+                })
+            )),
+            annotations={
+                "harmonic_role": result.candidate.harmonic_role.value,
+                "phrase_intent": result.phrase_intent.kind.value,
+                "interaction_intent": result.interaction.intent.value,
+            },
+        )
+
+        stable = result.candidate.harmonic_role.value in {
+            "root", "fifth", "chord_tone", "pedal"
+        }
+        density = max(
+            .12,
+            min(
+                .78,
+                result.phrase_intent.information_density_target
+                + .35 * result.interaction.density_delta,
+            ),
+        )
+        energy = max(
+            .18,
+            min(
+                .88,
+                .32
+                + .34 * result.candidate.expression.accent
+                + .20 * result.phrase_intent.articulation_energy,
+            ),
         )
         return NativeImmediateResult(
             gesture=gesture,
-            density=0.42,
-            energy=max(.2, min(.85, .42 + .25 * expr.accent)),
-            tension=.35 if chosen.harmonic_role.value in {"root","fifth","chord_tone","pedal"} else .58,
+            density=density,
+            energy=energy,
+            tension=.34 if stable else .57,
             leadership=.04,
-            tags=frozenset({"bass_immediate", directive.interaction.value}),
-            provenance=("stage1_bass_native",),
+            tags=frozenset({
+                "bass_sequential",
+                directive.interaction.value,
+                result.phrase_intent.kind.value,
+            }),
+            provenance=(
+                "stage1_bass_native",
+                "player/bass:sequential_runner",
+                *signals.provenance,
+            ),
         )
 
 
