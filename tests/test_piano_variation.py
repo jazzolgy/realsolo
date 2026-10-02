@@ -250,3 +250,46 @@ def test_variation_memory_does_not_store_future_gestures():
 
     assert all(not hasattr(sig, "future_sequence") for sig in state.recent_signatures)
     assert all(not hasattr(sig, "next_gesture") for sig in state.recent_signatures)
+
+
+def test_repeated_silence_is_only_lightly_penalized():
+    state = PianoCompingState()
+    ctx = PianoCompingContext(
+        soloist_activity=0.95,
+        ensemble_density=0.9,
+        variation_pressure=1.0,
+    )
+    silence = next(
+        c for c in slate(ctx, state).candidates
+        if c.action_type is CompingActionType.SILENCE
+    )
+    state.commit(silence, section_energy=0.5)
+
+    score = evaluate_variation(
+        silence,
+        state.recent_signatures,
+        VariationContext(variation_pressure=1.0),
+    )
+    assert score.components["exact_repetition"] > -0.08
+
+
+def test_silence_repetition_streak_does_not_force_sound():
+    state = PianoCompingState()
+    ctx = PianoCompingContext(
+        soloist_activity=0.95,
+        ensemble_density=0.9,
+        variation_pressure=1.0,
+    )
+    silence = next(
+        c for c in slate(ctx, state).candidates
+        if c.action_type is CompingActionType.SILENCE
+    )
+    state.commit(silence, section_energy=0.5)
+    state.commit(silence, section_energy=0.5)
+
+    score = evaluate_variation(
+        silence,
+        state.recent_signatures,
+        VariationContext(variation_pressure=1.0),
+    )
+    assert "repetition_streak" not in score.components
