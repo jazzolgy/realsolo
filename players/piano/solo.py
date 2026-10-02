@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Sequence
 
-from music_intelligence.bebop.parker_online_profile import PARKER_ONLINE_PROFILE
+from music_intelligence.legends.parker import PARKER_PROFILE_VIEW
 from music_intelligence.reasoning.legend_style_core import (
     CandidateEvent,
     CandidateScore,
@@ -37,7 +37,8 @@ from .bebop_harmonic_turn import (
 
 
 def default_bebop_legend_blend() -> LegendBlend:
-    return LegendBlend(((PARKER_ONLINE_PROFILE, 1.0),))
+    """Consume Charlie Parker through the shared LegendProfileView interface."""
+    return PARKER_PROFILE_VIEW.blend()
 
 
 @dataclass(frozen=True)
