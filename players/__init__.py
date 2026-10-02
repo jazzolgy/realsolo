@@ -1,1 +1,1 @@
-"""Instrument-specific RealSolo player packages."""
+"""Instrument-specific RealSolo player layers."""
