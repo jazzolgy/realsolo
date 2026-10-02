@@ -8,6 +8,7 @@ on:
       - player/piano
       - player/bass
       - player/drums
+      - player/sax
       - realtime/ensemble-app
   pull_request:
     branches: [main]
