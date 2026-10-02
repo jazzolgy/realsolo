@@ -51,10 +51,6 @@ export class RealSoloApprovedSampleEngine {
     src.connect(gain);
     gain.connect(this.context.destination);
     const start = Math.max(this.context.currentTime + 0.005, when);
-    if (src.detune && hints.pitch_bend_cents) {
-      const bend = Math.max(-400, Math.min(400, Number(hints.pitch_bend_cents) || 0));
-      src.detune.setValueAtTime((src.detune.value || 0) + bend, start);
-    }
     src.start(start);
     if (pitched && duration) {
       gain.gain.setValueAtTime(gain.gain.value, start + Math.max(.03, duration - .04));
@@ -159,6 +155,11 @@ export class RealSoloApprovedSampleEngine {
       vibrato.stop(end + .02);
     }
 
+    if (src.detune && hints.pitch_bend_cents) {
+      const bend = Math.max(-400, Math.min(400, Number(hints.pitch_bend_cents) || 0));
+      const current = src.detune.value || 0;
+      src.detune.setValueAtTime(current + bend, start);
+    }
     src.start(start);
     const releaseTime = releaseShape === "open" ? .11 : (connected ? .025 : .05);
     const releaseStart = Math.max(start + attackTime, end - releaseTime);
