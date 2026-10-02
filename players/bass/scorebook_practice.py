@@ -13,10 +13,14 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 
+from music_intelligence.corpus.score_context import ScoreContextSnapshot
 from music_intelligence.harmony.jazz_harmony_core import HarmonicFrame
 
 from .immediate_realizer import BassHarmonicRole, BassMode
-from .scorebook_evidence import BassScoreEvidenceDirective
+from .scorebook_evidence import (
+    BassScoreEvidenceDirective,
+    derive_bass_score_context,
+)
 from .sequential_runner import BassSequentialRunner, BassStepInput, BassStepResult
 
 
@@ -31,6 +35,7 @@ class BassPracticePulse:
     form_boundary: bool = False
     ensemble_activity: float = 0.5
     score_evidence: BassScoreEvidenceDirective = BassScoreEvidenceDirective()
+    score_context: ScoreContextSnapshot | None = None
 
 
 @dataclass(frozen=True)
@@ -210,7 +215,11 @@ def run_scorebook_practice(
                 form_boundary=p.form_boundary,
                 ensemble_activity=p.ensemble_activity,
                 local_key_pitch_classes=p.local_key_pitch_classes,
-                score_evidence=p.score_evidence,
+                score_evidence=(
+                    derive_bass_score_context(p.score_context)
+                    if p.score_context is not None
+                    else p.score_evidence
+                ),
             )
             for p in song.pulses
         )
