@@ -12,7 +12,8 @@ from music_intelligence.corpus.scorebooks import ScoreEvidence, ScoreEvidenceKin
 
 
 class BassScorebookStudyTrack(str, Enum):
-    WALKING_COMPARATOR = "walking_comparator"
+    WALKING_INSTRUCTION = "walking_instruction"
+    WRITTEN_WALKING_PART = "written_walking_part"
     TWO_FEEL = "two_feel"
     FUNK_WRITTEN_PART = "funk_written_part"
     INTERPRETIVE_FUNK = "interpretive_funk"
@@ -32,16 +33,28 @@ def classify_scorebook_bass_study(
     values = [(e.kind, e.value.lower(), e.confidence) for e in evidence]
     reasons: list[str] = []
 
-    has_walk = any(
-        kind in {ScoreEvidenceKind.BASS_INSTRUCTION, ScoreEvidenceKind.WRITTEN_BASS_PART}
-        and "walk" in value
+    has_written_walk = any(
+        kind is ScoreEvidenceKind.WRITTEN_BASS_PART and "walk" in value
         for kind, value, _ in values
     )
-    if has_walk:
-        confidence = max(c for k,v,c in values if "walk" in v)
-        reasons.append("explicit scorebook walking-bass evidence")
+    if has_written_walk:
+        confidence = max(c for k,v,c in values if k is ScoreEvidenceKind.WRITTEN_BASS_PART and "walk" in v)
+        reasons.append("verified written walking-bass part")
         return BassScorebookStudyDecision(
-            BassScorebookStudyTrack.WALKING_COMPARATOR,
+            BassScorebookStudyTrack.WRITTEN_WALKING_PART,
+            confidence,
+            tuple(reasons),
+        )
+
+    has_walk_instruction = any(
+        kind is ScoreEvidenceKind.BASS_INSTRUCTION and "walk" in value
+        for kind, value, _ in values
+    )
+    if has_walk_instruction:
+        confidence = max(c for k,v,c in values if k is ScoreEvidenceKind.BASS_INSTRUCTION and "walk" in v)
+        reasons.append("explicit walking instruction without verified written bass staff")
+        return BassScorebookStudyDecision(
+            BassScorebookStudyTrack.WALKING_INSTRUCTION,
             confidence,
             tuple(reasons),
         )
