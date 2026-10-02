@@ -1,0 +1,401 @@
+{
+  "schema_version": "1.0",
+  "source": "master_index.xlsx",
+  "note": "Exact/near-exact title lookup only. Book/page values are copied from the project master index; no missing score location is inferred.",
+  "tracks": [
+    {
+      "track_id": "BE-001",
+      "title": "Waltz For Debby",
+      "matches": [
+        {
+          "book": "EvansBk",
+          "page": "91",
+          "available_in_project": false
+        },
+        {
+          "book": "JazzFake",
+          "page": "414",
+          "available_in_project": false
+        },
+        {
+          "book": "NewReal1",
+          "page": "387",
+          "available_in_project": true,
+          "file": "NewReal1.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-002",
+      "title": "My Foolish Heart",
+      "matches": [
+        {
+          "book": "JazzFake",
+          "page": "260",
+          "available_in_project": false
+        },
+        {
+          "book": "Realbk1",
+          "page": "307",
+          "available_in_project": true,
+          "file": "Realbk1.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-003",
+      "title": "Autumn Leaves",
+      "matches": [
+        {
+          "book": "Colorado",
+          "page": "23",
+          "available_in_project": false
+        },
+        {
+          "book": "JazzFake",
+          "page": "50",
+          "available_in_project": false
+        },
+        {
+          "book": "NewReal1",
+          "page": "12",
+          "available_in_project": true,
+          "file": "NewReal1.pdf"
+        },
+        {
+          "book": "Realbk1",
+          "page": "36",
+          "available_in_project": true,
+          "file": "Realbk1.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-004",
+      "title": "Blue In Green",
+      "matches": [
+        {
+          "book": "EvansBk",
+          "page": "6",
+          "available_in_project": false
+        },
+        {
+          "book": "JazzFake",
+          "page": "64",
+          "available_in_project": false
+        },
+        {
+          "book": "Realbk1",
+          "page": "53",
+          "available_in_project": true,
+          "file": "Realbk1.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-005",
+      "title": "Peace Piece",
+      "matches": [
+        {
+          "book": "EvansBk",
+          "page": "52",
+          "available_in_project": false
+        }
+      ]
+    },
+    {
+      "track_id": "BE-006",
+      "title": "Someday My Prince Will Come",
+      "matches": [
+        {
+          "book": "Colorado",
+          "page": "211",
+          "available_in_project": false
+        },
+        {
+          "book": "NewReal1",
+          "page": "326",
+          "available_in_project": true,
+          "file": "NewReal1.pdf"
+        },
+        {
+          "book": "Realbk1",
+          "page": "388",
+          "available_in_project": true,
+          "file": "Realbk1.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-007",
+      "title": "The Peacocks",
+      "matches": [],
+      "status": "not_found_in_master_index_exact_or_substring"
+    },
+    {
+      "track_id": "BE-008",
+      "title": "Spring Is Here",
+      "matches": [
+        {
+          "book": "NewReal3",
+          "page": "349",
+          "available_in_project": true,
+          "file": "NewReal3.pdf"
+        },
+        {
+          "book": "Realbk1",
+          "page": "406",
+          "available_in_project": true,
+          "file": "Realbk1.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-009",
+      "title": "If You Could See Me Now",
+      "matches": [
+        {
+          "book": "NewReal3",
+          "page": "167",
+          "available_in_project": true,
+          "file": "NewReal3.pdf"
+        },
+        {
+          "book": "RealBk2",
+          "page": "157",
+          "available_in_project": true,
+          "file": "RealBk2.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-010",
+      "title": "Nardis",
+      "matches": [
+        {
+          "book": "Colorado",
+          "page": "152",
+          "available_in_project": false
+        },
+        {
+          "book": "JazzFake",
+          "page": "269",
+          "available_in_project": false
+        },
+        {
+          "book": "Realbk1",
+          "page": "316",
+          "available_in_project": true,
+          "file": "Realbk1.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-011",
+      "title": "Alice In Wonderland",
+      "matches": [
+        {
+          "book": "Realbk1",
+          "page": "12",
+          "available_in_project": true,
+          "file": "Realbk1.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-012",
+      "title": "How Deep Is The Ocean",
+      "matches": [
+        {
+          "book": "RealBk3",
+          "page": "115",
+          "available_in_project": true,
+          "file": "RealBk3.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-013",
+      "title": "When I Fall In Love",
+      "matches": [
+        {
+          "book": "JazzFake",
+          "page": "423",
+          "available_in_project": false
+        },
+        {
+          "book": "Realbk1",
+          "page": "461",
+          "available_in_project": true,
+          "file": "Realbk1.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-014",
+      "title": "Isn't It Romantic",
+      "matches": [
+        {
+          "book": "Realbk1",
+          "page": "238",
+          "available_in_project": true,
+          "file": "Realbk1.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-015",
+      "title": "Israel",
+      "matches": [
+        {
+          "book": "Realbk1",
+          "page": "240",
+          "available_in_project": true,
+          "file": "Realbk1.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-016",
+      "title": "Peri's Scope",
+      "matches": [
+        {
+          "book": "EvansBk",
+          "page": "53",
+          "available_in_project": false
+        },
+        {
+          "book": "NewReal2",
+          "page": "288",
+          "available_in_project": true,
+          "file": "NewReal2.pdf"
+        },
+        {
+          "book": "Realbk1",
+          "page": "347",
+          "available_in_project": true,
+          "file": "Realbk1.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-017",
+      "title": "B Minor Waltz",
+      "matches": [
+        {
+          "book": "EvansBk",
+          "page": "2",
+          "available_in_project": false
+        }
+      ]
+    },
+    {
+      "track_id": "BE-018",
+      "title": "Without A Song",
+      "matches": [
+        {
+          "book": "NewReal2",
+          "page": "479",
+          "available_in_project": true,
+          "file": "NewReal2.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-019",
+      "title": "Come Rain or Come Shine",
+      "matches": [
+        {
+          "book": "JazzFake",
+          "page": "86",
+          "available_in_project": false
+        },
+        {
+          "book": "RealBk2",
+          "page": "63",
+          "available_in_project": true,
+          "file": "RealBk2.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-020",
+      "title": "You Must Believe In Spring",
+      "matches": [
+        {
+          "book": "NewReal3",
+          "page": "421",
+          "available_in_project": true,
+          "file": "NewReal3.pdf"
+        },
+        {
+          "book": "RealBk3",
+          "page": "354",
+          "available_in_project": true,
+          "file": "RealBk3.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-021",
+      "title": "Garys Theme",
+      "matches": [],
+      "status": "not_found_in_master_index; nearby Gary's Notebook/Gary's Waltz are not assumed equivalent"
+    },
+    {
+      "track_id": "BE-022",
+      "title": "Some Other Time",
+      "matches": [
+        {
+          "book": "Realbk1",
+          "page": "389",
+          "available_in_project": true,
+          "file": "Realbk1.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-023",
+      "title": "In Your Own Sweet Way [Take 1]",
+      "lookup_title": "In Your Own Sweet Way",
+      "matches": [
+        {
+          "book": "NewReal2",
+          "page": "157",
+          "available_in_project": true,
+          "file": "NewReal2.pdf"
+        },
+        {
+          "book": "Realbk1",
+          "page": "232",
+          "available_in_project": true,
+          "file": "Realbk1.pdf"
+        }
+      ]
+    },
+    {
+      "track_id": "BE-024",
+      "title": "Re: The Person I Knew",
+      "lookup_title": "Re: Person I Knew",
+      "matches": [
+        {
+          "book": "EvansBk",
+          "page": "60",
+          "available_in_project": false
+        },
+        {
+          "book": "NewReal1",
+          "page": "286",
+          "available_in_project": true,
+          "file": "NewReal1.pdf"
+        },
+        {
+          "book": "RealBk3",
+          "page": "248",
+          "available_in_project": true,
+          "file": "RealBk3.pdf"
+        }
+      ]
+    }
+  ]
+}

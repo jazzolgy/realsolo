@@ -1,0 +1,257 @@
+{
+  "schema_version": "1.0",
+  "source_id": "be_playlist_project_audio",
+  "method": {
+    "audio": "project Bill Evans compilation",
+    "sample_rate_hz": 11025,
+    "features": [
+      "median tempo estimate",
+      "onset rate",
+      "mean/std RMS",
+      "mean normalized chroma entropy"
+    ],
+    "warning": "These are low-level MIR descriptors, not musical-role labels. Tempo estimates may reflect half/double-time and must not be promoted to Legend priors without score/listening verification."
+  },
+  "tracks": [
+    {
+      "track_id": "BE-001",
+      "title": "Waltz For Debby",
+      "duration_s": 413,
+      "tempo_median_estimate": 86.133,
+      "onset_rate_per_s": 3.906,
+      "rms_mean": 0.099,
+      "rms_std": 0.043,
+      "chroma_entropy_mean": 0.927
+    },
+    {
+      "track_id": "BE-002",
+      "title": "My Foolish Heart",
+      "duration_s": 295,
+      "tempo_median_estimate": 117.454,
+      "onset_rate_per_s": 2.078,
+      "rms_mean": 0.074,
+      "rms_std": 0.046,
+      "chroma_entropy_mean": 0.926
+    },
+    {
+      "track_id": "BE-003",
+      "title": "Autumn Leaves",
+      "duration_s": 361,
+      "tempo_median_estimate": 99.384,
+      "onset_rate_per_s": 3.856,
+      "rms_mean": 0.07,
+      "rms_std": 0.033,
+      "chroma_entropy_mean": 0.914
+    },
+    {
+      "track_id": "BE-004",
+      "title": "Blue In Green",
+      "duration_s": 324,
+      "tempo_median_estimate": 129.199,
+      "onset_rate_per_s": 2.654,
+      "rms_mean": 0.035,
+      "rms_std": 0.028,
+      "chroma_entropy_mean": 0.885
+    },
+    {
+      "track_id": "BE-005",
+      "title": "Peace Piece",
+      "duration_s": 404,
+      "tempo_median_estimate": 129.199,
+      "onset_rate_per_s": 1.431,
+      "rms_mean": 0.024,
+      "rms_std": 0.028,
+      "chroma_entropy_mean": 0.894
+    },
+    {
+      "track_id": "BE-006",
+      "title": "Someday My Prince Will Come",
+      "duration_s": 296,
+      "tempo_median_estimate": 92.285,
+      "onset_rate_per_s": 3.25,
+      "rms_mean": 0.041,
+      "rms_std": 0.026,
+      "chroma_entropy_mean": 0.919
+    },
+    {
+      "track_id": "BE-007",
+      "title": "The Peacocks",
+      "duration_s": 366,
+      "tempo_median_estimate": 117.454,
+      "onset_rate_per_s": 3.954,
+      "rms_mean": 0.05,
+      "rms_std": 0.03,
+      "chroma_entropy_mean": 0.856
+    },
+    {
+      "track_id": "BE-008",
+      "title": "Spring Is Here",
+      "duration_s": 305,
+      "tempo_median_estimate": 117.454,
+      "onset_rate_per_s": 2.528,
+      "rms_mean": 0.036,
+      "rms_std": 0.028,
+      "chroma_entropy_mean": 0.885
+    },
+    {
+      "track_id": "BE-009",
+      "title": "If You Could See Me Now",
+      "duration_s": 270,
+      "tempo_median_estimate": 129.199,
+      "onset_rate_per_s": 3.296,
+      "rms_mean": 0.056,
+      "rms_std": 0.041,
+      "chroma_entropy_mean": 0.856
+    },
+    {
+      "track_id": "BE-010",
+      "title": "Nardis",
+      "duration_s": 354,
+      "tempo_median_estimate": 161.499,
+      "onset_rate_per_s": 2.96,
+      "rms_mean": 0.042,
+      "rms_std": 0.03,
+      "chroma_entropy_mean": 0.877
+    },
+    {
+      "track_id": "BE-011",
+      "title": "Alice In Wonderland",
+      "duration_s": 421,
+      "tempo_median_estimate": 117.454,
+      "onset_rate_per_s": 3.988,
+      "rms_mean": 0.095,
+      "rms_std": 0.043,
+      "chroma_entropy_mean": 0.917
+    },
+    {
+      "track_id": "BE-012",
+      "title": "How Deep Is The Ocean",
+      "duration_s": 214,
+      "tempo_median_estimate": 117.454,
+      "onset_rate_per_s": 3.542,
+      "rms_mean": 0.06,
+      "rms_std": 0.033,
+      "chroma_entropy_mean": 0.839
+    },
+    {
+      "track_id": "BE-013",
+      "title": "When I Fall In Love",
+      "duration_s": 298,
+      "tempo_median_estimate": 184.57,
+      "onset_rate_per_s": 1.896,
+      "rms_mean": 0.025,
+      "rms_std": 0.025,
+      "chroma_entropy_mean": 0.838
+    },
+    {
+      "track_id": "BE-014",
+      "title": "Isn't It Romantic",
+      "duration_s": 282,
+      "tempo_median_estimate": 117.454,
+      "onset_rate_per_s": 3.66,
+      "rms_mean": 0.04,
+      "rms_std": 0.024,
+      "chroma_entropy_mean": 0.902
+    },
+    {
+      "track_id": "BE-015",
+      "title": "Israel",
+      "duration_s": 373,
+      "tempo_median_estimate": 92.285,
+      "onset_rate_per_s": 3.145,
+      "rms_mean": 0.06,
+      "rms_std": 0.033,
+      "chroma_entropy_mean": 0.913
+    },
+    {
+      "track_id": "BE-016",
+      "title": "Peri's Scope",
+      "duration_s": 196,
+      "tempo_median_estimate": 92.285,
+      "onset_rate_per_s": 3.668,
+      "rms_mean": 0.054,
+      "rms_std": 0.025,
+      "chroma_entropy_mean": 0.908
+    },
+    {
+      "track_id": "BE-017",
+      "title": "B Minor Waltz",
+      "duration_s": 196,
+      "tempo_median_estimate": 92.285,
+      "onset_rate_per_s": 2.485,
+      "rms_mean": 0.073,
+      "rms_std": 0.049,
+      "chroma_entropy_mean": 0.804
+    },
+    {
+      "track_id": "BE-018",
+      "title": "Without A Song",
+      "duration_s": 491,
+      "tempo_median_estimate": 92.285,
+      "onset_rate_per_s": 3.177,
+      "rms_mean": 0.063,
+      "rms_std": 0.03,
+      "chroma_entropy_mean": 0.911
+    },
+    {
+      "track_id": "BE-019",
+      "title": "Come Rain or Come Shine",
+      "duration_s": 204,
+      "tempo_median_estimate": 86.133,
+      "onset_rate_per_s": 2.603,
+      "rms_mean": 0.045,
+      "rms_std": 0.028,
+      "chroma_entropy_mean": 0.871
+    },
+    {
+      "track_id": "BE-020",
+      "title": "You Must Believe In Spring",
+      "duration_s": 344,
+      "tempo_median_estimate": 99.384,
+      "onset_rate_per_s": 3.483,
+      "rms_mean": 0.093,
+      "rms_std": 0.056,
+      "chroma_entropy_mean": 0.869
+    },
+    {
+      "track_id": "BE-021",
+      "title": "Garys Theme",
+      "duration_s": 262,
+      "tempo_median_estimate": 117.454,
+      "onset_rate_per_s": 2.878,
+      "rms_mean": 0.032,
+      "rms_std": 0.023,
+      "chroma_entropy_mean": 0.84
+    },
+    {
+      "track_id": "BE-022",
+      "title": "Some Other Time",
+      "duration_s": 286,
+      "tempo_median_estimate": 129.199,
+      "onset_rate_per_s": 2.098,
+      "rms_mean": 0.057,
+      "rms_std": 0.057,
+      "chroma_entropy_mean": 0.861
+    },
+    {
+      "track_id": "BE-023",
+      "title": "In Your Own Sweet Way [Take 1]",
+      "duration_s": 419,
+      "tempo_median_estimate": 161.499,
+      "onset_rate_per_s": 3.611,
+      "rms_mean": 0.091,
+      "rms_std": 0.053,
+      "chroma_entropy_mean": 0.914
+    },
+    {
+      "track_id": "BE-024",
+      "title": "Re: The Person I Knew",
+      "duration_s": 350.602,
+      "tempo_median_estimate": 86.133,
+      "onset_rate_per_s": 3.497,
+      "rms_mean": 0.066,
+      "rms_std": 0.049,
+      "chroma_entropy_mean": 0.908
+    }
+  ]
+}
