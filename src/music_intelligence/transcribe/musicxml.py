@@ -10,6 +10,7 @@ from fractions import Fraction
 from math import floor, lcm
 from xml.etree import ElementTree as ET
 
+from .engraving import BeamState, EngravingIntent, EngravingPlan, StemDirection
 from .notation import NotatedAtomKind
 from .score import ReadableScore, ScoreEvent, ScorePart
 
@@ -123,8 +124,13 @@ def _part_measures(
     return by_measure
 
 
-def score_to_musicxml(score: ReadableScore) -> str:
+def score_to_musicxml(
+    score: ReadableScore,
+    engraving_plan: EngravingPlan | None = None,
+) -> str:
     score.validate()
+    if engraving_plan is not None:
+        engraving_plan.validate(score)
     divisions = _divisions_for_score(score)
     bar_length = Fraction(
         score.meter_numerator * 4,
