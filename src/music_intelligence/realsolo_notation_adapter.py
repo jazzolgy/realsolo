@@ -17,10 +17,12 @@ from music_intelligence.transcribe.chord_chart import (
     ChartMeasure,
     ChordChange,
     ChordChart,
+    ChordChartPosition,
     ChordSymbol,
     EnharmonicPolicy,
     MeasureRepeatKind,
     NavigationMark,
+    chart_position,
     parse_chord_symbol,
 )
 
@@ -35,6 +37,55 @@ class ChartFormMeasure:
     navigation_marks: tuple[NavigationMark, ...] = ()
     repeat_shorthand: MeasureRepeatKind = MeasureRepeatKind.NONE
     barline: BarlineStyle = BarlineStyle.NORMAL
+
+
+@dataclass(frozen=True)
+class SharedFormCursorView:
+    """Temporary adapter shape until CCR-TRANSCRIBE-002 is adopted."""
+
+    form_state_id: str
+    measure_number: int
+    beat: Fraction
+    occurrence: int = 1
+    active_ending: int | None = None
+
+    def validate(self) -> None:
+        if not self.form_state_id:
+            raise ValueError("form_state_id is required")
+        if self.measure_number < 1:
+            raise ValueError("measure_number must be positive")
+        if self.beat < 0:
+            raise ValueError("beat may not be negative")
+        if self.occurrence < 1:
+            raise ValueError("occurrence must be positive")
+
+
+@dataclass(frozen=True)
+class LiveChordChartState:
+    form_state_id: str
+    occurrence: int
+    active_ending: int | None
+    position: ChordChartPosition
+
+
+def live_chart_state(
+    chart: ChordChart,
+    cursor: SharedFormCursorView,
+) -> LiveChordChartState:
+    """Map an authoritative external form cursor to chart presentation state."""
+
+    cursor.validate()
+    position = chart_position(
+        chart,
+        measure_number=cursor.measure_number,
+        beat=cursor.beat,
+    )
+    return LiveChordChartState(
+        form_state_id=cursor.form_state_id,
+        occurrence=cursor.occurrence,
+        active_ending=cursor.active_ending,
+        position=position,
+    )
 
 
 def _symbol_from_span(span: HarmonicSpan) -> ChordSymbol:
