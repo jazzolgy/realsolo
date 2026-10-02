@@ -1,5 +1,11 @@
 """AI Bassist instrument-specific realization layer."""
 
+from .ghost_notes import (
+    BassGhostContext,
+    BassGhostDecision,
+    choose_walking_ghost_note,
+    commit_walking_ghost,
+)
 from .ensemble_adapter import (
     BassEnsembleSignals,
     derive_bass_ensemble_signals,
@@ -122,6 +128,8 @@ from .immediate_realizer import (
 
 __all__ = [
     "BassArticulation",
+    "BassGhostContext",
+    "BassGhostDecision",
     "BassCommittedAction",
     "BassInteractionContext",
     "BassInteractionDecision",
@@ -178,6 +186,8 @@ __all__ = [
     "bebop_walking_practice_curriculum",
     "analyze_bass_line",
     "choose_bass_interaction_intent",
+    "choose_walking_ghost_note",
+    "commit_walking_ghost",
     "choose_bass_phrase_intent",
     "choose_bass_solo_plan",
     "bass_shared_solo_options",
