@@ -36,6 +36,10 @@ from .performance_grammar import (
 )
 from .performance_expression import BassExpressionProfile, realize_bass_expression
 from .performance_memory import BassPerformanceSnapshot
+from .scorebook_evidence import (
+    BassScoreEvidenceDirective,
+    evidence_candidate_score,
+)
 
 
 class BassMode(str, Enum):
@@ -74,6 +78,7 @@ class BassContext:
     memory_snapshot: BassPerformanceSnapshot = BassPerformanceSnapshot()
     interaction_decision: BassInteractionDecision | None = None
     local_key_pitch_classes: frozenset[int] = frozenset()
+    score_evidence: BassScoreEvidenceDirective = BassScoreEvidenceDirective()
 
     def validate(self) -> None:
         if self.meter_numerator <= 0:
@@ -539,13 +544,26 @@ def generate_immediate_bass_candidates(
                 pitch=pitch,
                 role=role,
             )
+            evidence_score, evidence_reasons = evidence_candidate_score(
+                ctx.score_evidence,
+                mode=ctx.mode.value,
+                harmonic_role=role.value,
+                metric_role=grammar.metric_role.value,
+            )
             expression = realize_bass_expression(
                 mode=ctx.mode.value,
                 grammar=grammar,
                 memory=ctx.memory_snapshot,
                 interaction=ctx.interaction_decision,
             )
-            score = base + vl + grammar.score_delta + interaction_score - motion_penalty
+            score = (
+                base
+                + vl
+                + grammar.score_delta
+                + interaction_score
+                + evidence_score
+                - motion_penalty
+            )
             candidates.append(BassActionCandidate(
                 event=CandidateEvent(
                     pitch_midi=pitch,
@@ -562,6 +580,7 @@ def generate_immediate_bass_candidates(
                     reasons
                     + grammar.reasons
                     + interaction_reasons
+                    + evidence_reasons
                     + expression.reasons
                     + (f"shared voice-leading={vl:.3f}",)
                 ),
