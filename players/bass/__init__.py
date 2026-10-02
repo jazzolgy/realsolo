@@ -10,6 +10,13 @@ from .performance_expression import (
     BassExpressionProfile,
     realize_bass_expression,
 )
+from .partial_written_part_profile import (
+    BassFeatureMeasurement,
+    PartialBassComparison,
+    PartialBassLineProfile,
+    compare_partial_bass_profiles,
+    full_profile_as_partial,
+)
 from .practice_curriculum import (
     BassPracticeEvaluation,
     BassPracticeExercise,
@@ -108,9 +115,12 @@ __all__ = [
     "BassScorebookStudyDecision",
     "BassScorebookStudyTrack",
     "BassWrittenPartPrior",
+    "BassFeatureMeasurement",
     "BassLineAbstractProfile",
     "BassLineComparison",
     "BassLineObservation",
+    "PartialBassComparison",
+    "PartialBassLineProfile",
     "MeasuredWrittenPartEvidence",
     "StructuredBassNote",
     "WrittenPartMeasurementStatus",
@@ -139,6 +149,7 @@ __all__ = [
     "choose_bass_interaction_intent",
     "classify_scorebook_bass_study",
     "compare_bass_lines",
+    "compare_partial_bass_profiles",
     "choose_immediate_bass_action",
     "curriculum_feature_weights",
     "derive_bass_score_context",
@@ -149,6 +160,7 @@ __all__ = [
     "generate_immediate_bass_candidates",
     "realize_bass_expression",
     "project_bass_candidate_to_render_event",
+    "full_profile_as_partial",
     "measure_written_bass_part",
     "promote_written_part_prior",
     "run_scorebook_practice",
