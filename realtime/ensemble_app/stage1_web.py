@@ -203,13 +203,14 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                     tempo_bpm=tempo_bpm,
                     section=bar.section or "",
                     chorus=chorus,
-                    active_player_ids=frozenset({"drums"}),
+                    active_player_ids=frozenset({"drums","bass"}),
+                    bass_ghost_only=True,
                 )
                 sub_combined={
-                    "role":"drums",
+                    "role":"rhythm_subbeat",
                     "voices":[],
                     "drum_hits":[],
-                    "source":"native_trio_runtime:shared_swing_subbeat",
+                    "source":"native_trio_runtime:shared_swing_subbeat_with_bass_ghost",
                     "tags":[],
                     "annotations":{
                         "snapshot_generation":str(sub.snapshot_generation),
