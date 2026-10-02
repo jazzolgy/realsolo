@@ -451,6 +451,31 @@ def cross_staff_tie_placement(
         return VerticalPlacement.ABOVE
     return VerticalPlacement.AUTO
 
+
+def cross_staff_primary_beam_side(
+    events: tuple[ScoreEvent, ...],
+    intents: tuple[EngravingIntent, ...],
+    profile: EngravingProfile,
+) -> PrimaryBeamSide:
+    """Choose cross-staff primary-beam side without changing logical staff.
+
+    When the anti-corner rule is enabled, a group containing cross-staff
+    notation places the primary beam on the side of the first note.  Exact beam
+    slope/stem endpoints remain renderer responsibilities.
+    """
+
+    if not events:
+        return PrimaryBeamSide.AUTO
+    intent_by_id = {intent.event_id: intent for intent in intents}
+    has_cross_staff = any(
+        intent_by_id.get(event.event_id) is not None
+        and intent_by_id[event.event_id].cross_staff_target is not None
+        for event in events
+    )
+    if not has_cross_staff or not profile.avoid_cross_staff_beam_corners:
+        return PrimaryBeamSide.AUTO
+    return profile.cross_staff_primary_beam_side
+
 def build_default_engraving_plan(
     score: ReadableScore,
     *,
