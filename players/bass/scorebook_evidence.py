@@ -16,11 +16,21 @@ from music_intelligence.corpus.scorebooks import ScoreEvidence, ScoreEvidenceKin
 
 
 @dataclass(frozen=True)
+class BassWrittenPartPrior:
+    root_preference: float = 0.0
+    scalar_preference: float = 0.0
+    chromatic_preference: float = 0.0
+    reversal_preference: float = 0.0
+    register_center_midi: float | None = None
+
+
+@dataclass(frozen=True)
 class BassScoreEvidenceDirective:
     preferred_mode: str | None = None
     walking_pressure: float = 0.0
     two_feel_pressure: float = 0.0
     written_part_available: bool = False
+    written_part_prior: BassWrittenPartPrior | None = None
     confidence: float = 0.0
     provenance: tuple[str, ...] = ()
     reasons: tuple[str, ...] = ()
@@ -108,6 +118,19 @@ def evidence_candidate_score(
             reasons.append("scorebook walking evidence reduces middle-beat re-anchoring")
         elif harmonic_role in {"chromatic_approach", "anticipation"}:
             score += .010 * amount
+
+
+    prior = directive.written_part_prior
+    if prior is not None:
+        if harmonic_role == "root":
+            score += .04 * prior.root_preference
+            reasons.append("written-part abstract prior supports root occupancy")
+        elif harmonic_role in {"diatonic_passing", "scale_color"}:
+            score += .05 * prior.scalar_preference
+            reasons.append("written-part abstract prior supports scalar motion")
+        elif harmonic_role in {"chromatic_approach", "neighbor"}:
+            score += .05 * prior.chromatic_preference
+            reasons.append("written-part abstract prior supports chromatic motion")
 
     if mode == "two_feel" and directive.two_feel_pressure > 0:
         amount = directive.two_feel_pressure
