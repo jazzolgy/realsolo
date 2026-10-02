@@ -54,6 +54,31 @@ assets:
       - "Yamaha C5"
       - "16 velocity layers"
 
+  - id: freepats_tenor_sax
+    role: solo_sax
+    name: FreePats Tenor Saxophone
+    license: CC0-1.0
+    status: approved
+    source: https://freepats.zenvoid.org/Reed/saxophone.html
+    bundle_default_candidate: true
+    notes:
+      - "Built from Versilian Community Sample Library recordings"
+      - "CC0, commercially redistributable"
+      - "Best-quality FLAC pack ~31 MiB; small FLAC pack ~4.7 MiB"
+      - "Use as the compact default tenor-sax timbre; richer jazz articulations remain a separate research layer"
+
+  - id: vsco2ce_trumpet
+    role: solo_trumpet
+    name: VSCO 2 CE Trumpet
+    license: CC0-1.0
+    status: approved
+    source: https://github.com/sgossner/VSCO-2-CE/tree/master/Brass/Trumpet
+    bundle_default_candidate: true
+    notes:
+      - "CC0 Versilian Studios trumpet"
+      - "Separate sustain, sustain-vibrato, staccato, straight-mute and harmon-mute source families"
+      - "Suitable for articulation-aware RealSolo renderer mapping"
+
   - id: mtg_solo_sax
     role: solo_sax
     name: MTG Solo Sax
