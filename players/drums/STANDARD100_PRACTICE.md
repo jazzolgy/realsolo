@@ -50,8 +50,8 @@ The report stores performance statistics, not copied chord charts.
 
 Each chart is currently exercised across four interaction passes:
 
-1. baseline conversational support
-2. rising soloist — tests BUILD vs COAST
+1. rising soloist with drummer headroom — tests BUILD
+2. rising soloist after active drummer history — tests COAST
 3. post-climax decline — tests COME_DOWN
 4. dense soloist/opening alternation — tests intentional non-response
 
