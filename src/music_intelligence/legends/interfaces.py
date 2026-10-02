@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Mapping, Sequence
+from typing import Mapping, Protocol, Sequence
 
 from music_intelligence.reasoning.legend_style_core import LegendBlend, LegendProfile, StyleTendency
 
@@ -121,3 +121,10 @@ class LegendProfileView:
 
     def blend(self, weight: float = 1.0) -> LegendBlend:
         return LegendBlend(((self.profile, weight),))
+
+
+class VocabularyProvider(Protocol):
+    """Instrument-neutral vocabulary memory provider."""
+
+    def query(self, request: VocabularyQuery) -> tuple[VocabularyMemoryItem, ...]:
+        ...
