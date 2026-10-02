@@ -14,9 +14,12 @@ from music_intelligence.reasoning.online_improviser import (
     perform_one_event,
 )
 from players.sax import (
+    SaxArcContext,
     SaxExpressionContext,
     SaxPhraseContext,
     SaxPhraseMemory,
+    apply_sax_arc,
+    choose_sax_articulation_arc,
     choose_sax_expression,
 )
 
@@ -214,20 +217,50 @@ class Stage1Soloist:
             if event.pitch_midi is not None
             else None
         )
-        if phrase_context is not None and phrase is not None:
-            self.phrase_memory.commit(phrase_context, phrase)
-        self.previous_pitch = event.pitch_midi
         articulation = list(expression.tags) if expression is not None else []
         if phrase is not None and phrase.connect_legato and "legato" not in articulation:
             articulation.append("legato")
+
+        velocity = expression.velocity if expression is not None else 82
+        attack_scale = 0.55 if phrase is not None and phrase.soften_attack else 1.0
+        release_shape = phrase.release_shape if phrase is not None else "normal"
+        arc = None
+        if event.pitch_midi is not None and phrase is not None:
+            arc = choose_sax_articulation_arc(
+                SaxArcContext(
+                    pitch_midi=event.pitch_midi,
+                    previous_pitch_midi=previous_pitch,
+                    duration_beats=event.duration_beats,
+                    phrase_maturity=phrase_maturity,
+                    notes_since_breath=self.phrase_memory.notes_since_breath,
+                    breath_before=phrase.breath_before,
+                    phrase_start=phrase.phrase_start,
+                    phrase_end=phrase.phrase_end,
+                    tension=tension,
+                )
+            )
+            articulation, velocity, attack_scale, release_shape = apply_sax_arc(
+                articulation,
+                velocity,
+                attack_scale,
+                release_shape,
+                arc,
+            )
+
+        if phrase_context is not None and phrase is not None:
+            self.phrase_memory.commit(phrase_context, phrase)
+        self.previous_pitch = event.pitch_midi
         return {
             "pitch": event.pitch_midi,
             "duration_beats": event.duration_beats,
-            "velocity": expression.velocity if expression is not None else 82,
-            "articulation": articulation,
+            "velocity": velocity,
+            "articulation": list(articulation),
             "breath_before": phrase.breath_before if phrase is not None else False,
+            "attack_scale": attack_scale,
             "soften_attack": phrase.soften_attack if phrase is not None else False,
-            "release_shape": phrase.release_shape if phrase is not None else "normal",
+            "release_shape": release_shape,
+            "arc_phase": arc.phase if arc is not None else "none",
+            "arc_reasons": list(arc.reason) if arc is not None else [],
             "phrase_reasons": list(phrase.reason) if phrase is not None else [],
             "expression_reasons": list(expression.reason) if expression is not None else [],
             "reasons": list(chosen.reasons),
