@@ -73,6 +73,7 @@ class ScorePart:
     instrument: str
     staff_ids: tuple[str, ...]
     events: tuple[ScoreEvent, ...]
+    profile_id: str | None = None
 
     def validate(self) -> None:
         if not self.part_id or not self.name or not self.instrument:
