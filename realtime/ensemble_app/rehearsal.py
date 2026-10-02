@@ -113,6 +113,8 @@ def run_chart_rehearsal(
     beats_per_bar: int = 4,
     section: str = "A",
     chorus: int = 0,
+    bass_solo: bool = False,
+    subdivisions_per_beat: int = 1,
 ) -> Stage1RehearsalLog:
     """Run a chart one immediate tick at a time and capture causal runtime evidence.
 
@@ -125,6 +127,8 @@ def run_chart_rehearsal(
         raise ValueError("chart must contain at least one bar")
     if beats_per_bar <= 0:
         raise ValueError("beats_per_bar must be positive")
+    if subdivisions_per_beat <= 0:
+        raise ValueError("subdivisions_per_beat must be positive")
 
     ticks: list[RehearsalTickLog] = []
     tick_index = 0
@@ -132,7 +136,9 @@ def run_chart_rehearsal(
 
     for bar_index, chord_symbol in enumerate(chart):
         next_chord = chart[(bar_index + 1) % total_bars]
-        for beat in range(beats_per_bar):
+        total_ticks = beats_per_bar * subdivisions_per_beat
+        for local_tick in range(total_ticks):
+            beat = local_tick / subdivisions_per_beat
             result = runtime.decide(
                 chord_symbol,
                 next_chord,
@@ -142,6 +148,7 @@ def run_chart_rehearsal(
                 tempo_bpm=tempo_bpm,
                 section=section,
                 chorus=chorus,
+                bass_solo=bass_solo,
             )
             ticks.append(_tick_log(
                 tick_index=tick_index,
