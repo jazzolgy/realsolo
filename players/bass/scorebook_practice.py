@@ -34,6 +34,7 @@ class BassPracticePulse:
     phrase_boundary: bool = False
     form_boundary: bool = False
     ensemble_activity: float = 0.5
+    phrase_progress: float | None = None
     score_evidence: BassScoreEvidenceDirective = BassScoreEvidenceDirective()
     score_context: ScoreContextSnapshot | None = None
 
@@ -214,6 +215,7 @@ def run_scorebook_practice(
                 phrase_boundary=p.phrase_boundary,
                 form_boundary=p.form_boundary,
                 ensemble_activity=p.ensemble_activity,
+                phrase_progress=p.phrase_progress,
                 local_key_pitch_classes=p.local_key_pitch_classes,
                 score_evidence=(
                     derive_bass_score_context(p.score_context)
