@@ -169,6 +169,23 @@ def _adjusted_weight(
     if snapshot.recent_operations and option.operation is snapshot.recent_operations[-1]:
         score -= .08 * min(3, snapshot.repetition_count)
 
+    # Rhythmic monotony debt: several consecutive long events create a soft
+    # reason to vary/fragment/displace/diminish. This is not randomization; it
+    # prevents motif identity from collapsing back into quarter-note-only solo.
+    long_surface = (
+        len(snapshot.recent_durations) >= 3
+        and all(x >= 1.0 for x in snapshot.recent_durations[-3:])
+    )
+    if long_surface and option.operation in {
+        SoloDevelopmentOperation.VARY,
+        SoloDevelopmentOperation.FRAGMENT,
+        SoloDevelopmentOperation.DISPLACE,
+        SoloDevelopmentOperation.DIMINISH,
+    }:
+        score += .09
+    elif long_surface and option.operation is SoloDevelopmentOperation.REPEAT:
+        score -= .04
+
     # Once there is a motif, make actual development more likely than another
     # generic statement.
     if len(snapshot.motif_intervals) >= 2 and option.operation in {
