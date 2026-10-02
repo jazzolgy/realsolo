@@ -99,6 +99,7 @@ class BassSequentialRunner:
                 drum_fill_active=item.drum_fill_active,
                 piano_fill_active=item.piano_fill_active,
                 low_register_conflict=item.low_register_conflict,
+                ensemble_activity=item.ensemble_activity,
             )
         )
 
