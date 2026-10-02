@@ -13,7 +13,7 @@ from xml.etree import ElementTree as ET
 from .engraving import BeamState, EngravingIntent, EngravingPlan, StemDirection
 from .instrument_profiles import InstrumentProfile, resolve_instrument_profile
 from .notation import NotatedAtomKind
-from .score import ReadableScore, ScoreEvent, ScorePart, ScoreSpanner
+from .score import ReadableScore, ScoreEvent, ScoreKeySignature, ScorePart, ScoreSpanner
 
 
 def _divisions_for_score(score: ReadableScore) -> int:
@@ -182,8 +182,23 @@ def _profile_for_part(part: ScorePart) -> InstrumentProfile | None:
 def _append_profile_attributes(
     attrs: ET.Element,
     part: ScorePart,
+    *,
+    concert_key: ScoreKeySignature,
 ) -> None:
     profile = _profile_for_part(part)
+    fifth_shift = 0
+    if profile is not None and profile.transposition.diatonic_steps is not None:
+        chromatic = (-profile.transposition.chromatic_semitones) % 12
+        diatonic = (-profile.transposition.diatonic_steps) % 7
+        fifth_shift = 7 * chromatic - 12 * diatonic
+    fifths = concert_key.fifths + fifth_shift
+    while fifths > 7:
+        fifths -= 12
+    while fifths < -7:
+        fifths += 12
+    key = ET.SubElement(attrs, "key")
+    ET.SubElement(key, "fifths").text = str(fifths)
+    ET.SubElement(key, "mode").text = concert_key.mode
     if profile is None:
         return
     if profile.staff_count != len(part.staff_ids):
@@ -361,7 +376,7 @@ def score_to_musicxml(
                 ET.SubElement(time, "beat-type").text = str(score.meter_denominator)
                 if len(part.staff_ids) > 1:
                     ET.SubElement(attrs, "staves").text = str(len(part.staff_ids))
-                _append_profile_attributes(attrs, part)
+                _append_profile_attributes(attrs, part, concert_key=score.key_signature)
 
             events = measures.get(measure_index, [])
             groups: dict[tuple[str, str], list[ScoreEvent]] = defaultdict(list)
