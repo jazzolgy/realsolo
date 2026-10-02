@@ -334,3 +334,75 @@ This can support:
 - intentional sustained-note space.
 
 Actor attribution must remain separate from the raw activity transition.
+
+
+## Pass 7 — Exact morphology of selected phrase-space candidates
+
+Ten previously detected low-activity regions were re-extracted with exactly:
+
+```
+1 second before
++ detected low-activity interval
++ 1 second after
+```
+
+For each region, RMS energy and short-time spectral-flux proxy were compared.
+
+### AUDIO-OBSERVED
+
+Selected results:
+
+| Region (s) | Low RMS / pre RMS | Low RMS / post RMS | Low flux / pre flux | Low flux / post flux | Interpretation status |
+| --- | ---: | ---: | ---: | ---: | --- |
+| 397.75–398.75 | 0.65 | 0.31 | 1.26 | 1.22 | quiet-active candidate |
+| 428.75–429.75 | 0.68 | 0.35 | 0.96 | 1.01 | quiet-active candidate |
+| 433.00–435.25 | 0.58 | 0.41 | 1.18 | 0.99 | quiet-active candidate |
+| 1308.00–1310.75 | 0.56 | 0.37 | 1.02 | 1.27 | quiet-active candidate |
+| 1313.25–1315.50 | 0.46 | 0.22 | 0.90 | 0.77 | stronger release candidate |
+| 1355.25–1356.75 | 0.37 | 0.18 | 1.09 | 1.09 | quiet-active despite deep energy drop |
+| 1365.75–1367.00 | 0.62 | 0.15 | 1.09 | 0.90 | quiet-active / strong re-entry contrast |
+| 1386.25–1387.50 | 0.46 | 0.23 | 0.89 | 1.20 | quiet-active candidate |
+| 1549.25–1551.50 | 0.50 | 0.23 | 1.16 | 1.05 | quiet-active candidate |
+| 2008.00–2010.75 | 0.31 | 0.19 | 0.72 | 0.76 | strongest deep-release candidate |
+
+The key observation is that **energy reduction and attack reduction are not the same
+thing**.
+
+Several regions lose substantial RMS energy while the spectral-flux proxy remains at
+or above the surrounding level. Those regions should not be represented as simple
+silence.
+
+The 2008–2011 s region is qualitatively different in this feature space: both energy
+and attack/flux proxies fall substantially, followed by a much stronger post-region
+energy level.
+
+### DESIGN-INFERENCE
+
+Phrase-space should therefore distinguish at least:
+
+- `QUIET_ACTIVE`
+  - lower energy
+  - internal attack/motion may continue
+  - do not automatically fill the space
+  - dense solo re-entry may erase useful ensemble texture
+
+- `DEEP_RELEASE`
+  - large energy drop
+  - attack activity also decreases
+  - can create a clearer pickup/re-entry opportunity
+  - still does not require immediate playing
+
+This distinction is now implemented experimentally in:
+
+`players/piano/bebop_phrase_space.py`
+
+and consumed by the Parker-prior piano solo policy.
+
+### Attribution caution
+
+None of these classifications identifies **which musician** created the space.
+
+The raw evidence is ensemble-level.
+
+`actor_attribution_confidence` therefore defaults to zero until stronger evidence is
+available.
