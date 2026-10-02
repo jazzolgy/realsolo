@@ -1,0 +1,235 @@
+{
+  "schema_version": "0.1",
+  "source": {
+    "path_hint": "Charlie Parker Greatest Hits Full Album - The Best Songs Of Charlie Parker.mp3",
+    "duration_seconds": 6448.056,
+    "analysis_basis": "uploaded project audio"
+  },
+  "evidence_labels": [
+    "AUDIO_OBSERVED",
+    "AUDIO_INFERRED",
+    "PROFILE_CROSSCHECK",
+    "DESIGN_INFERENCE",
+    "OPEN"
+  ],
+  "clear_silence_boundaries_seconds": [
+    [
+      178.352,
+      181.421
+    ],
+    [
+      359.277,
+      362.714
+    ],
+    [
+      527.393,
+      530.971
+    ],
+    [
+      739.897,
+      744.214
+    ],
+    [
+      923.69,
+      936.407
+    ],
+    [
+      2444.246,
+      2450.94
+    ],
+    [
+      2847.048,
+      2855.045
+    ],
+    [
+      3138.086,
+      3141.954
+    ],
+    [
+      3702.26,
+      3708.418
+    ],
+    [
+      3895.042,
+      3899.321
+    ],
+    [
+      4628.733,
+      4632.531
+    ],
+    [
+      4806.299,
+      4814.237
+    ],
+    [
+      5176.761,
+      5182.006
+    ],
+    [
+      5357.246,
+      5364.638
+    ],
+    [
+      6059.531,
+      6066.622
+    ],
+    [
+      6249.068,
+      6256.738
+    ],
+    [
+      6441.573,
+      6448.056
+    ]
+  ],
+  "early_segment_features": [
+    {
+      "segment": 1,
+      "interval_seconds": [
+        0,
+        179.886
+      ],
+      "tempo_proxy": 107.7,
+      "onsets_per_sec": 3.868,
+      "harmonic_percussive_ratio": 1.184,
+      "activity_cv_10s": 0.205
+    },
+    {
+      "segment": 2,
+      "interval_seconds": [
+        179.886,
+        360.995
+      ],
+      "tempo_proxy": 117.5,
+      "onsets_per_sec": 2.289,
+      "harmonic_percussive_ratio": 0.952,
+      "activity_cv_10s": 0.15
+    },
+    {
+      "segment": 3,
+      "interval_seconds": [
+        360.995,
+        529.182
+      ],
+      "tempo_proxy": 117.5,
+      "onsets_per_sec": 1.835,
+      "harmonic_percussive_ratio": 1.917,
+      "activity_cv_10s": 0.534
+    },
+    {
+      "segment": 4,
+      "interval_seconds": [
+        529.182,
+        742.055
+      ],
+      "tempo_proxy": 129.2,
+      "onsets_per_sec": 3.101,
+      "harmonic_percussive_ratio": 1.367,
+      "activity_cv_10s": 0.396
+    },
+    {
+      "segment": 5,
+      "interval_seconds": [
+        742.055,
+        930.049
+      ],
+      "tempo_proxy": 99.4,
+      "onsets_per_sec": 3.828,
+      "harmonic_percussive_ratio": 1.539,
+      "activity_cv_10s": 0.269
+    },
+    {
+      "segment": 6,
+      "interval_seconds": [
+        930.049,
+        1111.672
+      ],
+      "tempo_proxy": 107.7,
+      "onsets_per_sec": 3.958,
+      "harmonic_percussive_ratio": 1.067,
+      "activity_cv_10s": 0.179
+    }
+  ],
+  "representative_windows": [
+    {
+      "id": "A",
+      "interval_seconds": [
+        45,
+        90
+      ],
+      "tempo_proxy": 101.3,
+      "onsets_per_sec": 4.8,
+      "median_onsets_per_beat": 3,
+      "harmonic_percussive_ratio": 2.033,
+      "chroma_change_mean": 0.07
+    },
+    {
+      "id": "B",
+      "interval_seconds": [
+        390,
+        435
+      ],
+      "tempo_proxy": 143.6,
+      "onsets_per_sec": 1.22,
+      "median_onsets_per_beat": 0,
+      "harmonic_percussive_ratio": 2.858,
+      "chroma_change_mean": 0.062
+    },
+    {
+      "id": "C",
+      "interval_seconds": [
+        600,
+        645
+      ],
+      "tempo_proxy": 136,
+      "onsets_per_sec": 2.27,
+      "median_onsets_per_beat": 1,
+      "harmonic_percussive_ratio": 2.393,
+      "chroma_change_mean": 0.08
+    },
+    {
+      "id": "D",
+      "interval_seconds": [
+        980,
+        1025
+      ],
+      "tempo_proxy": 105.5,
+      "onsets_per_sec": 5,
+      "median_onsets_per_beat": 3,
+      "harmonic_percussive_ratio": 1.763,
+      "chroma_change_mean": 0.079
+    }
+  ],
+  "audio_observed_hypotheses": [
+    {
+      "id": "PA-H1",
+      "statement": "Bebop pulse speed and salient event density are separable.",
+      "status": "AUDIO_OBSERVED"
+    },
+    {
+      "id": "PA-H2",
+      "statement": "The compilation contains materially different density and harmonic/percussive textures.",
+      "status": "AUDIO_OBSERVED"
+    },
+    {
+      "id": "PA-H3",
+      "statement": "Piano-role attribution requires transcription/stem corroboration before promotion.",
+      "status": "OPEN"
+    }
+  ],
+  "analysis_failures": [
+    {
+      "method": "Demucs selected-clip source separation",
+      "result": "not completed",
+      "reason": "pretrained model weights unavailable in offline runtime"
+    }
+  ],
+  "next_annotation_targets": [
+    "phrase_space_windows",
+    "ensemble_density_transitions",
+    "likely_comping_handoff_regions",
+    "Parker_activity_vs_accompaniment_density",
+    "transcription_crosscheck"
+  ],
+  "non_copying_rule": "Learn conditional behavior; do not store or replay literal future Parker phrases."
+}
