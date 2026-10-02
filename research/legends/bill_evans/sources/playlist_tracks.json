@@ -1,0 +1,250 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "bill_evans",
+  "source_id": "be_playlist_project_audio",
+  "source_url": "https://www.youtube.com/watch?v=7qbVd-NhZ5Y",
+  "track_count": 24,
+  "note": "Track boundaries/titles supplied by the project owner. Final track end remains open until source duration is checked.",
+  "tracks": [
+    {
+      "track_id": "BE-001",
+      "start_s": 0,
+      "end_s": 413,
+      "title": "Waltz For Debby",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "00:00",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-002",
+      "start_s": 413,
+      "end_s": 708,
+      "title": "My Foolish Heart",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "06:53",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-003",
+      "start_s": 708,
+      "end_s": 1069,
+      "title": "Autumn Leaves",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "11:48",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-004",
+      "start_s": 1069,
+      "end_s": 1393,
+      "title": "Blue In Green",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "17:49",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-005",
+      "start_s": 1393,
+      "end_s": 1797,
+      "title": "Peace Piece",
+      "credited_artist": "Bill Evans",
+      "source_position": "23:13",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-006",
+      "start_s": 1797,
+      "end_s": 2093,
+      "title": "Someday My Prince Will Come",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "29:57",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-007",
+      "start_s": 2093,
+      "end_s": 2459,
+      "title": "The Peacocks",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "34:53",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-008",
+      "start_s": 2459,
+      "end_s": 2764,
+      "title": "Spring Is Here",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "40:59",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-009",
+      "start_s": 2764,
+      "end_s": 3034,
+      "title": "If You Could See Me Now",
+      "credited_artist": "The Bill Evans Trio",
+      "source_position": "46:04",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-010",
+      "start_s": 3034,
+      "end_s": 3388,
+      "title": "Nardis",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "50:34",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-011",
+      "start_s": 3388,
+      "end_s": 3809,
+      "title": "Alice In Wonderland",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "56:28",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-012",
+      "start_s": 3809,
+      "end_s": 4023,
+      "title": "How Deep Is The Ocean",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "1:03:29",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-013",
+      "start_s": 4023,
+      "end_s": 4321,
+      "title": "When I Fall In Love",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "1:07:03",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-014",
+      "start_s": 4321,
+      "end_s": 4603,
+      "title": "Isn't It Romantic",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "1:12:01",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-015",
+      "start_s": 4603,
+      "end_s": 4976,
+      "title": "Israel",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "1:16:43",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-016",
+      "start_s": 4976,
+      "end_s": 5172,
+      "title": "Peri's Scope",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "1:22:56",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-017",
+      "start_s": 5172,
+      "end_s": 5368,
+      "title": "B Minor Waltz",
+      "credited_artist": "Bill Evans",
+      "source_position": "1:26:12",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-018",
+      "start_s": 5368,
+      "end_s": 5859,
+      "title": "Without A Song",
+      "credited_artist": "Bill Evans",
+      "source_position": "1:29:28",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-019",
+      "start_s": 5859,
+      "end_s": 6063,
+      "title": "Come Rain or Come Shine",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "1:37:39",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-020",
+      "start_s": 6063,
+      "end_s": 6407,
+      "title": "You Must Believe In Spring",
+      "credited_artist": "Bill Evans",
+      "source_position": "1:41:03",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-021",
+      "start_s": 6407,
+      "end_s": 6669,
+      "title": "Garys Theme",
+      "credited_artist": "Bill Evans",
+      "source_position": "1:46:47",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-022",
+      "start_s": 6669,
+      "end_s": 6955,
+      "title": "Some Other Time",
+      "credited_artist": "Tony Bennett & Bill Evans",
+      "source_position": "1:51:09",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-023",
+      "start_s": 6955,
+      "end_s": 7374,
+      "title": "In Your Own Sweet Way [Take 1]",
+      "credited_artist": "Bill Evans Trio",
+      "source_position": "1:55:55",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    },
+    {
+      "track_id": "BE-024",
+      "start_s": 7374,
+      "end_s": null,
+      "title": "Re: The Person I Knew",
+      "credited_artist": "The Bill Evans Trio",
+      "source_position": "2:02:54",
+      "research_status": "identified_from_user_tracklist",
+      "score_alignment_status": "pending_master_index_lookup"
+    }
+  ]
+}
