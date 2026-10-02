@@ -16,6 +16,7 @@ provenance where useful.
 - voice/staff assignment for notation
 - ties, tuplets, rests, articulations, ornaments and notational simplification
 - chord-symbol / harmony annotation projection
+- form-aware ChordChart projection for live RealSolo performance views
 - MusicXML export
 - notation-oriented rendering adapters
 - readable-score evaluation
@@ -56,3 +57,10 @@ Committed Performance Events
 
 The preferred notation may differ from literal microtiming while still
 faithfully representing the musical intention.
+
+## RealSolo presentation contract
+
+RealSolo retains both compact chord-chart display and readable notation display.
+ChordChart is the primary lightweight live view; Player Part and Full Score use
+the same notation engine when more detail is required. ChordChart should consume
+Shared Harmony/form truth rather than independently re-inferring harmony.
