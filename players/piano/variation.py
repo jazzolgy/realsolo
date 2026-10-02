@@ -6,9 +6,7 @@ while partial continuity can be rewarded when groove/motif identity should persi
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Mapping, Sequence
-
-from .comping import PianoCompingCandidate
+from typing import Any, Mapping, Sequence
 
 
 @dataclass(frozen=True)
@@ -21,7 +19,7 @@ class GestureSignature:
     touch: str | None
 
     @classmethod
-    def from_candidate(cls, candidate: PianoCompingCandidate) -> "GestureSignature":
+    def from_candidate(cls, candidate: Any) -> "GestureSignature":
         role = candidate.role.value
         family = None
         if candidate.realization is not None:
@@ -83,7 +81,7 @@ class VariationScore:
 
 
 def evaluate_variation(
-    candidate: PianoCompingCandidate,
+    candidate: Any,
     recent: Sequence[GestureSignature],
     context: VariationContext,
 ) -> VariationScore:
