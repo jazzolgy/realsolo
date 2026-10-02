@@ -79,6 +79,9 @@ class Stage1PianoNativeDecider:
     def __call__(self, context: Mapping[str, object]) -> NativeImmediateResult | None:
         chord = str(context.get("chord_symbol", "Cmaj7"))
         next_chord = str(context.get("next_chord", ""))
+        harmonic_frame = context.get("harmonic_frame")
+        if harmonic_frame is None:
+            harmonic_frame = _frame(chord, next_chord)
         beat = float(context.get("beat_in_bar", 0.0))
         bar = int(context.get("bar_index", 0))
         gesture = self.player.decide(
@@ -139,7 +142,7 @@ class Stage1BassNativeDecider:
 
         self.runner.tempo_bpm = tempo
         result = self.runner.step(BassStepInput(
-            frame=_frame(chord, next_chord),
+            frame=harmonic_frame,
             mode=mode,
             beat_in_measure=beat % meter,
             absolute_beat=float(ensemble.transport.beat),
