@@ -10,6 +10,7 @@ from .core_bridge import CoreImmediateBridge, DiagnosticResponseFactory
 from .engine import EnsembleEngine
 from .midi_io import MidoSink, list_ports, live_poll
 from .models import TransportEvent
+from .stage1_web import run_stage1_web
 
 
 def _core() -> CoreImmediateBridge:
@@ -101,6 +102,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="RealSolo live ensemble runtime")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("ports")
+    stage1 = sub.add_parser("stage1")
+    stage1.add_argument("--host", default="127.0.0.1")
+    stage1.add_argument("--port", type=int, default=8765)
 
     mm = sub.add_parser("monitor-midi")
     mm.add_argument("--input", required=True)
@@ -115,6 +119,8 @@ def main() -> None:
     args = parser.parse_args()
     if args.command == "ports":
         command_ports()
+    elif args.command == "stage1":
+        run_stage1_web(args.host, args.port)
     elif args.command == "monitor-midi":
         command_monitor_midi(args.input)
     elif args.command == "monitor-audio":

@@ -27,3 +27,24 @@ development ground truth. It is not a required product workflow.
 See:
 - `docs/PRODUCT_STAGES.md`
 - `docs/AUDIO_FIRST_RUNTIME.md`
+
+
+## Stage 1 local app
+
+```bash
+pip install -e ".[dev]"
+realsolo-ensemble stage1
+```
+
+Open `http://127.0.0.1:8765`.
+
+Current UI:
+- responsive chord chart
+- active bar and beat highlight
+- play / pause / stop
+- tempo
+- transpose
+- chorus count
+- user role / AI role switching
+
+Final accompaniment/solo sound generation is the next Stage-1 milestone.
