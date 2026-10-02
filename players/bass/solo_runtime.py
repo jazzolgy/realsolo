@@ -78,11 +78,19 @@ class BassSoloMemory:
         motif_intervals = intervals[-3:]
         motif_durations = durations[-4:]
 
+        # recent_repetition_count means motif-identity repetition, not
+        # "the same operation happened several times".  Repeated STATE/VARY
+        # actions must not suppress a later intentional REPEAT.
         repetition = 0
-        if self.operations:
-            last = self.operations[-1]
+        if self.operations and self.operations[-1] in {
+            SoloDevelopmentOperation.REPEAT,
+            SoloDevelopmentOperation.RECAP,
+        }:
             for op in reversed(self.operations):
-                if op is last:
+                if op in {
+                    SoloDevelopmentOperation.REPEAT,
+                    SoloDevelopmentOperation.RECAP,
+                }:
                     repetition += 1
                 else:
                     break
