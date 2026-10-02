@@ -805,3 +805,91 @@ This analysis still does not prove:
 - that one player intentionally caused another player's action.
 
 The result supports **ensemble morphology**, not actor-level causality.
+
+
+## Pass 12 — Support-carry mode inside supported handoffs
+
+The detector-selected supported-handoff candidates were further split by which support
+proxy remained strongest during the handoff.
+
+Provisional support modes:
+
+- `HARMONIC_CARRIED`
+- `PERCUSSIVE_CARRIED`
+- `MIXED_SUPPORT`
+- `MODERATE_SUPPORT`
+
+Current thresholding:
+
+- harmonic-carried: low harmonic support >= 0.8 and attack support < 0.8;
+- percussive-carried: attack support >= 0.8 and low harmonic support < 0.8;
+- mixed: both >= 0.8;
+- moderate: at least one support proxy remains meaningful but below those thresholds.
+
+### AUDIO-OBSERVED
+
+Among the currently classified supported-handoff sample:
+
+- harmonic-carried: 65
+- mixed support: 25
+- percussive-carried: 4
+- moderate support: 39
+
+These counts do not sum to the earlier 152 because this pass uses a stricter mode
+classification subset and leaves edge cases unpromoted.
+
+Median morphology:
+
+#### Harmonic-carried
+- low support ~0.972
+- attack support ~0.527
+- foreground handoff/pre ~0.140
+- foreground post/handoff ~10.01
+
+#### Mixed support
+- low support ~1.265
+- attack support ~1.200
+- foreground handoff/pre ~0.295
+- foreground post/handoff ~8.91
+
+#### Percussive-carried
+- n=4 only
+- low support ~0.340
+- attack support ~1.172
+- foreground handoff/pre ~0.200
+
+The percussive-carried group is currently too small for strong generalization.
+
+### DESIGN-INFERENCE
+
+Piano response should depend on which support function is already occupied.
+
+#### Harmonic-carried handoff
+
+Prefer creative dimensions such as:
+
+- pickup / anticipation
+- register contrast
+- melodic connector
+- brief punctuation
+- silence
+
+and avoid duplicating dense harmonic outlining.
+
+#### Percussive-carried handoff
+
+If harmonic support is genuinely thin, a piano may contribute:
+
+- sparse guide-tone identity
+- compact harmonic punctuation
+- light color support
+
+without turning the handoff into sustained harmonic mass.
+
+#### Mixed support
+
+Both harmonic and attack layers are already active.
+
+Preserving space becomes especially valuable.
+
+This distinction is now represented experimentally by `SupportCarryMode`.
