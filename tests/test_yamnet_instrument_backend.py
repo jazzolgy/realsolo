@@ -65,3 +65,28 @@ def test_yamnet_resamples_browser_rate_before_inference():
     )
     assert seen["samples"] == 16000
     assert instruments["piano"] > 0
+
+
+def test_explicit_label_teaches_latest_embedding(tmp_path):
+    backend=YAMNetInstrumentBackend(
+        min_window_s=.96,
+        adaptation_path=tmp_path/"head.json",
+    )
+    backend._model=FakeYAMNet()
+    backend._class_names=("Trumpet","Saxophone","Singing")
+    backend.predict(np.zeros(16000,dtype=np.float32),sample_rate=16000)
+    assert backend.admit_explicit_label("trumpet") is True
+    assert backend.adaptation_counts()["trumpet"] >= 1
+
+
+def test_explicit_label_rejects_unknown_baseline_label(tmp_path):
+    backend=YAMNetInstrumentBackend(
+        min_window_s=.96,
+        adaptation_path=tmp_path/"head.json",
+    )
+    backend._model=FakeYAMNet()
+    backend._class_names=("Trumpet","Saxophone","Singing")
+    backend.predict(np.zeros(16000,dtype=np.float32),sample_rate=16000)
+    import pytest
+    with pytest.raises(ValueError):
+        backend.admit_explicit_label("mystery horn")
