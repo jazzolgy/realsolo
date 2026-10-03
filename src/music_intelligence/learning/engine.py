@@ -41,9 +41,10 @@ class DomainLearningState:
         section=str(start.get("section_id") or "*")
         measure=start.get("measure_index")
         beat=start.get("beat_in_measure")
-        iteration=start.get("form_iteration")
         beat_text="*" if beat is None else f"{float(beat):.3f}"
-        return f"form={form_id}|section={section}|iteration={iteration}|measure={measure}|beat={beat_text}"
+        # Normalize across repeated choruses/form traversals. The exact
+        # form_iteration remains in the artifact context for longitudinal study.
+        return f"form={form_id}|section={section}|measure={measure}|beat={beat_text}"
 
     def observe(self,a:LearningArtifact)->None:
         a.validate();self.observations+=1
