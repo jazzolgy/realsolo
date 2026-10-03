@@ -1,0 +1,816 @@
+{
+  "schema_version": "1.0",
+  "principle": "performer evidence is indexed by musical structure, not elapsed recording percentage",
+  "performers": [
+    {
+      "legend_id": "bill_evans",
+      "track_count": 24,
+      "tracks": [
+        {
+          "track_id": "BE-001",
+          "song_id": "waltz_for_debby",
+          "title": "Waltz For Debby",
+          "core_form_bars": 80,
+          "form_label": "A1-B-A2",
+          "form_status": "core_form_known_solo_bar_mapping_needs_verification",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-002",
+          "song_id": "my_foolish_heart",
+          "title": "My Foolish Heart",
+          "core_form_bars": 32,
+          "form_label": "ABAC",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-003",
+          "song_id": "autumn_leaves",
+          "title": "Autumn Leaves",
+          "core_form_bars": 32,
+          "form_label": "AABC",
+          "form_status": "partial_score_alignment_exists",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [
+              "chart.standard100.autumn_leaves"
+            ],
+            "scorebook_anchors": [
+              {
+                "kind": "scorebook",
+                "book_id": "scorebook.newreal.1",
+                "page": 12,
+                "status": "vision_reviewed"
+              },
+              {
+                "kind": "scorebook",
+                "book_id": "scorebook.real.1",
+                "page": 36,
+                "status": "known_score_anchor"
+              }
+            ]
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-004",
+          "song_id": "blue_in_green",
+          "title": "Blue In Green",
+          "core_form_bars": 10,
+          "form_label": "circular",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [
+              "chart.standard100.blue_in_green"
+            ],
+            "scorebook_anchors": [
+              {
+                "kind": "scorebook",
+                "book_id": "scorebook.real.1",
+                "page": 53,
+                "status": "indexed_score_anchor"
+              }
+            ]
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-005",
+          "song_id": "peace_piece",
+          "title": "Peace Piece",
+          "core_form_bars": null,
+          "form_label": "ostinato_continuous_variation",
+          "form_status": "non_drum_noncyclic_reference",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "noncyclic_or_reference"
+        },
+        {
+          "track_id": "BE-006",
+          "song_id": "someday_my_prince_will_come",
+          "title": "Someday My Prince Will Come",
+          "core_form_bars": 32,
+          "form_label": "ABAC",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-007",
+          "song_id": "the_peacocks",
+          "title": "The Peacocks",
+          "core_form_bars": 32,
+          "form_label": "AABA",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-008",
+          "song_id": "spring_is_here",
+          "title": "Spring Is Here",
+          "core_form_bars": 32,
+          "form_label": "AABA",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-009",
+          "song_id": "if_you_could_see_me_now",
+          "title": "If You Could See Me Now",
+          "core_form_bars": 32,
+          "form_label": "A1-A2-B-A",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-010",
+          "song_id": "nardis",
+          "title": "Nardis",
+          "core_form_bars": 32,
+          "form_label": "AABA",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [
+              "chart.standard100.nardis"
+            ],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-011",
+          "song_id": "alice_in_wonderland",
+          "title": "Alice In Wonderland",
+          "core_form_bars": 64,
+          "form_label": "AA'BA'",
+          "form_status": "notated_bar_grid_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": [
+              {
+                "kind": "scorebook",
+                "book_id": "scorebook.real.1",
+                "page": 12,
+                "status": "visual_verified"
+              }
+            ]
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-012",
+          "song_id": "how_deep_is_the_ocean",
+          "title": "How Deep Is The Ocean",
+          "core_form_bars": 32,
+          "form_label": "ABAC",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": [
+              {
+                "kind": "scorebook",
+                "book_id": "scorebook.real.3",
+                "page": 115,
+                "status": "indexed_not_yet_visual_verified"
+              }
+            ]
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-013",
+          "song_id": "when_i_fall_in_love",
+          "title": "When I Fall In Love",
+          "core_form_bars": 32,
+          "form_label": "ABAC",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-014",
+          "song_id": "isn_t_it_romantic",
+          "title": "Isn't It Romantic",
+          "core_form_bars": 32,
+          "form_label": "ABAC",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-015",
+          "song_id": "israel",
+          "title": "Israel",
+          "core_form_bars": 12,
+          "form_label": "minor_blues",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": [
+              {
+                "kind": "scorebook",
+                "book_id": "scorebook.real.1",
+                "page": 240,
+                "status": "visual_verified"
+              }
+            ]
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-016",
+          "song_id": "peri_s_scope",
+          "title": "Peri's Scope",
+          "core_form_bars": null,
+          "form_label": "ABA",
+          "form_status": "section_chain_known_exact_bar_map_pending",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "section_or_form_pending"
+        },
+        {
+          "track_id": "BE-017",
+          "song_id": "b_minor_waltz",
+          "title": "B Minor Waltz",
+          "core_form_bars": null,
+          "form_label": "long_form_waltz",
+          "form_status": "exact_core_form_pending",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "section_or_form_pending"
+        },
+        {
+          "track_id": "BE-018",
+          "song_id": "without_a_song",
+          "title": "Without A Song",
+          "core_form_bars": 56,
+          "form_label": "AABA",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-019",
+          "song_id": "come_rain_or_come_shine",
+          "title": "Come Rain or Come Shine",
+          "core_form_bars": 32,
+          "form_label": "ABAC_family",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-020",
+          "song_id": "you_must_believe_in_spring",
+          "title": "You Must Believe In Spring",
+          "core_form_bars": 26,
+          "form_label": "AA'B",
+          "form_status": "core_form_known_asymmetric",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-021",
+          "song_id": "garys_theme",
+          "title": "Garys Theme",
+          "core_form_bars": null,
+          "form_label": "sectional_ballad",
+          "form_status": "chart_exists_exact_form_pending",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "section_or_form_pending"
+        },
+        {
+          "track_id": "BE-022",
+          "song_id": "some_other_time",
+          "title": "Some Other Time",
+          "core_form_bars": 32,
+          "form_label": "ABA",
+          "form_status": "non_drum_reference",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-023",
+          "song_id": "in_your_own_sweet_way",
+          "title": "In Your Own Sweet Way [Take 1]",
+          "core_form_bars": 40,
+          "form_label": "AABAC",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-024",
+          "song_id": "re_the_person_i_knew",
+          "title": "Re: The Person I Knew",
+          "core_form_bars": null,
+          "form_label": "asymmetric_with_navigation",
+          "form_status": "exact_core_form_pending",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "section_or_form_pending"
+        }
+      ]
+    },
+    {
+      "legend_id": "charlie_parker",
+      "track_count": 1,
+      "tracks": [
+        {
+          "source_id": "uploaded_greatest_hits_compilation",
+          "structural_status": "navigation_only_pending_segment_tune_form_identity",
+          "note": "existing windows retained; no structural promotion until track/form identity is resolved"
+        }
+      ]
+    },
+    {
+      "legend_id": "eliot_zigmund",
+      "track_count": 5,
+      "tracks": [
+        {
+          "track_id": "BE-007",
+          "song_id": "the_peacocks",
+          "title": "The Peacocks",
+          "core_form_bars": 32,
+          "form_label": "AABA",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-017",
+          "song_id": "b_minor_waltz",
+          "title": "B Minor Waltz",
+          "core_form_bars": null,
+          "form_label": "long_form_waltz",
+          "form_status": "exact_core_form_pending",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "section_or_form_pending"
+        },
+        {
+          "track_id": "BE-018",
+          "song_id": "without_a_song",
+          "title": "Without A Song",
+          "core_form_bars": 56,
+          "form_label": "AABA",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-020",
+          "song_id": "you_must_believe_in_spring",
+          "title": "You Must Believe In Spring",
+          "core_form_bars": 26,
+          "form_label": "AA'B",
+          "form_status": "core_form_known_asymmetric",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-021",
+          "song_id": "garys_theme",
+          "title": "Garys Theme",
+          "core_form_bars": null,
+          "form_label": "sectional_ballad",
+          "form_status": "chart_exists_exact_form_pending",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "section_or_form_pending"
+        }
+      ]
+    },
+    {
+      "legend_id": "joe_labarbera",
+      "track_count": 1,
+      "tracks": [
+        {
+          "source_id": "bill_evans_nardis_buenos_aires_1979",
+          "song_id": "nardis",
+          "structural_status": "source_registered_audio_form_alignment_pending",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [
+              "chart.standard100.nardis"
+            ],
+            "scorebook_anchors": []
+          }
+        }
+      ]
+    },
+    {
+      "legend_id": "larry_bunker",
+      "track_count": 1,
+      "tracks": [
+        {
+          "track_id": "BE-014",
+          "song_id": "isn_t_it_romantic",
+          "title": "Isn't It Romantic",
+          "core_form_bars": 32,
+          "form_label": "ABAC",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        }
+      ]
+    },
+    {
+      "legend_id": "paul_motian",
+      "track_count": 16,
+      "tracks": [
+        {
+          "track_id": "BE-001",
+          "song_id": "waltz_for_debby",
+          "title": "Waltz For Debby",
+          "core_form_bars": 80,
+          "form_label": "A1-B-A2",
+          "form_status": "core_form_known_solo_bar_mapping_needs_verification",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-002",
+          "song_id": "my_foolish_heart",
+          "title": "My Foolish Heart",
+          "core_form_bars": 32,
+          "form_label": "ABAC",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-003",
+          "song_id": "autumn_leaves",
+          "title": "Autumn Leaves",
+          "core_form_bars": 32,
+          "form_label": "AABC",
+          "form_status": "partial_score_alignment_exists",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [
+              "chart.standard100.autumn_leaves"
+            ],
+            "scorebook_anchors": [
+              {
+                "kind": "scorebook",
+                "book_id": "scorebook.newreal.1",
+                "page": 12,
+                "status": "vision_reviewed"
+              },
+              {
+                "kind": "scorebook",
+                "book_id": "scorebook.real.1",
+                "page": 36,
+                "status": "known_score_anchor"
+              }
+            ]
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-004",
+          "song_id": "blue_in_green",
+          "title": "Blue In Green",
+          "core_form_bars": 10,
+          "form_label": "circular",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [
+              "chart.standard100.blue_in_green"
+            ],
+            "scorebook_anchors": [
+              {
+                "kind": "scorebook",
+                "book_id": "scorebook.real.1",
+                "page": 53,
+                "status": "indexed_score_anchor"
+              }
+            ]
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-006",
+          "song_id": "someday_my_prince_will_come",
+          "title": "Someday My Prince Will Come",
+          "core_form_bars": 32,
+          "form_label": "ABAC",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-008",
+          "song_id": "spring_is_here",
+          "title": "Spring Is Here",
+          "core_form_bars": 32,
+          "form_label": "AABA",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-009",
+          "song_id": "if_you_could_see_me_now",
+          "title": "If You Could See Me Now",
+          "core_form_bars": 32,
+          "form_label": "A1-A2-B-A",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-010",
+          "song_id": "nardis",
+          "title": "Nardis",
+          "core_form_bars": 32,
+          "form_label": "AABA",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [
+              "chart.standard100.nardis"
+            ],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-011",
+          "song_id": "alice_in_wonderland",
+          "title": "Alice In Wonderland",
+          "core_form_bars": 64,
+          "form_label": "AA'BA'",
+          "form_status": "notated_bar_grid_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": [
+              {
+                "kind": "scorebook",
+                "book_id": "scorebook.real.1",
+                "page": 12,
+                "status": "visual_verified"
+              }
+            ]
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-012",
+          "song_id": "how_deep_is_the_ocean",
+          "title": "How Deep Is The Ocean",
+          "core_form_bars": 32,
+          "form_label": "ABAC",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": [
+              {
+                "kind": "scorebook",
+                "book_id": "scorebook.real.3",
+                "page": 115,
+                "status": "indexed_not_yet_visual_verified"
+              }
+            ]
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-013",
+          "song_id": "when_i_fall_in_love",
+          "title": "When I Fall In Love",
+          "core_form_bars": 32,
+          "form_label": "ABAC",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-015",
+          "song_id": "israel",
+          "title": "Israel",
+          "core_form_bars": 12,
+          "form_label": "minor_blues",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": [
+              {
+                "kind": "scorebook",
+                "book_id": "scorebook.real.1",
+                "page": 240,
+                "status": "visual_verified"
+              }
+            ]
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-016",
+          "song_id": "peri_s_scope",
+          "title": "Peri's Scope",
+          "core_form_bars": null,
+          "form_label": "ABA",
+          "form_status": "section_chain_known_exact_bar_map_pending",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "section_or_form_pending"
+        },
+        {
+          "track_id": "BE-019",
+          "song_id": "come_rain_or_come_shine",
+          "title": "Come Rain or Come Shine",
+          "core_form_bars": 32,
+          "form_label": "ABAC_family",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-023",
+          "song_id": "in_your_own_sweet_way",
+          "title": "In Your Own Sweet Way [Take 1]",
+          "core_form_bars": 40,
+          "form_label": "AABAC",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-024",
+          "song_id": "re_the_person_i_knew",
+          "title": "Re: The Person I Knew",
+          "core_form_bars": null,
+          "form_label": "asymmetric_with_navigation",
+          "form_status": "exact_core_form_pending",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": []
+          },
+          "canonical_learning_status": "section_or_form_pending"
+        }
+      ]
+    },
+    {
+      "legend_id": "scott_lafaro",
+      "track_count": 3,
+      "tracks": [
+        {
+          "track_id": "BE-011",
+          "song_id": "alice_in_wonderland",
+          "title": "Alice In Wonderland",
+          "core_form_bars": 64,
+          "form_label": "AA'BA'",
+          "form_status": "notated_bar_grid_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": [
+              {
+                "kind": "scorebook",
+                "book_id": "scorebook.real.1",
+                "page": 12,
+                "status": "visual_verified"
+              }
+            ]
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-012",
+          "song_id": "how_deep_is_the_ocean",
+          "title": "How Deep Is The Ocean",
+          "core_form_bars": 32,
+          "form_label": "ABAC",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": [
+              {
+                "kind": "scorebook",
+                "book_id": "scorebook.real.3",
+                "page": 115,
+                "status": "indexed_not_yet_visual_verified"
+              }
+            ]
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        },
+        {
+          "track_id": "BE-015",
+          "song_id": "israel",
+          "title": "Israel",
+          "core_form_bars": 12,
+          "form_label": "minor_blues",
+          "form_status": "core_form_known",
+          "expected_harmony_sources": {
+            "shared_chord_chart_ids": [],
+            "scorebook_anchors": [
+              {
+                "kind": "scorebook",
+                "book_id": "scorebook.real.1",
+                "page": 240,
+                "status": "visual_verified"
+              }
+            ]
+          },
+          "canonical_learning_status": "form_metadata_available_bar_alignment_pending"
+        }
+      ]
+    }
+  ]
+}
