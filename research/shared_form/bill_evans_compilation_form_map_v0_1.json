@@ -1,0 +1,386 @@
+{
+  "schema_version": "0.1",
+  "source_id": "be_playlist_project_audio",
+  "principle": "core form + arrangement segment; do not force uncertain material into recurring grid",
+  "tracks": [
+    {
+      "track_id": "BE-001",
+      "title": "Waltz For Debby",
+      "drummer": "Paul Motian",
+      "core_form_bars": 80,
+      "form_label": "A1-B-A2",
+      "section_lengths": [
+        32,
+        16,
+        32
+      ],
+      "confidence": 0.9,
+      "exceptions": [
+        "solo sections commonly shift meter/feel",
+        "turnaround tag",
+        "coda"
+      ],
+      "status": "core_form_known_solo_bar_mapping_needs_verification"
+    },
+    {
+      "track_id": "BE-002",
+      "title": "My Foolish Heart",
+      "drummer": "Paul Motian",
+      "core_form_bars": 32,
+      "form_label": "ABAC",
+      "section_lengths": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "confidence": 0.95,
+      "status": "core_form_known"
+    },
+    {
+      "track_id": "BE-003",
+      "title": "Autumn Leaves",
+      "drummer": "Paul Motian",
+      "core_form_bars": 32,
+      "form_label": "AABC",
+      "section_lengths": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "confidence": 0.99,
+      "exceptions": [
+        "arranged intro"
+      ],
+      "status": "partial_score_alignment_exists"
+    },
+    {
+      "track_id": "BE-004",
+      "title": "Blue In Green",
+      "drummer": "Paul Motian",
+      "core_form_bars": 10,
+      "form_label": "circular",
+      "section_lengths": [],
+      "confidence": 0.99,
+      "exceptions": [
+        "intro",
+        "head may repeat multiple passes",
+        "weak/noncadential form seam"
+      ],
+      "status": "core_form_known"
+    },
+    {
+      "track_id": "BE-005",
+      "title": "Peace Piece",
+      "drummer": "none",
+      "core_form_bars": null,
+      "form_label": "ostinato_continuous_variation",
+      "section_lengths": [],
+      "confidence": 0.95,
+      "exceptions": [
+        "no recurring jazz chorus assumed"
+      ],
+      "status": "non_drum_noncyclic_reference"
+    },
+    {
+      "track_id": "BE-006",
+      "title": "Someday My Prince Will Come",
+      "drummer": "Paul Motian",
+      "core_form_bars": 32,
+      "form_label": "ABAC",
+      "section_lengths": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "confidence": 0.99,
+      "exceptions": [
+        "jazz waltz",
+        "possible intro/pedal vamp"
+      ],
+      "status": "core_form_known"
+    },
+    {
+      "track_id": "BE-007",
+      "title": "The Peacocks",
+      "drummer": "Eliot Zigmund",
+      "core_form_bars": 32,
+      "form_label": "AABA",
+      "section_lengths": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "confidence": 0.85,
+      "status": "core_form_known"
+    },
+    {
+      "track_id": "BE-008",
+      "title": "Spring Is Here",
+      "drummer": "Paul Motian",
+      "core_form_bars": 32,
+      "form_label": "AABA",
+      "section_lengths": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "confidence": 0.9,
+      "status": "core_form_known"
+    },
+    {
+      "track_id": "BE-009",
+      "title": "If You Could See Me Now",
+      "drummer": "Paul Motian",
+      "core_form_bars": 32,
+      "form_label": "A1-A2-B-A",
+      "section_lengths": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "confidence": 0.9,
+      "status": "core_form_known"
+    },
+    {
+      "track_id": "BE-010",
+      "title": "Nardis",
+      "drummer": "Paul Motian",
+      "core_form_bars": 32,
+      "form_label": "AABA",
+      "section_lengths": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "confidence": 0.99,
+      "status": "core_form_known"
+    },
+    {
+      "track_id": "BE-011",
+      "title": "Alice In Wonderland",
+      "drummer": "Paul Motian",
+      "core_form_bars": 64,
+      "form_label": "AA'BA'",
+      "section_lengths": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "confidence": 0.9,
+      "exceptions": [
+        "jazz waltz",
+        "often described as 32-bar song-form at a larger grouping level"
+      ],
+      "status": "notated_bar_grid_known"
+    },
+    {
+      "track_id": "BE-012",
+      "title": "How Deep Is The Ocean",
+      "drummer": "Paul Motian",
+      "core_form_bars": 32,
+      "form_label": "ABAC",
+      "section_lengths": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "confidence": 0.95,
+      "exceptions": [
+        "last four bars commonly tagged"
+      ],
+      "status": "core_form_known"
+    },
+    {
+      "track_id": "BE-013",
+      "title": "When I Fall In Love",
+      "drummer": "Paul Motian",
+      "core_form_bars": 32,
+      "form_label": "ABAC",
+      "section_lengths": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "confidence": 0.95,
+      "status": "core_form_known"
+    },
+    {
+      "track_id": "BE-014",
+      "title": "Isn't It Romantic",
+      "drummer": "Larry Bunker",
+      "core_form_bars": 32,
+      "form_label": "ABAC",
+      "section_lengths": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "confidence": 0.95,
+      "status": "core_form_known"
+    },
+    {
+      "track_id": "BE-015",
+      "title": "Israel",
+      "drummer": "Paul Motian",
+      "core_form_bars": 12,
+      "form_label": "minor_blues",
+      "section_lengths": [
+        4,
+        4,
+        4
+      ],
+      "confidence": 0.95,
+      "status": "core_form_known"
+    },
+    {
+      "track_id": "BE-016",
+      "title": "Peri's Scope",
+      "drummer": "Paul Motian",
+      "core_form_bars": null,
+      "form_label": "ABA",
+      "section_lengths": [],
+      "confidence": 0.75,
+      "exceptions": [
+        "solo break",
+        "open solos",
+        "D.C. al Coda",
+        "form-specific cross-rhythm near end of B"
+      ],
+      "status": "section_chain_known_exact_bar_map_pending"
+    },
+    {
+      "track_id": "BE-017",
+      "title": "B Minor Waltz",
+      "drummer": "Eliot Zigmund",
+      "core_form_bars": null,
+      "form_label": "long_form_waltz",
+      "section_lengths": [],
+      "confidence": 0.65,
+      "exceptions": [
+        "score evidence reaches at least measure 68"
+      ],
+      "status": "exact_core_form_pending"
+    },
+    {
+      "track_id": "BE-018",
+      "title": "Without A Song",
+      "drummer": "Eliot Zigmund",
+      "core_form_bars": 56,
+      "form_label": "AABA",
+      "section_lengths": [
+        16,
+        16,
+        8,
+        16
+      ],
+      "confidence": 0.95,
+      "exceptions": [
+        "late drum foreground/solo"
+      ],
+      "status": "core_form_known"
+    },
+    {
+      "track_id": "BE-019",
+      "title": "Come Rain or Come Shine",
+      "drummer": "Paul Motian",
+      "core_form_bars": 32,
+      "form_label": "ABAC_family",
+      "section_lengths": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "confidence": 0.95,
+      "exceptions": [
+        "possible short intro"
+      ],
+      "status": "core_form_known"
+    },
+    {
+      "track_id": "BE-020",
+      "title": "You Must Believe In Spring",
+      "drummer": "Eliot Zigmund",
+      "core_form_bars": 26,
+      "form_label": "AA'B",
+      "section_lengths": [
+        8,
+        8,
+        10
+      ],
+      "confidence": 0.95,
+      "status": "core_form_known_asymmetric"
+    },
+    {
+      "track_id": "BE-021",
+      "title": "Garys Theme",
+      "drummer": "Eliot Zigmund",
+      "core_form_bars": null,
+      "form_label": "sectional_ballad",
+      "section_lengths": [],
+      "confidence": 0.55,
+      "status": "chart_exists_exact_form_pending"
+    },
+    {
+      "track_id": "BE-022",
+      "title": "Some Other Time",
+      "drummer": "none",
+      "core_form_bars": 32,
+      "form_label": "ABA",
+      "section_lengths": [],
+      "confidence": 0.8,
+      "exceptions": [
+        "vocal/piano duo in compilation",
+        "verse may exist outside main refrain"
+      ],
+      "status": "non_drum_reference"
+    },
+    {
+      "track_id": "BE-023",
+      "title": "In Your Own Sweet Way [Take 1]",
+      "drummer": "Paul Motian",
+      "core_form_bars": 40,
+      "form_label": "AABAC",
+      "section_lengths": [
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "confidence": 0.95,
+      "exceptions": [
+        "head may be in 2 or 4",
+        "solos in 4",
+        "separate coda"
+      ],
+      "status": "core_form_known"
+    },
+    {
+      "track_id": "BE-024",
+      "title": "Re: The Person I Knew",
+      "drummer": "Paul Motian",
+      "core_form_bars": null,
+      "form_label": "asymmetric_with_navigation",
+      "section_lengths": [],
+      "confidence": 0.6,
+      "exceptions": [
+        "rubato intro",
+        "D.S./coda evidence",
+        "published/transcribed bar counts disagree"
+      ],
+      "status": "exact_core_form_pending"
+    }
+  ]
+}
