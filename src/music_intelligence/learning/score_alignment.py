@@ -21,13 +21,18 @@ class AlignmentStatus(str, Enum):
 
 class PerformancePhase(str, Enum):
     UNKNOWN = "unknown"
+    RUBATO_INTRO = "rubato_intro"
     INTRO = "intro"
     HEAD = "head"
     SOLO = "solo"
+    INTERLUDE = "interlude"
     BASS_FOREGROUND = "bass_foreground"
     DRUM_FOREGROUND = "drum_foreground"
     HEAD_OUT = "head_out"
     CODA = "coda"
+    OUTRO = "outro"
+    VAMP = "vamp"
+    TAG = "tag"
     ENDING = "ending"
 
 
@@ -50,6 +55,9 @@ class MusicalScoreCoordinate:
     phrase_position: str = ""
     form_role: str = ""
     navigation_state: str = ""
+    arrangement_segment: str = ""
+    arrangement_segment_index: int | None = None
+    within_core_form: bool | None = None
     confidence: float = 1.0
     provenance: tuple[str, ...] = ()
 
@@ -74,6 +82,11 @@ class MusicalScoreCoordinate:
                 raise ValueError("form_bar must lie within form_length_bars")
         if self.chorus_index is not None and self.chorus_index < 0:
             raise ValueError("chorus_index may not be negative")
+        if (
+            self.arrangement_segment_index is not None
+            and self.arrangement_segment_index < 0
+        ):
+            raise ValueError("arrangement_segment_index may not be negative")
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError("confidence must be within 0..1")
 
@@ -193,6 +206,24 @@ def same_musical_position(
     )
 
 
+def comparable_core_form_position(
+    coordinate: MusicalScoreCoordinate,
+) -> bool:
+    """Whether this coordinate is safe for repeated-core-form comparison.
+
+    Rubato intros, interludes, codas, outros, tags, vamps and special arranged
+    inserts may be musically crucial, but they should not be forced into the
+    recurring core-form bar grid unless the alignment is explicitly verified.
+    """
+    coordinate.validate()
+    if coordinate.within_core_form is False:
+        return False
+    return (
+        coordinate.form_length_bars is not None
+        and coordinate.form_bar is not None
+    )
+
+
 def same_form_relative_position(
     left: ScoreAlignedEvidence,
     right: ScoreAlignedEvidence,
@@ -210,12 +241,7 @@ def same_form_relative_position(
     b = right.alignment.coordinate
     if require_same_song and a.song_id != b.song_id:
         return False
-    if (
-        a.form_length_bars is None
-        or b.form_length_bars is None
-        or a.form_bar is None
-        or b.form_bar is None
-    ):
+    if not comparable_core_form_position(a) or not comparable_core_form_position(b):
         return False
     return (
         a.form_length_bars == b.form_length_bars
