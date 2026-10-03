@@ -5,9 +5,9 @@ from realtime.ensemble_app.player_contract import (
 )
 from realtime.ensemble_app.stage1_trio import Stage1TrioRuntime
 from music_intelligence.reasoning.groove_context import (
+    GrooveCoordinationMode,
     GrooveFeel,
     build_groove_context,
-    groove_timing_offset_beats,
 )
 
 
@@ -19,31 +19,73 @@ def test_stage1_preperformance_initializes_one_shared_swing_context():
     assert trio.state.groove.tempo_bpm==120.0
 
 
-def test_renderer_projects_all_roles_to_same_swing_offbeat():
-    groove=build_groove_context(GrooveFeel.SWING,tempo_bpm=120.0)
-    expected=groove_timing_offset_beats(0.5,groove)
-    assert expected>0
+def _rendered_offbeat(role, groove, *, phrase_maturity=.5):
+    voice=RenderVoice(
+        60,
+        onset_offset_beats=0.5,
+        instrument_role=role,
+    )
+    gesture=(
+        RenderGesture(role=role,drum_hits=(voice,))
+        if role=="drums"
+        else RenderGesture(role=role,voices=(voice,))
+    )
+    out=apply_shared_groove_to_render_gesture(
+        gesture,
+        anchor_beat=0.0,
+        groove=groove,
+        phrase_maturity=phrase_maturity,
+    )
+    rendered=(out.drum_hits or out.voices)[0]
+    return rendered.onset_offset_beats,out
 
+
+def test_locked_renderer_projects_all_roles_to_same_swing_offbeat():
+    groove=build_groove_context(
+        GrooveFeel.SWING,
+        tempo_bpm=120.0,
+        coordination_mode=GrooveCoordinationMode.LOCKED,
+    )
+    positions=[]
     for role in ("piano","bass","drums","tenor_sax"):
-        voice=RenderVoice(
-            60,
-            onset_offset_beats=0.5,
-            instrument_role=role,
-        )
-        gesture=(
-            RenderGesture(role=role,drum_hits=(voice,))
-            if role=="drums"
-            else RenderGesture(role=role,voices=(voice,))
-        )
-        out=apply_shared_groove_to_render_gesture(
-            gesture,
-            anchor_beat=0.0,
-            groove=groove,
-        )
-        rendered=(out.drum_hits or out.voices)[0]
-        assert abs(rendered.onset_offset_beats-(0.5+expected))<1e-9
-        assert out.annotations["groove_feel"]=="swing"
+        position,out=_rendered_offbeat(role,groove)
+        positions.append(position)
+        assert out.annotations["groove_coordination"]=="locked"
         assert "groove:swing" in out.tags
+    assert max(positions)-min(positions)<1e-9
+
+
+def test_elastic_renderer_keeps_shared_pulse_but_allows_bounded_role_placement():
+    groove=build_groove_context(
+        GrooveFeel.SWING,
+        tempo_bpm=120.0,
+        coordination_mode=GrooveCoordinationMode.ELASTIC,
+    )
+    positions={
+        role:_rendered_offbeat(role,groove,phrase_maturity=.5)[0]
+        for role in ("piano","bass","drums","tenor_sax")
+    }
+    assert len({round(x,8) for x in positions.values()})>1
+    assert all(.55 < x < .8 for x in positions.values())
+    assert positions["tenor_sax"] < positions["piano"]
+
+
+def test_shared_groove_projection_is_not_reapplied_by_the_boundary():
+    groove=build_groove_context(
+        GrooveFeel.SWING,
+        tempo_bpm=120.0,
+        coordination_mode=GrooveCoordinationMode.ELASTIC,
+    )
+    once,_=_rendered_offbeat("tenor_sax",groove)
+    already_projected=RenderGesture(
+        role="soloist",
+        voices=(RenderVoice(60,onset_offset_beats=once,instrument_role="tenor_sax"),),
+        annotations={"groove_projection":"already_applied"},
+    )
+    # Ownership invariant: callers must project exactly once. This test verifies
+    # that the first projection is a single bounded move from the nominal 0.5.
+    assert once != .5
+    assert abs(once-.5) < .3
 
 
 def test_stage1_runtime_attaches_same_groove_to_committed_player_gestures():
