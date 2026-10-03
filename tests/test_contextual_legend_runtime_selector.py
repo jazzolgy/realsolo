@@ -1,6 +1,9 @@
-from music_intelligence.learning.engine import LearningPriorView
-from music_intelligence.learning.representation import LearningDomain
+from music_intelligence.learning.engine import LearningPriorView, SharedLearningEngine
+from music_intelligence.learning.representation import LearningDomain, LearningArtifact
 from music_intelligence.reasoning.hierarchical_priors import HierarchicalPriorSet
+from music_intelligence.reasoning.runtime_prior_bundle import (
+    hierarchical_priors_from_learning_engine,
+)
 from music_intelligence.reasoning.runtime_legend_selector import (
     legend_choice_for,
     select_runtime_legends,
@@ -85,3 +88,38 @@ def test_explicit_lafaro_override_reaches_bass_runtime_context():
     result=_tick(quartet)
     bass=next(d for d in result.decisions if d.player_id=="bass")
     assert "player/bass:sequential_runner" in bass.intent.provenance
+
+
+
+def test_evidence_only_learning_does_not_enter_audible_runtime_prior():
+    engine=SharedLearningEngine()
+    artifact=LearningArtifact(
+        artifact_id="evidence-only",
+        source_id="research-source",
+        domain=LearningDomain.GENRE,
+        feature_schema="policy.v1",
+        features={"policy.continuity":.92},
+        confidence=.9,
+        provenance=("research_evidence_only",),
+    )
+    engine.ingest_artifacts((artifact,),learn=False,study_as_evidence=True)
+    assert engine.evidence_prior(LearningDomain.GENRE).observations==1
+    assert hierarchical_priors_from_learning_engine(engine) is None
+
+
+def test_promoted_learning_enters_audible_runtime_prior():
+    engine=SharedLearningEngine()
+    artifact=LearningArtifact(
+        artifact_id="promoted",
+        source_id="authorized-source",
+        domain=LearningDomain.GENRE,
+        feature_schema="policy.v1",
+        features={"policy.continuity":.92},
+        confidence=.9,
+        provenance=("training_authorized",),
+    )
+    engine.ingest_artifacts((artifact,),learn=True,study_as_evidence=True)
+    priors=hierarchical_priors_from_learning_engine(engine)
+    assert priors is not None
+    assert priors.genre_prior is not None
+    assert priors.genre_prior.numeric_features["policy.continuity"]==.92
