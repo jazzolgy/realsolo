@@ -42,7 +42,11 @@ from .native_deciders import build_native_quartet_runtime
 from .stage1_piano import _resolved_material
 from .stage1_trio import _affordance, _chart_frame
 from .stage1_music import parse_chord
-from music_intelligence.corpus import ScoreContextSnapshot, ScorePosition
+from music_intelligence.corpus import (
+    ScoreContextSnapshot,
+    ScorePosition,
+    CanonicalMusicalCoordinate,
+)
 
 
 @dataclass
@@ -228,9 +232,26 @@ class Stage1QuartetRuntime:
         # Autumn Leaves G minor and its relative Bb-major region share this
         # seven-note collection; this is harmonic/form context, not head melody.
         sax_local_key=frozenset({7,9,10,0,2,3,5})
+        section_bar_indices=[
+            i for i,b in enumerate(context.get("song_chart").bars)
+            if b.section==section
+        ] if context.get("song_chart") is not None else []
+        measure_in_section=(
+            section_bar_indices.index(bar_index)+1
+            if bar_index in section_bar_indices else ((bar_index%16)+1)
+        )
+        canonical_coordinate=CanonicalMusicalCoordinate(
+            realchord_id=96,
+            section=section or "unknown",
+            measure_in_section=measure_in_section,
+            measure_in_form=bar_index+1,
+            beat=beat_in_bar,
+            chorus=int(context.get("chorus_index",0)),
+        )
+
         sax_score_snapshot=ScoreContextSnapshot(
             book_id="canonical_repertoire",
-            song_id="autumn_leaves_g_minor_jam",
+            song_id="realchord:96",
             position=ScorePosition(
                 page=1,
                 bar=bar_index+1,
@@ -415,7 +436,8 @@ class Stage1QuartetRuntime:
                 "sax_target_pitch_classes": sax_targets,
                 "sax_local_key_pitch_classes": sax_local_key,
                 "decision_step_beats": .5,
-                "song_id": "autumn_leaves_g_minor_jam",
+                "song_id": "realchord:96",
+                "canonical_coordinate": canonical_coordinate,
                 "performance_convention": default_performance_convention("jazz"),
             },
         )
