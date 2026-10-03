@@ -38,6 +38,12 @@ class AudioObservation:
     onset: bool = False
     pitch_hz: float | None = None
     pitch_confidence: float = 0.0
+    spectral_centroid_hz: float | None = None
+    spectral_flatness: float | None = None
+    zero_crossing_rate: float | None = None
+    low_energy_ratio: float | None = None
+    mid_energy_ratio: float | None = None
+    high_energy_ratio: float | None = None
     kind: ObservationKind = ObservationKind.AUDIO_FRAME
 
     @property
