@@ -14,6 +14,7 @@ from music_intelligence.legends.interfaces import (
     VocabularyQuery,
     VocabularyUseType,
 )
+from music_intelligence.vocabulary.usage_policy import choose_runtime_vocabulary_use
 from .runtime_legend_resources import legend_runtime_resources
 
 
@@ -43,6 +44,12 @@ SHARED_VOCABULARY_PROVIDER=CompositeVocabularyProvider()
 
 
 @dataclass(frozen=True)
+class RuntimeVocabularySelection:
+    item: VocabularyMemoryItem
+    use_type: VocabularyUseType
+
+
+@dataclass(frozen=True)
 class SharedVocabularyProjection:
     player_id: str
     target_instrument: str
@@ -62,6 +69,31 @@ class SharedVocabularyProjection:
 
     def items_for_domain(self,domain: LegendDomain) -> tuple[VocabularyMemoryItem,...]:
         return tuple(x for x in self.items if not x.domains or domain in x.domains)
+
+    def runtime_selections(
+        self,
+        *,
+        opportunity_index: int,
+        allowed_uses: frozenset[VocabularyUseType]=frozenset(VocabularyUseType),
+    ) -> tuple[RuntimeVocabularySelection,...]:
+        """Project retrieved items through the one canonical reuse policy."""
+        request=VocabularyQuery(
+            legend_id="shared",
+            target_instrument=self.target_instrument,
+            allowed_uses=allowed_uses,
+            limit=max(1,len(self.items)),
+        )
+        return tuple(
+            RuntimeVocabularySelection(
+                item,
+                choose_runtime_vocabulary_use(
+                    item,
+                    request,
+                    opportunity_index=opportunity_index+offset,
+                ),
+            )
+            for offset,item in enumerate(self.items)
+        )
 
 
 def project_shared_vocabulary(
