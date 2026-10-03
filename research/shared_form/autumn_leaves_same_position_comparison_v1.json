@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "song_id": "autumn_leaves",
+  "comparison_axis": "same form bar across performance phase/chorus",
+  "available_pairs": [
+    {
+      "head": {
+        "chorus": 0,
+        "section": "A1",
+        "form_bars": [
+          1,
+          8
+        ]
+      },
+      "solo": {
+        "chorus": 1,
+        "section": "A1",
+        "form_bars": [
+          1,
+          8
+        ]
+      }
+    },
+    {
+      "head": {
+        "chorus": 0,
+        "section": "A2",
+        "form_bars": [
+          9,
+          16
+        ]
+      },
+      "solo": {
+        "chorus": 1,
+        "section": "A2",
+        "form_bars": [
+          9,
+          16
+        ]
+      }
+    },
+    {
+      "head": {
+        "chorus": 0,
+        "section": "B",
+        "form_bars": [
+          17,
+          24
+        ]
+      },
+      "solo": {
+        "chorus": 1,
+        "section": "B",
+        "form_bars": [
+          17,
+          24
+        ]
+      }
+    },
+    {
+      "head": {
+        "chorus": 0,
+        "section": "C",
+        "form_bars": [
+          25,
+          32
+        ]
+      },
+      "solo": {
+        "chorus": 1,
+        "section": "C",
+        "form_bars": [
+          25,
+          32
+        ]
+      }
+    }
+  ],
+  "comparison_features": [
+    "instrument_role",
+    "foreground_owner",
+    "density",
+    "attack_profile",
+    "note_body",
+    "response_gap",
+    "motif_relation",
+    "boundary_preparation",
+    "expected_vs_observed_harmony"
+  ],
+  "restriction": "Only features attributable from aligned event/window evidence may populate comparisons. Whole-track MIR summaries cannot be assigned to individual bars."
+}
