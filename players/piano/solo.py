@@ -28,6 +28,12 @@ from music_intelligence.reasoning.contextual_prior_gating import (
     gated_prior_set,
     improvisation_gating_context,
 )
+from music_intelligence.reasoning.decision_context_log import (
+    CandidateAudit,
+    DecisionContextLog,
+    append_ranked_decision,
+)
+from music_intelligence.reasoning.ensemble_state import EnsembleState
 
 from .bebop_phrase_space import BebopPhraseSpaceEvidence, PhraseSpaceType
 from .bebop_complementarity import (
@@ -582,9 +588,42 @@ def perform_one_piano_solo_event(
     candidates: Sequence[CandidateEvent],
     context: PianoSoloContext,
     state: PianoSoloState,
+    *,
+    decision_log: DecisionContextLog | None = None,
+    ensemble_state: EnsembleState | None = None,
+    player_id: str = "piano",
 ) -> CandidateScore:
     """Choose and commit one immediate solo event, then the system must re-listen."""
     plan.validate_for_improvisation()
-    chosen = evaluator.choose_immediate(candidates, context)
+    scored = tuple(evaluator.evaluate(candidate, context) for candidate in candidates)
+    chosen = max(scored, key=lambda item: item.total)
     state.memory.commit(chosen.candidate)
+
+    audits = tuple(
+        CandidateAudit(
+            candidate_id=f"solo:{index}",
+            total_score=item.total,
+            components=dict(item.components),
+            tags=tuple(sorted(item.candidate.tags)),
+            descriptor={
+                "pitch_midi": item.candidate.pitch_midi,
+                "duration_beats": item.candidate.duration_beats,
+                "onset_offset_beats": item.candidate.onset_offset_beats,
+                "source_family": item.candidate.source_family,
+            },
+        )
+        for index, item in enumerate(scored)
+    )
+    selected_index = scored.index(chosen)
+    append_ranked_decision(
+        decision_log,
+        player_id=player_id,
+        decision_kind="solo",
+        ensemble_state=ensemble_state,
+        candidates=audits,
+        selected_candidate_id=f"solo:{selected_index}",
+        selected_score=chosen.total,
+        reasons=chosen.reasons,
+        provenance=("players.piano.solo",),
+    )
     return chosen

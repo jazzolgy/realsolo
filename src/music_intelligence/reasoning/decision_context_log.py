@@ -148,3 +148,60 @@ def extract_prior_components(components: Mapping[str, float]) -> dict[str, float
         for key,value in components.items()
         if key.startswith(prefixes)
     }
+
+
+def append_ranked_decision(
+    log: DecisionContextLog | None,
+    *,
+    player_id: str,
+    decision_kind: str,
+    ensemble_state: EnsembleState | None,
+    candidates: Sequence[CandidateAudit],
+    selected_candidate_id: str,
+    selected_score: float,
+    contextual_gate_weights: Mapping[str, float] | None = None,
+    reasons: Sequence[str] = (),
+    provenance: Sequence[str] = (),
+) -> DecisionRecord | None:
+    """Append one generic player decision without importing player internals.
+
+    Player modules adapt their own candidate/score types into CandidateAudit.
+    Shared Core stores only instrument-neutral audit data.
+    """
+
+    if log is None:
+        return None
+    context = (
+        snapshot_ensemble_context(ensemble_state)
+        if ensemble_state is not None
+        else None
+    )
+    decision_id = (
+        f"{player_id}:{decision_kind}:"
+        f"{context.generation if context is not None else 'na'}:"
+        f"{len(log.decisions)}"
+    )
+    candidate_tuple = tuple(candidates)
+    selected = next(
+        (candidate for candidate in candidate_tuple
+         if candidate.candidate_id == selected_candidate_id),
+        None,
+    )
+    if selected is None:
+        raise ValueError("selected candidate audit entry is required")
+
+    record = DecisionRecord(
+        decision_id=decision_id,
+        player_id=player_id,
+        decision_kind=decision_kind,
+        context=context,
+        candidates=candidate_tuple,
+        selected_candidate_id=selected_candidate_id,
+        selected_score=selected_score,
+        prior_contributions=extract_prior_components(selected.components),
+        contextual_gate_weights=dict(contextual_gate_weights or {}),
+        reasons=tuple(reasons),
+        provenance=tuple(provenance),
+    )
+    log.append_decision(record)
+    return record
