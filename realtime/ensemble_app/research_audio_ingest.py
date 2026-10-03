@@ -18,7 +18,11 @@ from .instrument_role_detector import (
     AcousticDescriptorFrame,
     TemporalContextCorrector,
 )
-from .learned_instrument_adapter import HybridInstrumentRoleDetector
+from .learned_instrument_adapter import (
+    HybridInstrumentRoleDetector,
+    LearnedInstrumentBackend,
+    LearnedInstrumentRoleAdapter,
+)
 from .musical_context_corrector import MusicalContextCorrector, MusicalContextFrame
 from music_intelligence.learning.shared_audio_intelligence import (
     DetectorEvidence,
@@ -28,10 +32,17 @@ from music_intelligence.learning.shared_audio_intelligence import (
 
 
 class ResearchAudioIngestor:
-    def __init__(self, *, evidence_root: Path | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        evidence_root: Path | None = None,
+        learned_instrument_backend: LearnedInstrumentBackend | None = None,
+    ) -> None:
         self.evidence_root=evidence_root or (default_research_state_root()/"evidence")
         self._extractors: dict[tuple[str,int],AudioFeatureExtractor]={}
-        self._detector=HybridInstrumentRoleDetector()
+        self._detector=HybridInstrumentRoleDetector(
+            learned=(LearnedInstrumentRoleAdapter(learned_instrument_backend) if learned_instrument_backend is not None else None)
+        )
         self._context_correctors: dict[str,TemporalContextCorrector]={}
         self._musical_context_correctors: dict[str,MusicalContextCorrector]={}
         self._beat_trackers: dict[str,AdaptiveBeatTracker]={}
@@ -95,7 +106,7 @@ class ResearchAudioIngestor:
             provenance=(
                 "browser_user_authorized_capture",
                 "realtime_audio_feature_extractor",
-                "baseline_instrument_role_detector",
+                "hybrid_instrument_role_detector",
                 "temporal_context_corrector",
                 "beat_phrase_context_corrector",
             ),
@@ -120,7 +131,7 @@ class ResearchAudioIngestor:
             "provenance":[
                 "browser_user_authorized_capture",
                 "realtime_audio_feature_extractor",
-                "baseline_instrument_role_detector",
+                "hybrid_instrument_role_detector",
                 "temporal_context_corrector",
                 "shared_audio_intelligence",
             ],
