@@ -176,3 +176,13 @@ def improvisation_gating_context(
         written_material_priority=0.0,
         structural_constraint=structural_constraint,
     )
+
+
+def domain_prior_gate_scale(context: PriorGatingContext) -> float:
+    """Return a 0..1 attenuation scale for a standalone domain prior."""
+
+    result = derive_prior_gate(
+        PriorLayerWeights(domain=1.0, genre=0.0, style=0.0, legend=0.0),
+        context,
+    )
+    return max(0.0, min(1.0, result.weights.domain))
