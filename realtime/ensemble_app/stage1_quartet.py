@@ -9,6 +9,9 @@ from music_intelligence.reasoning.ensemble_state import (
     TransportState,
 )
 from music_intelligence.reasoning.legend_style_core import MusicalContextVector
+from music_intelligence.reasoning.performance_convention import (
+    default_performance_convention,
+)
 from music_intelligence.reasoning.groove_context import (
     GrooveCoordinationMode,
     GrooveFeel,
@@ -205,6 +208,7 @@ class Stage1QuartetRuntime:
                 "time_feel": groove.feel.value,
                 "sax_allow_improvisation": True,
                 "song_id": "stage1_chart",
+                "performance_convention": default_performance_convention("jazz"),
             },
         )
         self.state = result.state

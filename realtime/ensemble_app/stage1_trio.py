@@ -15,6 +15,9 @@ from music_intelligence.reasoning.ensemble_state import (
     TransportState,
 )
 from music_intelligence.reasoning.legend_style_core import MusicalContextVector
+from music_intelligence.reasoning.performance_convention import (
+    default_performance_convention,
+)
 from music_intelligence.reasoning.groove_context import GrooveFeel, build_groove_context
 from players.piano import PianoVoicingRequest
 
@@ -232,6 +235,7 @@ class Stage1TrioRuntime:
                 "groove_context": groove,
                 "time_feel": groove.feel.value,
                 "bass_ghost_only": bass_ghost_only,
+                "performance_convention": default_performance_convention("jazz"),
             },
         )
         self.state = result.state

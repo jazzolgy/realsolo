@@ -56,3 +56,29 @@ Cross-legend comparison must separate:
 4. LegendProfile
 5. RecordingContextProfile
 6. Current Ensemble State
+
+
+## Default jazz performance convention
+
+Unless an explicit user/session/arrangement instruction or written score/chart
+instruction says otherwise, jazz performance uses the shared
+`JAZZ_JAM_SESSION` convention.
+
+Precedence:
+
+```text
+explicit user/session instruction
+> written score/chart instruction
+> jazz jam-session convention
+> genre/style/legend soft priors
+> player realization
+```
+
+The convention is owned by Shared Music Intelligence because it coordinates
+multiple players. It must not be duplicated independently in Piano, Bass,
+Drums, Sax, or Realtime.
+
+The default means shared form, repeated form during improvisation, foreground
+leadership with accompaniment yielding, rhythm-section form/pulse orientation,
+and phrase/form-boundary handoff cues. It does not invent a fixed solo order,
+number of choruses, trading scheme, intro, tag, or ending when none is given.

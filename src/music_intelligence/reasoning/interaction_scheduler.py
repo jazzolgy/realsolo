@@ -22,6 +22,10 @@ from .ensemble_state import (
     PlayerRole,
     player_view,
 )
+from .performance_convention import (
+    PerformanceConvention,
+    PerformanceConventionMode,
+)
 
 
 @dataclass(frozen=True)
@@ -112,6 +116,8 @@ def _strong_other_leader(
 def schedule_player(
     state: EnsembleState,
     player_id: str,
+    *,
+    convention: PerformanceConvention | None = None,
 ) -> InteractionDirective:
     """Return a coordination directive for one player's next immediate action."""
     state.validate()
@@ -130,6 +136,12 @@ def schedule_player(
     reasons: list[str] = []
     tags: set[str] = set()
     targets: tuple[str, ...] = ()
+
+    if convention is not None:
+        convention.validate()
+        if convention.mode is PerformanceConventionMode.JAZZ_JAM_SESSION:
+            tags.add("performance_convention:jazz_jam_session")
+            reasons.append("shared jazz jam-session convention")
 
     # Phrase handoff is more specific than general "someone else is leading".
     if ending is not None:
@@ -249,7 +261,11 @@ def schedule_player(
     return directive
 
 
-def schedule_ensemble(state: EnsembleState) -> tuple[InteractionDirective, ...]:
+def schedule_ensemble(
+    state: EnsembleState,
+    *,
+    convention: PerformanceConvention | None = None,
+) -> tuple[InteractionDirective, ...]:
     """Compute simultaneous coordination advice from one immutable snapshot.
 
     All directives are derived from the same state generation. They should be
@@ -258,7 +274,7 @@ def schedule_ensemble(state: EnsembleState) -> tuple[InteractionDirective, ...]:
     """
     state.validate()
     return tuple(
-        schedule_player(state, p.player_id)
+        schedule_player(state, p.player_id, convention=convention)
         for p in state.active_players()
     )
 
