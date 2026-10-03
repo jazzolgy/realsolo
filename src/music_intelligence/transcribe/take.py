@@ -138,20 +138,53 @@ def _materialize_voice_rests(
     end: Fraction | None = None,
     bar_length: Fraction = Fraction(4),
 ) -> tuple[ScoreEvent, ...]:
-    """Insert readable rests in gaps, split cleanly at measure boundaries."""
+    """Insert readable rests without filling inactive secondary voices forever.
+
+    A single-voice staff is filled from the requested take start/end.  When a
+    staff contains multiple logical voices, each voice receives rests only
+    within the bar range where that voice is active.  This keeps polyphonic
+    notation explicit where needed without printing redundant secondary-voice
+    bar rests through unrelated measures.
+    """
 
     groups: dict[tuple[str, str, str], list[ScoreEvent]] = {}
+    voices_by_staff: dict[tuple[str, str], set[str]] = {}
     for event in events:
         groups.setdefault(
             (event.part_id, event.staff_id, event.voice_id),
             [],
         ).append(event)
+        voices_by_staff.setdefault(
+            (event.part_id, event.staff_id),
+            set(),
+        ).add(event.voice_id)
 
     out: list[ScoreEvent] = []
     rest_counter = 0
     for (part_id, staff_id, voice_id), voice_events in groups.items():
         voice_events.sort(key=lambda event: (event.span.onset, event.event_id))
-        cursor = start
+        polyphonic_staff = len(voices_by_staff[(part_id, staff_id)]) > 1
+
+        if polyphonic_staff:
+            first_onset = voice_events[0].span.onset
+            last_offset = max(event.span.offset for event in voice_events)
+            voice_start = max(
+                start,
+                (first_onset // bar_length) * bar_length,
+            )
+            voice_end = (
+                min(
+                    end,
+                    (last_offset // bar_length + 1) * bar_length,
+                )
+                if end is not None
+                else (last_offset // bar_length + 1) * bar_length
+            )
+        else:
+            voice_start = start
+            voice_end = end
+
+        cursor = voice_start
         seen_groups: set[str] = set()
         for event in voice_events:
             chord_member = (
@@ -175,13 +208,13 @@ def _materialize_voice_rests(
             if not chord_member:
                 cursor = max(cursor, event.span.offset)
 
-        if end is not None and end > cursor:
+        if voice_end is not None and voice_end > cursor:
             rests, rest_counter = _rest_events_for_gap(
                 part_id=part_id,
                 staff_id=staff_id,
                 voice_id=voice_id,
                 start=cursor,
-                end=end,
+                end=voice_end,
                 bar_length=bar_length,
                 rest_counter=rest_counter,
             )
