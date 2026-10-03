@@ -356,9 +356,15 @@ def extract_learning_artifacts(
     canonical=[]
     for artifact in out:
         features=dict(artifact.features)
-        features["metric_form_context"]=_artifact_metric_form_context(data,artifact)
+        metric_context=_artifact_metric_form_context(data,artifact)
+        features["metric_form_context"]=metric_context
+        # Position is part of learning identity: the same cell in A1 m.2 and
+        # bridge m.18 must remain distinct observations while still sharing the
+        # same interval/rhythm schema.
+        position_digest=sha256(repr(metric_context).encode()).hexdigest()[:10]
         upgraded=replace(
             artifact,
+            artifact_id=f"{artifact.artifact_id}:pos:{position_digest}",
             features=features,
             provenance=artifact.provenance+("metric_form_learning_address",),
         )
