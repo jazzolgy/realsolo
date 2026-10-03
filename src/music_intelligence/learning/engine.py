@@ -28,6 +28,7 @@ class DomainLearningState:
     form_context_observations:dict[str,int]=field(default_factory=dict)
     form_context_numeric_means:dict[str,dict[str,float]]=field(default_factory=dict)
     form_context_numeric_counts:dict[str,dict[str,int]]=field(default_factory=dict)
+    unresolved_metric_observations:int=0
 
     @staticmethod
     def _form_context_key(a:LearningArtifact)->str|None:
@@ -47,7 +48,15 @@ class DomainLearningState:
         return f"form={form_id}|section={section}|measure={measure}|beat={beat_text}"
 
     def observe(self,a:LearningArtifact)->None:
-        a.validate();self.observations+=1
+        a.validate()
+        ctx=a.features.get("metric_form_context")
+        if isinstance(ctx,Mapping) and ctx.get("resolved_metric") is False:
+            # Keep the artifact in the evidence store, but do not let an
+            # unlocated event change musical priors. Re-analysis can later emit
+            # a position-specific artifact with a different identity.
+            self.unresolved_metric_observations+=1
+            return
+        self.observations+=1
         for k,v in a.features.items():
             if isinstance(v,(int,float)):
                 n=self.numeric_counts.get(k,0)+1
@@ -86,6 +95,7 @@ class LearningPriorView:
     observations:int
     form_context_observations:Mapping[str,int]=field(default_factory=dict)
     form_context_numeric_features:Mapping[str,Mapping[str,float]]=field(default_factory=dict)
+    unresolved_metric_observations:int=0
 
     def feature_bias(self,feature:str,*,center:float=0.5,scale:float=1.0)->float:
         learned=self.numeric_features.get(feature)
@@ -163,6 +173,7 @@ class SharedLearningEngine:
             s.observations,
             dict(s.form_context_observations),
             {k:dict(v) for k,v in s.form_context_numeric_means.items()},
+            s.unresolved_metric_observations,
         )
 
     def prior(self,domain:LearningDomain)->LearningPriorView:
