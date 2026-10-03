@@ -151,3 +151,31 @@ than fabricated from another instrument.
 
 User direction can override research priority, but the default discovery policy is
 autonomous and gap-driven.
+
+
+## Baseline research instrument set
+
+The initial research taxonomy is not limited to the currently executable trio/solo
+players. The following instruments are first-class baseline research targets:
+
+- piano
+- acoustic/upright bass
+- drums
+- saxophone
+- trumpet
+- guitar
+- electric bass
+- vocal
+- flute
+
+The five newly seeded targets (trumpet, guitar, electric bass, vocal, flute) enter
+at the **research/recognition** layer immediately. Dedicated generation,
+instrument-specific feasibility, articulation grammar, rendering, and player
+implementation may mature independently.
+
+Acoustic bass and electric bass remain distinct instrument identities because their
+physical constraints, articulation vocabulary, groove grammar, sustain behavior,
+and role priors can differ substantially.
+
+The catalog remains open-set. Instruments outside this baseline can still be
+discovered and promoted from repeated cross-source evidence.
