@@ -50,6 +50,7 @@ class StemMetadataInstrumentDetector:
         onsets: Sequence[OnsetDetection],
         pitches: Sequence[PitchDetection] = (),
         unpitched: Sequence[UnpitchedDetection] = (),
+        timbre=(),
     ) -> Sequence[InstrumentDetection]:
         stem_label = str(source.metadata.get("stem_label", "")).strip().lower()
         if not stem_label:
