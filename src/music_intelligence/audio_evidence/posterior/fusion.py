@@ -17,9 +17,17 @@ def _normalize(values: Mapping[str, float]) -> dict[str, float]:
 
 
 @dataclass(frozen=True)
+class AppliedContextFactor:
+    factor_id: str
+    source: str
+    weight: float
+
+
+@dataclass(frozen=True)
 class PosteriorRevision:
     factor_ids: tuple[str, ...]
     reason: str
+    applied_factors: tuple[AppliedContextFactor, ...] = ()
     provenance: tuple[str, ...] = ()
 
 
@@ -65,6 +73,7 @@ class BoundedContextPosterior:
 
         shifts = {key: 0.0 for key in prior}
         used: list[str] = []
+        applied_factors: list[AppliedContextFactor] = []
         for factor in factors:
             factor.validate()
             overlapping = [key for key in prior if key in factor.likelihoods]
@@ -77,6 +86,13 @@ class BoundedContextPosterior:
                     math.log(float(factor.likelihoods[key])) - center
                 )
             used.append(factor.factor_id)
+            applied_factors.append(
+                AppliedContextFactor(
+                    factor_id=factor.factor_id,
+                    source=factor.source,
+                    weight=factor.weight,
+                )
+            )
 
         clipped = {
             key: max(
@@ -99,6 +115,7 @@ class BoundedContextPosterior:
             revision = PosteriorRevision(
                 factor_ids=tuple(used),
                 reason="bounded context adjustment of raw instrument probabilities",
+                applied_factors=tuple(applied_factors),
                 provenance=("audio-evidence:bounded-context-posterior",),
             )
 
