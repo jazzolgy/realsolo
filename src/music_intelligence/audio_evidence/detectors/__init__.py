@@ -1,5 +1,10 @@
 """Detector interfaces and model-independent composition."""
 from .acoustic_instrument_prior import AcousticInstrumentPriorDetector
+from .audioset_prior import (
+    AudioSetFrameScores,
+    AudioSetInstrumentPriorDetector,
+    AudioSetTagBackend,
+)
 from .base import AudioObservationDetector
 from .composite import CompositeObservationDetector
 from .demucs_adapter import DemucsCLISeparator
@@ -33,9 +38,13 @@ from .librosa_baseline import (
 from .separation import SeparatedSource, SourceSeparator
 from .stem_prior import StemMetadataInstrumentDetector
 from .torchscript_instrument import TorchScriptInstrumentBackend
+from .yamnet_backend import YAMNetAudioSetBackend
 
 __all__ = [
     "AcousticInstrumentPriorDetector",
+    "AudioSetFrameScores",
+    "AudioSetInstrumentPriorDetector",
+    "AudioSetTagBackend",
     "AudioObservationDetector",
     "CompositeObservationDetector",
     "DemucsCLISeparator",
@@ -64,4 +73,5 @@ __all__ = [
     "TimbreDetector",
     "UnpitchedDetection",
     "UnpitchedDetector",
+    "YAMNetAudioSetBackend",
 ]
