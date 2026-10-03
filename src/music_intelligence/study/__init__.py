@@ -2,6 +2,7 @@
 
 from .audio import AudioWindowFeatures, stream_audio_windows
 from .session import ManualFormClock, StudySession, StudySessionSummary
+from .alignment import ResearchAlignmentClock, load_alignment_clock
 
 __all__=[
     "AudioWindowFeatures",
@@ -9,4 +10,6 @@ __all__=[
     "ManualFormClock",
     "StudySession",
     "StudySessionSummary",
+    "ResearchAlignmentClock",
+    "load_alignment_clock",
 ]
