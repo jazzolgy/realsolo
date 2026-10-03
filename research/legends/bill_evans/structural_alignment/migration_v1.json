@@ -1,0 +1,195 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "bill_evans",
+  "source_id": "be_playlist_project_audio",
+  "rule": "absolute time is provenance; structural coordinates are canonical",
+  "track_migration_policy": "all 24 tracks retained; only verified structural windows are learning-aligned",
+  "aligned_spans": [
+    {
+      "id": "BE003_head_A1",
+      "abs_s": [
+        716,
+        725.5
+      ],
+      "track_s": [
+        8,
+        17.5
+      ],
+      "song_id": "autumn_leaves",
+      "phase": "head",
+      "chorus_index": 0,
+      "section": "A1",
+      "form_length_bars": 32,
+      "form_bars": [
+        1,
+        8
+      ],
+      "confidence": 0.88
+    },
+    {
+      "id": "BE003_head_A2",
+      "abs_s": [
+        725.5,
+        735
+      ],
+      "track_s": [
+        17.5,
+        27
+      ],
+      "song_id": "autumn_leaves",
+      "phase": "head",
+      "chorus_index": 0,
+      "section": "A2",
+      "form_length_bars": 32,
+      "form_bars": [
+        9,
+        16
+      ],
+      "confidence": 0.82
+    },
+    {
+      "id": "BE003_head_B",
+      "abs_s": [
+        735,
+        744.5
+      ],
+      "track_s": [
+        27,
+        36.5
+      ],
+      "song_id": "autumn_leaves",
+      "phase": "head",
+      "chorus_index": 0,
+      "section": "B",
+      "form_length_bars": 32,
+      "form_bars": [
+        17,
+        24
+      ],
+      "confidence": 0.9
+    },
+    {
+      "id": "BE003_head_C",
+      "abs_s": [
+        744.5,
+        754
+      ],
+      "track_s": [
+        36.5,
+        46
+      ],
+      "song_id": "autumn_leaves",
+      "phase": "head",
+      "chorus_index": 0,
+      "section": "C",
+      "form_length_bars": 32,
+      "form_bars": [
+        25,
+        32
+      ],
+      "confidence": 0.78
+    },
+    {
+      "id": "BE003_piano_solo1_A1",
+      "abs_s": [
+        828,
+        837.5
+      ],
+      "track_s": [
+        120,
+        129.5
+      ],
+      "song_id": "autumn_leaves",
+      "phase": "solo",
+      "chorus_index": 1,
+      "section": "A1",
+      "form_length_bars": 32,
+      "form_bars": [
+        1,
+        8
+      ],
+      "confidence": 0.86
+    },
+    {
+      "id": "BE003_piano_solo1_A2",
+      "abs_s": [
+        837.5,
+        847
+      ],
+      "track_s": [
+        129.5,
+        139
+      ],
+      "song_id": "autumn_leaves",
+      "phase": "solo",
+      "chorus_index": 1,
+      "section": "A2",
+      "form_length_bars": 32,
+      "form_bars": [
+        9,
+        16
+      ],
+      "confidence": 0.55
+    },
+    {
+      "id": "BE003_piano_solo1_B",
+      "abs_s": [
+        847,
+        856.5
+      ],
+      "track_s": [
+        139,
+        148.5
+      ],
+      "song_id": "autumn_leaves",
+      "phase": "solo",
+      "chorus_index": 1,
+      "section": "B",
+      "form_length_bars": 32,
+      "form_bars": [
+        17,
+        24
+      ],
+      "confidence": 0.55
+    },
+    {
+      "id": "BE003_piano_solo1_C",
+      "abs_s": [
+        856.5,
+        866
+      ],
+      "track_s": [
+        148.5,
+        158
+      ],
+      "song_id": "autumn_leaves",
+      "phase": "solo",
+      "chorus_index": 1,
+      "section": "C",
+      "form_length_bars": 32,
+      "form_bars": [
+        25,
+        32
+      ],
+      "confidence": 0.55
+    }
+  ],
+  "bulk_data_status": [
+    {
+      "path": "observations/audio/track_feature_scan.json",
+      "status": "joinable_when_track/form_sidecar_available"
+    },
+    {
+      "path": "observations/audio/full_source_note_hypothesis_aggregate_v0_2.json",
+      "status": "navigation_only_until_joined"
+    },
+    {
+      "path": "analyses/album_1000pass_robustness_v0_1.md",
+      "status": "macro_navigation_summary_not_canonical_coordinate"
+    }
+  ],
+  "provenance": [
+    "main:research/legends/bill_evans/sources/playlist_tracks.json",
+    "main:research/legends/bill_evans/observations/score_alignment/autumn_leaves_take1_sections_v0_1.json"
+  ]
+}
