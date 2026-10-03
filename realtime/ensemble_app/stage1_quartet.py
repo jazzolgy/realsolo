@@ -262,6 +262,14 @@ class Stage1QuartetRuntime:
             )
             if sax_legend_choice is not None else None
         )
+        showcase_feature_tags=(
+            {
+                feature
+                for features in sax_legend_choice.profile_view.domain_features.values()
+                for feature in features
+            }
+            if self.legend_showcase and sax_legend_choice is not None else set()
+        )
         sax_legend_candidate_context=(
             SaxLegendCandidateContext(
                 domain=LegendDomain.LINEAR_CONNECTION,
@@ -272,12 +280,12 @@ class Stage1QuartetRuntime:
                     else "development" if phrase_position < .75
                     else "ending"
                 ),
-                active_tags=tuple(sorted({
+                active_tags=tuple(sorted(({
                     *style_tags,
                     "solo",
                     "develop" if .25 <= phrase_position < .75 else "phrase_edge",
                     "anticipation" if next_chord else "",
-                } - {""})),
+                } | showcase_feature_tags) - {""})),
             )
             if sax_legend_context is not None else None
         )
