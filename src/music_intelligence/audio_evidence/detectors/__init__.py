@@ -1,6 +1,7 @@
 """Detector interfaces and model-independent composition."""
 from .base import AudioObservationDetector
 from .composite import CompositeObservationDetector
+from .demucs_adapter import DemucsCLISeparator
 from .contracts import (
     InstrumentDetection,
     InstrumentDetector,
@@ -26,6 +27,7 @@ from .stem_prior import StemMetadataInstrumentDetector
 __all__ = [
     "AudioObservationDetector",
     "CompositeObservationDetector",
+    "DemucsCLISeparator",
     "InstrumentDetection",
     "InstrumentDetector",
     "LibrosaOnsetDetector",
