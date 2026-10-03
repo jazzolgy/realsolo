@@ -245,15 +245,68 @@ class Stage1BassNativeDecider:
         rendered = result.render_event
         assert rendered is not None
 
+        bass_expression=realize_expression(ExpressiveContext(
+            phrase_position=max(0.0,min(1.0,float(own_phrase_progress or 0.0))),
+            form_position=max(0.0,min(1.0,ensemble.transport.form_position)),
+            tension=.34 if result.candidate.harmonic_role.value in {
+                "root","fifth","chord_tone","pedal"
+            } else .57,
+            ensemble_density=max(0.0,min(1.0,ensemble.ensemble_density)),
+            register_position=max(
+                0.0,
+                min(1.0,(rendered.pitch_midi-self.runner.register_low_midi)
+                    / max(1.0,self.runner.register_high_midi-self.runner.register_low_midi)),
+            ),
+            repetition_index=max(0,self.runner.memory.snapshot().recent_repeat_count),
+            motif_operation=(
+                result.solo_plan.operation
+                if result.solo_plan is not None
+                else SoloDevelopmentOperation.STATE
+            ),
+            role=(
+                ExpressiveRole.FOREGROUND
+                if mode is BassMode.SOLO
+                else ExpressiveRole.SUPPORT
+            ),
+            climax_pressure=max(
+                0.0,
+                min(1.0,result.phrase_intent.complexity_target*.7),
+            ),
+            release_pressure=(
+                .8 if result.phrase_intent.kind.value=="release" else .0
+            ),
+            available_space=max(0.0,min(1.0,ensemble.space_available)),
+        ))
+
         gesture = RenderGesture(
             role="bass",
             voices=(RenderVoice(
                 pitch_midi=rendered.pitch_midi,
-                velocity=rendered.velocity,
+                velocity=max(
+                    1,
+                    min(
+                        127,
+                        int(round(
+                            rendered.velocity*.78
+                            + 38*bass_expression.dynamic_level
+                            + 10*(bass_expression.accent_strength-.5)
+                        )),
+                    ),
+                ),
                 duration_beats=rendered.duration_beats,
                 onset_offset_beats=rendered.onset_offset_beats,
                 articulation=rendered.articulation,
                 instrument_role=rendered.instrument_role,
+                expression_controls={
+                    "perceptual_intensity": bass_expression.perceptual_intensity,
+                    "dynamic_level": bass_expression.dynamic_level,
+                    "accent_strength": bass_expression.accent_strength,
+                    "note_body": bass_expression.note_body,
+                    "foreground_weight": bass_expression.foreground_weight,
+                    "articulation_pressure": bass_expression.articulation_pressure,
+                    "brightness_pressure": bass_expression.brightness_pressure,
+                    "phrase_contour": bass_expression.phrase_contour.value,
+                },
             ),),
             source="player/bass:sequential_runner",
             tags=tuple(sorted(
@@ -281,6 +334,9 @@ class Stage1BassNativeDecider:
                     legend_profile.legend_id
                     if legend_profile is not None else ""
                 ),
+                "expressive_dynamic": f"{bass_expression.dynamic_level:.3f}",
+                "expressive_accent": f"{bass_expression.accent_strength:.3f}",
+                "expressive_foreground": f"{bass_expression.foreground_weight:.3f}",
             },
         )
 
@@ -322,6 +378,7 @@ class Stage1BassNativeDecider:
             provenance=(
                 "stage1_bass_native",
                 "player/bass:sequential_runner",
+                "shared_expressive_realization",
                 *signals.provenance,
             ),
         )
