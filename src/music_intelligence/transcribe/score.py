@@ -178,7 +178,13 @@ class ScorePart:
                 )
 
             previous_onset[key] = event.span.onset
-            previous_end[key] = max(prior_end or event.span.offset, event.span.offset)
+            if event.grace_kind is None:
+                previous_end[key] = max(
+                    prior_end or event.span.offset,
+                    event.span.offset,
+                )
+            elif prior_end is None:
+                previous_end[key] = event.span.onset
             previous_group[key] = event.simultaneity_group_id
             if event.simultaneity_group_id is not None:
                 simultaneity_groups.setdefault(
