@@ -1,0 +1,136 @@
+{
+  "schema_version": "1.0",
+  "study_id": "study.lafaro.alice.relation_patterns.v0_1",
+  "title": "Alice In Wonderland — repeated MusicalMoment relation candidates",
+  "source_scope": {
+    "tune": "Alice In Wonderland",
+    "recording_id": "bill_evans_trio.alice_in_wonderland.village_vanguard_1961",
+    "bassist": "Scott LaFaro",
+    "pianist": "Bill Evans",
+    "drummer": "Paul Motian",
+    "evidence_type": "three literature-aligned micro-sequences from one recording"
+  },
+  "sequences": [
+    {
+      "id": "A13_18_handoff",
+      "file": "alice_A13_18_handoff_microsequence_v0_1.json",
+      "observed_transition": [
+        "piano phrase resolution / space",
+        "bass departs simple accompaniment",
+        "bass enters active ascending eighth-note foreground",
+        "piano re-enters foreground",
+        "bass returns to longer-value lower-register support"
+      ]
+    },
+    {
+      "id": "A37_39_mimesis",
+      "file": "alice_A37_39_mimesis_microsequence_v0_1.json",
+      "observed_transition": [
+        "bass long-tone support",
+        "piano states eighth/triplet rhythmic-contour idea",
+        "bass matches rhythmic/contour shape while piano repeats it",
+        "bass echoes resolution one beat later",
+        "bass returns to simpler accompaniment"
+      ]
+    },
+    {
+      "id": "A45_47_contour_response",
+      "file": "alice_A45_47_contour_response_microsequence_v0_1.json",
+      "observed_transition": [
+        "piano sixteenth-dominant foreground with conservative low-register bass",
+        "piano changes subdivision to short ascending eighth-note phrase",
+        "bass activity increases with ascending eighth-note contour",
+        "bass continues polyrhythmically",
+        "bass phrase resolves on beat one of bar 47"
+      ]
+    }
+  ],
+  "recurrent_observations": [
+    {
+      "relation_id": "alice.relation.support_to_activity_after_foreground_change.v1",
+      "status": "relation_candidate",
+      "support_count": 3,
+      "statement": "Across all three windows, a comparatively conservative/supporting bass state is followed by increased bass phrase activity near a salient change or boundary in the piano foreground.",
+      "does_not_claim": "The piano event caused the bass change.",
+      "context_tags": [
+        "trio",
+        "piano_foreground",
+        "bass_role_change",
+        "temporal_adjacency"
+      ],
+      "confidence": 0.72,
+      "provenance": [
+        "A13_18_handoff",
+        "A37_39_mimesis",
+        "A45_47_contour_response",
+        "literature:clark_2014"
+      ]
+    },
+    {
+      "relation_id": "alice.relation.rhythmic_or_contour_shape_transfer.v1",
+      "status": "relation_candidate",
+      "support_count": 2,
+      "statement": "In bars 37-39 and 45-47, the bass changes from simpler support toward material that shares rhythmic and/or contour characteristics with the immediately surrounding piano phrase.",
+      "does_not_claim": "LaFaro consciously copied Evans because of a detected trigger.",
+      "context_tags": [
+        "mimesis_or_contour_response",
+        "rhythmic_relation",
+        "contour_relation"
+      ],
+      "confidence": 0.8,
+      "provenance": [
+        "A37_39_mimesis",
+        "A45_47_contour_response",
+        "literature:clark_2014"
+      ]
+    },
+    {
+      "relation_id": "alice.relation.transient_foreground_then_support_return.v1",
+      "status": "relation_candidate",
+      "support_count": 2,
+      "statement": "In bars 13-18 and 37-39, a temporary increase in bass foreground activity is followed by a return to simpler supporting behavior.",
+      "does_not_claim": "All LaFaro foreground phrases must return immediately to support.",
+      "context_tags": [
+        "foreground_handoff",
+        "temporary_role_change",
+        "support_return"
+      ],
+      "confidence": 0.77,
+      "provenance": [
+        "A13_18_handoff",
+        "A37_39_mimesis",
+        "literature:clark_2014"
+      ]
+    }
+  ],
+  "legend_hypotheses": [
+    {
+      "hypothesis_id": "lafaro.context_sensitive_role_switch.v0",
+      "promotion_status": "not_promoted",
+      "hypothesis": "LaFaro may treat foreground/support role as rapidly switchable at phrase-level ensemble boundaries rather than as a chorus-level fixed role.",
+      "evidence_needed": [
+        "repeat in another verified LaFaro recording/tune",
+        "project-audio timestamp alignment",
+        "direct listening confirmation",
+        "drum context where audible"
+      ]
+    },
+    {
+      "hypothesis_id": "lafaro.shape_sensitive_response.v0",
+      "promotion_status": "not_promoted",
+      "hypothesis": "LaFaro may respond to nearby piano rhythmic/contour shapes by preserving relational shape while re-realizing pitches for his own line.",
+      "evidence_needed": [
+        "another independent recording/tune",
+        "separate examples where piano changes but bass does not respond",
+        "negative-control comparison to avoid confirmation bias"
+      ]
+    }
+  ],
+  "negative_controls_required": [
+    "windows where Evans changes subdivision but LaFaro remains conservative",
+    "windows where LaFaro becomes active without a preceding Evans gap/subdivision change",
+    "windows where LaFaro remains active while Evans re-enters",
+    "examples from Nardis / Waltz For Debby / another bassist for comparison"
+  ],
+  "promotion_rule": "Do not convert these same-recording relation candidates directly into Shared Grammar or a strong Legend prior. Cross-recording evidence and negative controls are required."
+}
