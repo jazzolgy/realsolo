@@ -15,6 +15,8 @@ from urllib.parse import parse_qs, urlparse
 from .autonomous_research_session import AutonomousResearchSession
 from .research_audio_ingest import ResearchAudioIngestor
 from .model_service_backend import LocalInstrumentModelServiceBackend
+from .separation_service_backend import LocalSourceSeparationServiceBackend
+from .stem_aware_instrument_backend import StemAwareInstrumentBackend
 from .research_checkpoint import ResearchCheckpoint, default_research_state_root
 from .youtube_data_api import YouTubeDataAPIError, YouTubeDataAPIProvider
 from .youtube_research_provider import YouTubeSearchQuery, youtube_embed_url
@@ -38,6 +40,16 @@ class ResearchRuntime:
             )
             if model_endpoint else None
         )
+        separator_endpoint=os.environ.get("REALSOLO_SOURCE_SEPARATOR_URL","").strip()
+        if model_backend is not None and separator_endpoint:
+            separator=LocalSourceSeparationServiceBackend(
+                endpoint=separator_endpoint,
+                allow_remote=os.environ.get("REALSOLO_ALLOW_REMOTE_AUDIO_SEPARATOR","").strip().lower() in {"1","true","yes"},
+            )
+            model_backend=StemAwareInstrumentBackend(
+                separator=separator,
+                classifier=model_backend,
+            )
         self.ingestor=ResearchAudioIngestor(
             evidence_root=self.state_root/"evidence",
             learned_instrument_backend=model_backend,
@@ -126,6 +138,7 @@ class ResearchHandler(SimpleHTTPRequestHandler):
                 "last_query":self.runtime.last_query,
                 "last_artist":self.runtime.last_artist,
                 "instrument_model_backend":("local_service" if os.environ.get("REALSOLO_INSTRUMENT_MODEL_URL","").strip() else "baseline"),
+                "source_separator_backend":("local_service" if os.environ.get("REALSOLO_SOURCE_SEPARATOR_URL","").strip() else "none"),
             })
             return
         if parsed.path=="/api/research/search":
