@@ -21,6 +21,8 @@ from music_intelligence.reasoning.online_improviser import (
     PerformanceMemory,
     SoftPlan,
 )
+from music_intelligence.learning.engine import LearningPriorView
+from music_intelligence.reasoning.learning_prior_runtime import circular_phase_bias
 
 from .bebop_phrase_space import BebopPhraseSpaceEvidence, PhraseSpaceType
 from .bebop_complementarity import (
@@ -126,9 +128,14 @@ class PianoSoloEvaluator:
     constraints and accompaniment-space considerations.
     """
 
-    def __init__(self, legend_blend: LegendBlend | None = None):
+    def __init__(
+        self,
+        legend_blend: LegendBlend | None = None,
+        solo_phrase_prior: LearningPriorView | None = None,
+    ):
         self.legend_blend = legend_blend or default_bebop_legend_blend()
         self.shared = OnlineMusicalEvaluator(self.legend_blend)
+        self.solo_phrase_prior = solo_phrase_prior
 
     def evaluate(
         self,
@@ -158,6 +165,18 @@ class PianoSoloEvaluator:
                 reasons.append("candidate leaves preferred right-hand solo register")
 
         tags = set(candidate.tags)
+
+        learned_entry = circular_phase_bias(
+            self.solo_phrase_prior,
+            "entry_phase",
+            context.musical.metric_position + candidate.onset_offset_beats,
+            cycle=4.0,
+            tolerance=1.0,
+        )
+        if learned_entry.active:
+            components["learned_solo_entry_phase"] = learned_entry.score_delta
+            score += learned_entry.score_delta
+            reasons.append(learned_entry.reason)
 
         # Parker-informed lines should sound directed and singable, not merely
         # harmonically complicated. Prefer small/medium motion; allow larger leaps
