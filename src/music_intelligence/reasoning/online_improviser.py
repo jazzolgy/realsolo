@@ -40,7 +40,15 @@ class OnlineMusicalEvaluator:
     def __init__(self, legend_blend: LegendBlend | None = None):
         self.legend_blend = legend_blend
 
-    def evaluate(self, candidate: CandidateEvent, context: MusicalContextVector) -> CandidateScore:
+    def evaluate(
+        self,
+        candidate: CandidateEvent,
+        context: MusicalContextVector,
+        *,
+        legend_weight_scale: float = 1.0,
+    ) -> CandidateScore:
+        if legend_weight_scale < 0:
+            raise ValueError("legend_weight_scale cannot be negative")
         score = 0.0
         reasons: list[str] = []
         comp: dict[str, float] = {}
@@ -145,7 +153,10 @@ class OnlineMusicalEvaluator:
                 active_tags.add("structural_terminal_long_tone")
 
             for feature in active_tags:
-                bias = self.legend_blend.feature_bias(feature, active_tags=active_tags)
+                bias = (
+                    self.legend_blend.feature_bias(feature, active_tags=active_tags)
+                    * legend_weight_scale
+                )
                 if bias:
                     score += bias
                     comp[f"legend:{feature}"] = bias
@@ -156,10 +167,22 @@ class OnlineMusicalEvaluator:
         self,
         candidates: Sequence[CandidateEvent],
         context: MusicalContextVector,
+        *,
+        legend_weight_scale: float = 1.0,
     ) -> CandidateScore:
         if not candidates:
             raise ValueError("no candidates")
-        return max((self.evaluate(c, context) for c in candidates), key=lambda x: x.total)
+        return max(
+            (
+                self.evaluate(
+                    c,
+                    context,
+                    legend_weight_scale=legend_weight_scale,
+                )
+                for c in candidates
+            ),
+            key=lambda x: x.total,
+        )
 
 
 def perform_one_event(
