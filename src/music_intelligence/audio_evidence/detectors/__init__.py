@@ -21,6 +21,7 @@ from .librosa_baseline import (
     LibrosaTimbreDetector,
 )
 from .separation import SeparatedSource, SourceSeparator
+from .stem_prior import StemMetadataInstrumentDetector
 
 __all__ = [
     "AudioObservationDetector",
@@ -38,6 +39,7 @@ __all__ = [
     "PitchDetector",
     "SeparatedSource",
     "SourceSeparator",
+    "StemMetadataInstrumentDetector",
     "TimbreDetection",
     "TimbreDetector",
     "UnpitchedDetection",
