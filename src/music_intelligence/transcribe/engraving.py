@@ -159,32 +159,57 @@ class EngravingPlan:
 
 
 def voice_stem_directions(events: tuple[ScoreEvent, ...]) -> dict[str, StemDirection]:
-    """Assign conventional opposing stems only when independent voices overlap.
+    """Assign opposing stems when independent logical voices overlap in time.
 
-    This is engraving logic, not musical voice inference.  Existing voice_ids
-    are treated as already-decided logical voices.
+    This remains engraving logic: existing voice_ids are trusted.  We do not
+    infer musical voices here; we only make already-distinct voices readable.
+    Rests never receive forced stems.
     """
 
-    by_staff_onset: dict[tuple[str, Fraction], list[ScoreEvent]] = {}
-    for event in events:
-        by_staff_onset.setdefault((event.staff_id, event.span.onset), []).append(event)
+    notes = tuple(
+        event for event in events
+        if event.kind.value == "note"
+    )
+    directions: dict[str, StemDirection] = {
+        event.event_id: StemDirection.AUTO for event in events
+    }
 
-    directions: dict[str, StemDirection] = {}
-    for simultaneous in by_staff_onset.values():
-        voices = sorted({event.voice_id for event in simultaneous})
-        if len(voices) <= 1:
-            for event in simultaneous:
-                directions.setdefault(event.event_id, StemDirection.AUTO)
+    by_staff: dict[str, list[ScoreEvent]] = {}
+    for event in notes:
+        by_staff.setdefault(event.staff_id, []).append(event)
+
+    def overlaps(a: ScoreEvent, b: ScoreEvent) -> bool:
+        return (
+            a.voice_id != b.voice_id
+            and a.span.onset < b.span.offset
+            and b.span.onset < a.span.offset
+        )
+
+    for staff_events in by_staff.values():
+        voices = sorted({event.voice_id for event in staff_events})
+        overlapping_voices: set[str] = set()
+        for index, first_voice in enumerate(voices):
+            first_events = [e for e in staff_events if e.voice_id == first_voice]
+            for second_voice in voices[index + 1:]:
+                second_events = [e for e in staff_events if e.voice_id == second_voice]
+                if any(
+                    overlaps(first, second)
+                    for first in first_events
+                    for second in second_events
+                ):
+                    overlapping_voices.update((first_voice, second_voice))
+
+        if len(overlapping_voices) <= 1:
             continue
 
-        # Stable convention: first logical voice up, second down. Additional
-        # voices alternate rather than changing their musical identity.
+        ordered = sorted(overlapping_voices)
         voice_direction = {
             voice: (StemDirection.UP if index % 2 == 0 else StemDirection.DOWN)
-            for index, voice in enumerate(voices)
+            for index, voice in enumerate(ordered)
         }
-        for event in simultaneous:
-            directions[event.event_id] = voice_direction[event.voice_id]
+        for event in staff_events:
+            if event.voice_id in voice_direction:
+                directions[event.event_id] = voice_direction[event.voice_id]
 
     return directions
 
