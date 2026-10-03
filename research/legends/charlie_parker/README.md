@@ -83,3 +83,12 @@ improvisation operations.
 
 Parker Intelligence stores evidence for **which of those operations Parker
 favored, in what context, with what melodic/rhythmic/harmonic tendencies**.
+
+
+## Shared exact-data storage rule
+
+This legend follows the project-wide rule in `research/legends/README.md`:
+exact audio/transcription and reconstructive literal/normalized phrase data stay
+private; public/runtime code stores only public-safe abstractions, priors,
+provenance and provider interfaces. Private exact material may still be queried
+at runtime through the shared private-provider contract.
