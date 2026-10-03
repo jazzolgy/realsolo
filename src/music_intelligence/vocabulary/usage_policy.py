@@ -45,6 +45,8 @@ _RECENT_USE_MULTIPLIER: dict[VocabularyUseType, float] = {
     VocabularyUseType.HYBRID_COMPOSITION: 0.50,
 }
 
+DIRECT_LITERAL_SHARE = 0.30
+
 _SIGNATURE_BIAS: dict[SignatureStatus, float] = {
     SignatureStatus.NONE: 0.0,
     SignatureStatus.RECURRING: 0.015,
@@ -113,3 +115,51 @@ def vocabulary_use_score(
         use_bias=use_bias,
         scarcity_penalty=min(0.60, recent_pressure),
     )
+
+
+
+def choose_runtime_vocabulary_use(
+    item: VocabularyMemoryItem,
+    request: VocabularyQuery,
+    *,
+    opportunity_index: int,
+) -> VocabularyUseType:
+    """Choose direct versus transformed reuse for one runtime opportunity.
+
+    The target policy is approximately 30% literal/direct when verified literal
+    material exists and literal use is allowed. Otherwise the direct slot
+    automatically falls back to transformed use. The deterministic 3-of-10
+    schedule makes listening tests reproducible; it is not a phrase quota.
+    """
+    item.validate()
+    if opportunity_index < 0:
+        raise ValueError("opportunity_index may not be negative")
+
+    allowed=item.candidate_uses.intersection(request.allowed_uses)
+    if request.preferred_use is not None:
+        if request.preferred_use not in allowed:
+            raise ValueError("preferred_use is not allowed for this vocabulary item")
+        return request.preferred_use
+
+    direct_slot=(opportunity_index % 10) < 3
+    if (
+        direct_slot
+        and bool(item.literal_representation)
+        and VocabularyUseType.LITERAL_QUOTE in allowed
+    ):
+        return VocabularyUseType.LITERAL_QUOTE
+
+    for use in (
+        VocabularyUseType.HYBRID_COMPOSITION,
+        VocabularyUseType.ABSTRACTED_PATTERN,
+        VocabularyUseType.FRAGMENT_RECALL,
+        VocabularyUseType.ADAPTED_LICK,
+        VocabularyUseType.TRANSPOSED_LICK,
+    ):
+        if use in allowed:
+            return use
+
+    if bool(item.literal_representation) and VocabularyUseType.LITERAL_QUOTE in allowed:
+        return VocabularyUseType.LITERAL_QUOTE
+
+    raise ValueError(f"no eligible runtime vocabulary use for {item.vocabulary_id}")
