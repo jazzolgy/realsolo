@@ -257,7 +257,10 @@ class Stage1BassNativeDecider:
                 min(1.0,(rendered.pitch_midi-self.runner.register_low_midi)
                     / max(1.0,self.runner.register_high_midi-self.runner.register_low_midi)),
             ),
-            repetition_index=max(0,self.runner.memory.snapshot().recent_repeat_count),
+            repetition_index=max(
+                0,
+                self.runner.memory.snapshot().consecutive_direction_count - 1,
+            ),
             motif_operation=(
                 result.solo_plan.operation
                 if result.solo_plan is not None
