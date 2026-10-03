@@ -28,16 +28,27 @@ class DemucsCLISeparator:
     output_root: str
     model_name: str = "htdemucs"
     expected_stems: tuple[str, ...] | None = None
+    model_repository: str | None = None
+    model_signature: str | None = None
     runner: CommandRunner = _default_runner
-    separator_id: str = "demucs-cli:v0.2"
+    separator_id: str = "demucs-cli:v0.3"
 
     def __post_init__(self) -> None:
+        six_stem_model = self.model_name == "htdemucs_6s" or self.model_signature == "5c90dfd2"
         if self.expected_stems is None:
             self.expected_stems = (
                 ("drums", "bass", "other", "vocals", "guitar", "piano")
-                if self.model_name == "htdemucs_6s"
+                if six_stem_model
                 else ("drums", "bass", "other", "vocals")
             )
+        if self.model_repository is not None:
+            repository = Path(self.model_repository)
+            if not repository.is_dir():
+                raise FileNotFoundError(repository)
+            if not self.model_signature:
+                raise ValueError(
+                    "model_signature is required when model_repository is provided"
+                )
 
     def separate(self, source: AudioSource) -> Sequence[SeparatedSource]:
         source.validate()
@@ -56,19 +67,26 @@ class DemucsCLISeparator:
         output_root = Path(self.output_root)
         output_root.mkdir(parents=True, exist_ok=True)
 
-        command = (
+        selected_model = self.model_signature or self.model_name
+        command = [
             sys.executable,
             "-m",
             "demucs.separate",
-            "-n",
-            self.model_name,
-            "-o",
-            str(output_root),
-            str(input_path),
+        ]
+        if self.model_repository is not None:
+            command.extend(["--repo", self.model_repository])
+        command.extend(
+            [
+                "-n",
+                selected_model,
+                "-o",
+                str(output_root),
+                str(input_path),
+            ]
         )
-        self.runner(command)
+        self.runner(tuple(command))
 
-        stem_dir = output_root / self.model_name / input_path.stem
+        stem_dir = output_root / selected_model / input_path.stem
         separated: list[SeparatedSource] = []
         for stem_label in self.expected_stems or ():
             stem_path = stem_dir / f"{stem_label}.wav"
@@ -79,7 +97,9 @@ class DemucsCLISeparator:
                 {
                     "stem_label": stem_label,
                     "separator_id": self.separator_id,
-                    "separator_model": self.model_name,
+                    "separator_model": selected_model,
+                    "separator_named_profile": self.model_name,
+                    "separator_model_repository": self.model_repository or "remote-default",
                     "parent_source_id": source.source_id,
                 }
             )
@@ -93,7 +113,7 @@ class DemucsCLISeparator:
                         metadata=metadata,
                     ),
                     metadata=SeparationMetadata(
-                        model_id=f"demucs:{self.model_name}",
+                        model_id=f"demucs:{selected_model}",
                         stem_label=stem_label,
                     ),
                 )
