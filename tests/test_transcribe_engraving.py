@@ -417,3 +417,47 @@ def test_rest_in_polyphonic_staff_keeps_automatic_stem():
     assert by_id["lower:rest"].stem_direction is StemDirection.AUTO
     assert by_id["upper:note"].stem_direction is StemDirection.UP
     assert by_id["lower:note"].stem_direction is StemDirection.DOWN
+
+
+
+def test_named_melody_and_bass_voices_get_conventional_stem_sides():
+    melody = event("melody:note", "piano:upper:melody", Fraction(0), Fraction(2))
+    bass = event("bass:note", "piano:upper:bass", Fraction(1), Fraction(1))
+
+    score = score_with((melody, bass))
+    plan = build_default_engraving_plan(score)
+    by_id = {intent.event_id: intent for intent in plan.intents}
+
+    assert by_id["melody:note"].stem_direction is StemDirection.UP
+    assert by_id["bass:note"].stem_direction is StemDirection.DOWN
+
+
+def test_overlapping_voices_keep_independent_beam_groups():
+    events = tuple(
+        event(f"u{i}", "voice1", Fraction(i, 2))
+        for i in range(4)
+    ) + tuple(
+        event(f"l{i}", "voice2", Fraction(i, 2), pitch=("C", 0, 3))
+        for i in range(4)
+    )
+    score = score_with(events)
+    plan = build_default_engraving_plan(score)
+    by_id = {intent.event_id: intent for intent in plan.intents}
+
+    upper_group = {by_id[f"u{i}"].beam_group_id for i in range(4)}
+    lower_group = {by_id[f"l{i}"].beam_group_id for i in range(4)}
+    assert len(upper_group) == 1
+    assert len(lower_group) == 1
+    assert upper_group != lower_group
+    assert [by_id[f"u{i}"].beam_state for i in range(4)] == [
+        BeamState.BEGIN,
+        BeamState.CONTINUE,
+        BeamState.CONTINUE,
+        BeamState.END,
+    ]
+    assert [by_id[f"l{i}"].beam_state for i in range(4)] == [
+        BeamState.BEGIN,
+        BeamState.CONTINUE,
+        BeamState.CONTINUE,
+        BeamState.END,
+    ]
