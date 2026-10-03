@@ -6,7 +6,7 @@ another implementation as long as they return calibrated class probabilities.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import math
 from typing import Mapping, Protocol, Sequence
 
@@ -183,7 +183,7 @@ class LearnedInstrumentClassifier:
     """InstrumentDetector backed by an interchangeable learned predictor."""
 
     backend: InstrumentProbabilityBackend
-    encoder: InstrumentFeatureEncoder = DetectorFeatureEncoder()
+    encoder: InstrumentFeatureEncoder = field(default_factory=DetectorFeatureEncoder)
     detector_id: str = "learned-instrument-classifier:v0.1"
 
     def detect_instruments(
