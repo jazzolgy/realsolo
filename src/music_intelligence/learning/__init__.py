@@ -10,6 +10,11 @@ from .score_alignment import (
     same_form_relative_position,
     same_musical_position,
 )
+from .note_evidence import (
+    NoteEvidenceStatus,
+    NoteLevelEvidence,
+    may_promote_as_legend_note,
+)
 from .representation import (
     LearningArtifact,
     LearningDomain,
@@ -45,6 +50,9 @@ __all__ = [
     "research_learning_status",
     "same_form_relative_position",
     "same_musical_position",
+    "NoteEvidenceStatus",
+    "NoteLevelEvidence",
+    "may_promote_as_legend_note",
     "LearningArtifact",
     "LearningDomain",
     "StructuralPerformanceData",
