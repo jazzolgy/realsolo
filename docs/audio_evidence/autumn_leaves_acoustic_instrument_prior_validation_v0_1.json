@@ -1,0 +1,53 @@
+{
+  "schema": "realsolo.audio_evidence.acoustic_instrument_prior_validation.v0.1",
+  "validation_case": {
+    "source_id": "BE-003",
+    "title": "Autumn Leaves",
+    "segment_start_seconds": 708.0,
+    "segment_end_seconds": 1069.0
+  },
+  "detector": "acoustic-register-timbre-prior:v0.1",
+  "ambiguity_margin_threshold": 0.15,
+  "mixture": {
+    "onsets": 1421,
+    "pitch_hypotheses": 7240,
+    "top_label_counts": {
+      "bass": 2133,
+      "piano": 5107,
+      "other": 0
+    },
+    "ambiguous_hypotheses": 945,
+    "ambiguous_fraction": 0.13052486187845305,
+    "low_register_midi_le_52": 2299,
+    "low_register_ambiguous": 945,
+    "low_register_ambiguous_fraction": 0.41104828186167897,
+    "median_margin": 0.6897133220910623,
+    "low_register_median_margin": 0.15139973338411727
+  },
+  "hpss_harmonic_stream": {
+    "onsets": 1796,
+    "pitch_hypotheses": 8478,
+    "top_label_counts": {
+      "bass": 2827,
+      "piano": 5651,
+      "other": 0
+    },
+    "ambiguous_hypotheses": 941,
+    "ambiguous_fraction": 0.1109931587638594,
+    "low_register_midi_le_52": 2857,
+    "low_register_ambiguous": 941,
+    "low_register_ambiguous_fraction": 0.32936646832341615,
+    "median_margin": 0.6897133220910623,
+    "low_register_median_margin": 0.15139973338411727
+  },
+  "observed_change": {
+    "overall_ambiguous_fraction_delta": -0.01953170311459365,
+    "low_register_ambiguous_fraction_delta": -0.08168181353826282
+  },
+  "interpretation_limits": [
+    "The detector is a deliberately weak acoustic prior, not a trained instrument classifier.",
+    "Top-label counts are hypotheses and must not be treated as ground-truth note ownership.",
+    "HPSS is harmonic/percussive separation, not Bass/Piano separation.",
+    "The lower ambiguity rate after HPSS demonstrates representation sensitivity, not instrument-separation accuracy."
+  ]
+}
