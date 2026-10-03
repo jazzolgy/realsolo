@@ -14,6 +14,7 @@ class AutumnLeavesValidationCase:
     track_start_s: float = 708.0
     track_end_s: float = 1069.0
     rights_disposition: str = "DERIVED_ONLY"
+    publication_class: str = "PUBLIC_DERIVED"
     harmonic_onsets: int = 2000
     pitch_hypotheses: int = 9742
     percussive_events: int = 1311
