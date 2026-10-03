@@ -31,6 +31,7 @@ from .engine import LearningFeedback,LearningPriorView,SharedLearningEngine
 from .structural_join import (
     StructuralAlignmentIndex,
     StructuralAlignmentSpan,
+    StructuralAlignmentStatus,
     align_structural_performance_data,
 )
 from .pipeline import (
@@ -75,5 +76,6 @@ __all__ = [
     "SharedLearningEngine",
     "StructuralAlignmentIndex",
     "StructuralAlignmentSpan",
+    "StructuralAlignmentStatus",
     "align_structural_performance_data",
 ]
