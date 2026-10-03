@@ -1,4 +1,15 @@
 """Shared learning layer for all RealSolo musical domains."""
+from .score_alignment import (
+    AlignmentStatus,
+    AudioScoreAlignment,
+    MusicalScoreCoordinate,
+    PerformancePhase,
+    ScoreAlignedEvidence,
+    comparable_core_form_position,
+    research_learning_status,
+    same_form_relative_position,
+    same_musical_position,
+)
 from .representation import (
     LearningArtifact,
     LearningDomain,
@@ -25,6 +36,15 @@ from .pipeline import (
 )
 
 __all__ = [
+    "AlignmentStatus",
+    "AudioScoreAlignment",
+    "MusicalScoreCoordinate",
+    "PerformancePhase",
+    "ScoreAlignedEvidence",
+    "comparable_core_form_position",
+    "research_learning_status",
+    "same_form_relative_position",
+    "same_musical_position",
     "LearningArtifact",
     "LearningDomain",
     "StructuralPerformanceData",
