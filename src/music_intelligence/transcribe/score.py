@@ -26,6 +26,22 @@ class ScoreKeySignature:
             raise ValueError("key signature mode is required")
 
 
+@dataclass(frozen=True)
+class ScoreTextDirection:
+    text: str
+    onset: Fraction = Fraction(0)
+    placement: str = "above"
+    provenance: tuple[str, ...] = ()
+
+    def validate(self) -> None:
+        if not self.text.strip():
+            raise ValueError("score text direction requires text")
+        if self.onset < 0:
+            raise ValueError("score text direction onset may not be negative")
+        if self.placement not in {"above", "below"}:
+            raise ValueError("score text direction placement must be above or below")
+
+
 class ScoreSpannerKind(str, Enum):
     CRESCENDO = "crescendo"
     DIMINUENDO = "diminuendo"
@@ -182,6 +198,7 @@ class ReadableScore:
     title: str
     parts: tuple[ScorePart, ...]
     spanners: tuple[ScoreSpanner, ...] = ()
+    directions: tuple[ScoreTextDirection, ...] = ()
     meter_numerator: int = 4
     meter_denominator: int = 4
     key_signature: ScoreKeySignature = ScoreKeySignature()
@@ -206,6 +223,9 @@ class ReadableScore:
                     raise ValueError("score event ids must be unique across parts")
                 events_by_id[event.event_id] = event
 
+        for direction in self.directions:
+            direction.validate()
+
         spanner_ids: set[str] = set()
         for spanner in self.spanners:
             spanner.validate()
@@ -228,6 +248,7 @@ def assemble_score(
     title: str,
     parts: tuple[ScorePart, ...],
     spanners: tuple[ScoreSpanner, ...] = (),
+    directions: tuple[ScoreTextDirection, ...] = (),
     meter_numerator: int = 4,
     meter_denominator: int = 4,
     key_signature: ScoreKeySignature = ScoreKeySignature(),
@@ -238,6 +259,7 @@ def assemble_score(
         title=title,
         parts=parts,
         spanners=spanners,
+        directions=directions,
         meter_numerator=meter_numerator,
         meter_denominator=meter_denominator,
         key_signature=key_signature,
@@ -257,6 +279,7 @@ def extract_individual_part(score: ReadableScore, part_id: str) -> ReadableScore
         title=f"{score.title} — {matches[0].name}",
         parts=matches,
         spanners=tuple(s for s in score.spanners if s.part_id == part_id),
+        directions=score.directions,
         meter_numerator=score.meter_numerator,
         meter_denominator=score.meter_denominator,
         key_signature=score.key_signature,
@@ -277,6 +300,7 @@ def assemble_logical_score(
     title: str,
     parts: tuple[LogicalScorePart, ...],
     spanners: tuple[ScoreSpanner, ...] = (),
+    directions: tuple[ScoreTextDirection, ...] = (),
     meter_numerator: int = 4,
     meter_denominator: int = 4,
     key_signature: ScoreKeySignature = ScoreKeySignature(),
@@ -287,6 +311,7 @@ def assemble_logical_score(
         title=title,
         parts=parts,
         spanners=spanners,
+        directions=directions,
         meter_numerator=meter_numerator,
         meter_denominator=meter_denominator,
         key_signature=key_signature,
