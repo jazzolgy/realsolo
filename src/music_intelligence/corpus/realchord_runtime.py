@@ -212,13 +212,10 @@ def expand_playback_timeline(song: RealChordSong) -> RealChordPlaybackTimeline:
     order, status, warnings = _apply_navigation(song, base_order)
 
     playback: list[RealChordPlaybackMeasure] = []
+    # One expanded chart traversal is one form pass. Internal repeats/endings do
+    # not create a new solo chorus. Chorus count belongs to the session loop.
     chorus_index = 1
-    seen_first = False
     for playback_number, source_index in enumerate(order, start=1):
-        if source_index == 0:
-            if seen_first:
-                chorus_index += 1
-            seen_first = True
         source = song.measures[source_index]
         playback.append(RealChordPlaybackMeasure(
             playback_measure=playback_number,
@@ -248,6 +245,7 @@ def session_state_at(
     tempo: float = 120.0,
     style_override: str = "",
     transport: str = "playing",
+    chorus_index: int = 1,
 ) -> SharedRealChordSessionState:
     timeline.validate()
     if timeline.realchord_id != song.realchord_id:
@@ -263,7 +261,7 @@ def session_state_at(
         source_measure=item.source_measure,
         beat=beat,
         section=item.section,
-        chorus_index=item.chorus_index,
+        chorus_index=chorus_index,
         transpose=transpose,
         tempo=tempo,
         style_override=style_override,
