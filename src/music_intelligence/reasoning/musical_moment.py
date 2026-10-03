@@ -45,13 +45,13 @@ class MomentHarmony:
     inferred_ref: str | None = None
     local_key_ref: str | None = None
     cadence_state: str = ""
-    tension: float = 0.0
+    tension: float | None = None
     confidence: float = 0.0
     provenance: tuple[str, ...] = ()
 
     def validate(self) -> None:
-        if not 0.0 <= self.tension <= 1.0:
-            raise ValueError("harmony tension must be within 0..1")
+        if self.tension is not None and not 0.0 <= self.tension <= 1.0:
+            raise ValueError("harmony tension must be within 0..1 when known")
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError("harmony confidence must be within 0..1")
 
@@ -59,11 +59,11 @@ class MomentHarmony:
 @dataclass(frozen=True)
 class MomentPhraseState:
     phrase_id: str | None = None
-    phrase_position: float = 0.0
-    maturity: float = 0.0
-    boundary_pressure: float = 0.0
-    space: float = 0.0
-    tension: float = 0.0
+    phrase_position: float | None = None
+    maturity: float | None = None
+    boundary_pressure: float | None = None
+    space: float | None = None
+    tension: float | None = None
     motif_id: str | None = None
     confidence: float = 0.0
     provenance: tuple[str, ...] = ()
@@ -78,21 +78,21 @@ class MomentPhraseState:
             "confidence",
         ):
             value=getattr(self,name)
-            if not 0.0 <= value <= 1.0:
-                raise ValueError(f"{name} must be within 0..1")
+            if value is not None and not 0.0 <= value <= 1.0:
+                raise ValueError(f"{name} must be within 0..1 when known")
 
 
 @dataclass(frozen=True)
 class MomentGrooveState:
     grammar_id: str = ""
     feel: str = ""
-    strength: float = 0.0
+    strength: float | None = None
     confidence: float = 0.0
     provenance: tuple[str, ...] = ()
 
     def validate(self) -> None:
-        if not 0.0 <= self.strength <= 1.0:
-            raise ValueError("groove strength must be within 0..1")
+        if self.strength is not None and not 0.0 <= self.strength <= 1.0:
+            raise ValueError("groove strength must be within 0..1 when known")
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError("groove confidence must be within 0..1")
 
@@ -107,10 +107,10 @@ class MomentPlayerAction:
     action_type: str = ""
     interaction: str = ""
     commitment: MomentActionCommitment = MomentActionCommitment.OBSERVED
-    density: float = 0.0
-    energy: float = 0.0
-    tension: float = 0.0
-    space: float = 0.0
+    density: float | None = None
+    energy: float | None = None
+    tension: float | None = None
+    space: float | None = None
     register_center: float | None = None
     phrase_role: str = ""
     motif_id: str | None = None
@@ -126,8 +126,8 @@ class MomentPlayerAction:
             raise ValueError("instrument is required")
         for name in ("density","energy","tension","space","confidence"):
             value=getattr(self,name)
-            if not 0.0 <= value <= 1.0:
-                raise ValueError(f"{name} must be within 0..1")
+            if value is not None and not 0.0 <= value <= 1.0:
+                raise ValueError(f"{name} must be within 0..1 when known")
         if self.register_center is not None and not 0.0 <= self.register_center <= 1.0:
             raise ValueError("register_center must be normalized to 0..1")
 
@@ -163,10 +163,10 @@ class MusicalMoment:
     groove: MomentGrooveState = field(default_factory=MomentGrooveState)
     player_actions: tuple[MomentPlayerAction, ...] = ()
     interactions: tuple[MomentInteraction, ...] = ()
-    ensemble_density: float = 0.0
-    ensemble_energy: float = 0.0
-    ensemble_tension: float = 0.0
-    space_available: float = 0.0
+    ensemble_density: float | None = None
+    ensemble_energy: float | None = None
+    ensemble_tension: float | None = None
+    space_available: float | None = None
     leader_player_id: str | None = None
     confidence: float = 0.0
     provenance: tuple[str, ...] = ()
@@ -191,8 +191,8 @@ class MusicalMoment:
             "confidence",
         ):
             value=getattr(self,name)
-            if not 0.0 <= value <= 1.0:
-                raise ValueError(f"{name} must be within 0..1")
+            if value is not None and not 0.0 <= value <= 1.0:
+                raise ValueError(f"{name} must be within 0..1 when known")
 
         player_ids={action.player_id for action in self.player_actions}
         if self.leader_player_id is not None and player_ids and self.leader_player_id not in player_ids:
