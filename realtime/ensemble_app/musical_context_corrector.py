@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Mapping
 
-from music_intelligence.learning.shared_audio_intelligence import ContextCorrection, DetectorEvidence
+from music_intelligence.audio_evidence import ContextCorrection, DetectorEvidence
 from .models import BeatState, PhraseState
 
 
