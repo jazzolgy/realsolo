@@ -44,14 +44,18 @@ class MusicalScoreCoordinate:
     score_source_id: str = ""
     page: int | None = None
     section: str = ""
+    section_bar: int | None = None
     bar: int | None = None
     beat: float | None = None
+    subdivision: float | None = None
     form_length_bars: int | None = None
     form_bar: int | None = None
     chorus_index: int | None = None
     performance_phase: PerformancePhase = PerformancePhase.UNKNOWN
     chord_label: str = ""
     harmonic_function: str = ""
+    harmonic_position: str = ""
+    cadence_position: str = ""
     phrase_position: str = ""
     form_role: str = ""
     navigation_state: str = ""
@@ -66,13 +70,20 @@ class MusicalScoreCoordinate:
             raise ValueError("song_id is required")
         if self.page is not None and self.page < 1:
             raise ValueError("page must be 1-based")
+        if self.section_bar is not None and self.section_bar < 1:
+            raise ValueError("section_bar must be 1-based")
         if self.bar is not None and self.bar < 1:
             raise ValueError("bar must be 1-based")
         if self.beat is not None:
-            if self.bar is None:
-                raise ValueError("beat requires bar")
+            if self.bar is None and self.form_bar is None:
+                raise ValueError("beat requires bar or form_bar")
             if self.beat < 0:
                 raise ValueError("beat may not be negative")
+        if self.subdivision is not None:
+            if self.beat is None:
+                raise ValueError("subdivision requires beat")
+            if not 0.0 <= self.subdivision < 1.0:
+                raise ValueError("subdivision must be within [0, 1)")
         if self.form_length_bars is not None and self.form_length_bars < 1:
             raise ValueError("form_length_bars must be positive")
         if self.form_bar is not None:
@@ -153,6 +164,9 @@ class ScoreAlignedEvidence:
     features: Mapping[str, object] = field(default_factory=dict)
     instrument: str = ""
     ensemble_role: str = ""
+    role: str = ""
+    motif_state: str = ""
+    ensemble_state: str = ""
     confidence: float = 1.0
     provenance: tuple[str, ...] = ()
 
@@ -183,9 +197,21 @@ def same_musical_position(
         return False
     if a.section and b.section and a.section != b.section:
         return False
+    if (
+        a.section_bar is not None
+        and b.section_bar is not None
+        and a.section_bar != b.section_bar
+    ):
+        return False
     if a.bar is not None and b.bar is not None and a.bar != b.bar:
         return False
     if a.beat is not None and b.beat is not None and a.beat != b.beat:
+        return False
+    if (
+        a.subdivision is not None
+        and b.subdivision is not None
+        and a.subdivision != b.subdivision
+    ):
         return False
     if (
         a.form_length_bars is not None
