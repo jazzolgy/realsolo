@@ -29,6 +29,8 @@ class VocabularyPromotionEvidence:
 
     source_personnel_verified: bool = False
     phrase_context_verified: bool = False
+    structural_coordinate_verified: bool = False
+    arrangement_segment_verified: bool = False
     provenance_complete: bool = False
     dimension_confidence: float = 0.0
     detector_robustness: float = 0.0
@@ -73,11 +75,20 @@ def assess_vocabulary_promotion(
         reasons.append("source/personnel not verified")
     if not evidence.provenance_complete or not item.provenance:
         reasons.append("provenance incomplete")
+    if not (
+        evidence.structural_coordinate_verified
+        or evidence.arrangement_segment_verified
+    ):
+        reasons.append("musical structural position not verified")
 
     base_ready = (
         evidence.source_personnel_verified
         and evidence.provenance_complete
         and bool(item.provenance)
+        and (
+            evidence.structural_coordinate_verified
+            or evidence.arrangement_segment_verified
+        )
         and evidence.dimension_confidence >= 0.80
     )
     if not base_ready:
