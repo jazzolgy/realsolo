@@ -54,12 +54,10 @@ from players.sax import (
     SaxImmediateContext,
     SaxPhraseContext,
     SaxPhraseMemory,
-    SaxPhraseIntentionMemory,
     SaxPhysicalConstraints,
     apply_sax_arc,
     choose_sax_articulation_arc,
     choose_sax_expression,
-    choose_sax_phrase_intention,
     collect_legend_candidate_material,
     choose_sax_runtime_policy,
     generate_immediate_sax_candidates,
@@ -418,7 +416,6 @@ class SaxNativeDecider:
     """
 
     phrase_memory: SaxPhraseMemory = field(default_factory=SaxPhraseMemory)
-    intention_memory: SaxPhraseIntentionMemory = field(default_factory=SaxPhraseIntentionMemory)
     motif_memory: MotifMemory = field(default_factory=MotifMemory)
     physical_constraints: SaxPhysicalConstraints = field(
         default_factory=lambda: SaxPhysicalConstraints(
@@ -442,27 +439,6 @@ class SaxNativeDecider:
             _latest_other_phrase_maturity(snapshot, "sax"),
         ))
         phrase_maturity = max(0.0, min(1.0, phrase_maturity))
-
-        if self.intention_memory.consume_hold():
-            return NativeImmediateResult(
-                gesture=None,
-                density=.18,
-                energy=max(.1, snapshot.ensemble_energy * .72),
-                tension=snapshot.ensemble_tension,
-                leadership=max(0.0,min(1.0,.42+directive.leadership_delta)),
-                phrase_maturity=phrase_maturity,
-                tags=frozenset({"sax_sustain_hold","phrase_continuation"}),
-                provenance=("sax_phrase_intention","held_duration"),
-            )
-
-        phrase_intention=choose_sax_phrase_intention(
-            phrase_maturity=phrase_maturity,
-            beat_in_bar=float(snapshot.transport.beat),
-            section=snapshot.transport.section,
-            tension=snapshot.ensemble_tension,
-            previous_pitch_midi=self.phrase_memory.last_pitch_midi,
-            recent_event_count=self.intention_memory.recent_event_count,
-        )
 
         score_snapshot = context.get("sax_score_snapshot")
         if not isinstance(score_snapshot, ScoreContextSnapshot):
@@ -559,7 +535,7 @@ class SaxNativeDecider:
                 frame.expected.pitch_classes
                 if frame.expected is not None else frozenset()
             ),
-            duration_beats=phrase_intention.duration_beats,
+            duration_beats=.5,
             motif_generation_context=motif_generation,
             motif_evaluation_context=motif_eval,
             motif_memory=self.motif_memory,
@@ -577,13 +553,9 @@ class SaxNativeDecider:
 
         immediate = SaxImmediateContext(
             previous_pitch_midi=previous_pitch,
-            duration_beats=phrase_intention.duration_beats,
+            duration_beats=.5,
             target_pitch_classes=frozenset(context.get("sax_target_pitch_classes", ())),
             local_key_pitch_classes=frozenset(context.get("sax_local_key_pitch_classes", ())),
-            route_biases=phrase_intention.route_biases,
-            rest_bias=phrase_intention.rest_bias,
-            target_emphasis=phrase_intention.target_emphasis,
-            register_direction=phrase_intention.register_direction,
             allow_improvisation=policy.allow_improvisation,
             written_pitch_midi=context.get("sax_written_pitch_midi"),
             written_duration_beats=context.get("sax_written_duration_beats"),
@@ -638,10 +610,6 @@ class SaxNativeDecider:
         chosen = max(candidates, key=_integrated_sax_score)
         event = chosen.event
         if event.pitch_midi is None:
-            self.intention_memory.commit_duration(
-                event.duration_beats,
-                decision_step_beats=float(context.get("decision_step_beats",.5)),
-            )
             return NativeImmediateResult(
                 gesture=None,
                 density=0.0,
@@ -703,12 +671,6 @@ class SaxNativeDecider:
                 shared_plan.motif_decision.candidate.identity,
                 development_success=.5,
             )
-        self.intention_memory.last_phase=phrase_intention.phase
-        self.intention_memory.commit_duration(
-            event.duration_beats,
-            decision_step_beats=float(context.get("decision_step_beats",.5)),
-        )
-
         gesture = RenderGesture(
             role="soloist",
             voices=(RenderVoice(
@@ -727,7 +689,7 @@ class SaxNativeDecider:
             annotations={
                 "sax_score": f"{chosen.score:.4f}",
                 "arc_phase": arc.phase,
-                "phrase_intention": phrase_intention.phase,
+                "phrase_intention": shared_plan.intent.entry_mode.value,
                 "shared_solo_method": shared_plan.intent.solo_method.value,
                 "shared_entry_mode": shared_plan.intent.entry_mode.value,
                 "shared_target_mode": shared_plan.intent.target_mode.value,
@@ -755,14 +717,14 @@ class SaxNativeDecider:
             tension=snapshot.ensemble_tension,
             leadership=max(0.0, min(1.0, .58 + directive.leadership_delta)),
             phrase_maturity=phrase_maturity,
-            tags=frozenset(set(event.tags) | set(policy.interaction.tags) | {f"arc:{arc.phase}",f"phrase_intention:{phrase_intention.phase}"}),
+            tags=frozenset(set(event.tags) | set(policy.interaction.tags) | {f"arc:{arc.phase}",f"phrase_intention:{shared_plan.intent.entry_mode.value}"}),
             provenance=(
                 "sax_runtime_policy",
                 "shared_solo_runtime",
                 "shared_motif_policy",
                 "shared_vocabulary_runtime",
                 "sax_immediate_candidate",
-                "sax_phrase_intention",
+                "shared_solo_phrase_intent",
                 "sax_phrase_expression",
             ),
         )
