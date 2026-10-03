@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
+from math import isfinite
 from typing import Mapping
 
 
@@ -23,6 +24,25 @@ class LearningDomain(str, Enum):
     STYLE = "style"
     GENRE = "genre"
     RHYTHM_GROOVE = "rhythm_groove"
+
+
+def _validate_probability_map(
+    values: Mapping[str, float],
+    *,
+    field_name: str,
+) -> None:
+    if not values:
+        return
+    total = 0.0
+    for key, raw in values.items():
+        if not key:
+            raise ValueError(f"{field_name} keys may not be empty")
+        value = float(raw)
+        if not isfinite(value) or not 0.0 <= value <= 1.0:
+            raise ValueError(f"{field_name} values must be within 0..1")
+        total += value
+    if total <= 0.0:
+        raise ValueError(f"{field_name} must contain positive probability mass")
 
 
 @dataclass(frozen=True)
@@ -44,6 +64,9 @@ class StructuralPerformanceEvent:
     confidence: float = 1.0
     tags: frozenset[str] = frozenset()
     provenance: tuple[str, ...] = ()
+    instrument_probabilities: Mapping[str, float] = field(default_factory=dict)
+    role_probabilities: Mapping[str, float] = field(default_factory=dict)
+    confidence_fields: Mapping[str, float] = field(default_factory=dict)
 
     def validate(self) -> None:
         if not self.event_id:
@@ -64,6 +87,20 @@ class StructuralPerformanceEvent:
             raise ValueError("timing_offset_beats must remain local")
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError("confidence must be within 0..1")
+        _validate_probability_map(
+            self.instrument_probabilities,
+            field_name="instrument_probabilities",
+        )
+        _validate_probability_map(
+            self.role_probabilities,
+            field_name="role_probabilities",
+        )
+        for key, raw in self.confidence_fields.items():
+            if not key:
+                raise ValueError("confidence_fields keys may not be empty")
+            value = float(raw)
+            if not isfinite(value) or not 0.0 <= value <= 1.0:
+                raise ValueError("confidence_fields values must be within 0..1")
 
 
 @dataclass(frozen=True)
