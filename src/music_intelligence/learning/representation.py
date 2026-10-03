@@ -9,6 +9,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Mapping
 
+from .score_alignment import MusicalScoreCoordinate
+
 
 class LearningDomain(str, Enum):
     MOTIF = "motif"
@@ -30,6 +32,7 @@ class StructuralPerformanceEvent:
     event_id: str
     onset_beats: float
     duration_beats: float
+    onset_seconds: float | None = None
     pitch_midi: float | None = None
     unpitched_token: str = ""
     instrument: str = ""
@@ -44,6 +47,7 @@ class StructuralPerformanceEvent:
     confidence: float = 1.0
     tags: frozenset[str] = frozenset()
     provenance: tuple[str, ...] = ()
+    musical_coordinate: MusicalScoreCoordinate | None = None
 
     def validate(self) -> None:
         if not self.event_id:
@@ -52,6 +56,8 @@ class StructuralPerformanceEvent:
             raise ValueError("onset_beats may not be negative")
         if self.duration_beats <= 0:
             raise ValueError("duration_beats must be positive")
+        if self.onset_seconds is not None and self.onset_seconds < 0:
+            raise ValueError("onset_seconds may not be negative")
         if self.pitch_midi is None and not self.unpitched_token:
             raise ValueError("event requires pitch_midi or unpitched_token")
         if self.pitch_midi is not None and not 0.0 <= self.pitch_midi <= 127.0:
@@ -64,6 +70,15 @@ class StructuralPerformanceEvent:
             raise ValueError("timing_offset_beats must remain local")
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError("confidence must be within 0..1")
+        if self.musical_coordinate is not None:
+            self.musical_coordinate.validate()
+
+    @property
+    def structurally_aligned(self) -> bool:
+        return (
+            self.musical_coordinate is not None
+            and self.musical_coordinate.alignment_status.value != "unaligned"
+        )
 
 
 @dataclass(frozen=True)
