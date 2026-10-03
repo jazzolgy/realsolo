@@ -1,0 +1,1 @@
+"""Raw detector observation schema."""
