@@ -1,7 +1,7 @@
 """Model-independent Audio Evidence Engine orchestration."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable, Sequence
 
 from .adapters.source import AudioSource
@@ -20,7 +20,7 @@ ContextProvider = Callable[[AudioObservation], Sequence[ContextEvidence]]
 class AudioEvidencePipeline:
     detector: AudioObservationDetector
     context_provider: ContextProvider | None = None
-    posterior: BoundedContextPosterior = BoundedContextPosterior()
+    posterior: BoundedContextPosterior = field(default_factory=BoundedContextPosterior)
 
     def analyze(
         self,
