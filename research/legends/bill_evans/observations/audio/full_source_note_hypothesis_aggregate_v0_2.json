@@ -1,0 +1,54 @@
+{
+  "schema_version": "0.2",
+  "legend_id": "bill_evans",
+  "analysis_method": "full-duration mixed-audio note-hypothesis pass; 8 kHz mono, 1024 FFT, 256 hop, spectral-flux onsets, up to four tonal pitch hypotheses per onset",
+  "promotion_state": "OBSERVATION_ONLY",
+  "rights_disposition": "DERIVED_ONLY until explicit training permission is recorded",
+  "sources": [
+    {
+      "source_id": "be_best_full_album_project_audio",
+      "duration_s": 3760.054,
+      "detected_onsets": 13872,
+      "note_hypotheses": 52619,
+      "high_conf_top_note_events": 13872,
+      "confidence_mean": 0.9656,
+      "onset_rate_p10": 1.402,
+      "onset_rate_p50": 3.806,
+      "onset_rate_p90": 6.21,
+      "rms_p10": 0.089577,
+      "rms_p50": 0.146829,
+      "rms_p90": 0.180025,
+      "pitch_class_entropy_norm": 0.9968,
+      "same_pitch_transition_fraction": 0.2392,
+      "step_motion_fraction": 0.1568,
+      "within_fifth_motion_fraction": 0.5119,
+      "octave_or_more_motion_fraction": 0.3435
+    },
+    {
+      "source_id": "be_playlist_project_audio",
+      "duration_s": 7717.956,
+      "detected_onsets": 26758,
+      "note_hypotheses": 97547,
+      "high_conf_top_note_events": 26758,
+      "confidence_mean": 0.9656,
+      "onset_rate_p10": 1.406,
+      "onset_rate_p50": 3.635,
+      "onset_rate_p90": 5.627,
+      "rms_p10": 0.036226,
+      "rms_p50": 0.074258,
+      "rms_p90": 0.122651,
+      "pitch_class_entropy_norm": 0.9973,
+      "same_pitch_transition_fraction": 0.298,
+      "step_motion_fraction": 0.1576,
+      "within_fifth_motion_fraction": 0.5617,
+      "octave_or_more_motion_fraction": 0.3203
+    }
+  ],
+  "limitations": [
+    "The sources are mixed recordings, not isolated piano stems.",
+    "Pitch events are automatic hypotheses and are not ground-truth transcription.",
+    "Instrument attribution is intentionally withheld at this stage.",
+    "Exact-note hypotheses remain private/local and are not committed to the public repository.",
+    "No runtime Bill Evans prior may be promoted from these aggregate measurements without score/form alignment and listening verification."
+  ]
+}
