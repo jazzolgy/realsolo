@@ -28,6 +28,11 @@ from .groove_grammar import GrooveGrammar, DEFAULT_GROOVE_GRAMMARS, best_matchin
 from .store import LearningStore
 from .audio_evidence import artifacts_from_audio_aggregate
 from .engine import LearningFeedback,LearningPriorView,SharedLearningEngine
+from .structural_join import (
+    StructuralAlignmentIndex,
+    StructuralAlignmentSpan,
+    align_structural_performance_data,
+)
 from .pipeline import (
     AudioAnalysisAdapter,
     LearningConversion,
@@ -68,4 +73,7 @@ __all__ = [
     "LearningFeedback",
     "LearningPriorView",
     "SharedLearningEngine",
+    "StructuralAlignmentIndex",
+    "StructuralAlignmentSpan",
+    "align_structural_performance_data",
 ]
