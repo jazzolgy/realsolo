@@ -24,11 +24,32 @@ from music_intelligence.harmony import (
     HarmonicFrame,
     HarmonySource,
 )
+from music_intelligence.expression import ExpressiveIntent
 
 from .player_contract import RenderGesture, RenderVoice
 from .stage1_music import parse_chord
 from .stage1_piano import Stage1PianoPlayer
 from .trio_adapters import NativeImmediateResult
+
+
+def _shared_expression_controls(
+    context: Mapping[str, object],
+    player_id: str,
+) -> dict[str, float | str]:
+    intents=context.get("shared_expression_intents", {})
+    intent=intents.get(player_id) if isinstance(intents, Mapping) else None
+    if not isinstance(intent, ExpressiveIntent):
+        return {}
+    intent.validate()
+    return {
+        "perceptual_intensity": intent.perceptual_intensity,
+        "dynamic_level": intent.dynamic_level,
+        "accent_strength": intent.accent_strength,
+        "note_body": intent.note_body,
+        "timing_emphasis_beats": intent.timing_emphasis_beats,
+        "foreground_weight": intent.foreground_weight,
+        "phrase_contour": intent.contour.value,
+    }
 
 
 _DRUM_MIDI = {
@@ -173,6 +194,7 @@ class Stage1BassNativeDecider:
                     onset_offset_beats=0.0,
                     articulation=(ghost.articulation.value,"ghost_note","eighth_offbeat"),
                     instrument_role="bass",
+                    expression_controls=_shared_expression_controls(context,"bass"),
                 ),),
                 source="player/bass:walking_ghost",
                 tags=("bass_ghost_note","walking","eighth_offbeat",ghost.articulation.value),
@@ -254,6 +276,7 @@ class Stage1BassNativeDecider:
                 onset_offset_beats=rendered.onset_offset_beats,
                 articulation=rendered.articulation,
                 instrument_role=rendered.instrument_role,
+                expression_controls=_shared_expression_controls(context,"bass"),
             ),),
             source="player/bass:sequential_runner",
             tags=tuple(sorted(

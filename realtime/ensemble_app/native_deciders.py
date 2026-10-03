@@ -48,6 +48,7 @@ from music_intelligence.reasoning.contextual_prior_gating import (
 from music_intelligence.reasoning.musical_policy_projection import (
     project_musical_policy,
 )
+from music_intelligence.expression import ExpressiveIntent
 from players.sax import (
     SaxArcContext,
     SaxExpressionContext,
@@ -77,6 +78,26 @@ from .player_contract import RenderGesture, RenderVoice
 from .native_trio_players import Stage1BassNativeDecider
 from .shared_intelligence_bridge import derive_shared_solo_moment
 from .trio_adapters import NativeImmediateResult
+
+
+def _shared_expression_controls(
+    context: Mapping[str, object],
+    player_id: str,
+) -> dict[str, float | str]:
+    intents=context.get("shared_expression_intents", {})
+    intent=intents.get(player_id) if isinstance(intents, Mapping) else None
+    if not isinstance(intent, ExpressiveIntent):
+        return {}
+    intent.validate()
+    return {
+        "perceptual_intensity": intent.perceptual_intensity,
+        "dynamic_level": intent.dynamic_level,
+        "accent_strength": intent.accent_strength,
+        "note_body": intent.note_body,
+        "timing_emphasis_beats": intent.timing_emphasis_beats,
+        "foreground_weight": intent.foreground_weight,
+        "phrase_contour": intent.contour.value,
+    }
 
 
 _DRUM_MIDI = {
@@ -259,6 +280,7 @@ class DrumsNativeDecider:
                 _ms_to_beats(h.microtiming_ms, snapshot.transport.tempo_bpm) + getattr(h, "onset_offset_beats", 0.0),
                 articulation=(h.articulation,),
                 instrument_role="drums",
+                expression_controls=_shared_expression_controls(context,"drums"),
             )
             for h in chosen.gesture.hits
         )
@@ -279,7 +301,7 @@ class DrumsNativeDecider:
             leadership=.12 if chosen.gesture.role.value in {"setup", "accent"} else .03,
             phrase_maturity=0.0,
             tags=frozenset(set(chosen.gesture.tags) | {chosen.gesture.role.value}),
-            provenance=(("drummer_bebop_runtime" if "bebop" in style_tags else "drummer_online_policy"),),
+            provenance=(("drummer_bebop_runtime" if "bebop" in style_tags else "drummer_online_policy"),"shared_expression_intent"),
         )
 
 
@@ -385,6 +407,7 @@ class PianoNativeDecider:
                 event.onset_offset_beats + v.onset_offset_beats,
                 articulation=event.articulation,
                 instrument_role="piano",
+                expression_controls=_shared_expression_controls(context,"piano"),
             )
             for v in event.voices_by_onset
         )
@@ -404,7 +427,7 @@ class PianoNativeDecider:
             leadership=.08 if candidate.role.value in {"answer", "fill"} else .03,
             phrase_maturity=0.0,
             tags=frozenset(set(event.tags) | set(candidate.tags) | {candidate.role.value}),
-            provenance=("piano_comping_policy",),
+            provenance=("piano_comping_policy","shared_expression_intent"),
         )
 
 
@@ -452,7 +475,7 @@ class SaxNativeDecider:
                 leadership=max(0.0,min(1.0,.42+directive.leadership_delta)),
                 phrase_maturity=phrase_maturity,
                 tags=frozenset({"sax_sustain_hold","phrase_continuation"}),
-                provenance=("sax_phrase_intention","held_duration"),
+                provenance=("sax_phrase_intention","held_duration","shared_expression_intent"),
             )
 
         phrase_intention=choose_sax_phrase_intention(
@@ -721,6 +744,7 @@ class SaxNativeDecider:
                 breath_before_beats=.125 if phrase_decision.breath_before else 0.0,
                 attack_scale=attack_scale,
                 release_shape=release_shape,
+                expression_controls=_shared_expression_controls(context,"sax"),
             ),),
             source="player/sax:canonical_immediate",
             tags=tuple(sorted(set(event.tags) | set(policy.interaction.tags) | {f"arc:{arc.phase}"})),

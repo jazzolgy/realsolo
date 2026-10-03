@@ -42,7 +42,22 @@ from .native_deciders import build_native_quartet_runtime
 from .stage1_piano import _resolved_material
 from .stage1_trio import _affordance, _chart_frame
 from .stage1_music import parse_chord
-from music_intelligence.corpus import ScoreContextSnapshot, ScorePosition
+from music_intelligence.corpus import (
+    ScoreContextSnapshot,
+    ScorePosition,
+    RealChordSong,
+    coordinate_from_realchord,
+    expected_harmony_at,
+)
+from music_intelligence.learning import (
+    MusicalScoreCoordinate,
+    PerformancePhase,
+)
+from music_intelligence.expression import (
+    ExpressiveContext,
+    ExpressivePhase,
+    realize_expressive_intent,
+)
 
 
 @dataclass
@@ -59,6 +74,7 @@ class Stage1QuartetRuntime:
     hierarchical_priors: HierarchicalPriorSet | None = None
     legend_overrides: Mapping[str,str] = field(default_factory=dict)
     legend_showcase: bool = False
+    realchord_song: RealChordSong | None = None
 
     @classmethod
     def create(
@@ -115,16 +131,23 @@ class Stage1QuartetRuntime:
         """Attach only promoted rights-gated learning priors to audible runtime."""
         self.hierarchical_priors=hierarchical_priors_from_learning_engine(engine)
 
+    def attach_realchord_song(self, song: RealChordSong) -> None:
+        """Attach Shared RealChord expected structure without replacing performance evidence."""
+        song.validate()
+        self.realchord_song=song
+
     def reset(self, tempo_bpm: float = 172.0) -> None:
         priors=self.hierarchical_priors
         overrides=dict(self.legend_overrides)
         showcase=self.legend_showcase
+        realchord_song=self.realchord_song
         fresh = self.create(tempo_bpm)
         self.loop = fresh.loop
         self.state = fresh.state
         self.hierarchical_priors=priors
         self.legend_overrides=overrides
         self.legend_showcase=showcase
+        self.realchord_song=realchord_song
 
     def decide(
         self,
@@ -219,6 +242,94 @@ class Stage1QuartetRuntime:
             groove=groove,
             generation=self.state.generation + 1,
         )
+
+        realchord_beat=beat_in_bar+1.0
+        expected_harmony_reference=None
+        if self.realchord_song is not None:
+            try:
+                canonical_score_coordinate=coordinate_from_realchord(
+                    self.realchord_song,
+                    measure=bar_index+1,
+                    beat=realchord_beat,
+                    chorus_index=chorus,
+                    performance_phase=PerformancePhase.SOLO,
+                )
+                expected_harmony_reference=expected_harmony_at(
+                    self.realchord_song,
+                    measure=bar_index+1,
+                    beat=realchord_beat,
+                )
+            except KeyError:
+                canonical_score_coordinate=MusicalScoreCoordinate(
+                    song_id="autumn_leaves_g_minor_jam",
+                    score_source_id="canonical_repertoire",
+                    section=section,
+                    bar=bar_index+1,
+                    beat=realchord_beat,
+                    form_length_bars=total_bars,
+                    form_bar=bar_index+1,
+                    chorus_index=chorus,
+                    performance_phase=PerformancePhase.SOLO,
+                    chord_label=chord_symbol,
+                    within_core_form=True,
+                    confidence=1.0,
+                    provenance=("canonical_repertoire_fallback",),
+                )
+        else:
+            canonical_score_coordinate=MusicalScoreCoordinate(
+                song_id="autumn_leaves_g_minor_jam",
+                score_source_id="canonical_repertoire",
+                section=section,
+                bar=bar_index+1,
+                beat=realchord_beat,
+                form_length_bars=total_bars,
+                form_bar=bar_index+1,
+                chorus_index=chorus,
+                performance_phase=PerformancePhase.SOLO,
+                chord_label=chord_symbol,
+                within_core_form=True,
+                confidence=1.0,
+                provenance=("canonical_repertoire_fallback",),
+            )
+        canonical_score_coordinate.validate()
+
+        expression_phase=(
+            ExpressivePhase.ENTRY if phrase_position < .18
+            else ExpressivePhase.PEAK if phrase_position > .72 and frame.tension >= .55
+            else ExpressivePhase.RELEASE if phrase_position > .84
+            else ExpressivePhase.DEVELOP
+        )
+        shared_expression_intents={}
+        for player_id,target_fg in (
+            ("sax",.82),("piano",.34),("bass",.42),("drums",.32)
+        ):
+            shared_expression_intents[player_id]=realize_expressive_intent(
+                ExpressiveContext(
+                    position=canonical_score_coordinate,
+                    phrase_maturity=phrase_position,
+                    tension=max(0.0,min(1.0,frame.tension)),
+                    ensemble_density=max(0.0,min(1.0,self.state.ensemble_density)),
+                    current_foreground_weight=(
+                        .8 if player_id==self.state.leader_player_id else .35
+                    ),
+                    target_foreground_weight=target_fg,
+                    register_height=.55,
+                    repetition_index=0,
+                    boundary_pressure=max(
+                        0.0,
+                        min(1.0,1.0-abs(.5-phrase_position)*2.0),
+                    ) if phrase_position > .75 else 0.0,
+                    climax_pressure=max(
+                        0.0,
+                        min(1.0,frame.tension*phrase_position),
+                    ),
+                    release_pressure=max(
+                        0.0,
+                        min(1.0,(phrase_position-.82)/.18),
+                    ),
+                    expressive_phase=expression_phase,
+                )
+            )
 
         next_parsed=parse_chord(next_chord) if next_chord else None
         sax_targets=frozenset(
@@ -410,12 +521,19 @@ class Stage1QuartetRuntime:
                 "shared_vocabulary_piano": shared_vocab_piano,
                 "shared_vocabulary_bass": shared_vocab_bass,
                 "shared_vocabulary_drums": shared_vocab_drums,
+                "canonical_score_coordinate": canonical_score_coordinate,
+                "expected_harmony_reference": expected_harmony_reference,
+                "shared_expression_intents": shared_expression_intents,
                 "sax_allow_improvisation": True,
                 "sax_score_snapshot": sax_score_snapshot,
                 "sax_target_pitch_classes": sax_targets,
                 "sax_local_key_pitch_classes": sax_local_key,
                 "decision_step_beats": .5,
-                "song_id": "autumn_leaves_g_minor_jam",
+                "song_id": (
+                    f"realchord:{self.realchord_song.realchord_id}"
+                    if self.realchord_song is not None
+                    else "autumn_leaves_g_minor_jam"
+                ),
                 "performance_convention": default_performance_convention("jazz"),
             },
         )
