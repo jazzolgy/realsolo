@@ -60,8 +60,8 @@ class LearningAdmissionDecision:
     admit_to_evidence_prior: bool
     admit_to_training_prior: bool
     requires_review: bool
-    evidence_weight: float = 0.0
-    training_weight: float = 0.0
+    evidence_weight: float | None = None
+    training_weight: float | None = None
     reasons: tuple[str, ...] = ()
 
     def validate(self) -> None:
@@ -69,13 +69,19 @@ class LearningAdmissionDecision:
             raise ValueError("artifact_id is required")
         if self.requires_review and self.admit_to_training_prior:
             raise ValueError("review-required evidence may not update training prior")
-        if not 0.0 <= self.evidence_weight <= 1.0:
+        if self.evidence_weight is not None and not 0.0 <= self.evidence_weight <= 1.0:
             raise ValueError("evidence_weight must be within 0..1")
-        if not 0.0 <= self.training_weight <= 1.0:
+        if self.training_weight is not None and not 0.0 <= self.training_weight <= 1.0:
             raise ValueError("training_weight must be within 0..1")
-        if not self.admit_to_evidence_prior and self.evidence_weight != 0.0:
+        if (
+            not self.admit_to_evidence_prior
+            and self.evidence_weight not in (None, 0.0)
+        ):
             raise ValueError("non-admitted evidence prior must have zero weight")
-        if not self.admit_to_training_prior and self.training_weight != 0.0:
+        if (
+            not self.admit_to_training_prior
+            and self.training_weight not in (None, 0.0)
+        ):
             raise ValueError("non-admitted training prior must have zero weight")
 
 
