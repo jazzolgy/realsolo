@@ -38,10 +38,19 @@ class LearningConversion:
     artifacts: tuple[LearningArtifact,...]
     disposition: LearningDisposition
     rights_reason: str
+    structure_eligible: bool = False
+    structure_reason: str = ""
 
     @property
     def training_artifacts(self) -> tuple[LearningArtifact,...]:
-        return self.artifacts if self.disposition is LearningDisposition.TRAINING_ELIGIBLE else ()
+        return (
+            self.artifacts
+            if (
+                self.disposition is LearningDisposition.TRAINING_ELIGIBLE
+                and self.structure_eligible
+            )
+            else ()
+        )
 
     @property
     def derived_artifacts(self) -> tuple[LearningArtifact,...]:
@@ -71,6 +80,17 @@ def convert_audio_to_learning_data(
     structural.validate()
     if structural.source_id != item.item_id:
         raise ValueError("structural source_id must match CorpusItem.item_id")
+    structure_eligible = bool(structural.events) and all(
+        event.musical_position is not None for event in structural.events
+    )
+    structure_reason = (
+        "all performance events carry canonical musical coordinates"
+        if structure_eligible
+        else (
+            "derived/navigation evidence only; every training event must carry "
+            "a canonical musical coordinate"
+        )
+    )
     base_artifacts=extract_learning_artifacts(structural,extractors)
     extras=tuple(x for x in (
         build_style_artifact(structural,base_artifacts),
@@ -85,4 +105,6 @@ def convert_audio_to_learning_data(
         artifacts=artifacts,
         disposition=disposition,
         rights_reason=reason,
+        structure_eligible=structure_eligible,
+        structure_reason=structure_reason,
     )
