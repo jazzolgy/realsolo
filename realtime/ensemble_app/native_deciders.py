@@ -684,7 +684,7 @@ class SaxNativeDecider:
         shared_expression=realize_expression(ExpressiveContext(
             phrase_position=phrase_maturity,
             form_position=(
-                float(snapshot.transport.bar_index % max(1,int(context.get("total_bars",32))))
+                float(snapshot.transport.bar % max(1,int(context.get("total_bars",32))))
                 / max(1.0,float(context.get("total_bars",32)-1))
             ),
             tension=max(0.0,min(1.0,snapshot.ensemble_tension)),
