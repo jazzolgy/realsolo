@@ -101,16 +101,49 @@ def to_performance_evidence_payload(
         }
         unpitched = None
 
+    raw_instrument_probabilities = [
+        {"label": label, "probability": probability}
+        for label, probability in _rank(observation.instrument_probabilities)
+    ]
+    context_instrument_probabilities = [
+        {"label": label, "probability": probability}
+        for label, probability in _rank(hypothesis.instrument_posterior)
+    ]
+    raw_role_probabilities = [
+        {"label": label, "probability": probability}
+        for label, probability in _rank(observation.role_probabilities)
+    ]
+    context_role_probabilities = [
+        {"label": label, "probability": probability}
+        for label, probability in _rank(hypothesis.role_posterior)
+    ]
+
+    context_corrections = []
+    revision_history = []
+    if hypothesis.revision is not None:
+        context_corrections = [
+            {
+                "reason": "applied audio-context factor " + factor.factor_id,
+                "source_ref": factor.source,
+                "weight": factor.weight,
+            }
+            for factor in hypothesis.revision.applied_factors
+        ]
+        revision_history = [
+            {
+                "revision_id": observation.observation_id + ":instrument:1",
+                "attribute": "instrument_distribution",
+                "prior_value": repr(dict(observation.instrument_probabilities)),
+                "revised_value": repr(dict(hypothesis.instrument_posterior)),
+                "reason": hypothesis.revision.reason,
+                "source_ref": observation.observation_id,
+            }
+        ]
+
     metadata = dict(observation.metadata)
     metadata.update(
         {
             "audio_observation_id": observation.observation_id,
-            "raw_instrument_probabilities": repr(
-                dict(observation.instrument_probabilities)
-            ),
-            "posterior_instrument_probabilities": repr(
-                dict(hypothesis.instrument_posterior)
-            ),
             "posterior_margin": (
                 ""
                 if report.posterior_margin is None
@@ -170,6 +203,32 @@ def to_performance_evidence_payload(
             "notation_relevance": None,
             "overall_source": observation.instrument_confidence,
         },
+        "raw_instrument_probabilities": raw_instrument_probabilities,
+        "context_instrument_probabilities": context_instrument_probabilities,
+        "raw_role_probabilities": raw_role_probabilities,
+        "context_role_probabilities": context_role_probabilities,
+        "raw_confidence": {
+            "pitch": observation.pitch_confidence,
+            "rhythm": observation.onset_confidence,
+            "instrument": observation.instrument_confidence,
+            "voice": None,
+            "articulation": None,
+            "ornament": None,
+            "notation_relevance": None,
+            "overall_source": observation.instrument_confidence,
+        },
+        "contextual_confidence": {
+            "pitch": report.pitch_confidence,
+            "rhythm": report.onset_confidence,
+            "instrument": report.posterior_top_probability,
+            "voice": None,
+            "articulation": None,
+            "ornament": None,
+            "notation_relevance": None,
+            "overall_source": observation.instrument_confidence,
+        },
+        "context_corrections": context_corrections,
+        "revision_history": revision_history,
         "alternatives": alternatives,
         "evidence": evidence,
         "provenance": provenance,
