@@ -1,13 +1,16 @@
 """Instrument-neutral structural data and derived learning artifacts.
 
-Raw audio is analyzed once into StructuralPerformanceData. Every learning domain
-consumes that shared structure instead of re-decoding the source independently.
+Raw audio is analyzed once into StructuralPerformanceData. Musical learning uses
+form/section/bar/beat coordinates whenever they are known. Elapsed audio time is
+kept only as provenance/navigation.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Mapping
+
+from .score_alignment import MusicalScoreCoordinate
 
 
 class LearningDomain(str, Enum):
@@ -44,6 +47,9 @@ class StructuralPerformanceEvent:
     confidence: float = 1.0
     tags: frozenset[str] = frozenset()
     provenance: tuple[str, ...] = ()
+    musical_position: MusicalScoreCoordinate | None = None
+    audio_onset_s: float | None = None
+    audio_offset_s: float | None = None
 
     def validate(self) -> None:
         if not self.event_id:
@@ -64,6 +70,38 @@ class StructuralPerformanceEvent:
             raise ValueError("timing_offset_beats must remain local")
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError("confidence must be within 0..1")
+        if self.musical_position is not None:
+            self.musical_position.validate()
+        if self.audio_onset_s is not None and self.audio_onset_s < 0:
+            raise ValueError("audio_onset_s may not be negative")
+        if self.audio_offset_s is not None:
+            if self.audio_offset_s < 0:
+                raise ValueError("audio_offset_s may not be negative")
+            if self.audio_onset_s is not None and self.audio_offset_s < self.audio_onset_s:
+                raise ValueError("audio_offset_s may not precede audio_onset_s")
+
+    @property
+    def has_musical_position(self) -> bool:
+        return self.musical_position is not None
+
+    @property
+    def canonical_position_key(self) -> tuple[object, ...] | None:
+        """Stable comparison key that intentionally excludes elapsed seconds."""
+        p=self.musical_position
+        if p is None:
+            return None
+        return (
+            p.song_id,
+            p.arrangement_segment,
+            p.arrangement_segment_index,
+            p.section,
+            p.form_length_bars,
+            p.form_bar,
+            p.bar,
+            p.beat,
+            p.chorus_index,
+            p.performance_phase.value,
+        )
 
 
 @dataclass(frozen=True)
@@ -76,6 +114,7 @@ class StructuralPerformanceData:
     form_label: str = ""
     metadata: Mapping[str, str] = field(default_factory=dict)
     provenance: tuple[str, ...] = ()
+    require_musical_coordinates: bool = False
 
     def validate(self) -> None:
         if not self.source_id:
@@ -84,6 +123,11 @@ class StructuralPerformanceData:
             raise ValueError("tempo_bpm must be positive")
         for event in self.events:
             event.validate()
+            if self.require_musical_coordinates and event.musical_position is None:
+                raise ValueError(
+                    "musical_position is required for form-first learning data; "
+                    "elapsed time alone is navigation evidence"
+                )
 
 
 @dataclass(frozen=True)
@@ -96,9 +140,12 @@ class LearningArtifact:
     source_event_ids: tuple[str, ...] = ()
     confidence: float = 1.0
     provenance: tuple[str, ...] = ()
+    musical_position: MusicalScoreCoordinate | None = None
 
     def validate(self) -> None:
         if not self.artifact_id or not self.source_id or not self.feature_schema:
             raise ValueError("artifact_id, source_id and feature_schema are required")
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError("confidence must be within 0..1")
+        if self.musical_position is not None:
+            self.musical_position.validate()
