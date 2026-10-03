@@ -18,7 +18,12 @@ from .dynamics import (
 from .events import CommittedPerformanceEvent
 from .instrument_profiles import TranspositionSpec, resolve_instrument_profile
 from .instrument_rules import InstrumentNotationDirective
-from .notation import NotatedAtomKind, RhythmNotationContext, ScoreSpan
+from .notation import (
+    NotatedAtomKind,
+    RhythmNotationContext,
+    RhythmicFeel,
+    ScoreSpan,
+)
 from .piano import (
     PianoGestureCandidate,
     apply_piano_gesture_candidate,
@@ -31,6 +36,7 @@ from .score import (
     ScoreKeySignature,
     ScorePart,
     ScoreSpanner,
+    ScoreTextDirection,
     assemble_score,
 )
 from .spelling import PitchSpellingContext
@@ -60,6 +66,7 @@ class PartTranscriptionRequest:
             raise ValueError("part transcription requires staff profiles")
         if self.end_beat is not None and self.end_beat <= 0:
             raise ValueError("end_beat must be positive")
+        self.rhythm_context.validate()
         for event in self.events:
             event.validate()
 
@@ -409,6 +416,18 @@ def transcribe_take(
         )
         for request in requests
     )
+    global_directions: tuple[ScoreTextDirection, ...] = ()
+    if requests and all(
+        request.rhythm_context.feel is RhythmicFeel.SWING
+        for request in requests
+    ):
+        global_directions = (
+            ScoreTextDirection(
+                text="Swing",
+                provenance=("transcribe:rhythmic-feel",),
+            ),
+        )
+
     score = assemble_score(
         score_id=score_id,
         title=title,
@@ -418,6 +437,7 @@ def transcribe_take(
             for result in parts
             for spanner in result.spanners
         ),
+        directions=global_directions,
         meter_numerator=meter_numerator,
         meter_denominator=meter_denominator,
         key_signature=key_signature,
