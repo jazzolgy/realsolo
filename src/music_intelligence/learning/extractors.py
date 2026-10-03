@@ -5,6 +5,7 @@ replace/augment them later without changing LearningArtifact contracts.
 """
 from __future__ import annotations
 
+from dataclasses import replace
 from hashlib import sha256
 from math import isclose
 from statistics import mean
@@ -57,6 +58,47 @@ def _event_measure_beat(event):
     if p is None or not p.resolved_metric:
         return None,None
     return p.measure_index,p.beat_in_measure
+
+
+def _artifact_metric_form_context(data,artifact):
+    by_id={e.event_id:e for e in data.events}
+    events=[by_id[x] for x in artifact.source_event_ids if x in by_id]
+    positions=[e.metric_form_position for e in events if e.metric_form_position is not None]
+    if not positions:
+        return {
+            "resolved_metric":False,
+            "resolved_form":False,
+            "form_id":data.form_map.form_id if data.form_map is not None else (data.form_label or None),
+            "sections":(),
+            "start":None,
+            "end":None,
+        }
+    start=positions[0]; end=positions[-1]
+    sections=tuple(dict.fromkeys(p.section_id for p in positions if p.section_id))
+    return {
+        "resolved_metric":all(p.resolved_metric for p in positions),
+        "resolved_form":all(p.resolved_form for p in positions),
+        "form_id":next((p.form_id for p in positions if p.form_id), data.form_label or None),
+        "sections":sections,
+        "start":{
+            "measure_index":start.measure_index,
+            "measure_number":start.display_measure,
+            "beat_in_measure":start.beat_in_measure,
+            "beat_number":start.display_beat,
+            "section_id":start.section_id,
+            "section_measure_index":start.section_measure_index,
+            "form_iteration":start.form_iteration,
+        },
+        "end":{
+            "measure_index":end.measure_index,
+            "measure_number":end.display_measure,
+            "beat_in_measure":end.beat_in_measure,
+            "beat_number":end.display_beat,
+            "section_id":end.section_id,
+            "section_measure_index":end.section_measure_index,
+            "form_iteration":end.form_iteration,
+        },
+    }
 
 
 def _normalized_ioi(events):
@@ -309,5 +351,15 @@ def extract_learning_artifacts(
     out=[]
     for extractor in extractors:
         out.extend(extractor.extract(data))
-    for artifact in out: artifact.validate()
-    return tuple(out)
+    canonical=[]
+    for artifact in out:
+        features=dict(artifact.features)
+        features["metric_form_context"]=_artifact_metric_form_context(data,artifact)
+        upgraded=replace(
+            artifact,
+            features=features,
+            provenance=artifact.provenance+("metric_form_learning_address",),
+        )
+        upgraded.validate()
+        canonical.append(upgraded)
+    return tuple(canonical)
