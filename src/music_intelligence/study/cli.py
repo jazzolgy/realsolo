@@ -7,6 +7,7 @@ from pathlib import Path
 
 from music_intelligence.learning.score_alignment import PerformancePhase
 
+from .alignment import load_alignment_clock
 from .session import ManualFormClock,StudySession,parse_section_map
 
 
@@ -29,6 +30,8 @@ def build_parser()->argparse.ArgumentParser:
     p.add_argument("--realchord-id",default="")
     p.add_argument("--score-source-id",default="")
     p.add_argument("--sections",default="")
+    p.add_argument("--alignment-json",help="existing research alignment manifest")
+    p.add_argument("--alignment-offset-s",type=float,default=0.0,help="source offset added to alignment-manifest times")
     p.add_argument(
         "--phase",
         choices=[x.value for x in PerformancePhase],
@@ -44,7 +47,17 @@ def build_parser()->argparse.ArgumentParser:
 def main(argv=None)->int:
     args=build_parser().parse_args(argv)
     clock=None
-    if args.song or args.bpm or args.form_bars or args.realchord_id:
+    if args.alignment_json:
+        if not args.song:
+            raise SystemExit("--song is required with --alignment-json")
+        clock=load_alignment_clock(
+            args.alignment_json,
+            song_id=args.song,
+            source_offset_s=args.alignment_offset_s,
+            realchord_id=args.realchord_id,
+            score_source_id=args.score_source_id,
+        )
+    elif args.song or args.bpm or args.form_bars or args.realchord_id:
         if not args.song or not args.bpm:
             raise SystemExit("--song and --bpm are both required for aligned study")
         try:
