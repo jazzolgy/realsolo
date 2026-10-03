@@ -133,10 +133,10 @@ class EnsembleRuntimeLoop:
         state.validate()
         snapshot = state
         shared_context = dict(context or {})
-        directives = schedule_ensemble(
-            snapshot,
-            convention=shared_context.get("performance_convention"),
-        )
+        # Shared interaction_scheduler is canonical. Realtime passes the frozen
+        # ensemble snapshot only; genre/session convention may inform upstream
+        # Shared state, but realtime must not extend the scheduler API locally.
+        directives = schedule_ensemble(snapshot)
         by_player = {d.player_id: d for d in directives}
 
         decisions: list[PlayerRuntimeDecision] = []
