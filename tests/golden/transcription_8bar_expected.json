@@ -3,7 +3,7 @@
   "meter": "4/4",
   "measures": 8,
   "part_id": "fl",
-  "note_count": 12,
+  "note_count": 13,
   "rest_count_min": 8,
   "wedge_types": [
     "crescendo",
@@ -12,5 +12,7 @@
     "stop"
   ],
   "key_fifths": 0,
-  "score_end_beat": 32
+  "score_end_beat": 32,
+  "tie_start_count": 1,
+  "tie_stop_count": 1
 }
