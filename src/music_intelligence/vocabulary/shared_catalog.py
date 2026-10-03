@@ -4,10 +4,10 @@ This catalog collects reusable musical *behaviors* already encoded elsewhere in
 RealSolo. It is intentionally broader than Legend vocabulary.
 
 Important:
-- no copyrighted literal phrase is reconstructed here;
-- source-derived items are abstracted to reusable dimensions/tags;
-- exact source patterns whose rights are research/reference-only stay in their
-  source corpus and are not copied into this runtime catalog;
+- Shared Vocabulary may contain both literal and transformed musical material;
+- exact source material keeps source/provenance alongside normalized forms;
+- runtime policy targets roughly 30% direct use when admitted literal material
+  is available and 70% transformed/adapted use;
 - Player-specific mechanics remain in Players.
 """
 from __future__ import annotations
@@ -434,7 +434,8 @@ SHARED_VOCABULARY_ITEMS: tuple[VocabularyMemoryItem,...]=(
         transferable_to=("drums","percussion"),
         confidence=.94, provenance=("players/drums/bebop.py","players/drums/chorus_memory.py")),
 
-    # Abstracted source-family knowledge. Exact source notation stays in source corpus.
+    # Abstracted source-family knowledge. Exact symbolic source patterns are
+    # also imported separately through source_pattern_bridge.
     _item("shared.drums.bop_ride_24_family",
         source_id="abstracted_source:riley_art_of_bop",
         rhythm="bebop ride time with pedal hi-hat on 2 and 4",
