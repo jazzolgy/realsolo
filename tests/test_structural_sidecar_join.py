@@ -7,6 +7,7 @@ from music_intelligence.learning import (
 from music_intelligence.learning.structural_join import (
     StructuralAlignmentIndex,
     StructuralAlignmentSpan,
+    StructuralAlignmentStatus,
     align_structural_performance_data,
 )
 
@@ -66,3 +67,46 @@ def test_missing_alignment_is_not_guessed():
     aligned = align_structural_performance_data(data, StructuralAlignmentIndex(()))
     assert aligned.events[0].musical_position is None
     assert aligned.metadata["structural_alignment_status"] == "navigation_only"
+
+
+
+def test_candidate_alignment_is_navigation_only_by_default():
+    data = StructuralPerformanceData(
+        source_id="be_autumn_leaves",
+        events=(
+            StructuralPerformanceEvent(
+                "e1", 0.0, 0.5, 60.0,
+                audio_onset_s=12.0,
+            ),
+        ),
+    )
+    index = StructuralAlignmentIndex(
+        (
+            StructuralAlignmentSpan(
+                source_id="be_autumn_leaves",
+                start_s=8.0,
+                end_s=17.5,
+                start_form_bar=1,
+                end_form_bar=8,
+                coordinate=MusicalScoreCoordinate(
+                    song_id="autumn_leaves",
+                    section="A1",
+                    form_length_bars=32,
+                    chorus_index=0,
+                    performance_phase=PerformancePhase.HEAD,
+                    arrangement_segment="core_form",
+                    within_core_form=True,
+                ),
+                status=StructuralAlignmentStatus.CANDIDATE,
+            ),
+        )
+    )
+    default = align_structural_performance_data(data, index)
+    assert default.events[0].musical_position is None
+
+    research = align_structural_performance_data(
+        data,
+        index,
+        minimum_status=StructuralAlignmentStatus.CANDIDATE,
+    )
+    assert research.events[0].musical_position is not None
