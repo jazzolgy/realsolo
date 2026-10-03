@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from typing import Mapping, Sequence
 
+from music_intelligence.expression import ExpressiveIntent
 from music_intelligence.reasoning.groove_context import (
     GrooveTemporalContext,
     player_phase_offset_beats,
@@ -204,6 +205,61 @@ def apply_shared_groove_to_render_gesture(
         voices=tuple(warped(v) for v in gesture.voices),
         drum_hits=tuple(warped(v) for v in gesture.drum_hits),
         tags=tags,
+        annotations=annotations,
+    )
+    out.validate()
+    return out
+
+
+
+def apply_shared_expression_to_render_gesture(
+    gesture: RenderGesture,
+    intent: ExpressiveIntent | None,
+) -> RenderGesture:
+    """Project canonical Shared Expression onto an already chosen gesture.
+
+    Musical selection is already complete. This adapter changes HOW the
+    committed event is rendered and therefore does not create a second player
+    policy.
+    """
+    gesture.validate()
+    if intent is None:
+        return gesture
+    intent.validate()
+
+    def expressive(v: RenderVoice) -> RenderVoice:
+        base=max(1,min(127,int(v.velocity)))
+        dynamic_scale=.72+.56*intent.dynamic_level
+        accent_scale=.88+.24*intent.accent_strength
+        velocity=max(1,min(127,int(round(base*dynamic_scale*accent_scale))))
+        body_scale=.72+.56*intent.note_body
+        duration=max(.03,v.duration_beats*body_scale)
+        onset=v.onset_offset_beats+intent.timing_emphasis_beats
+        controls=dict(v.expression_controls)
+        controls.update({
+            "perceptual_intensity":round(intent.perceptual_intensity,4),
+            "foreground_weight":round(intent.foreground_weight,4),
+            "shared_dynamic_level":round(intent.dynamic_level,4),
+            "shared_accent_strength":round(intent.accent_strength,4),
+            "shared_note_body":round(intent.note_body,4),
+        })
+        return replace(
+            v,
+            velocity=velocity,
+            duration_beats=duration,
+            onset_offset_beats=onset,
+            articulation=tuple(dict.fromkeys((*v.articulation,*intent.articulation_tags))),
+            expression_controls=controls,
+        )
+
+    annotations=dict(gesture.annotations)
+    annotations["shared_expression"]="1"
+    annotations["expression_confidence"]=f"{intent.confidence:.3f}"
+    annotations["expression_contour"]=intent.contour.value
+    out=replace(
+        gesture,
+        voices=tuple(expressive(v) for v in gesture.voices),
+        drum_hits=tuple(expressive(v) for v in gesture.drum_hits),
         annotations=annotations,
     )
     out.validate()
