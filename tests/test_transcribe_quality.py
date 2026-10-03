@@ -70,3 +70,29 @@ def test_generic_instrument_profile_is_informational_not_failure():
     assert not report.has_errors
     assert not report.needs_review
     assert any(i.code == "instrument-profile-missing" for i in report.issues)
+
+
+
+def test_quality_audit_counts_temporally_overlapping_voices_not_only_same_onset():
+    events = []
+    for index in range(5):
+        events.append(
+            ScoreEvent(
+                event_id=f"v{index}",
+                part_id="x",
+                staff_id="staff",
+                voice_id=f"v{index}",
+                kind=NotatedAtomKind.NOTE,
+                span=ScoreSpan(Fraction(index, 4), Fraction(2)),
+                source_event_ids=(f"src:v{index}",),
+                written_pitch=WrittenPitch("C", 0, 4 + (index % 2)),
+            )
+        )
+    part = ScorePart("x", "Unknown", "future_instrument", ("staff",), tuple(events))
+    score = assemble_score(score_id="quality:voices", title="Voice Density", parts=(part,))
+
+    report = audit_score_for_performance(score)
+
+    issue = next(i for i in report.issues if i.code == "dense-voice-stack")
+    assert issue.severity is QualityIssueSeverity.WARNING
+    assert "overlapping voices" in issue.message
