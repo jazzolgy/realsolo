@@ -4,6 +4,7 @@ from realtime.ensemble_app.player_contract import (
     apply_shared_groove_to_render_gesture,
 )
 from realtime.ensemble_app.stage1_trio import Stage1TrioRuntime
+from players.sax.solo_realizer import SaxSoloRealizerContext
 from music_intelligence.reasoning.groove_context import (
     GrooveCoordinationMode,
     GrooveFeel,
@@ -70,20 +71,17 @@ def test_elastic_renderer_keeps_shared_pulse_but_allows_bounded_role_placement()
     assert positions["tenor_sax"] < positions["piano"]
 
 
-def test_shared_groove_projection_is_not_reapplied_by_the_boundary():
+def test_sax_realizer_does_not_own_shared_groove_projection():
+    fields=set(SaxSoloRealizerContext.__dataclass_fields__)
+    assert "groove" not in fields
+    assert "beat_position_beats" not in fields
+
     groove=build_groove_context(
         GrooveFeel.SWING,
         tempo_bpm=120.0,
         coordination_mode=GrooveCoordinationMode.ELASTIC,
     )
     once,_=_rendered_offbeat("tenor_sax",groove)
-    already_projected=RenderGesture(
-        role="soloist",
-        voices=(RenderVoice(60,onset_offset_beats=once,instrument_role="tenor_sax"),),
-        annotations={"groove_projection":"already_applied"},
-    )
-    # Ownership invariant: callers must project exactly once. This test verifies
-    # that the first projection is a single bounded move from the nominal 0.5.
     assert once != .5
     assert abs(once-.5) < .3
 
