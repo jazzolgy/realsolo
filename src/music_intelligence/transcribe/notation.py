@@ -12,6 +12,22 @@ from fractions import Fraction
 from typing import Mapping
 
 
+class RhythmicFeel(str, Enum):
+    AUTO = "auto"
+    STRAIGHT = "straight"
+    SWING = "swing"
+
+
+@dataclass(frozen=True)
+class RhythmNotationContext:
+    feel: RhythmicFeel = RhythmicFeel.AUTO
+    prefer_written_eighths_for_swing: bool = True
+
+    def validate(self) -> None:
+        if not isinstance(self.feel, RhythmicFeel):
+            raise ValueError("feel must be a RhythmicFeel")
+
+
 class NotationRelevance(str, Enum):
     INCLUDE = "include"
     OMIT = "omit"
