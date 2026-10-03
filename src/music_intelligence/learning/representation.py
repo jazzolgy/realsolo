@@ -42,6 +42,9 @@ class StructuralPerformanceEvent:
     phrase_id: str = ""
     ensemble_role: str = ""
     confidence: float = 1.0
+    instrument_probabilities: Mapping[str, float] = field(default_factory=dict)
+    role_probabilities: Mapping[str, float] = field(default_factory=dict)
+    confidence_fields: Mapping[str, float] = field(default_factory=dict)
     tags: frozenset[str] = frozenset()
     provenance: tuple[str, ...] = ()
 
@@ -64,6 +67,17 @@ class StructuralPerformanceEvent:
             raise ValueError("timing_offset_beats must remain local")
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError("confidence must be within 0..1")
+        for mapping, name in ((self.instrument_probabilities, "instrument_probabilities"), (self.role_probabilities, "role_probabilities")):
+            total = 0.0
+            for key, value in mapping.items():
+                if not key or not 0.0 <= float(value) <= 1.0:
+                    raise ValueError(f"{name} values must be named probabilities within 0..1")
+                total += float(value)
+            if mapping and total > 1.000001:
+                raise ValueError(f"{name} probabilities may not sum above 1")
+        for key, value in self.confidence_fields.items():
+            if not key or not 0.0 <= float(value) <= 1.0:
+                raise ValueError("confidence_fields values must be named confidences within 0..1")
 
 
 @dataclass(frozen=True)
