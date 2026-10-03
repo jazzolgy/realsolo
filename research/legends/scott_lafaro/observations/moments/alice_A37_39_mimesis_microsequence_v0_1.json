@@ -1,0 +1,436 @@
+{
+  "schema_version": "1.0",
+  "study_id": "study.lafaro.alice.microsequence.A37_39.v0_1",
+  "title": "Alice In Wonderland — Chorus A bars 37-39 mimesis micro-sequence",
+  "source_identity": {
+    "track_id": "BE-011",
+    "recording_id": "bill_evans_trio.alice_in_wonderland.village_vanguard_1961",
+    "personnel": [
+      "Bill Evans — piano",
+      "Scott LaFaro — bass",
+      "Paul Motian — drums"
+    ],
+    "score_anchor": "Realbk1.pdf p.12",
+    "literature_anchor": "Clark 2014, Alice In Wonderland, Chorus A bars 37-39",
+    "audio_alignment_status": "absolute_project_audio_timestamp_not_yet_verified"
+  },
+  "sequence_semantics": {
+    "ordered": true,
+    "causal": false,
+    "reward": false,
+    "description": "Descriptive sequence of rhythmic/contour mimesis. Source interpretation is preserved only as provenance, not causal fact."
+  },
+  "moments": [
+    {
+      "moment_id": "alice.A36_37.long_tone_support",
+      "order": 1,
+      "score_locator": {
+        "chorus": "A",
+        "bar_range": "before_37"
+      },
+      "state_label": "long_tone_support",
+      "position": {
+        "beat": 0,
+        "bar": 36,
+        "section": "A",
+        "chorus": 0,
+        "form_position": 0
+      },
+      "phrase": {
+        "phrase_id": "lafaro.pre_mimesis_support",
+        "phrase_position": null,
+        "maturity": null,
+        "boundary_pressure": null,
+        "space": null,
+        "tension": null,
+        "motif_id": null,
+        "confidence": 0.76,
+        "provenance": [
+          "literature:clark_2014"
+        ]
+      },
+      "player_actions": [
+        {
+          "player_id": "bass",
+          "instrument": "bass",
+          "role": "support",
+          "action_type": "long_tone_accompaniment",
+          "interaction": "",
+          "commitment": "observed",
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
+          "register_center": null,
+          "phrase_role": "support",
+          "motif_id": null,
+          "semantic_tags": [
+            "longer_values",
+            "support"
+          ],
+          "confidence": 0.78,
+          "provenance": [
+            "literature:clark_2014"
+          ],
+          "metadata": {
+            "evidence_scope": "precondition described in source"
+          }
+        }
+      ],
+      "interactions": [],
+      "confidence": 0.72,
+      "provenance": [
+        "literature:clark_2014",
+        "sequence_order_only_not_causal"
+      ]
+    },
+    {
+      "moment_id": "alice.A37.evans_rhythmic_idea",
+      "order": 2,
+      "score_locator": {
+        "chorus": "A",
+        "bar_range": "37"
+      },
+      "state_label": "piano_rhythmic_idea",
+      "position": {
+        "beat": 0,
+        "bar": 37,
+        "section": "A",
+        "chorus": 0,
+        "form_position": 0
+      },
+      "phrase": {
+        "phrase_id": "evans.alice.A37_38.idea",
+        "phrase_position": null,
+        "maturity": null,
+        "boundary_pressure": null,
+        "space": null,
+        "tension": null,
+        "motif_id": null,
+        "confidence": 0.82,
+        "provenance": [
+          "literature:clark_2014"
+        ]
+      },
+      "player_actions": [
+        {
+          "player_id": "piano",
+          "instrument": "piano",
+          "role": "foreground",
+          "action_type": "eighth_note_phrase_then_triplet_descent",
+          "interaction": "",
+          "commitment": "observed",
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
+          "register_center": null,
+          "phrase_role": "state",
+          "motif_id": null,
+          "semantic_tags": [
+            "eighth_notes",
+            "triplet_descent",
+            "foreground_phrase"
+          ],
+          "confidence": 0.86,
+          "provenance": [
+            "literature:clark_2014"
+          ],
+          "metadata": {
+            "bar_range": "37-38"
+          }
+        }
+      ],
+      "interactions": [],
+      "confidence": 0.78,
+      "provenance": [
+        "literature:clark_2014",
+        "sequence_order_only_not_causal"
+      ]
+    },
+    {
+      "moment_id": "alice.A38.simultaneous_mimesis",
+      "order": 3,
+      "score_locator": {
+        "chorus": "A",
+        "bar_range": "38"
+      },
+      "state_label": "simultaneous_mimesis",
+      "position": {
+        "beat": 0,
+        "bar": 38,
+        "section": "A",
+        "chorus": 0,
+        "form_position": 0
+      },
+      "phrase": {
+        "phrase_id": "lafaro.alice.A38.mimesis",
+        "phrase_position": null,
+        "maturity": null,
+        "boundary_pressure": null,
+        "space": null,
+        "tension": null,
+        "motif_id": null,
+        "confidence": 0.88,
+        "provenance": [
+          "literature:clark_2014"
+        ]
+      },
+      "player_actions": [
+        {
+          "player_id": "piano",
+          "instrument": "piano",
+          "role": "foreground",
+          "action_type": "repeat_rhythmic_contour_idea",
+          "interaction": "mimesis_shared",
+          "commitment": "observed",
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
+          "register_center": null,
+          "phrase_role": "repeat",
+          "motif_id": null,
+          "semantic_tags": [
+            "shared_rhythm_shape",
+            "shared_contour_shape"
+          ],
+          "confidence": 0.86,
+          "provenance": [
+            "literature:clark_2014"
+          ],
+          "metadata": {
+            "bar_range": "38"
+          }
+        },
+        {
+          "player_id": "bass",
+          "instrument": "bass",
+          "role": "counterline",
+          "action_type": "mimic_rhythm_and_contour",
+          "interaction": "mimesis",
+          "commitment": "observed",
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
+          "register_center": null,
+          "phrase_role": "answer_or_mimesis",
+          "motif_id": null,
+          "semantic_tags": [
+            "mimesis",
+            "shared_rhythm_shape",
+            "shared_contour_shape",
+            "depart_long_tones"
+          ],
+          "confidence": 0.88,
+          "provenance": [
+            "literature:clark_2014",
+            "derived_abstract_no_literal_notes"
+          ],
+          "metadata": {
+            "bar_range": "38"
+          }
+        }
+      ],
+      "interactions": [
+        {
+          "source_player_id": "bass",
+          "kind": "mimesis",
+          "target_player_ids": [
+            "piano"
+          ],
+          "confidence": 0.86,
+          "tags": [
+            "observed_shape_match",
+            "simultaneous_rhythm_and_contour"
+          ],
+          "provenance": [
+            "literature:clark_2014"
+          ]
+        }
+      ],
+      "confidence": 0.84,
+      "provenance": [
+        "literature:clark_2014",
+        "sequence_order_only_not_causal"
+      ]
+    },
+    {
+      "moment_id": "alice.A39.delayed_resolution_mimesis",
+      "order": 4,
+      "score_locator": {
+        "chorus": "A",
+        "bar_range": "39"
+      },
+      "state_label": "delayed_resolution_mimesis",
+      "position": {
+        "beat": 0,
+        "bar": 39,
+        "section": "A",
+        "chorus": 0,
+        "form_position": 0
+      },
+      "phrase": {
+        "phrase_id": "lafaro.alice.A39.resolve",
+        "phrase_position": null,
+        "maturity": null,
+        "boundary_pressure": null,
+        "space": null,
+        "tension": null,
+        "motif_id": null,
+        "confidence": 0.84,
+        "provenance": [
+          "literature:clark_2014"
+        ]
+      },
+      "player_actions": [
+        {
+          "player_id": "piano",
+          "instrument": "piano",
+          "role": "foreground",
+          "action_type": "descending_resolution",
+          "interaction": "",
+          "commitment": "observed",
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
+          "register_center": null,
+          "phrase_role": "resolve",
+          "motif_id": null,
+          "semantic_tags": [
+            "descending_resolution"
+          ],
+          "confidence": 0.84,
+          "provenance": [
+            "literature:clark_2014"
+          ],
+          "metadata": {
+            "bar_range": "39"
+          }
+        },
+        {
+          "player_id": "bass",
+          "instrument": "bass",
+          "role": "counterline_to_support",
+          "action_type": "delayed_shape_resolution",
+          "interaction": "mimesis",
+          "commitment": "observed",
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
+          "register_center": null,
+          "phrase_role": "resolve",
+          "motif_id": null,
+          "semantic_tags": [
+            "one_beat_delayed",
+            "mimesis",
+            "matching_rhythm_and_contour_shape"
+          ],
+          "confidence": 0.82,
+          "provenance": [
+            "literature:clark_2014",
+            "derived_abstract_no_literal_notes"
+          ],
+          "metadata": {
+            "bar_range": "39"
+          }
+        }
+      ],
+      "interactions": [
+        {
+          "source_player_id": "bass",
+          "kind": "mimesis",
+          "target_player_ids": [
+            "piano"
+          ],
+          "confidence": 0.8,
+          "tags": [
+            "observed_shape_match",
+            "delayed_by_one_beat"
+          ],
+          "provenance": [
+            "literature:clark_2014"
+          ]
+        }
+      ],
+      "confidence": 0.8,
+      "provenance": [
+        "literature:clark_2014",
+        "sequence_order_only_not_causal"
+      ]
+    },
+    {
+      "moment_id": "alice.A39_after.return_support",
+      "order": 5,
+      "score_locator": {
+        "chorus": "A",
+        "bar_range": "after_39"
+      },
+      "state_label": "return_support",
+      "position": {
+        "beat": 0,
+        "bar": 40,
+        "section": "A",
+        "chorus": 0,
+        "form_position": 0
+      },
+      "phrase": {
+        "phrase_id": "lafaro.post_mimesis_support",
+        "phrase_position": null,
+        "maturity": null,
+        "boundary_pressure": null,
+        "space": null,
+        "tension": null,
+        "motif_id": null,
+        "confidence": 0.74,
+        "provenance": [
+          "literature:clark_2014"
+        ]
+      },
+      "player_actions": [
+        {
+          "player_id": "bass",
+          "instrument": "bass",
+          "role": "support",
+          "action_type": "simpler_accompaniment_return",
+          "interaction": "",
+          "commitment": "observed",
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
+          "register_center": null,
+          "phrase_role": "support",
+          "motif_id": null,
+          "semantic_tags": [
+            "support_return",
+            "simpler_accompaniment"
+          ],
+          "confidence": 0.78,
+          "provenance": [
+            "literature:clark_2014"
+          ],
+          "metadata": {
+            "evidence_scope": "postcondition described in source"
+          }
+        }
+      ],
+      "interactions": [],
+      "confidence": 0.72,
+      "provenance": [
+        "literature:clark_2014",
+        "sequence_order_only_not_causal"
+      ]
+    }
+  ],
+  "unresolved": [
+    "absolute project-audio timestamps",
+    "exact score harmony refs for each moment",
+    "drum-set behavior",
+    "quantitative density/energy/tension/register values",
+    "causal direction of the mimetic relation"
+  ]
+}
