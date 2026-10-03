@@ -5,7 +5,12 @@ from .affinity import (
     source_instrument_affinity,
     vocabulary_affinity,
 )
-from .usage_policy import (\n    DIRECT_LITERAL_SHARE,\n    VocabularyUseScore,\n    choose_runtime_vocabulary_use,\n    vocabulary_use_score,\n)
+from .usage_policy import (
+    DIRECT_LITERAL_SHARE,
+    VocabularyUseScore,
+    choose_runtime_vocabulary_use,
+    vocabulary_use_score,
+)
 from .retrieval import (
     VocabularyRankingBreakdown,
     rank_vocabulary_items,
