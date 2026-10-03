@@ -86,10 +86,21 @@ def test_alice_handoff_tracks_support_foreground_support_without_pitch_commands(
     assert develop_bass["role"] == "foreground"
     assert final_bass["role"] == "support"
 
-    assert entry_bass["density"] > first_bass["density"]
-    assert develop_bass["register_center"] > entry_bass["register_center"]
-    assert final_bass["density"] < develop_bass["density"]
-    assert final_bass["register_center"] < develop_bass["register_center"]
+    assert "longer_values" in first_bass["semantic_tags"]
+    assert "low_register" in first_bass["semantic_tags"]
+    assert "foreground_entry" in entry_bass["semantic_tags"]
+    assert "eighth_notes" in entry_bass["semantic_tags"]
+    assert "upper_register" in develop_bass["semantic_tags"]
+    assert "register_descent" in final_bass["semantic_tags"]
+    assert "support_return" in final_bass["semantic_tags"]
+
+    # Literature prose supports qualitative direction, not precise 0..1 values.
+    for action in (first_bass, entry_bass, develop_bass, final_bass):
+        assert action["density"] is None
+        assert action["energy"] is None
+        assert action["tension"] is None
+        assert action["space"] is None
+        assert action["register_center"] is None
 
     raw=json.dumps(payload).lower()
     assert "pitch_midi" not in raw
@@ -106,7 +117,8 @@ def test_piano_space_and_reentry_are_temporal_observations_not_causal_fields():
     piano_reentry=next(x for x in reentry["player_actions"] if x["player_id"]=="piano")
 
     assert piano_space["action_type"] == "phrase_resolution_then_space"
-    assert piano_space["space"] > .7
+    assert piano_space["space"] is None
+    assert "space_opening" in piano_space["semantic_tags"]
     assert piano_reentry["action_type"] == "new_phrase_entry"
 
     raw=json.dumps(payload).lower()
