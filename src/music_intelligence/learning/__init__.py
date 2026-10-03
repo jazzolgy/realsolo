@@ -57,6 +57,7 @@ __all__ = [
     "same_form_relative_position",
     "StructuralAlignmentSpan",
     "StructuralAlignmentIndex",
+    "align_structural_performance_data",
 ]
 
 
@@ -74,4 +75,5 @@ from .score_alignment import (
 from .structural_join import (
     StructuralAlignmentSpan,
     StructuralAlignmentIndex,
+    align_structural_performance_data,
 )
