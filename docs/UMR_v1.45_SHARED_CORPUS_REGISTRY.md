@@ -122,3 +122,29 @@ project is RESEARCH / REFERENCE unless the actual rights metadata explicitly
 supports broader use. Do not put those raw recordings in the public repository.
 
 Training eligibility is a separate decision from research access.
+
+
+## Canonical musical coordinate and RealChord
+
+Shared derived items should prefer a structure-aware musical address over an
+absolute-time-only address:
+
+```text
+form / form_iteration
+section
+bar_in_section
+bar_in_form
+beat
+subdivision
+```
+
+Absolute onset/offset seconds remain attached as provenance.
+
+When RealChord material is registered in the shared symbolic corpus, consumers
+may use it as a chart/form/harmony reference for alignment and Expected
+Harmony. It must not silently overwrite Observed or Inferred Harmony derived
+from a performance. Performance-specific substitution or reharmonization must
+remain representable.
+
+The detailed coordinate policy lives in
+`docs/CANONICAL_MUSICAL_COORDINATE_POLICY.md`.

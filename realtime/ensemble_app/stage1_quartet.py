@@ -22,6 +22,8 @@ from players.piano import PianoVoicingRequest
 from .native_deciders import build_native_quartet_runtime
 from .stage1_piano import _resolved_material
 from .stage1_trio import _affordance, _chart_frame
+from .stage1_music import parse_chord
+from music_intelligence.corpus import ScoreContextSnapshot, ScorePosition
 
 
 @dataclass
@@ -185,6 +187,31 @@ class Stage1QuartetRuntime:
             generation=self.state.generation + 1,
         )
 
+        next_parsed=parse_chord(next_chord) if next_chord else None
+        sax_targets=frozenset(
+            pc for idx,pc in enumerate(next_parsed.pitch_classes)
+            if idx in {1,3}
+        ) if next_parsed is not None else frozenset()
+        # Autumn Leaves G minor and its relative Bb-major region share this
+        # seven-note collection; this is harmonic/form context, not head melody.
+        sax_local_key=frozenset({7,9,10,0,2,3,5})
+        sax_score_snapshot=ScoreContextSnapshot(
+            book_id="canonical_repertoire",
+            song_id="autumn_leaves_g_minor_jam",
+            position=ScorePosition(
+                page=1,
+                bar=bar_index+1,
+                beat=beat_in_bar,
+            ),
+            style=("jazz","bebop"),
+            meter="4/4",
+            section=section or None,
+            current_feel="swing",
+            solo_indication="open_solo",
+            confidence=1.0,
+            provenance=("canonical_repertoire:autumn_leaves_harmony_form",),
+        )
+
         musical_context = MusicalContextVector(
             chord_symbol=chord_symbol,
             metric_position=(beat_in_bar % 4.0) / 4.0,
@@ -207,7 +234,11 @@ class Stage1QuartetRuntime:
                 "groove_context": groove,
                 "time_feel": groove.feel.value,
                 "sax_allow_improvisation": True,
-                "song_id": "stage1_chart",
+                "sax_score_snapshot": sax_score_snapshot,
+                "sax_target_pitch_classes": sax_targets,
+                "sax_local_key_pitch_classes": sax_local_key,
+                "decision_step_beats": .5,
+                "song_id": "autumn_leaves_g_minor_jam",
                 "performance_convention": default_performance_convention("jazz"),
             },
         )
