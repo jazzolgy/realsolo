@@ -21,6 +21,8 @@ from music_intelligence.reasoning.hierarchical_priors import HierarchicalPriorSe
 from music_intelligence.reasoning.runtime_prior_bundle import (
     hierarchical_priors_from_learning_engine,
 )
+from music_intelligence.reasoning.runtime_vocabulary import project_shared_vocabulary
+from music_intelligence.vocabulary import SHARED_VOCABULARY_INDEX
 from music_intelligence.reasoning.runtime_legend_selector import (
     legend_choice_for,
     legend_blend_for,
@@ -309,6 +311,62 @@ class Stage1QuartetRuntime:
                 weights=self.hierarchical_priors.weights,
             )
 
+        shared_vocab_sax=project_shared_vocabulary(
+            SHARED_VOCABULARY_INDEX,
+            player_id="sax",
+            target_instrument="tenor_sax",
+            domains=(
+                LegendDomain.LINEAR_CONNECTION,
+                LegendDomain.HARMONY_TARGET_SELECTION,
+                LegendDomain.FUTURE_HARMONY_AWARENESS,
+                LegendDomain.TENSION_RELEASE,
+                LegendDomain.MOTIF_DEVELOPMENT,
+                LegendDomain.REPETITION_VARIATION,
+                LegendDomain.BREATH_SPACE,
+                LegendDomain.CALL_RESPONSE,
+            ),
+            limit_per_domain=5,
+        )
+        shared_vocab_piano=project_shared_vocabulary(
+            SHARED_VOCABULARY_INDEX,
+            player_id="piano",
+            target_instrument="piano",
+            domains=(
+                LegendDomain.ENSEMBLE_INTERACTION,
+                LegendDomain.CALL_RESPONSE,
+                LegendDomain.BREATH_SPACE,
+                LegendDomain.LINEAR_CONNECTION,
+                LegendDomain.FORM_AWARENESS,
+            ),
+            limit_per_domain=5,
+        )
+        shared_vocab_bass=project_shared_vocabulary(
+            SHARED_VOCABULARY_INDEX,
+            player_id="bass",
+            target_instrument="bass",
+            domains=(
+                LegendDomain.LINEAR_CONNECTION,
+                LegendDomain.HARMONY_TARGET_SELECTION,
+                LegendDomain.FUTURE_HARMONY_AWARENESS,
+                LegendDomain.RHYTHM_SUBDIVISION,
+                LegendDomain.FORM_AWARENESS,
+            ),
+            limit_per_domain=5,
+        )
+        shared_vocab_drums=project_shared_vocabulary(
+            SHARED_VOCABULARY_INDEX,
+            player_id="drums",
+            target_instrument="drums",
+            domains=(
+                LegendDomain.RHYTHM_SUBDIVISION,
+                LegendDomain.ENSEMBLE_INTERACTION,
+                LegendDomain.BREATH_SPACE,
+                LegendDomain.MOTIF_DEVELOPMENT,
+                LegendDomain.FORM_AWARENESS,
+            ),
+            limit_per_domain=5,
+        )
+
         musical_context = MusicalContextVector(
             chord_symbol=chord_symbol,
             metric_position=(beat_in_bar % 4.0) / 4.0,
@@ -348,6 +406,10 @@ class Stage1QuartetRuntime:
                 ),
                 "legend_showcase": self.legend_showcase,
                 "runtime_legend_choices": legend_choices,
+                "shared_vocabulary_sax": shared_vocab_sax,
+                "shared_vocabulary_piano": shared_vocab_piano,
+                "shared_vocabulary_bass": shared_vocab_bass,
+                "shared_vocabulary_drums": shared_vocab_drums,
                 "sax_allow_improvisation": True,
                 "sax_score_snapshot": sax_score_snapshot,
                 "sax_target_pitch_classes": sax_targets,
