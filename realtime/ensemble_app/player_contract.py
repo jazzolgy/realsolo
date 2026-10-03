@@ -3,7 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from typing import Mapping, Sequence
 
-from music_intelligence.reasoning.groove_context import GrooveTemporalContext, groove_timing_offset_beats
+from music_intelligence.reasoning.groove_context import (
+    GrooveCoordinationMode,
+    GrooveTemporalContext,
+    groove_timing_offset_beats,
+    player_phase_offset_beats,
+    player_swing_offbeat_fraction,
+)
 
 ExpressionValue = float | int | str | bool
 
@@ -152,12 +158,13 @@ def apply_shared_groove_to_render_gesture(
     *,
     anchor_beat: float,
     groove: GrooveTemporalContext | None,
+    phrase_maturity: float = 0.5,
 ) -> RenderGesture:
-    """Project one committed gesture onto the shared ensemble pulse.
+    """Realize a shared groove as a reference, not a universal exact onset.
 
-    This is not musical selection and does not force every subdivision to swing.
-    It only moves swing-eligible nominal eighth offbeats to the shared temporal
-    reference, identically for piano, bass, drums, and solo voices.
+    LOCKED: all players use the shared reference exactly.
+    ELASTIC/HUMAN_DRIFT: each role receives bounded phrase-shaped phase and
+    swing placement around the same reference pulse.
     """
     gesture.validate()
     if groove is None:
@@ -165,10 +172,28 @@ def apply_shared_groove_to_render_gesture(
     groove.validate()
 
     def warped(v: RenderVoice) -> RenderVoice:
-        shift=groove_timing_offset_beats(
-            anchor_beat+v.onset_offset_beats,
+        role=v.instrument_role or gesture.role
+        local=anchor_beat+v.onset_offset_beats
+        frac=local % 1.0
+        shift=0.0
+
+        if groove.eligible_for_swing_warp():
+            shared=groove.swing_offbeat_fraction
+            desired=player_swing_offbeat_fraction(role,groove)
+            # A nominal eighth in a main-beat gesture gets warped from .5.
+            if abs(frac-.5) <= .08:
+                shift += desired-frac
+            # A dedicated shared swing-subbeat request starts at the shared
+            # offbeat; elastic players may sit slightly around that reference.
+            elif abs(frac-shared) <= .08:
+                shift += desired-frac
+        else:
+            shift += groove_timing_offset_beats(local,groove,swing_eligible=True)
+
+        shift += player_phase_offset_beats(
+            role,
             groove,
-            swing_eligible=True,
+            phrase_maturity=phrase_maturity,
         )
         return replace(v,onset_offset_beats=v.onset_offset_beats+shift)
 
@@ -176,7 +201,12 @@ def apply_shared_groove_to_render_gesture(
     annotations["groove_feel"]=groove.feel.value
     annotations["groove_grammar"]=groove.grammar_id
     annotations["swing_ratio"]=f"{groove.effective_swing_ratio:.4f}"
-    tags=tuple(dict.fromkeys((*gesture.tags,f"groove:{groove.feel.value}")))
+    annotations["groove_coordination_mode"]=groove.coordination_mode.value
+    tags=tuple(dict.fromkeys((
+        *gesture.tags,
+        f"groove:{groove.feel.value}",
+        f"groove_mode:{groove.coordination_mode.value}",
+    )))
     out=replace(
         gesture,
         voices=tuple(warped(v) for v in gesture.voices),
@@ -186,3 +216,4 @@ def apply_shared_groove_to_render_gesture(
     )
     out.validate()
     return out
+

@@ -10,7 +10,11 @@ from .asset_installer import ASSET_ROOT
 from .harmony_display import transpose_chord
 from .stage1_music import Stage1Soloist
 from .player_contract import monophonic_solo_gesture, apply_shared_groove_to_render_gesture
-from music_intelligence.reasoning.groove_context import GrooveFeel, build_groove_context
+from music_intelligence.reasoning.groove_context import (
+    GrooveCoordinationMode,
+    GrooveFeel,
+    build_groove_context,
+)
 from .player_provider import current_stage1_provider_status
 from .stage1_trio import Stage1TrioRuntime
 
@@ -55,12 +59,16 @@ def chart_payload(chart: SongChart, *, transpose: int = 0) -> dict:
     }
 
 
-def groove_payload(tempo_bpm: float) -> dict:
+def groove_payload(tempo_bpm: float, mode: GrooveCoordinationMode = GrooveCoordinationMode.ELASTIC) -> dict:
     groove=build_groove_context(
         GrooveFeel.SWING,
         tempo_bpm=tempo_bpm,
         grammar_id="swing.eighth_triplet_feel",
         subdivision_hint="swing_eighth",
+        coordination_mode=mode,
+        phase_elasticity=0.0 if mode is GrooveCoordinationMode.LOCKED else 0.72,
+        swing_elasticity=0.0 if mode is GrooveCoordinationMode.LOCKED else 0.60,
+        tempo_elasticity=0.85 if mode is GrooveCoordinationMode.HUMAN_DRIFT else 0.0,
         provenance=("stage1_web_groove_query",),
     )
     return {
@@ -68,6 +76,7 @@ def groove_payload(tempo_bpm: float) -> dict:
         "swing_ratio": groove.effective_swing_ratio,
         "offbeat_fraction": groove.swing_offbeat_fraction,
         "grammar_id": groove.grammar_id,
+        "coordination_mode": groove.coordination_mode.value,
     }
 
 
@@ -106,7 +115,12 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                 tempo=max(40.0,min(360.0,float(query.get("tempo",[str(self.chart.tempo_bpm)])[0])))
             except ValueError:
                 tempo=self.chart.tempo_bpm
-            body=json.dumps(groove_payload(tempo)).encode("utf-8")
+            raw_mode=query.get("mode",["elastic"])[0].strip().lower()
+            try:
+                mode=GrooveCoordinationMode(raw_mode)
+            except ValueError:
+                mode=GrooveCoordinationMode.ELASTIC
+            body=json.dumps(groove_payload(tempo,mode)).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type","application/json; charset=utf-8")
             self.send_header("Content-Length",str(len(body)))
@@ -148,6 +162,12 @@ class Stage1Handler(SimpleHTTPRequestHandler):
             except ValueError:
                 beat, bar_index, tempo_bpm, chorus = 0.0, 0, self.chart.tempo_bpm, 0
 
+            raw_mode=query.get("mode",[""])[0].strip().lower()
+            try:
+                coordination_mode=(GrooveCoordinationMode(raw_mode) if raw_mode else None)
+            except ValueError:
+                coordination_mode=None
+
             players_raw=query.get("players",[""])[0].strip()
             active_player_ids=(
                 frozenset(x.strip() for x in players_raw.split(",") if x.strip())
@@ -165,6 +185,7 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                 section=bar.section or "",
                 chorus=chorus,
                 active_player_ids=active_player_ids,
+                coordination_mode=coordination_mode,
             )
 
             combined = {
@@ -234,6 +255,8 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                     "swing_subbeat": swing_subbeat,
                     "players": [d.player_id for d in result.decisions],
                     "skipped": list(result.skipped_player_ids),
+                    "groove_mode": self.trio.state.groove.coordination_mode.value if self.trio.state.groove is not None else "elastic",
+                    "effective_tempo_bpm": self.trio.state.transport.tempo_bpm,
                 }
             ).encode("utf-8")
             self.send_response(200)
