@@ -98,3 +98,16 @@ __all__ += [
     "resolve_score_context",
     "structured_evidence_from_locator",
 ]
+
+
+from .form_sources import (
+    FORM_SOURCE_TAGS,
+    FormSourceCandidate,
+    discover_form_sources,
+)
+
+__all__ += [
+    "FORM_SOURCE_TAGS",
+    "FormSourceCandidate",
+    "discover_form_sources",
+]
