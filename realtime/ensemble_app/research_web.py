@@ -14,6 +14,7 @@ from urllib.parse import parse_qs, urlparse
 
 from .autonomous_research_session import AutonomousResearchSession
 from .research_audio_ingest import ResearchAudioIngestor
+from .model_service_backend import LocalInstrumentModelServiceBackend
 from .research_checkpoint import ResearchCheckpoint, default_research_state_root
 from .youtube_data_api import YouTubeDataAPIError, YouTubeDataAPIProvider
 from .youtube_research_provider import YouTubeSearchQuery, youtube_embed_url
@@ -29,7 +30,18 @@ class ResearchRuntime:
         self.checkpoint_path=self.state_root/"listener_checkpoint.json"
         self.checkpoint=ResearchCheckpoint.load(self.checkpoint_path)
         self.checkpoint.restore_session(self.session)
-        self.ingestor=ResearchAudioIngestor(evidence_root=self.state_root/"evidence")
+        model_endpoint=os.environ.get("REALSOLO_INSTRUMENT_MODEL_URL","").strip()
+        model_backend=(
+            LocalInstrumentModelServiceBackend(
+                endpoint=model_endpoint,
+                allow_remote=os.environ.get("REALSOLO_ALLOW_REMOTE_AUDIO_MODEL","").strip().lower() in {"1","true","yes"},
+            )
+            if model_endpoint else None
+        )
+        self.ingestor=ResearchAudioIngestor(
+            evidence_root=self.state_root/"evidence",
+            learned_instrument_backend=model_backend,
+        )
         self.last_query=self.checkpoint.last_query
         self.last_artist=self.checkpoint.last_artist
 
@@ -113,6 +125,7 @@ class ResearchHandler(SimpleHTTPRequestHandler):
                 "queued":len(self.runtime.session.queue),
                 "last_query":self.runtime.last_query,
                 "last_artist":self.runtime.last_artist,
+                "instrument_model_backend":("local_service" if os.environ.get("REALSOLO_INSTRUMENT_MODEL_URL","").strip() else "baseline"),
             })
             return
         if parsed.path=="/api/research/search":
