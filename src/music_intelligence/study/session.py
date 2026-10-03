@@ -211,6 +211,7 @@ class StudySession:
         *,
         window_s:float=2.0,
         hop_s:float=1.0,
+        start_s:float=0.0,
         max_seconds:float|None=None,
     )->StudySessionSummary:
         if not self.source_id:
@@ -221,7 +222,7 @@ class StudySession:
         windows=aligned=stored=0
         with self.output_path.open("w",encoding="utf-8") as fh:
             for window in stream_audio_windows(
-                audio_path,window_s=window_s,hop_s=hop_s,max_seconds=max_seconds
+                audio_path,window_s=window_s,hop_s=hop_s,start_s=start_s,max_seconds=max_seconds
             ):
                 coordinate=(
                     self.form_clock.coordinate_at(window.start_s)
