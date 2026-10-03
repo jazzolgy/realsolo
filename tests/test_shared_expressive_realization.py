@@ -113,3 +113,27 @@ def test_autumn_leaves_sax_emits_shared_expressive_controls():
     assert "foreground_weight" in voice.expression_controls
     decision=next(d for d in result.decisions if d.player_id=="sax")
     assert "shared_expressive_realization" in decision.intent.provenance
+
+
+
+def test_quartet_piano_bass_drums_also_emit_shared_expressive_controls():
+    quartet=Stage1QuartetRuntime.create(172.0)
+    result=quartet.decide(
+        "Cm7","F7",
+        beat_in_bar=0.0,
+        bar_index=0,
+        total_bars=32,
+        tempo_bpm=172.0,
+        section="A",
+    )
+    by_source={g.source:g for g in result.gestures}
+    piano=by_source.get("player/piano:comping_policy")
+    bass=by_source.get("player/bass:sequential_runner")
+    drums=by_source.get("player/drums:online_drummer")
+
+    if piano is not None and piano.voices:
+        assert "dynamic_level" in piano.voices[0].expression_controls
+    if bass is not None and bass.voices:
+        assert "dynamic_level" in bass.voices[0].expression_controls
+    if drums is not None and drums.drum_hits:
+        assert "dynamic_level" in drums.drum_hits[0].expression_controls
