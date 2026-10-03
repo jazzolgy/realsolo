@@ -2,7 +2,7 @@
   "schema_version": "2.0",
   "legend_id": "scott_lafaro",
   "status": "structure_first_annotation_queue",
-  "policy": "Audio time is provenance. Musical coordinate is required before phrase evidence may become vocabulary/tendency evidence.",
+  "policy": "Audio time is provenance. Musical coordinate is required before phrase evidence may become vocabulary/tendency evidence. Form-grid candidates improve navigation but do not name exact form bars until harmonic rotation/downbeat are verified.",
   "tracks": [
     {
       "track_id": "BE-011",
@@ -49,7 +49,14 @@
         "beat": "optional until verified",
         "subdivision": "optional until verified"
       },
-      "promotion_gate": "timestamp-only annotation remains navigation_only"
+      "promotion_gate": "timestamp-only annotation remains navigation_only",
+      "form_grid_candidate": {
+        "period_s": 65.5,
+        "implied_quarter_bpm": 175.88,
+        "grid_similarity": 0.8763,
+        "status": "candidate_not_canonical",
+        "probe": "research/legends/scott_lafaro/structural_alignment/alice_in_wonderland_form_probe_v1.json"
+      }
     },
     {
       "track_id": "BE-012",
@@ -96,7 +103,14 @@
         "beat": "optional until verified",
         "subdivision": "optional until verified"
       },
-      "promotion_gate": "timestamp-only annotation remains navigation_only"
+      "promotion_gate": "timestamp-only annotation remains navigation_only",
+      "form_grid_candidate": {
+        "period_s": 31.95,
+        "implied_quarter_bpm": 240.38,
+        "grid_similarity": 0.7584,
+        "status": "candidate_not_canonical",
+        "probe": "research/legends/scott_lafaro/structural_alignment/how_deep_is_the_ocean_form_probe_v1.json"
+      }
     },
     {
       "track_id": "BE-015",
@@ -143,7 +157,14 @@
         "beat": "optional until verified",
         "subdivision": "optional until verified"
       },
-      "promotion_gate": "timestamp-only annotation remains navigation_only"
+      "promotion_gate": "timestamp-only annotation remains navigation_only",
+      "form_grid_candidate": {
+        "period_s": 15.5,
+        "implied_quarter_bpm": 185.81,
+        "grid_similarity": 0.9024,
+        "status": "candidate_not_canonical",
+        "probe": "research/legends/bill_evans/structural_alignment/israel_form_probe_v1.json"
+      }
     }
   ]
 }
