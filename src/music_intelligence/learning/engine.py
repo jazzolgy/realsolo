@@ -145,11 +145,13 @@ class SharedLearningEngine:
                 added+=1
                 self.admission_log[a.artifact_id]=decision
                 if decision.admit_to_evidence_prior:
-                    evidence_weight=decision.evidence_weight*a.confidence
+                    base_weight=1.0 if decision.evidence_weight is None else decision.evidence_weight
+                    evidence_weight=base_weight*a.confidence
                     if evidence_weight>0:
                         self._evidence_state(a.domain).observe_weighted(a,evidence_weight)
                 if decision.admit_to_training_prior:
-                    training_weight=decision.training_weight*a.confidence
+                    base_weight=1.0 if decision.training_weight is None else decision.training_weight
+                    training_weight=base_weight*a.confidence
                     if training_weight>0:
                         self._state(a.domain).observe_weighted(a,training_weight)
         return added
