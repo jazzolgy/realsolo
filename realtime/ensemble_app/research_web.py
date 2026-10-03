@@ -243,6 +243,7 @@ class ResearchHandler(SimpleHTTPRequestHandler):
                 moment=row["musical_moment"]
                 raw=pe["raw"]
                 posterior=pe["posterior"]
+                form_position=pe.get("metric_form_position") or moment.get("metric_form_position") or {}
                 instruments=posterior.get("instrument_probabilities",{})
                 roles=posterior.get("role_probabilities",{})
                 self._json({
@@ -261,6 +262,11 @@ class ResearchHandler(SimpleHTTPRequestHandler):
                     "register_center":moment.get("register_center"),
                     "learned_backend_available":raw.get("confidence_fields",{}).get("learned_backend_available"),
                     "yamnet_window_ready":raw.get("confidence_fields",{}).get("yamnet_window_ready"),
+                    "metric_form_position":form_position,
+                    "form_learning_ready":(
+                        form_position.get("measure_index") is not None
+                        and form_position.get("beat_in_measure") is not None
+                    ),
                 })
             except (ValueError,RuntimeError) as exc:
                 self._json({"ok":False,"error":str(exc)},400)
