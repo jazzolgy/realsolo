@@ -18,6 +18,9 @@ from music_intelligence.reasoning.performance_convention import (
     default_performance_convention,
 )
 from music_intelligence.reasoning.hierarchical_priors import HierarchicalPriorSet
+from music_intelligence.reasoning.runtime_prior_bundle import (
+    hierarchical_priors_from_learning_engine,
+)
 from music_intelligence.reasoning.runtime_legend_selector import (
     legend_choice_for,
     legend_blend_for,
@@ -103,6 +106,10 @@ class Stage1QuartetRuntime:
             groove=groove,
         )
         return cls(build_native_quartet_runtime(), state)
+
+    def attach_learning_engine(self, engine) -> None:
+        """Attach only promoted rights-gated learning priors to audible runtime."""
+        self.hierarchical_priors=hierarchical_priors_from_learning_engine(engine)
 
     def reset(self, tempo_bpm: float = 172.0) -> None:
         priors=self.hierarchical_priors
