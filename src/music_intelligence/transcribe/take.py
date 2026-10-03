@@ -159,13 +159,29 @@ def _materialize_voice_rests(
             set(),
         ).add(event.voice_id)
 
+    primary_voice_by_staff: dict[tuple[str, str], str] = {}
+    for staff_key, voice_ids in voices_by_staff.items():
+        ranked: list[tuple[Fraction, Fraction, str]] = []
+        for voice_id in voice_ids:
+            voice_events = groups[(staff_key[0], staff_key[1], voice_id)]
+            first_onset = min(event.span.onset for event in voice_events)
+            total_duration = sum(
+                (event.span.duration for event in voice_events),
+                Fraction(0),
+            )
+            ranked.append((first_onset, -total_duration, voice_id))
+        ranked.sort()
+        primary_voice_by_staff[staff_key] = ranked[0][2]
+
     out: list[ScoreEvent] = []
     rest_counter = 0
     for (part_id, staff_id, voice_id), voice_events in groups.items():
         voice_events.sort(key=lambda event: (event.span.onset, event.event_id))
-        polyphonic_staff = len(voices_by_staff[(part_id, staff_id)]) > 1
+        staff_key = (part_id, staff_id)
+        polyphonic_staff = len(voices_by_staff[staff_key]) > 1
+        is_primary_voice = primary_voice_by_staff[staff_key] == voice_id
 
-        if polyphonic_staff:
+        if polyphonic_staff and not is_primary_voice:
             first_onset = voice_events[0].span.onset
             last_offset = max(event.span.offset for event in voice_events)
             voice_start = max(
