@@ -4,6 +4,8 @@ from __future__ import annotations
 from dataclasses import replace
 
 from .form_position import MetricFormPosition
+from .score_alignment import MusicalScoreCoordinate, PerformancePhase
+from .canonical_score_bridge import musical_score_coordinate_from_metric_form
 from .representation import StructuralPerformanceData, StructuralPerformanceEvent
 
 
@@ -111,3 +113,35 @@ def position_feature_map(event: StructuralPerformanceEvent) -> dict[str,object]:
         "absolute_beat":p.absolute_beat,
         "position_confidence":p.confidence,
     }
+
+
+
+def canonical_score_coordinate_for_event(
+    event: StructuralPerformanceEvent,
+    data: StructuralPerformanceData,
+    *,
+    song_id: str,
+    score_source_id: str = "",
+    realchord_id: str = "",
+    performance_phase: PerformancePhase = PerformancePhase.UNKNOWN,
+) -> MusicalScoreCoordinate:
+    """Return the persisted Shared Core coordinate for one listener event.
+
+    MetricFormPosition remains the runtime/form-estimation representation.
+    This adapter is the boundary used before persistent learning/comparison.
+    """
+    metric=position_from_legacy_beats(event,data)
+    return musical_score_coordinate_from_metric_form(
+        metric,
+        song_id=song_id,
+        score_source_id=score_source_id,
+        realchord_id=realchord_id,
+        performance_phase=performance_phase,
+        chord_label=event.harmony_label,
+        phrase_position=event.phrase_id,
+        form_role=data.form_label,
+        within_core_form=(True if metric.resolved_form else None),
+        provenance=data.provenance+event.provenance+(
+            "autonomous_listener_canonical_score_boundary",
+        ),
+    )
