@@ -29,6 +29,7 @@ class MetricFormPosition:
     section_id: str | None = None
     section_measure_index: int | None = None
     form_iteration: int | None = None
+    form_path: tuple[str,...] = ()
     phrase_id: str | None = None
     absolute_beat: float | None = None
     confidence: float = 0.0
@@ -78,6 +79,8 @@ class FormSection:
     start_measure: int
     length_measures: int
     label: str = ""
+    parent_section_id: str | None = None
+    section_type: str = ""
 
     def validate(self) -> None:
         if not self.section_id:
@@ -109,8 +112,23 @@ class FormMap:
             raise ValueError("meter must be positive")
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError("confidence must be within 0..1")
+        ids=set()
         for section in self.sections:
             section.validate()
+            if section.section_id in ids:
+                raise ValueError("section_id values must be unique")
+            ids.add(section.section_id)
+        by_id={s.section_id:s for s in self.sections}
+        for section in self.sections:
+            if section.parent_section_id is not None and section.parent_section_id not in by_id:
+                raise ValueError("parent_section_id must refer to another section")
+            seen=set()
+            cursor=section
+            while cursor.parent_section_id is not None:
+                if cursor.section_id in seen:
+                    raise ValueError("form section hierarchy may not contain cycles")
+                seen.add(cursor.section_id)
+                cursor=by_id[cursor.parent_section_id]
         if self.cycle_measures is not None and self.cycle_measures <= 0:
             raise ValueError("cycle_measures must be positive")
 
@@ -136,7 +154,19 @@ class FormMap:
         else:
             iteration=None
             measure=global_measure
-        section=next((s for s in self.sections if s.contains(measure)),None)
+        containing=[s for s in self.sections if s.contains(measure)]
+        section=min(containing,key=lambda s:s.length_measures) if containing else None
+        form_path=()
+        if section is not None:
+            by_id={s.section_id:s for s in self.sections}
+            path=[]
+            cursor=section
+            while True:
+                path.append(cursor.section_id)
+                if cursor.parent_section_id is None:
+                    break
+                cursor=by_id[cursor.parent_section_id]
+            form_path=tuple(reversed(path))
         return MetricFormPosition(
             measure_index=measure,
             beat_in_measure=beat,
@@ -146,6 +176,7 @@ class FormMap:
             section_id=section.section_id if section else None,
             section_measure_index=(measure-section.start_measure if section else None),
             form_iteration=iteration,
+            form_path=form_path,
             phrase_id=phrase_id,
             absolute_beat=absolute_beat,
             confidence=self.confidence,
