@@ -37,6 +37,7 @@ from music_intelligence.legends import LegendDomain
 from music_intelligence.reasoning.legend_style_core import MusicalContextVector
 from music_intelligence.reasoning.online_improviser import SoftPlan
 from music_intelligence.reasoning.solo_runtime import build_solo_tick
+from music_intelligence.reasoning.solo_grammar import SoloDevelopmentOperation
 from music_intelligence.reasoning.motif import (
     MotifEvaluationContext,
     MotifGenerationContext,
