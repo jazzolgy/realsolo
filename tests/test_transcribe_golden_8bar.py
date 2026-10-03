@@ -19,7 +19,7 @@ EXPECTED = json.loads(
 )
 
 
-def _event(event_id, beat, midi, dynamic, phrase):
+def _event(event_id, beat, midi, dynamic, phrase, duration=.9):
     return CommittedPerformanceEvent(
         event_id=event_id,
         player_id="flute",
@@ -29,7 +29,7 @@ def _event(event_id, beat, midi, dynamic, phrase):
             onset_seconds=beat * .5,
             offset_seconds=beat * .5 + .46,
             transport_beat=beat,
-            transport_offset_beat=beat + .9,
+            transport_offset_beat=beat + duration,
         ),
         pitch=PerformedPitch(nominal_midi=float(midi)),
         dynamic=dynamic,
@@ -50,7 +50,7 @@ def test_golden_8bar_phrase_has_stable_readable_structure():
             _event("a3", 2, 76, .43, "A"),
             _event("a4", 3, 77, .52, "A"),
             _event("a5", 4, 79, .54, "A"),
-            _event("a6", 6, 81, .56, "A"),
+            _event("a6", 6.5, 81, .56, "A", duration=1.5),
             _event("b1", 16, 81, .72, "B"),
             _event("b2", 17, 79, .66, "B"),
             _event("b3", 18, 77, .59, "B"),
@@ -78,6 +78,8 @@ def test_golden_8bar_phrase_has_stable_readable_structure():
     rests = [note for note in notes if note.find("rest") is not None]
     assert len(pitched) == EXPECTED["note_count"]
     assert len(rests) >= EXPECTED["rest_count_min"]
+    assert len(part_xml.findall(".//tie[@type='start']")) == EXPECTED["tie_start_count"]
+    assert len(part_xml.findall(".//tie[@type='stop']")) == EXPECTED["tie_stop_count"]
 
     wedges = part_xml.findall("./measure/direction/direction-type/wedge")
     assert [w.get("type") for w in wedges] == EXPECTED["wedge_types"]
