@@ -27,6 +27,7 @@ from music_intelligence.reasoning.phrase_space import PhraseSpaceEvidence
 from music_intelligence.reasoning.ensemble_complementarity import EnsembleComplementarityEvidence
 from music_intelligence.reasoning.turn_taking import TurnTakingEvidence
 from music_intelligence.reasoning.harmonic_turn import HarmonicTurnContext
+from music_intelligence.reasoning.head_fidelity import HeadFidelityMode
 from players.piano.head_interpretation import (
     HeadInterpretationContext,
     gated_head_prior_hierarchy,
@@ -60,7 +61,7 @@ def test_head_gating_keeps_priors_below_improvisation_weights():
     head=gated_head_prior_hierarchy(
         hierarchy,
         HeadInterpretationContext(
-            fidelity_mode="strict",
+            fidelity_mode=HeadFidelityMode.STRICT,
             ensemble_density=.0,
             strong_beat=True,
         ),
