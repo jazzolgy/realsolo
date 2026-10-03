@@ -1,3 +1,4 @@
+from xml.etree import ElementTree as ET
 from fractions import Fraction
 
 from music_intelligence.transcribe import (
@@ -102,3 +103,91 @@ def test_batch_part_applies_shared_swing_notation_context():
 
     assert result.projections[0].preferred_rhythm.candidate_id.endswith(":eighth")
     assert result.part.events[0].tuplet is None
+
+
+
+def test_swing_take_emits_one_global_swing_direction():
+    engine = NotationEngine()
+    request = PartTranscriptionRequest(
+        part_id="sax",
+        name="Alto Sax",
+        instrument="alto_sax",
+        events=(_event("take:swing"),),
+        staffs=(StaffProfile("sax:staff", "sax"),),
+        rhythm_context=RhythmNotationContext(RhythmicFeel.SWING),
+        materialize_rests=False,
+        infer_dynamic_hairpins=False,
+    )
+
+    result, xml = engine.transcribe_take_musicxml(
+        (request,),
+        score_id="swing:take",
+        title="Swing Take",
+    )
+
+    assert [direction.text for direction in result.score.directions] == ["Swing"]
+    root = ET.fromstring(xml)
+    assert root.findall(".//direction/direction-type/words")[0].text == "Swing"
+    assert len(root.findall(".//direction/direction-type/words")) == 1
+
+
+def test_mixed_feel_take_does_not_invent_global_swing_direction():
+    engine = NotationEngine()
+    swing = PartTranscriptionRequest(
+        part_id="sax1",
+        name="Alto Sax 1",
+        instrument="alto_sax",
+        events=(_event("mixed:swing"),),
+        staffs=(StaffProfile("sax1:staff", "sax"),),
+        rhythm_context=RhythmNotationContext(RhythmicFeel.SWING),
+        materialize_rests=False,
+        infer_dynamic_hairpins=False,
+    )
+    straight = PartTranscriptionRequest(
+        part_id="sax2",
+        name="Alto Sax 2",
+        instrument="alto_sax",
+        events=(_event("mixed:straight"),),
+        staffs=(StaffProfile("sax2:staff", "sax"),),
+        rhythm_context=RhythmNotationContext(RhythmicFeel.STRAIGHT),
+        materialize_rests=False,
+        infer_dynamic_hairpins=False,
+    )
+
+    result = engine.transcribe_take(
+        (swing, straight),
+        score_id="mixed:take",
+        title="Mixed Feel",
+    )
+
+    assert result.score.directions == ()
+
+
+def test_explicit_triplet_reaches_musicxml_as_time_modification():
+    event = _event(
+        "xml:explicit-triplet",
+        metadata={"notation_tuplet": "3:2"},
+    )
+    engine = NotationEngine()
+    request = PartTranscriptionRequest(
+        part_id="sax",
+        name="Alto Sax",
+        instrument="alto_sax",
+        events=(event,),
+        staffs=(StaffProfile("sax:staff", "sax"),),
+        rhythm_context=RhythmNotationContext(RhythmicFeel.SWING),
+        materialize_rests=False,
+        infer_dynamic_hairpins=False,
+    )
+
+    _, xml = engine.transcribe_take_musicxml(
+        (request,),
+        score_id="triplet:take",
+        title="Explicit Triplet",
+    )
+
+    root = ET.fromstring(xml)
+    note = root.find(".//part[@id='sax']/measure/note")
+    assert note.findtext("type") == "eighth"
+    assert note.findtext("time-modification/actual-notes") == "3"
+    assert note.findtext("time-modification/normal-notes") == "2"
