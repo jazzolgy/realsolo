@@ -17,7 +17,7 @@ class MetricFormPosition:
     """Musical address of an event.
 
     measure_index is zero-based internally; display_measure is one-based.
-    beat_in_measure is zero-based so beat 1 is 0.0, beat 2 is 1.0, etc.
+    beat_in_measure is zero-based in meter-denominator units: in 4/4, beat 1 is 0.0 and beat 2 is 1.0; in 6/8, 1.0 means one notated eighth-note unit after the barline. Compound-meter pulse grouping can be modeled separately without losing notation position.
     form_iteration identifies repeated traversals/choruses when known.
     """
 
@@ -124,9 +124,12 @@ class FormMap:
         self.validate()
         if absolute_beat < 0:
             raise ValueError("absolute_beat may not be negative")
-        beats_per_measure=float(self.meter_numerator)
-        global_measure=int(absolute_beat // beats_per_measure)
-        beat=absolute_beat-global_measure*beats_per_measure
+        # Structural onset_beats are quarter-note units. Convert to the current
+        # meter denominator before deriving bar/beat coordinates.
+        denominator_units=absolute_beat*(self.meter_denominator/4.0)
+        units_per_measure=float(self.meter_numerator)
+        global_measure=int(denominator_units // units_per_measure)
+        beat=denominator_units-global_measure*units_per_measure
         if self.cycle_measures:
             iteration=global_measure // self.cycle_measures
             measure=global_measure % self.cycle_measures
