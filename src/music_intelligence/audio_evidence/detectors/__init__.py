@@ -1,4 +1,5 @@
 """Detector interfaces and model-independent composition."""
+from .acoustic_instrument_prior import AcousticInstrumentPriorDetector
 from .base import AudioObservationDetector
 from .composite import CompositeObservationDetector
 from .demucs_adapter import DemucsCLISeparator
@@ -26,6 +27,7 @@ from .separation import SeparatedSource, SourceSeparator
 from .stem_prior import StemMetadataInstrumentDetector
 
 __all__ = [
+    "AcousticInstrumentPriorDetector",
     "AudioObservationDetector",
     "CompositeObservationDetector",
     "DemucsCLISeparator",
