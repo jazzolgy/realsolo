@@ -42,6 +42,7 @@ class MusicalScoreCoordinate:
 
     song_id: str
     score_source_id: str = ""
+    realchord_id: str = ""
     page: int | None = None
     section: str = ""
     bar: int | None = None
@@ -64,6 +65,8 @@ class MusicalScoreCoordinate:
     def validate(self) -> None:
         if not self.song_id:
             raise ValueError("song_id is required")
+        if self.realchord_id and not self.score_source_id:
+            raise ValueError("realchord_id requires score_source_id")
         if self.page is not None and self.page < 1:
             raise ValueError("page must be 1-based")
         if self.bar is not None and self.bar < 1:
