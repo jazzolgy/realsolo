@@ -22,4 +22,14 @@ __all__ = [
     "vocabulary_use_score",
     "score_vocabulary_item",
     "rank_vocabulary_items",
+    "SHARED_VOCABULARY_ITEMS",
+    "SHARED_VOCABULARY_INDEX",
+    "SharedVocabularyIndex",
 ]
+
+
+from .shared_catalog import (
+    SHARED_VOCABULARY_ITEMS,
+    SHARED_VOCABULARY_INDEX,
+    SharedVocabularyIndex,
+)
