@@ -12,6 +12,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from music_intelligence.learning.engine import LearningPriorView
 from music_intelligence.reasoning.learning_prior_runtime import numeric_target_bias
+from music_intelligence.reasoning.hierarchical_priors import (
+    HierarchicalPriorSet,
+    numeric_hierarchy_bias,
+)
 from enum import Enum
 from typing import Mapping, Sequence
 
@@ -377,9 +381,11 @@ class PianoCompingEvaluator:
         self,
         piano_evaluator: PianoPolicyEvaluator | None = None,
         comping_prior: LearningPriorView | None = None,
+        prior_hierarchy: HierarchicalPriorSet | None = None,
     ):
         self.piano_evaluator = piano_evaluator or PianoPolicyEvaluator()
         self.comping_prior = comping_prior
+        self.prior_hierarchy = prior_hierarchy
 
     @staticmethod
     def _add(
@@ -413,23 +419,47 @@ class PianoCompingEvaluator:
         reasons: list[str] = []
         piano_score: PianoActionScore | None = None
 
-        learned_density = numeric_target_bias(
-            self.comping_prior,
-            "density",
-            float(state._estimate_density(candidate).onset_rate),
-            tolerance=.65,
-            max_bonus=.10,
-            max_penalty=.04,
-        )
-        if learned_density.active:
-            score = self._add(
-                score,
-                components,
-                reasons,
-                "learned_comping_density",
-                learned_density.score_delta,
-                learned_density.reason,
+        observed_density = float(state._estimate_density(candidate).onset_rate)
+        if self.prior_hierarchy is not None:
+            hierarchical_density = numeric_hierarchy_bias(
+                self.prior_hierarchy,
+                observed=observed_density,
+                domain_feature="density",
+                genre_feature="comping_density_mean",
+                style_feature="comping_density_mean",
+                tolerance=.65,
+                max_bonus=.10,
+                max_penalty=.04,
             )
+            if hierarchical_density.total:
+                score = self._add(
+                    score,
+                    components,
+                    reasons,
+                    "learned_comping_density",
+                    hierarchical_density.total,
+                    " + ".join(hierarchical_density.reasons),
+                )
+                for key, value in hierarchical_density.components.items():
+                    components[f"learned_comping:{key}"] = value
+        else:
+            learned_density = numeric_target_bias(
+                self.comping_prior,
+                "density",
+                observed_density,
+                tolerance=.65,
+                max_bonus=.10,
+                max_penalty=.04,
+            )
+            if learned_density.active:
+                score = self._add(
+                    score,
+                    components,
+                    reasons,
+                    "learned_comping_density",
+                    learned_density.score_delta,
+                    learned_density.reason,
+                )
 
         foreground_activity = comping_context.soloist_activity
         if comping_context.ensemble_mode in {
