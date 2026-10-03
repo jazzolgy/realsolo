@@ -57,3 +57,18 @@ from .interaction_scheduler import (
     schedule_ensemble,
     schedule_player,
 )
+
+
+from .musical_policy_projection import (
+    MusicalPolicyAxis,
+    MusicalPolicyProjection,
+    PolicyContribution,
+    project_musical_policy,
+)
+
+__all__ += [
+    "MusicalPolicyAxis",
+    "MusicalPolicyProjection",
+    "PolicyContribution",
+    "project_musical_policy",
+]
