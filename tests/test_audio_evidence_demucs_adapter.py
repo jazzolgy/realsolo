@@ -94,3 +94,33 @@ def test_demucs_adapter_rejects_unmaterialized_time_range(tmp_path: Path):
                 end_seconds=1069.0,
             )
         )
+
+
+def test_demucs_6s_profile_includes_pretrained_piano_and_guitar_stems(tmp_path: Path):
+    source_file = tmp_path / "mix.wav"
+    source_file.write_bytes(b"x")
+    output_root = tmp_path / "out"
+
+    def fake_runner(command):
+        stem_dir = output_root / "htdemucs_6s" / source_file.stem
+        stem_dir.mkdir(parents=True)
+        for name in ("drums", "bass", "other", "vocals", "guitar", "piano"):
+            (stem_dir / f"{name}.wav").write_bytes(b"stem")
+
+    separator = DemucsCLISeparator(
+        output_root=str(output_root),
+        model_name="htdemucs_6s",
+        runner=fake_runner,
+    )
+    results = separator.separate(
+        AudioSource(source_id="mix", uri=str(source_file))
+    )
+
+    assert {item.metadata.stem_label for item in results} == {
+        "drums",
+        "bass",
+        "other",
+        "vocals",
+        "guitar",
+        "piano",
+    }
