@@ -14,6 +14,7 @@ from .observation.models import (
 from .pipeline import AudioEvidencePipeline
 from .separated_pipeline import SeparatedAudioEvidencePipeline
 from .posterior.fusion import (
+    AppliedContextFactor,
     BoundedContextPosterior,
     ContextualAudioHypothesis,
     PosteriorRevision,
@@ -25,6 +26,7 @@ from .posterior.revision import (
 )
 
 __all__ = [
+    "AppliedContextFactor",
     "AudioEvidencePipeline",
     "AudioObservation",
     "AudioSource",
