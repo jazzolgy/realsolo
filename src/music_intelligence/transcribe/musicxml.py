@@ -13,6 +13,7 @@ from xml.etree import ElementTree as ET
 from .engraving import BeamState, EngravingIntent, EngravingPlan, StemDirection
 from .instrument_profiles import InstrumentProfile, resolve_instrument_profile
 from .notation import NotatedAtomKind
+from .rhythm import written_note_type_and_dots
 from .score import ReadableScore, ScoreEvent, ScoreKeySignature, ScorePart, ScoreSpanner
 
 
@@ -144,6 +145,14 @@ def _append_note(
     if event.grace_kind is None:
         duration = int(event.span.duration * divisions)
         ET.SubElement(note, "duration").text = str(duration)
+        note_type, dots = written_note_type_and_dots(
+            event.span.duration,
+            tuplet=event.tuplet,
+        )
+        if note_type is not None:
+            ET.SubElement(note, "type").text = note_type
+            for _ in range(dots):
+                ET.SubElement(note, "dot")
     ET.SubElement(note, "voice").text = event.voice_id
     ET.SubElement(note, "staff").text = str(staff_number)
 
