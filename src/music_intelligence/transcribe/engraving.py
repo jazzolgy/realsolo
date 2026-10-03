@@ -232,6 +232,8 @@ def beam_group_intents(
 
     buckets: dict[tuple[str, str, int], list[ScoreEvent]] = {}
     for event in events:
+        if event.kind.value != "note":
+            continue
         if event.span.duration > Fraction(1, 2):
             continue
         bucket = int(event.span.onset // beat_group)
@@ -318,6 +320,8 @@ def secondary_beam_intents(
 
     buckets: dict[tuple[str, str, int], list[ScoreEvent]] = {}
     for event in events:
+        if event.kind.value != "note":
+            continue
         if event.span.duration > Fraction(1, 4):
             continue
         bucket = int(event.span.onset // subgroup)
