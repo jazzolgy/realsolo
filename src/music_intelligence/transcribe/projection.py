@@ -12,7 +12,12 @@ from .allocation import (
 from .events import CommittedPerformanceEvent
 from .instrument_rules import InstrumentNotationDirective
 from .instrument_profiles import TranspositionSpec
-from .notation import NotationCandidate, NotationIntent, choose_preferred_candidate
+from .notation import (
+    NotationCandidate,
+    NotationIntent,
+    RhythmNotationContext,
+    choose_preferred_candidate,
+)
 from .pipeline import basic_rhythm_candidates, notation_intent_from_event
 from .score import ScoreEvent
 from .spelling import (
@@ -66,6 +71,7 @@ def project_pitched_event(
     transposition: TranspositionSpec = TranspositionSpec(),
     meter_numerator: int = 4,
     meter_denominator: int = 4,
+    rhythm_context: RhythmNotationContext = RhythmNotationContext(),
 ) -> EventProjectionResult:
     """Project one committed pitched event into score-domain events.
 
@@ -88,6 +94,7 @@ def project_pitched_event(
         intent,
         meter_numerator=meter_numerator,
         meter_denominator=meter_denominator,
+        rhythm_context=rhythm_context,
     )
     if not rhythms:
         raise ValueError("event notation intent produced no score candidate")
