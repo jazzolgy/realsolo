@@ -1,0 +1,106 @@
+{
+  "schema_version": "1.0",
+  "source_id": "be_playlist_project_audio",
+  "track_id": "BE-003",
+  "song_id": "autumn_leaves",
+  "track_start_abs_s": 708,
+  "rule": "absolute seconds are provenance; spans carry canonical musical addresses",
+  "spans": [
+    {
+      "id": "head_A1",
+      "start_s": 716,
+      "end_s": 725.5,
+      "section": "A1",
+      "start_form_bar": 1,
+      "end_form_bar": 8,
+      "chorus_index": 0,
+      "phase": "head",
+      "confidence": 0.88
+    },
+    {
+      "id": "head_A2",
+      "start_s": 725.5,
+      "end_s": 735,
+      "section": "A2",
+      "start_form_bar": 9,
+      "end_form_bar": 16,
+      "chorus_index": 0,
+      "phase": "head",
+      "confidence": 0.82
+    },
+    {
+      "id": "head_B",
+      "start_s": 735,
+      "end_s": 744.5,
+      "section": "B",
+      "start_form_bar": 17,
+      "end_form_bar": 24,
+      "chorus_index": 0,
+      "phase": "head",
+      "confidence": 0.9
+    },
+    {
+      "id": "head_C",
+      "start_s": 744.5,
+      "end_s": 754,
+      "section": "C",
+      "start_form_bar": 25,
+      "end_form_bar": 32,
+      "chorus_index": 0,
+      "phase": "head",
+      "confidence": 0.78
+    },
+    {
+      "id": "piano_solo_1_A1",
+      "start_s": 828,
+      "end_s": 837.5,
+      "section": "A1",
+      "start_form_bar": 1,
+      "end_form_bar": 8,
+      "chorus_index": 1,
+      "phase": "solo",
+      "confidence": 0.86
+    },
+    {
+      "id": "piano_solo_1_A2",
+      "start_s": 837.5,
+      "end_s": 847,
+      "section": "A2",
+      "start_form_bar": 9,
+      "end_form_bar": 16,
+      "chorus_index": 1,
+      "phase": "solo",
+      "confidence": 0.55
+    },
+    {
+      "id": "piano_solo_1_B",
+      "start_s": 847,
+      "end_s": 856.5,
+      "section": "B",
+      "start_form_bar": 17,
+      "end_form_bar": 24,
+      "chorus_index": 1,
+      "phase": "solo",
+      "confidence": 0.55
+    },
+    {
+      "id": "piano_solo_1_C",
+      "start_s": 856.5,
+      "end_s": 866,
+      "section": "C",
+      "start_form_bar": 25,
+      "end_form_bar": 32,
+      "chorus_index": 1,
+      "phase": "solo",
+      "confidence": 0.55
+    }
+  ],
+  "expected_harmony_sources": [
+    "chart.standard100.autumn_leaves",
+    "scorebook.newreal.1:p12",
+    "scorebook.real.1:p36"
+  ],
+  "provenance": [
+    "research/legends/bill_evans/observations/score_alignment/autumn_leaves_take1_sections_v0_1.json"
+  ]
+}
