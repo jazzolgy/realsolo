@@ -142,3 +142,37 @@ __all__ += [
     "register_realchord_1350",
     "song_from_normalized_record",
 ]
+
+
+from .realchord_parser import (
+    decode_progression,
+    parse_playlist_html,
+    parse_progression,
+    parse_song_body,
+    realchord_id,
+)
+
+from .realchord_runtime import (
+    RealChordPlaybackMeasure,
+    RealChordPlaybackTimeline,
+    SharedRealChordSessionState,
+    expand_playback_timeline,
+    expected_harmony_for_state,
+    future_harmony,
+    session_state_at,
+)
+
+__all__ += [
+    "decode_progression",
+    "parse_playlist_html",
+    "parse_progression",
+    "parse_song_body",
+    "realchord_id",
+    "RealChordPlaybackMeasure",
+    "RealChordPlaybackTimeline",
+    "SharedRealChordSessionState",
+    "expand_playback_timeline",
+    "expected_harmony_for_state",
+    "future_harmony",
+    "session_state_at",
+]
