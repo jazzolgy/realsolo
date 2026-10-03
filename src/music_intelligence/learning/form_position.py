@@ -34,7 +34,6 @@ class MetricFormPosition:
     absolute_beat: float | None = None
     confidence: float = 0.0
     provenance: tuple[str,...] = ()
-    meter_segments: tuple[MeterSegment,...] = ()
 
     def validate(self) -> None:
         if self.measure_index is not None and self.measure_index < 0:
@@ -118,6 +117,7 @@ class FormMap:
     style_family: str = ""
     confidence: float = 1.0
     provenance: tuple[str,...] = ()
+    meter_segments: tuple[MeterSegment,...] = ()
 
     def validate(self) -> None:
         if not self.form_id:
