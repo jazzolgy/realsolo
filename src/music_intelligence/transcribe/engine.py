@@ -86,6 +86,7 @@ class NotationEngine:
         spelling_context: PitchSpellingContext = PitchSpellingContext(),
         directive: InstrumentNotationDirective | None = None,
         rhythm_context: RhythmNotationContext = RhythmNotationContext(),
+        previous_staff_id: str | None = None,
     ) -> EventProjectionResult:
         profile = self.resolve_instrument(event.instrument)
         return project_pitched_event(
@@ -102,6 +103,7 @@ class NotationEngine:
             meter_numerator=self.config.meter_numerator,
             meter_denominator=self.config.meter_denominator,
             rhythm_context=rhythm_context,
+            previous_staff_id=previous_staff_id,
         )
 
     def chart_position(
