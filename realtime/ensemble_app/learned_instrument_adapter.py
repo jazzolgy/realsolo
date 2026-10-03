@@ -100,10 +100,24 @@ class HybridInstrumentRoleDetector:
         base=self.baseline.detect(frame)
         if self.learned is None:
             return base
-        learned=self.learned.detect(samples,sample_rate=sample_rate,frame=frame)
+        try:
+            learned=self.learned.detect(samples,sample_rate=sample_rate,frame=frame)
+        except Exception:
+            confidence=dict(base.confidence_fields)
+            confidence["learned_backend_available"]=0.0
+            return DetectorEvidence(
+                instrument_probabilities=base.instrument_probabilities,
+                role_probabilities=base.role_probabilities,
+                confidence_fields=confidence,
+                pitch_hz=base.pitch_hz,
+                onset=base.onset,
+                onset_strength=base.onset_strength,
+                rms=base.rms,
+            )
         if not learned.instrument_probabilities and not learned.role_probabilities:
             return base
         confidence=dict(learned.confidence_fields)
+        confidence["learned_backend_available"]=1.0
         confidence["baseline_crosscheck"]=max(
             base.instrument_probabilities.values(),default=0.0
         )
