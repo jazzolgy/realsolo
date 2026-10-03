@@ -100,3 +100,28 @@ def test_batch_take_consumes_only_performance_contract_shape():
 
     assert result.part.events[0].source_event_ids == ("fl:1",)
     assert "transcribe:event-projection" in result.part.events[0].provenance
+
+
+
+def test_engine_can_emit_musicxml_in_one_call_from_performance_evidence():
+    engine = NotationEngine()
+    request = PartTranscriptionRequest(
+        part_id="fl",
+        name="Flute",
+        instrument="flute",
+        events=(
+            _event("fl:1", "flute", 72, 0),
+            _event("fl:2", "flute", 74, 1),
+        ),
+        staffs=(StaffProfile("fl:staff", "fl"),),
+    )
+
+    result, xml = engine.transcribe_take_musicxml(
+        (request,),
+        score_id="take:one-call",
+        title="One Call",
+    )
+
+    assert result.score.title == "One Call"
+    assert "<score-partwise" in xml
+    assert "<part-name>Flute</part-name>" in xml
