@@ -1,73 +1,93 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "canonical_rule": "absolute_time_is_provenance_musical_structure_is_learning_coordinate",
   "legends": [
     {
       "legend_id": "bill_evans",
       "source_branch": "main",
       "source_root": "research/legends/bill_evans",
-      "migration_status": "in_progress",
+      "migration_status": "form_metadata_all_24_tracks; exact_bar_alignment_partial",
       "aligned_assets": [
-        "observations/score_alignment/autumn_leaves_take1_sections_v0_1.json"
+        "research/shared_form/bill_evans_track_structural_summary_v1.json",
+        "research/legends/bill_evans/structural_alignment/autumn_leaves_alignment_spans_v1.json"
       ],
       "timestamp_only_assets": [
         "observations/audio/track_feature_scan.json",
         "observations/audio/full_source_note_hypothesis_aggregate_v0_2.json",
         "analyses/album_1000pass_robustness_v0_1.md"
       ],
-      "next_action": "map all track-level derived evidence to arrangement/form/chorus coordinates before learning"
+      "next_action": "resolve canonical downbeat/chorus alignment for Autumn Leaves, then expand to Blue In Green/Nardis/Israel"
     },
     {
       "legend_id": "scott_lafaro",
       "source_branch": "main",
       "source_root": "research/legends/scott_lafaro",
-      "migration_status": "in_progress",
-      "aligned_assets": [],
+      "migration_status": "verified_tracks_form_metadata_attached; phrase_bar_alignment_pending",
+      "aligned_assets": [
+        "research/legends/scott_lafaro/observations/audio/verified_phrase_queue_v2.json"
+      ],
       "timestamp_only_assets": [
         "observations/audio/verified_phrase_queue.json"
       ],
-      "next_action": "replace phrase queue time-only windows with form/section/bar/chorus coordinates per verified track"
+      "next_action": "annotate Alice In Wonderland / How Deep Is The Ocean / Israel phrase windows with chorus/form_bar before promotion"
     },
     {
       "legend_id": "charlie_parker",
       "source_branch": "main",
       "source_root": "research/legends/charlie_parker",
-      "migration_status": "pending_track_identity_alignment",
+      "migration_status": "navigation_only_pending_segment_identity",
       "aligned_assets": [],
       "timestamp_only_assets": [
         "observations/audio/greatest_hits_annotations_v0_1.json"
       ],
-      "next_action": "resolve compilation segment identity/form first; current windows remain navigation_only"
+      "next_action": "identify compilation tracks/tunes/forms before converting existing windows to musical coordinates"
     },
     {
       "legend_id": "paul_motian",
       "source_branch": "player/drums",
       "source_root": "research/legends/paul_motian",
-      "migration_status": "source_registered_alignment_pending",
+      "migration_status": "performer coverage indexed through Bill Evans form map; exact event alignment partial",
       "aligned_assets": [],
       "timestamp_only_assets": [],
-      "next_action": "attach Motian observations to Bill Evans track/form coordinates as they are created"
+      "next_action": "reuse Bill Evans structural coordinates for Motian events after instrument attribution"
     },
     {
       "legend_id": "eliot_zigmund",
       "source_branch": "player/drums",
       "source_root": "research/legends/eliot_zigmund",
-      "migration_status": "partial",
+      "migration_status": "performer coverage indexed; Without A Song drum-foreground segment aligned; exact chorus/form_bar pending",
       "aligned_assets": [],
       "timestamp_only_assets": [
         "observations/without_a_song_solo_window.json",
         "observations/without_a_song_cell_robustness_v2.json"
       ],
-      "next_action": "map Without a Song window to 56-bar form, chorus/form-bar/drum-foreground position"
+      "next_action": "align Without A Song drum foreground to 56-bar form and cross-check other Zigmund tracks"
     },
     {
       "legend_id": "joe_labarbera",
       "source_branch": "player/drums",
       "source_root": "research/legends/joe_labarbera",
-      "migration_status": "source_registered_alignment_pending",
+      "migration_status": "Nardis source registered; audio/form event alignment pending",
       "aligned_assets": [],
       "timestamp_only_assets": [],
-      "next_action": "align Nardis source to 32-bar form after audio availability/verification"
+      "next_action": "align Buenos Aires Nardis events to 32-bar form when verified audio evidence is available"
     }
+  ],
+  "canonical_branch": "shared/form-first-learning-coordinate-20261004",
+  "chord_corpus": {
+    "primary": "iRealPro Corpus of Jazz Standards v1.0 / Standard 100",
+    "dataset_id": "symbolic.irealb.v1",
+    "known_bill_evans_overlap": [
+      "chart.standard100.autumn_leaves",
+      "chart.standard100.nardis",
+      "chart.standard100.blue_in_green"
+    ],
+    "note": "RealChBk.pdf is registered as Christmas Real Book, not as the shared chord corpus."
+  },
+  "global_artifacts": [
+    "research/shared_form/bill_evans_compilation_form_map_v0_1.json",
+    "research/shared_form/bill_evans_track_structural_summary_v1.json",
+    "research/shared_form/performer_structural_coverage_v1.json",
+    "research/shared_form/expected_harmony_sources_v1.json"
   ]
 }
