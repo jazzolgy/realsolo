@@ -6,7 +6,8 @@ No function here schedules a future phrase.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Mapping
 
 from music_intelligence.harmony.jazz_harmony_core import HarmonicFrame
 from music_intelligence.harmony.scale_linear_core import (
@@ -125,6 +126,10 @@ class SaxImmediateContext:
     interaction: SaxInteractionDecision | None = None
     legend_materials: tuple[SaxLegendCandidateMaterial, ...] = ()
     memory_intention: SaxMemoryIntention | None = None
+    route_biases: Mapping[LinearRouteKind,float] = field(default_factory=dict)
+    rest_bias: float = 0.0
+    target_emphasis: float = 0.0
+    register_direction: int = 0
     max_candidates: int = 24
 
     def validate(self) -> None:
@@ -142,6 +147,12 @@ class SaxImmediateContext:
             raise ValueError("local key pitch classes must be in 0..11")
         if any(not 0 <= pc <= 11 for pc in self.target_pitch_classes):
             raise ValueError("target pitch classes must be in 0..11")
+        if not 0.0 <= self.rest_bias <= 1.0:
+            raise ValueError("rest_bias must be within 0..1")
+        if not 0.0 <= self.target_emphasis <= 1.0:
+            raise ValueError("target_emphasis must be within 0..1")
+        if self.register_direction not in {-1,0,1}:
+            raise ValueError("register_direction must be -1, 0, or 1")
         if self.max_candidates <= 0:
             raise ValueError("max_candidates must be positive")
 
@@ -398,6 +409,18 @@ def generate_immediate_sax_candidates(
 
                 score += _memory_direction_score(pitch, ctx)
                 score += _score_context_bias(route.route, ctx)
+                score += float(ctx.route_biases.get(route.route,0.0))
+
+                if ctx.target_pitch_classes and pitch % 12 in ctx.target_pitch_classes:
+                    score += .12 * ctx.target_emphasis
+                    reasons.append("phrase intention target-tone emphasis")
+
+                if ctx.previous_pitch_midi is not None and ctx.register_direction:
+                    delta=pitch-ctx.previous_pitch_midi
+                    if delta*ctx.register_direction > 0:
+                        score += .025
+                    elif delta*ctx.register_direction < 0:
+                        score -= .012
 
                 if physical is not None:
                     score -= .18 * physical.transition_cost
@@ -457,7 +480,7 @@ def generate_immediate_sax_candidates(
                     reasons=tuple(reasons),
                 ))
 
-    rest_bias = 0.0
+    rest_bias = ctx.rest_bias
     rest_reasons: list[str] = []
     if ctx.score_policy is not None:
         rest_bias += ctx.score_policy.space_bias
