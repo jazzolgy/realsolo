@@ -1,0 +1,52 @@
+{
+  "schema_version": "2.0",
+  "legend_id": "scott_lafaro",
+  "principle": "audio time is provenance; musical coordinate is canonical learning position",
+  "required": [
+    "observation_id",
+    "track_id",
+    "source_id",
+    "audio_provenance",
+    "musical_coordinate",
+    "role",
+    "confidence",
+    "provenance"
+  ],
+  "fields": {
+    "audio_provenance": {
+      "start_s": "track-relative or source-relative onset locator",
+      "end_s": "track-relative or source-relative offset locator"
+    },
+    "musical_coordinate": {
+      "song_id": "required",
+      "arrangement_segment": "intro/core_form/interlude/vamp/tag/coda/etc when known",
+      "performance_phase": "head/solo/bass_foreground/head_out/etc",
+      "chorus_index": "required before repeated-form comparison when applicable",
+      "section": "A/B/C/etc when known",
+      "section_bar": "bar within section when known",
+      "form_length_bars": "core recurring form length when known",
+      "form_bar": "bar within recurring form when known",
+      "beat": "optional exact beat",
+      "subdivision": "optional fractional beat position",
+      "harmonic_position": "optional verified harmonic location",
+      "phrase_position": "optional opening/middle/ending/etc",
+      "cadence_position": "optional verified cadence relation",
+      "confidence": "0..1"
+    },
+    "role": [
+      "time_carrier",
+      "counterline",
+      "foreground_solo",
+      "response",
+      "transition",
+      "space",
+      "other"
+    ],
+    "motif_relation": "new/recalled/varied/fragmented/sequenced/etc",
+    "source_separation_status": "mixed_audio|bass_stem|manual_verified",
+    "promotion_status": "observation_only|vocabulary_candidate|validated|active_runtime",
+    "confidence": "0..1",
+    "provenance": "source/personnel/analysis/alignment provenance"
+  },
+  "promotion_rule": "musical_coordinate must be verified at least to arrangement-segment or form/section position before vocabulary/tendency promotion"
+}
