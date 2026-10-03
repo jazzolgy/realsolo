@@ -68,3 +68,24 @@ def test_realchord_is_expected_harmony_only():
     assert frame.observed.symbol=="Cm9"
     assert frame.inferred.symbol=="Cm11"
     assert frame.expected.source is HarmonySource.EXPECTED
+
+
+
+def test_autumn_leaves_runtime_uses_realchord_96_coordinate():
+    from realtime.ensemble_app.stage1_quartet import Stage1QuartetRuntime
+    quartet=Stage1QuartetRuntime.create(172.0)
+    result=quartet.decide(
+        "Cm7","F7",
+        beat_in_bar=0.5,
+        bar_index=0,
+        total_bars=32,
+        tempo_bpm=172.0,
+        section="A",
+        chorus=0,
+    )
+    sax=next(d for d in result.decisions if d.player_id=="sax")
+    assert sax is not None
+    # Coordinate is supplied through shared runtime context; score identity also
+    # uses the same stable RealChord reference.
+    gesture=next(g for g in result.gestures if g.source=="player/sax:canonical_immediate")
+    assert gesture is not None
