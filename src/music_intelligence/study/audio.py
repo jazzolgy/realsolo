@@ -48,7 +48,7 @@ def _np():
     return np
 
 
-def _decode_process(path:Path,sample_rate:int):
+def _decode_process(path:Path,sample_rate:int,start_s:float):
     ffmpeg=shutil.which("ffmpeg")
     if ffmpeg is None:
         raise RuntimeError(
@@ -56,7 +56,7 @@ def _decode_process(path:Path,sample_rate:int):
         )
     return subprocess.Popen(
         [
-            ffmpeg,"-nostdin","-v","error","-i",str(path),
+            ffmpeg,"-nostdin","-v","error","-ss",f"{start_s:.6f}","-i",str(path),
             "-f","f32le","-ac","1","-ar",str(sample_rate),"pipe:1",
         ],
         stdout=subprocess.PIPE,
@@ -127,6 +127,7 @@ def stream_audio_windows(
     sample_rate:int=16000,
     window_s:float=2.0,
     hop_s:float=1.0,
+    start_s:float=0.0,
     max_seconds:float|None=None,
 )->Iterator[AudioWindowFeatures]:
     """Decode and yield overlapping compact feature windows.
@@ -137,12 +138,14 @@ def stream_audio_windows(
         raise ValueError("sample_rate/window_s/hop_s must be positive")
     if hop_s>window_s:
         raise ValueError("hop_s may not exceed window_s")
+    if start_s<0:
+        raise ValueError("start_s may not be negative")
     path=Path(audio_path).expanduser().resolve()
     if not path.is_file():
         raise FileNotFoundError(path)
 
     np=_np()
-    proc=_decode_process(path,sample_rate)
+    proc=_decode_process(path,sample_rate,start_s)
     assert proc.stdout is not None
     window_n=max(2,int(round(window_s*sample_rate)))
     hop_n=max(1,int(round(hop_s*sample_rate)))
@@ -159,17 +162,17 @@ def stream_audio_windows(
                     x=np.frombuffer(raw[:usable],dtype="<f4").astype(np.float32,copy=True)
                     buffer=np.concatenate((buffer,x))
             while buffer.size>=window_n:
-                start_s=start_sample/sample_rate
-                if max_seconds is not None and start_s>=max_seconds:
+                relative_s=start_sample/sample_rate
+                if max_seconds is not None and relative_s>=max_seconds:
                     return
-                yield _features(buffer[:window_n],start_s,sample_rate)
+                yield _features(buffer[:window_n],start_s+relative_s,sample_rate)
                 buffer=buffer[hop_n:]
                 start_sample+=hop_n
                 emitted+=1
             if not raw:
                 break
         if emitted==0 and buffer.size>=2:
-            yield _features(buffer,0.0,sample_rate)
+            yield _features(buffer,start_s,sample_rate)
     finally:
         try:
             proc.stdout.close()
