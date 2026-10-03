@@ -127,3 +127,12 @@ and hybrid memory use belong to Shared Solo Grammar.
 Bill Evans Intelligence stores evidence for **how Bill Evans uses those shared
 operations**, including his conditional harmonic, rhythmic, melodic, and trio
 interaction tendencies.
+
+
+## Shared exact-data storage rule
+
+This legend follows the project-wide rule in `research/legends/README.md`:
+exact audio/transcription and reconstructive literal/normalized phrase data stay
+private; public/runtime code stores only public-safe abstractions, priors,
+provenance and provider interfaces. Private exact material may still be queried
+at runtime through the shared private-provider contract.
