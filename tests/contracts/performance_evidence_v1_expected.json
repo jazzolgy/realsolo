@@ -1,0 +1,43 @@
+{
+  "contract": "PerformanceEvidence",
+  "version": "performance-evidence.v1",
+  "required_event_fields": [
+    "event_id",
+    "player_id",
+    "instrument",
+    "commitment",
+    "time",
+    "pitch",
+    "unpitched",
+    "confidence",
+    "raw_instrument_probabilities",
+    "context_instrument_probabilities",
+    "raw_role_probabilities",
+    "context_role_probabilities",
+    "raw_confidence",
+    "contextual_confidence",
+    "context_corrections",
+    "revision_history",
+    "alternatives",
+    "evidence",
+    "provenance",
+    "metadata"
+  ],
+  "required_public_types": [
+    "CommittedPerformanceEvent",
+    "PerformanceTimeSpan",
+    "PerformedPitch",
+    "UnpitchedToken",
+    "ConfidenceBundle",
+    "ProbabilityEstimate",
+    "ContextCorrection",
+    "EvidenceRevision",
+    "EvidenceRef",
+    "EventAlternative"
+  ],
+  "notes": [
+    "This is a minimum compatibility snapshot, not a copied implementation.",
+    "Additive fields are allowed.",
+    "Removal or rename of required fields is breaking contract drift."
+  ]
+}
