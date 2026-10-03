@@ -159,3 +159,20 @@ def head_gating_context(
         written_material_priority=written,
         structural_constraint=structural,
     )
+
+
+def improvisation_gating_context(
+    *,
+    ensemble_complexity: float,
+    live_context_confidence: float,
+    structural_constraint: float = 0.0,
+) -> PriorGatingContext:
+    """Build a gating context for open improvisation from live evidence."""
+
+    return PriorGatingContext(
+        performance_mode=PerformanceMode.IMPROVISATION,
+        ensemble_complexity=ensemble_complexity,
+        live_context_confidence=live_context_confidence,
+        written_material_priority=0.0,
+        structural_constraint=structural_constraint,
+    )
