@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from enum import Enum
 from fractions import Fraction
 
-from .events import UnpitchedToken
+from .events import MusicalCoordinate, PerceptualDynamics, UnpitchedToken
 from .notation import NotatedAtomKind, ScoreSpan, TupletRatio
 from .spelling import WrittenPitch
 
@@ -91,6 +91,8 @@ class ScoreEvent:
     grace_kind: GraceNoteKind | None = None
     simultaneity_group_id: str | None = None
     dynamic_marking: str | None = None
+    musical_coordinate: MusicalCoordinate | None = None
+    dynamics: PerceptualDynamics | None = None
     articulations: tuple[str, ...] = ()
     markings: tuple[str, ...] = ()
     confidence: float | None = None
@@ -125,6 +127,10 @@ class ScoreEvent:
                 raise ValueError("simultaneity_group_id may not be blank")
         if self.dynamic_marking is not None and not self.dynamic_marking.strip():
             raise ValueError("dynamic_marking may not be blank")
+        if self.musical_coordinate is not None:
+            self.musical_coordinate.validate()
+        if self.dynamics is not None:
+            self.dynamics.validate()
         if self.confidence is not None and not 0.0 <= self.confidence <= 1.0:
             raise ValueError("score-event confidence must be within 0..1")
 
