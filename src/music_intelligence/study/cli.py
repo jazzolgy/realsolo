@@ -34,6 +34,7 @@ def build_parser()->argparse.ArgumentParser:
         choices=[x.value for x in PerformancePhase],
         default=PerformancePhase.UNKNOWN.value,
     )
+    p.add_argument("--start-s",type=float,default=0.0,help="source-audio offset to begin studying")
     p.add_argument("--window-s",type=float,default=2.0)
     p.add_argument("--hop-s",type=float,default=1.0)
     p.add_argument("--max-seconds",type=float)
@@ -71,6 +72,7 @@ def main(argv=None)->int:
     )
     summary=session.run(
         args.audio,
+        start_s=args.start_s,
         window_s=args.window_s,
         hop_s=args.hop_s,
         max_seconds=args.max_seconds,
