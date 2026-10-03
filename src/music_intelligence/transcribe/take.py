@@ -374,8 +374,11 @@ def transcribe_part(
         profile.transposition if profile is not None else TranspositionSpec()
     )
 
-    projections = tuple(
-        project_pitched_event(
+    projection_list: list[EventProjectionResult] = []
+    previous_staff_by_voice: dict[str, str] = {}
+    for event in sorted(request.events, key=_event_sort_key):
+        voice_key = event.voice_role or event.layer_role or "__default__"
+        projection = project_pitched_event(
             event,
             part_id=request.part_id,
             staffs=request.staffs,
@@ -385,9 +388,12 @@ def transcribe_part(
             meter_numerator=meter_numerator,
             meter_denominator=meter_denominator,
             rhythm_context=request.rhythm_context,
+            previous_staff_id=previous_staff_by_voice.get(voice_key),
         )
-        for event in sorted(request.events, key=_event_sort_key)
-    )
+        projection_list.append(projection)
+        if projection.score_events:
+            previous_staff_by_voice[voice_key] = projection.score_events[0].staff_id
+    projections = tuple(projection_list)
 
     score_events = tuple(
         sorted(
