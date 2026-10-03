@@ -21,8 +21,10 @@ from music_intelligence.reasoning.hierarchical_priors import HierarchicalPriorSe
 from music_intelligence.reasoning.runtime_prior_bundle import (
     hierarchical_priors_from_learning_engine,
 )
-from music_intelligence.reasoning.runtime_vocabulary import project_shared_vocabulary
-from music_intelligence.vocabulary import SHARED_VOCABULARY_INDEX
+from music_intelligence.reasoning.runtime_vocabulary import (
+    project_runtime_vocabulary,
+    select_runtime_vocabulary_sources,
+)
 from music_intelligence.reasoning.runtime_legend_selector import (
     legend_choice_for,
     legend_blend_for,
@@ -43,6 +45,9 @@ from .stage1_piano import _resolved_material
 from .stage1_trio import _affordance, _chart_frame
 from .stage1_music import parse_chord
 from music_intelligence.corpus import ScoreContextSnapshot, ScorePosition
+from music_intelligence.corpus.realchord import RealChordSong
+from music_intelligence.learning.score_alignment import PerformancePhase
+from .shared_core_runtime import build_shared_core_runtime_tick
 
 
 @dataclass
@@ -59,6 +64,7 @@ class Stage1QuartetRuntime:
     hierarchical_priors: HierarchicalPriorSet | None = None
     legend_overrides: Mapping[str,str] = field(default_factory=dict)
     legend_showcase: bool = False
+    realchord_song: RealChordSong | None = None
 
     @classmethod
     def create(
@@ -115,16 +121,23 @@ class Stage1QuartetRuntime:
         """Attach only promoted rights-gated learning priors to audible runtime."""
         self.hierarchical_priors=hierarchical_priors_from_learning_engine(engine)
 
+    def attach_realchord_song(self, song: RealChordSong | None) -> None:
+        if song is not None:
+            song.validate()
+        self.realchord_song=song
+
     def reset(self, tempo_bpm: float = 172.0) -> None:
         priors=self.hierarchical_priors
         overrides=dict(self.legend_overrides)
         showcase=self.legend_showcase
+        realchord_song=self.realchord_song
         fresh = self.create(tempo_bpm)
         self.loop = fresh.loop
         self.state = fresh.state
         self.hierarchical_priors=priors
         self.legend_overrides=overrides
         self.legend_showcase=showcase
+        self.realchord_song=realchord_song
 
     def decide(
         self,
@@ -138,6 +151,8 @@ class Stage1QuartetRuntime:
         section: str = "",
         chorus: int = 0,
         active_player_ids: frozenset[str] | None = None,
+        song_id: str = "runtime_chart",
+        performance_phase: PerformancePhase = PerformancePhase.SOLO,
     ):
         form_position = 0.0 if total_bars <= 1 else bar_index / max(1, total_bars - 1)
         phrase_position = ((bar_index % 4) + beat_in_bar / 4.0) / 4.0
@@ -147,6 +162,19 @@ class Stage1QuartetRuntime:
             phrase_position=phrase_position,
         )
         harmonic_reasoning=reason_about_harmony(HarmonicReasoningInput(frame=frame))
+        shared_core_tick=build_shared_core_runtime_tick(
+            song_id=song_id,
+            section=section,
+            bar_index=bar_index,
+            beat_in_bar=beat_in_bar,
+            total_bars=total_bars,
+            chorus_index=chorus,
+            performance_phase=performance_phase,
+            phrase_maturity=phrase_position,
+            tension=frame.tension,
+            ensemble_density=self.state.ensemble_density,
+            realchord_song=self.realchord_song,
+        )
         affordance = _affordance(frame)
         material = _resolved_material(chord_symbol, affordance.affordance_id)
         piano_request = PianoVoicingRequest(
@@ -230,19 +258,19 @@ class Stage1QuartetRuntime:
         sax_local_key=frozenset({7,9,10,0,2,3,5})
         sax_score_snapshot=ScoreContextSnapshot(
             book_id="canonical_repertoire",
-            song_id="autumn_leaves_g_minor_jam",
+            song_id=shared_core_tick.position.song_id,
             position=ScorePosition(
                 page=1,
-                bar=bar_index+1,
-                beat=beat_in_bar,
+                bar=shared_core_tick.position.bar or (bar_index+1),
+                beat=shared_core_tick.position.beat if shared_core_tick.position.beat is not None else beat_in_bar,
             ),
             style=("jazz","bebop"),
             meter="4/4",
-            section=section or None,
+            section=shared_core_tick.position.section or section or None,
             current_feel="swing",
             solo_indication="open_solo",
             confidence=1.0,
-            provenance=("canonical_repertoire:autumn_leaves_harmony_form",),
+            provenance=shared_core_tick.position.provenance or ("runtime_chart_adapter",),
         )
 
         style_tags=("jazz","bebop","swing")
@@ -311,8 +339,13 @@ class Stage1QuartetRuntime:
                 weights=self.hierarchical_priors.weights,
             )
 
-        shared_vocab_sax=project_shared_vocabulary(
-            SHARED_VOCABULARY_INDEX,
+        vocabulary_sources=select_runtime_vocabulary_sources(
+            overrides=self.legend_overrides,
+            showcase=self.legend_showcase,
+        )
+        vocab_tags=frozenset({*style_tags,"solo"})
+        shared_vocab_sax=project_runtime_vocabulary(
+            vocabulary_sources,
             player_id="sax",
             target_instrument="tenor_sax",
             domains=(
@@ -325,10 +358,18 @@ class Stage1QuartetRuntime:
                 LegendDomain.BREATH_SPACE,
                 LegendDomain.CALL_RESPONSE,
             ),
+            harmony_context=chord_symbol,
+            local_key="G minor / Bb major",
+            phrase_position=(
+                "opening" if phrase_position < .25
+                else "development" if phrase_position < .75
+                else "ending"
+            ),
+            context_tags=vocab_tags,
             limit_per_domain=5,
         )
-        shared_vocab_piano=project_shared_vocabulary(
-            SHARED_VOCABULARY_INDEX,
+        shared_vocab_piano=project_runtime_vocabulary(
+            vocabulary_sources,
             player_id="piano",
             target_instrument="piano",
             domains=(
@@ -338,10 +379,18 @@ class Stage1QuartetRuntime:
                 LegendDomain.LINEAR_CONNECTION,
                 LegendDomain.FORM_AWARENESS,
             ),
+            harmony_context=chord_symbol,
+            local_key="G minor / Bb major",
+            phrase_position=(
+                "opening" if phrase_position < .25
+                else "development" if phrase_position < .75
+                else "ending"
+            ),
+            context_tags=vocab_tags,
             limit_per_domain=5,
         )
-        shared_vocab_bass=project_shared_vocabulary(
-            SHARED_VOCABULARY_INDEX,
+        shared_vocab_bass=project_runtime_vocabulary(
+            vocabulary_sources,
             player_id="bass",
             target_instrument="bass",
             domains=(
@@ -351,10 +400,18 @@ class Stage1QuartetRuntime:
                 LegendDomain.RHYTHM_SUBDIVISION,
                 LegendDomain.FORM_AWARENESS,
             ),
+            harmony_context=chord_symbol,
+            local_key="G minor / Bb major",
+            phrase_position=(
+                "opening" if phrase_position < .25
+                else "development" if phrase_position < .75
+                else "ending"
+            ),
+            context_tags=vocab_tags,
             limit_per_domain=5,
         )
-        shared_vocab_drums=project_shared_vocabulary(
-            SHARED_VOCABULARY_INDEX,
+        shared_vocab_drums=project_runtime_vocabulary(
+            vocabulary_sources,
             player_id="drums",
             target_instrument="drums",
             domains=(
@@ -364,6 +421,14 @@ class Stage1QuartetRuntime:
                 LegendDomain.MOTIF_DEVELOPMENT,
                 LegendDomain.FORM_AWARENESS,
             ),
+            harmony_context=chord_symbol,
+            local_key="G minor / Bb major",
+            phrase_position=(
+                "opening" if phrase_position < .25
+                else "development" if phrase_position < .75
+                else "ending"
+            ),
+            context_tags=vocab_tags,
             limit_per_domain=5,
         )
 
@@ -415,7 +480,11 @@ class Stage1QuartetRuntime:
                 "sax_target_pitch_classes": sax_targets,
                 "sax_local_key_pitch_classes": sax_local_key,
                 "decision_step_beats": .5,
-                "song_id": "autumn_leaves_g_minor_jam",
+                "song_id": shared_core_tick.position.song_id,
+                "musical_position": shared_core_tick.position,
+                "expected_harmony": shared_core_tick.expected_harmony,
+                "expressive_intents_by_player": shared_core_tick.expressive_intents,
+                "runtime_vocabulary_sources": vocabulary_sources,
                 "performance_convention": default_performance_convention("jazz"),
             },
         )
