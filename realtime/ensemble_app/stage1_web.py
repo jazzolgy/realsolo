@@ -260,6 +260,9 @@ class Stage1Handler(SimpleHTTPRequestHandler):
             except ValueError:
                 beat, bar_index, tempo_bpm, chorus = 0.0, 0, self.quartet_chart.tempo_bpm, 0
 
+            showcase = query.get("legend_showcase", ["0"])[0] in {"1","true","yes","on"}
+            self.quartet.legend_showcase = showcase
+
             bar = self.quartet_chart.bars[bar_index]
             result = self.quartet.decide(
                 chord,
@@ -279,6 +282,7 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                 "snapshot_generation": result.snapshot_generation,
                 "published_generation": result.state.generation,
                 "performance_convention": "jazz_jam_session",
+                "legend_showcase": self.quartet.legend_showcase,
                 "groove": (
                     result.state.groove.coordination_mode.value
                     if result.state.groove is not None else ""

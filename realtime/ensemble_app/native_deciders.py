@@ -33,6 +33,7 @@ from players.drums import (
     perform_one_gesture,
 )
 from music_intelligence.corpus import ScoreContextSnapshot, ScorePosition
+from music_intelligence.legends import LegendDomain
 from music_intelligence.reasoning.legend_style_core import MusicalContextVector
 from music_intelligence.reasoning.online_improviser import SoftPlan
 from music_intelligence.reasoning.solo_runtime import build_solo_tick
@@ -59,6 +60,7 @@ from players.sax import (
     choose_sax_articulation_arc,
     choose_sax_expression,
     choose_sax_phrase_intention,
+    collect_legend_candidate_material,
     choose_sax_runtime_policy,
     generate_immediate_sax_candidates,
 )
@@ -490,6 +492,29 @@ class SaxNativeDecider:
 
         previous_pitch = self.phrase_memory.last_pitch_midi
 
+        showcase_legend_materials=()
+        if context.get("legend_showcase") and context.get("sax_legend_context") is not None:
+            base_context=context.get("sax_legend_candidate_context")
+            materials=[]
+            profile_view=context.get("sax_legend_context").profile_view
+            for domain in LegendDomain:
+                if not profile_view.domain_features.get(domain, ()):
+                    continue
+                materials.extend(collect_legend_candidate_material(
+                    context.get("sax_legend_context"),
+                    type(base_context)(
+                        domain=domain,
+                        harmony_context=base_context.harmony_context,
+                        harmonic_function=base_context.harmonic_function,
+                        local_key=base_context.local_key,
+                        phrase_position=base_context.phrase_position,
+                        active_tags=base_context.active_tags,
+                        allowed_uses=base_context.allowed_uses,
+                        vocabulary_limit=base_context.vocabulary_limit,
+                    ),
+                ))
+            showcase_legend_materials=tuple(materials)
+
         # Shared Solo Intelligence owns generic phrase/turn/motif development.
         # Sax remains responsible only for instrument-specific realization and
         # physical/expression constraints.
@@ -562,7 +587,9 @@ class SaxNativeDecider:
             score_policy=policy.score,
             interaction=policy.interaction,
             legend_materials=(
-                policy.legend.materials if policy.legend is not None else ()
+                showcase_legend_materials
+                if showcase_legend_materials
+                else (policy.legend.materials if policy.legend is not None else ())
             ),
             memory_intention=(
                 policy.legend.intention if policy.legend is not None else None
@@ -703,6 +730,8 @@ class SaxNativeDecider:
                     context.get("sax_legend_context").profile_view.legend_id
                     if context.get("sax_legend_context") is not None else ""
                 ),
+                "legend_showcase": "1" if context.get("legend_showcase") else "0",
+                "legend_material_count": str(len(showcase_legend_materials)),
             },
         )
         return NativeImmediateResult(
