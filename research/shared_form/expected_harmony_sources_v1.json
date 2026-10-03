@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0",
+  "principle": "expected_observed_inferred_harmony_are_distinct",
+  "canonical_coordinate": "song/section/form_bar/beat/chorus",
+  "sources": [
+    {
+      "song_id": "autumn_leaves",
+      "expected": [
+        {
+          "kind": "shared_chord_chart",
+          "corpus_item_id": "chart.standard100.autumn_leaves",
+          "dataset": "iRealPro Corpus of Jazz Standards v1.0",
+          "license": "CC BY 4.0"
+        },
+        {
+          "kind": "scorebook",
+          "book_id": "scorebook.newreal.1",
+          "page": 12,
+          "status": "vision_reviewed"
+        },
+        {
+          "kind": "scorebook",
+          "book_id": "scorebook.real.1",
+          "page": 36,
+          "status": "known_score_anchor"
+        }
+      ],
+      "observed_source": "be_playlist_project_audio:BE-003",
+      "structural_alignment": "partial_bar_aligned"
+    },
+    {
+      "song_id": "nardis",
+      "expected": [
+        {
+          "kind": "shared_chord_chart",
+          "corpus_item_id": "chart.standard100.nardis",
+          "dataset": "iRealPro Corpus of Jazz Standards v1.0",
+          "license": "CC BY 4.0"
+        }
+      ],
+      "observed_source": "be_playlist_project_audio:BE-010",
+      "structural_alignment": "form_known_bar_alignment_pending"
+    },
+    {
+      "song_id": "blue_in_green",
+      "expected": [
+        {
+          "kind": "shared_chord_chart",
+          "corpus_item_id": "chart.standard100.blue_in_green",
+          "dataset": "iRealPro Corpus of Jazz Standards v1.0",
+          "license": "CC BY 4.0"
+        },
+        {
+          "kind": "scorebook",
+          "book_id": "scorebook.real.1",
+          "page": 53,
+          "status": "indexed_score_anchor"
+        }
+      ],
+      "observed_source": "be_playlist_project_audio:BE-004",
+      "structural_alignment": "10_bar_form_known_bar_alignment_pending"
+    },
+    {
+      "song_id": "alice_in_wonderland",
+      "expected": [
+        {
+          "kind": "scorebook",
+          "book_id": "scorebook.real.1",
+          "page": 12,
+          "status": "visual_verified"
+        }
+      ],
+      "observed_source": "be_playlist_project_audio:BE-011",
+      "performer_links": [
+        "bill_evans",
+        "scott_lafaro",
+        "paul_motian"
+      ],
+      "structural_alignment": "score_anchor_verified_phrase_alignment_pending"
+    },
+    {
+      "song_id": "how_deep_is_the_ocean",
+      "expected": [
+        {
+          "kind": "scorebook",
+          "book_id": "scorebook.real.3",
+          "page": 115,
+          "status": "indexed_not_yet_visual_verified"
+        }
+      ],
+      "observed_source": "be_playlist_project_audio:BE-012",
+      "performer_links": [
+        "bill_evans",
+        "scott_lafaro",
+        "paul_motian"
+      ],
+      "structural_alignment": "score_anchor_pending_visual_verification"
+    },
+    {
+      "song_id": "israel",
+      "expected": [
+        {
+          "kind": "scorebook",
+          "book_id": "scorebook.real.1",
+          "page": 240,
+          "status": "visual_verified"
+        }
+      ],
+      "observed_source": "be_playlist_project_audio:BE-015",
+      "performer_links": [
+        "bill_evans",
+        "scott_lafaro",
+        "paul_motian"
+      ],
+      "structural_alignment": "12_bar_form_known_phrase_alignment_pending"
+    }
+  ]
+}
