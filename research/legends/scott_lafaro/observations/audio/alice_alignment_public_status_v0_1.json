@@ -1,0 +1,33 @@
+{
+  "schema_version": "0.1",
+  "scope": "public_non_reconstructive_alignment_status",
+  "legend_id": "scott_lafaro",
+  "track_id": "BE-011",
+  "source_window_track_relative_s": [0, 30],
+  "private_store_id": "private.legend.scott_lafaro.alice.v1",
+  "candidate_event_count": 60,
+  "stage_counts": {
+    "note_hypothesis": 60,
+    "score_aligned_hypothesis": 0,
+    "instrument_attributed": 0,
+    "expert_verified": 0,
+    "ground_truth_transcription": 0
+  },
+  "alignment_readiness": {
+    "score_anchor_verified": true,
+    "private_record_schema_defined": true,
+    "alignment_protocol_defined": true,
+    "exact_private_candidate_store_available_in_public_repo": false
+  },
+  "blocked_on": [
+    "access to the existing exact private 60-event candidate store"
+  ],
+  "safe_next_action": "Load the existing private candidate store without regenerating replacement events, preserve stable candidate ids/times, then perform score/form alignment before instrument attribution.",
+  "publication_rule": "No exact note, timing sequence, reconstructive phrase, or event-level confidence data is published here.",
+  "provenance": {
+    "score_anchor": "Realbk1.pdf p.12",
+    "candidate_status_source": "alice_private_note_transcription_status_v0_1.json",
+    "alignment_protocol": "alice_alignment_protocol_v0_1.md",
+    "private_record_schema": "alice_private_alignment_record_schema_v0_1.json"
+  }
+}
