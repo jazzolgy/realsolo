@@ -9,6 +9,10 @@ from music_intelligence.legends.interfaces import (
     VocabularyQuery,
     VocabularyUseType,
 )
+from music_intelligence.legends.promotion import (
+    VocabularyPromotionEvidence,
+    active_runtime_items,
+)
 
 
 ELIOT_ZIGMUND_PROVISIONAL_VOCABULARY = (
@@ -135,9 +139,45 @@ ELIOT_ZIGMUND_PROVISIONAL_VOCABULARY = (
 )
 
 
-# Active runtime vocabulary remains empty until the provisional cells survive
-# independent-source or manually verified drum evidence.
-ELIOT_ZIGMUND_VOCABULARY: tuple[VocabularyMemoryItem, ...] = ()
+ELIOT_ZIGMUND_PROMOTION_EVIDENCE = {
+    "ez_without_a_song_231": VocabularyPromotionEvidence(
+        source_personnel_verified=True,
+        phrase_context_verified=True,
+        provenance_complete=True,
+        dimension_confidence=0.82,
+        detector_robustness=0.167,
+        independent_window_count=1,
+        independent_recording_count=1,
+        generic_pattern_risk=0.45,
+    ),
+    "ez_without_a_song_132": VocabularyPromotionEvidence(
+        source_personnel_verified=True,
+        phrase_context_verified=True,
+        provenance_complete=True,
+        dimension_confidence=0.80,
+        detector_robustness=0.167,
+        independent_window_count=1,
+        independent_recording_count=1,
+        generic_pattern_risk=0.45,
+    ),
+    "ez_without_a_song_312": VocabularyPromotionEvidence(
+        source_personnel_verified=True,
+        phrase_context_verified=True,
+        provenance_complete=True,
+        dimension_confidence=0.76,
+        detector_robustness=0.0,
+        independent_window_count=1,
+        independent_recording_count=1,
+        generic_pattern_risk=0.45,
+    ),
+}
+
+# Runtime items are derived from the shared evidence gate rather than maintained
+# as a separate hand-edited list.
+ELIOT_ZIGMUND_VOCABULARY = active_runtime_items(
+    ELIOT_ZIGMUND_PROVISIONAL_VOCABULARY,
+    ELIOT_ZIGMUND_PROMOTION_EVIDENCE,
+)
 
 
 @dataclass(frozen=True)
