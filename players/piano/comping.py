@@ -20,6 +20,12 @@ from music_intelligence.reasoning.contextual_prior_gating import (
     gated_prior_set,
     improvisation_gating_context,
 )
+from music_intelligence.reasoning.decision_context_log import (
+    CandidateAudit,
+    DecisionContextLog,
+    append_ranked_decision,
+)
+from music_intelligence.reasoning.ensemble_state import EnsembleState
 from enum import Enum
 from typing import Mapping, Sequence
 
@@ -960,6 +966,10 @@ def perform_one_comping_action(
     interaction_state: PianoInteractionState | None = None,
     harmonic_frame: HarmonicFrame | None = None,
     harmonic_reasoning: HarmonicReasoningResult | None = None,
+    *,
+    decision_log: DecisionContextLog | None = None,
+    ensemble_state: EnsembleState | None = None,
+    player_id: str = "piano",
 ) -> PianoCompingScore:
     """Commit exactly one immediate comping decision, sounding or silent."""
 
@@ -971,14 +981,46 @@ def perform_one_comping_action(
         if interaction_state is not None
         else state.interaction_state_from_context(comping_context)
     )
-    chosen = evaluator.choose_immediate(
-        candidates,
-        comping_context,
-        musical_context,
-        state,
-        harmonic_affordance,
-        effective_interaction,
-        harmonic_reasoning,
+    scored = tuple(
+        evaluator.evaluate(
+            candidate,
+            comping_context,
+            musical_context,
+            state,
+            harmonic_affordance,
+            effective_interaction,
+            harmonic_reasoning,
+        )
+        for candidate in candidates
     )
+    chosen = max(scored, key=lambda item: item.total)
     state.commit(chosen.candidate, section_energy=comping_context.section_energy)
+
+    audits = tuple(
+        CandidateAudit(
+            candidate_id=f"comping:{index}",
+            total_score=item.total,
+            components=dict(item.components),
+            tags=tuple(sorted(item.candidate.tags)),
+            descriptor={
+                "action_type": item.candidate.action_type.value,
+                "role": item.candidate.role.value,
+                "duration_beats": item.candidate.duration_beats,
+                "harmonic_affordance_id": item.candidate.harmonic_affordance_id,
+            },
+        )
+        for index, item in enumerate(scored)
+    )
+    selected_index = scored.index(chosen)
+    append_ranked_decision(
+        decision_log,
+        player_id=player_id,
+        decision_kind="comping",
+        ensemble_state=ensemble_state,
+        candidates=audits,
+        selected_candidate_id=f"comping:{selected_index}",
+        selected_score=chosen.total,
+        reasons=chosen.reasons,
+        provenance=("players.piano.comping",),
+    )
     return chosen
