@@ -5,6 +5,13 @@ No separate bass harmony engine and no frozen future line.
 """
 from __future__ import annotations
 
+from music_intelligence.reasoning.decision_context_log import (
+    CandidateAudit,
+    DecisionContextLog,
+    append_ranked_decision,
+)
+from music_intelligence.reasoning.ensemble_state import EnsembleState
+
 from dataclasses import dataclass
 from enum import Enum
 
@@ -855,8 +862,41 @@ def generate_immediate_bass_candidates(
 def choose_immediate_bass_action(
     frame: HarmonicFrame,
     ctx: BassContext,
+    *,
+    decision_log: DecisionContextLog | None = None,
+    ensemble_state: EnsembleState | None = None,
+    player_id: str = "bass",
 ) -> BassActionCandidate:
     candidates = generate_immediate_bass_candidates(frame, ctx)
     if not candidates:
         raise ValueError("no bass candidates for current harmonic frame")
-    return candidates[0]
+    chosen = candidates[0]
+
+    audits = tuple(
+        CandidateAudit(
+            candidate_id=f"bass:{index}",
+            total_score=item.score,
+            components={},
+            tags=tuple(sorted(item.event.tags)),
+            descriptor={
+                "pitch_midi": item.event.pitch_midi,
+                "duration_beats": item.event.duration_beats,
+                "harmonic_role": item.harmonic_role.value,
+                "target_pitch_class": item.target_pitch_class,
+                "source_family": item.event.source_family,
+            },
+        )
+        for index, item in enumerate(candidates)
+    )
+    append_ranked_decision(
+        decision_log,
+        player_id=player_id,
+        decision_kind="bass_immediate",
+        ensemble_state=ensemble_state,
+        candidates=audits,
+        selected_candidate_id="bass:0",
+        selected_score=chosen.score,
+        reasons=chosen.reasons,
+        provenance=("players.bass.immediate_realizer",),
+    )
+    return chosen
