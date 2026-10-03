@@ -46,6 +46,47 @@ def _normalized_ioi(events):
     return tuple(round(max(.125,x/base),3) for x in iois)
 
 
+def _first_position(events):
+    return next((e.musical_position for e in events if e.musical_position is not None),None)
+
+
+def _position_features(event):
+    p=event.musical_position
+    if p is None:
+        return {"position_status":"unaligned_navigation_only"}
+    return {
+        "position_status":p.alignment_status.value,
+        "song_id":p.song_id,
+        "section":p.section,
+        "bar":p.bar,
+        "beat":p.beat,
+        "form_length_bars":p.form_length_bars,
+        "form_bar":p.form_bar,
+        "chorus_index":p.chorus_index,
+        "performance_phase":p.performance_phase.value,
+        "arrangement_segment":p.arrangement_segment,
+        "phrase_position":p.phrase_position,
+        "harmonic_function":p.harmonic_function,
+    }
+
+
+def _bar_group_key(event):
+    p=event.musical_position
+    if p is not None:
+        # Same form bar in different choruses remains distinguishable here;
+        # cross-chorus comparison can deliberately ignore chorus later.
+        bar=p.form_bar if p.form_bar is not None else p.bar
+        return ("musical",p.chorus_index,p.section,bar)
+    return ("legacy_navigation",None,"",int(event.onset_beats//4))
+
+
+def _metric_placement(event):
+    p=event.musical_position
+    if p is not None and p.beat is not None:
+        return round(float(p.beat),3)
+    return round(event.onset_beats%4,3)
+
+
 class MotifExtractor:
     domain=LearningDomain.MOTIF
     def extract(self,data):
@@ -64,10 +105,12 @@ class MotifExtractor:
                 _id(data.source_id,self.domain,payload),data.source_id,self.domain,
                 "motif.relative.v1",
                 {"interval_schema":ints,"rhythm_schema":rhythm,
-                 "event_count":len(w),"source_instrument":w[0].instrument},
+                 "event_count":len(w),"source_instrument":w[0].instrument,
+                 **_position_features(w[0])},
                 tuple(e.event_id for e in w),
                 min(e.confidence for e in w),
                 ("shared_learning:motif",),
+                musical_position=_first_position(w),
             ))
         return tuple(out)
 
@@ -78,7 +121,13 @@ class SoloPhraseExtractor:
         groups={}
         for e in data.events:
             if e.role=="solo" or "solo" in e.tags or e.phrase_id:
-                key=e.phrase_id or f"window:{int(e.onset_beats//4)}"
+                if e.phrase_id:
+                    key=e.phrase_id
+                elif e.musical_position is not None:
+                    p=e.musical_position
+                    key=f"form:{p.chorus_index}:{p.section}:{p.form_bar or p.bar}"
+                else:
+                    key=f"navigation:{int(e.onset_beats//4)}"
                 groups.setdefault(key,[]).append(e)
         out=[]
         for key,items in groups.items():
@@ -91,11 +140,13 @@ class SoloPhraseExtractor:
                 _id(data.source_id,self.domain,payload),data.source_id,self.domain,
                 "solo_phrase.relative.v1",
                 {"interval_schema":ints,"rhythm_schema":rhythm,"span_beats":round(span,3),
-                 "entry_phase":round(items[0].onset_beats%4,3),
-                 "mean_accent":round(mean(e.accent for e in items),3)},
+                 "entry_phase":_metric_placement(items[0]),
+                 "mean_accent":round(mean(e.accent for e in items),3),
+                 **_position_features(items[0])},
                 tuple(e.event_id for e in items),
                 min(e.confidence for e in items),
                 ("shared_learning:solo_phrase",),
+                musical_position=_first_position(items),
             ))
         return tuple(out)
 
@@ -128,11 +179,11 @@ class CompingExtractor:
         comp=tuple(e for e in data.events if e.role=="comping" or "comping" in e.tags)
         if not comp: return ()
         windows={}
-        for e in comp: windows.setdefault(int(e.onset_beats//4),[]).append(e)
+        for e in comp: windows.setdefault(_bar_group_key(e),[]).append(e)
         out=[]
         for bar,items in windows.items():
             items=tuple(sorted(items,key=lambda e:e.onset_beats))
-            placements=tuple(round(e.onset_beats%4,3) for e in items)
+            placements=tuple(_metric_placement(e) for e in items)
             durations=tuple(round(e.duration_beats,3) for e in items)
             payload=f"{bar}|{placements}|{durations}"
             out.append(LearningArtifact(
@@ -140,9 +191,11 @@ class CompingExtractor:
                 "comping.gesture_distribution.v1",
                 {"metric_placements":placements,"durations":durations,
                  "density":round(len(items)/4,3),
-                 "mean_dynamic":round(mean(e.dynamic if e.dynamic is not None else .5 for e in items),3)},
+                 "mean_dynamic":round(mean(e.dynamic if e.dynamic is not None else .5 for e in items),3),
+                 **_position_features(items[0])},
                 tuple(e.event_id for e in items),min(e.confidence for e in items),
                 ("shared_learning:comping",),
+                musical_position=_first_position(items),
             ))
         return tuple(out)
 
@@ -160,9 +213,11 @@ class HarmonyVoiceLeadingExtractor:
                 _id(data.source_id,self.domain,payload),data.source_id,self.domain,
                 "harmony.voice_leading_transition.v1",
                 {"from_harmony":a.harmony_label,"to_harmony":b.harmony_label,
-                 "voice_motion":motion,"common_context":a.harmony_label==b.harmony_label},
+                 "voice_motion":motion,"common_context":a.harmony_label==b.harmony_label,
+                 **_position_features(a)},
                 (a.event_id,b.event_id),min(a.confidence,b.confidence),
                 ("shared_learning:harmony_voice_leading",),
+                musical_position=_first_position((a,b)),
             ))
         return tuple(out)
 
@@ -173,15 +228,17 @@ class RhythmMicrotimingExtractor:
         if not data.events: return ()
         events=tuple(sorted(data.events,key=lambda e:e.onset_beats))
         offsets=tuple(round(e.timing_offset_beats,4) for e in events)
-        phases=tuple(round(e.onset_beats%1,3) for e in events)
+        phases=tuple(_metric_placement(e) for e in events)
         payload=f"{phases}|{offsets}"
         return (LearningArtifact(
             _id(data.source_id,self.domain,payload),data.source_id,self.domain,
             "rhythm.microtiming_profile.v1",
             {"metric_phases":phases,"timing_offsets":offsets,
-             "rhythm_schema":_normalized_ioi(events)},
+             "rhythm_schema":_normalized_ioi(events),
+             **_position_features(events[0])},
             tuple(e.event_id for e in events),min(e.confidence for e in events),
             ("shared_learning:rhythm_microtiming",),
+            musical_position=_first_position(events),
         ),)
 
 
@@ -200,9 +257,11 @@ class EnsembleInteractionExtractor:
                 "ensemble.interaction_transition.v1",
                 {"source_instrument":a.instrument,"response_instrument":b.instrument,
                  "response_gap_beats":round(gap,3),
-                 "source_role":a.ensemble_role,"response_role":b.ensemble_role},
+                 "source_role":a.ensemble_role,"response_role":b.ensemble_role,
+                 **_position_features(a)},
                 (a.event_id,b.event_id),min(a.confidence,b.confidence),
                 ("shared_learning:ensemble_interaction",),
+                musical_position=_first_position((a,b)),
             ))
         return tuple(out)
 
@@ -219,9 +278,11 @@ class ExpressionExtractor:
             _id(data.source_id,self.domain,payload),data.source_id,self.domain,
             "expression.trajectory.v1",
             {"dynamic_trajectory":dyn,"accent_trajectory":accent,
-             "articulations":tuple(e.articulation for e in events)},
+             "articulations":tuple(e.articulation for e in events),
+             **_position_features(events[0])},
             tuple(e.event_id for e in events),min(e.confidence for e in events),
             ("shared_learning:expression",),
+            musical_position=_first_position(events),
         ),)
 
 
@@ -231,10 +292,10 @@ class FormTensionExtractor:
         events=tuple(sorted(data.events,key=lambda e:e.onset_beats))
         if not events: return ()
         windows={}
-        for e in events: windows.setdefault(int(e.onset_beats//4),[]).append(e)
+        for e in events: windows.setdefault(_bar_group_key(e),[]).append(e)
         out=[]
         prev_density=None
-        for bar,items in sorted(windows.items()):
+        for bar,items in sorted(windows.items(),key=lambda item: str(item[0])):
             density=len(items)/4.0
             mean_accent=mean(e.accent for e in items)
             pitch_span=0.0
@@ -248,9 +309,11 @@ class FormTensionExtractor:
                 _id(data.source_id,self.domain,payload),data.source_id,self.domain,
                 "form.tension_window.v1",
                 {"window":bar,"density":round(density,3),"tension_proxy":round(tension,3),
-                 "trajectory":direction,"form_label":data.form_label},
+                 "trajectory":direction,"form_label":data.form_label,
+                 **_position_features(items[0])},
                 tuple(e.event_id for e in items),min(e.confidence for e in items),
                 ("shared_learning:form_tension",),
+                musical_position=_first_position(items),
             ))
         return tuple(out)
 
