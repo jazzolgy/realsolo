@@ -12,6 +12,7 @@ from .observation.models import (
     SeparationMetadata,
 )
 from .pipeline import AudioEvidencePipeline
+from .separated_pipeline import SeparatedAudioEvidencePipeline
 from .posterior.fusion import (
     BoundedContextPosterior,
     ContextualAudioHypothesis,
@@ -38,6 +39,7 @@ __all__ = [
     "PosteriorRevision",
     "RevisionLedger",
     "SeparationMetadata",
+    "SeparatedAudioEvidencePipeline",
     "confidence_report",
     "to_performance_evidence_payload",
 ]
