@@ -45,6 +45,8 @@ _RECENT_USE_MULTIPLIER: dict[VocabularyUseType, float] = {
     VocabularyUseType.HYBRID_COMPOSITION: 0.50,
 }
 
+DIRECT_LITERAL_SHARE = 0.30
+
 _SIGNATURE_BIAS: dict[SignatureStatus, float] = {
     SignatureStatus.NONE: 0.0,
     SignatureStatus.RECURRING: 0.015,
@@ -113,3 +115,57 @@ def vocabulary_use_score(
         use_bias=use_bias,
         scarcity_penalty=min(0.60, recent_pressure),
     )
+
+
+
+def choose_runtime_vocabulary_use(
+    item: VocabularyMemoryItem,
+    request: VocabularyQuery,
+    *,
+    opportunity_index: int,
+) -> VocabularyUseType:
+    """Choose direct vs transformed reuse for one runtime opportunity.
+
+    Project listening policy:
+    - when verified literal material is available and literal use is allowed,
+      about 30 percent of opportunities may use it directly;
+    - remaining opportunities prefer transformed reuse;
+    - no literal representation means automatic transformed fallback.
+
+    The 3-of-10 slot schedule is deterministic so research rehearsals are
+    reproducible. It is a usage target, not a requirement that every phrase
+    contain exactly 30 percent literal material.
+    """
+    item.validate()
+    if opportunity_index < 0:
+        raise ValueError("opportunity_index may not be negative")
+
+    allowed=item.candidate_uses.intersection(request.allowed_uses)
+    if request.preferred_use is not None:
+        if request.preferred_use not in allowed:
+            raise ValueError("preferred_use is not allowed for this vocabulary item")
+        return request.preferred_use
+
+    direct_slot=(opportunity_index % 10) < 3
+    if (
+        direct_slot
+        and bool(item.literal_representation)
+        and VocabularyUseType.LITERAL_QUOTE in allowed
+    ):
+        return VocabularyUseType.LITERAL_QUOTE
+
+    transformed_preference=(
+        VocabularyUseType.HYBRID_COMPOSITION,
+        VocabularyUseType.ABSTRACTED_PATTERN,
+        VocabularyUseType.FRAGMENT_RECALL,
+        VocabularyUseType.ADAPTED_LICK,
+        VocabularyUseType.TRANSPOSED_LICK,
+    )
+    for use in transformed_preference:
+        if use in allowed:
+            return use
+
+    if bool(item.literal_representation) and VocabularyUseType.LITERAL_QUOTE in allowed:
+        return VocabularyUseType.LITERAL_QUOTE
+
+    raise ValueError(f"no eligible runtime vocabulary use for {item.vocabulary_id}")
