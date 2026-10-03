@@ -22,6 +22,7 @@ from music_intelligence.reasoning import (
     build_canonical_runtime_context,
     legend_runtime_resources,
 )
+from music_intelligence.reasoning.runtime_vocabulary import SharedVocabularyProjection
 
 
 @dataclass(frozen=True)
@@ -113,3 +114,24 @@ def test_runtime_bridge_consumes_realchord_expression_and_vocabulary_without_dup
 
 def test_audio_evidence_public_facade_is_alias_not_second_engine():
     assert artifacts_from_audio_aggregate is implementation_audio_adapter
+
+
+def test_shared_runtime_projection_uses_canonical_reuse_policy():
+    evans=legend_runtime_resources("bill_evans")
+    rows=evans.vocabulary(
+        VocabularyQuery(
+            legend_id="bill_evans",
+            target_instrument="piano",
+            allowed_uses=frozenset(VocabularyUseType),
+            limit=2,
+        )
+    )
+    assert rows
+    projection=SharedVocabularyProjection("piano","piano",tuple(rows))
+    selections=projection.runtime_selections(opportunity_index=0)
+    assert selections
+    # Current public Evans items are abstract/derived. A nominal direct slot
+    # must therefore fall back through usage_policy instead of being labelled
+    # or treated as a fabricated literal quotation.
+    assert selections[0].use_type is not VocabularyUseType.LITERAL_QUOTE
+    assert selections[0].item.vocabulary_id==rows[0].vocabulary_id
