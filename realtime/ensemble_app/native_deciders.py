@@ -523,6 +523,11 @@ class SaxNativeDecider:
             frame,
             foreground_player_id="sax",
         )
+        shared_vocab=context.get("shared_vocabulary_sax")
+        shared_vocab_seed=(
+            shared_vocab.items[0].vocabulary_id
+            if shared_vocab is not None and shared_vocab.items else ""
+        )
         motif_generation=MotifGenerationContext(
             tension=max(0.0,min(1.0,snapshot.ensemble_tension)),
             ensemble_activity=max(0.0,min(1.0,snapshot.ensemble_density)),
@@ -533,6 +538,7 @@ class SaxNativeDecider:
                 next(iter(self.motif_memory.active())).identity.motif_id
                 if self.motif_memory.active() else ""
             ),
+            vocabulary_seed_id=shared_vocab_seed,
         )
         motif_eval=MotifEvaluationContext(
             harmonic_fit=.72,
@@ -611,12 +617,16 @@ class SaxNativeDecider:
                 if shared_space:
                     score += .18
                 score += .24*max(0.0,policy_projection.space_bias)
+                if shared_vocab is not None:
+                    score += shared_vocab.tag_bias({"ensemble_space","add_space","phrase_end","rest"})
                 return score
 
             if event.pitch_midi%12 in shared_pcs:
                 score += .13
             overlap=len(set(event.tags).intersection(shared_tags))
             score += min(.08,.02*overlap)
+            if shared_vocab is not None:
+                score += shared_vocab.tag_bias(set(event.tags))
             if "directed_target" in event.tags or "future_harmony" in event.tags:
                 score += .18*max(0.0,policy_projection.harmonic_retarget_bias)
             if previous_pitch is not None and policy_projection.register_direction:
@@ -732,6 +742,10 @@ class SaxNativeDecider:
                 ),
                 "legend_showcase": "1" if context.get("legend_showcase") else "0",
                 "legend_material_count": str(len(showcase_legend_materials)),
+                "shared_vocabulary_seed": shared_vocab_seed,
+                "shared_vocabulary_count": str(
+                    len(shared_vocab.items) if shared_vocab is not None else 0
+                ),
             },
         )
         return NativeImmediateResult(
@@ -742,7 +756,15 @@ class SaxNativeDecider:
             leadership=max(0.0, min(1.0, .58 + directive.leadership_delta)),
             phrase_maturity=phrase_maturity,
             tags=frozenset(set(event.tags) | set(policy.interaction.tags) | {f"arc:{arc.phase}",f"phrase_intention:{phrase_intention.phase}"}),
-            provenance=("sax_runtime_policy", "shared_solo_runtime", "shared_motif_policy", "sax_immediate_candidate", "sax_phrase_intention", "sax_phrase_expression"),
+            provenance=(
+                "sax_runtime_policy",
+                "shared_solo_runtime",
+                "shared_motif_policy",
+                "shared_vocabulary_runtime",
+                "sax_immediate_candidate",
+                "sax_phrase_intention",
+                "sax_phrase_expression",
+            ),
         )
 
 
