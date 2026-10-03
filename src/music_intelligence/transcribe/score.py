@@ -145,7 +145,9 @@ class ScorePart:
             raise ValueError("score part requires at least one staff")
         if len(self.staff_ids) != len(set(self.staff_ids)):
             raise ValueError("staff_ids must be unique")
-        previous: dict[tuple[str, str], Fraction] = {}
+        previous_onset: dict[tuple[str, str], Fraction] = {}
+        previous_end: dict[tuple[str, str], Fraction] = {}
+        previous_group: dict[tuple[str, str], str | None] = {}
         simultaneity_groups: dict[str, list[ScoreEvent]] = {}
         for event in self.events:
             event.validate()
@@ -154,10 +156,30 @@ class ScorePart:
             if event.staff_id not in self.staff_ids:
                 raise ValueError("score event references unknown staff")
             key = (event.staff_id, event.voice_id)
-            prior = previous.get(key)
-            if prior is not None and event.span.onset < prior:
+            prior_onset = previous_onset.get(key)
+            if prior_onset is not None and event.span.onset < prior_onset:
                 raise ValueError("events must be ordered within each staff/voice")
-            previous[key] = event.span.onset
+
+            prior_end = previous_end.get(key)
+            prior_group = previous_group.get(key)
+            same_chord_group = (
+                event.simultaneity_group_id is not None
+                and event.simultaneity_group_id == prior_group
+                and event.span.onset == prior_onset
+            )
+            if (
+                prior_end is not None
+                and event.span.onset < prior_end
+                and not same_chord_group
+            ):
+                raise ValueError(
+                    "overlapping events in one staff/voice require distinct "
+                    "voices or a simultaneity group"
+                )
+
+            previous_onset[key] = event.span.onset
+            previous_end[key] = max(prior_end or event.span.offset, event.span.offset)
+            previous_group[key] = event.simultaneity_group_id
             if event.simultaneity_group_id is not None:
                 simultaneity_groups.setdefault(
                     event.simultaneity_group_id,
