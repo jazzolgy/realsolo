@@ -9,12 +9,14 @@ from hashlib import sha256
 from statistics import mean
 
 from .representation import LearningArtifact, LearningDomain, StructuralPerformanceData
+from .canonical_position import canonicalize_structural_positions, position_feature_map
 
 
 def build_genre_artifact(
     data: StructuralPerformanceData,
     artifacts: tuple[LearningArtifact,...],
 ) -> LearningArtifact | None:
+    data=canonicalize_structural_positions(data)
     if not artifacts:
         return None
 
@@ -40,6 +42,18 @@ def build_genre_artifact(
         "interaction_gap_mean":round(avg(interaction,"response_gap_beats"),4),
         "tension_mean":round(avg(tension,"tension_proxy"),4),
         "form_label":data.form_label,
+        "metric_form_context":{
+            "resolved_metric":all(e.metric_form_position is not None and e.metric_form_position.resolved_metric for e in data.events),
+            "resolved_form":all(e.metric_form_position is not None and e.metric_form_position.resolved_form for e in data.events),
+            "form_id":data.form_map.form_id if data.form_map is not None else (data.form_label or None),
+            "sections":tuple(dict.fromkeys(
+                e.metric_form_position.section_id
+                for e in data.events
+                if e.metric_form_position is not None and e.metric_form_position.section_id
+            )),
+            "start":position_feature_map(data.events[0]) if data.events else None,
+            "end":position_feature_map(data.events[-1]) if data.events else None,
+        },
     }
     payload="|".join(f"{k}={features[k]}" for k in sorted(features))
     digest=sha256(payload.encode()).hexdigest()[:16]
@@ -51,5 +65,5 @@ def build_genre_artifact(
         features=features,
         source_event_ids=tuple(e.event_id for e in data.events),
         confidence=mean(a.confidence for a in artifacts),
-        provenance=("shared_learning:genre","cross_domain_idiom_profile"),
+        provenance=("shared_learning:genre","cross_domain_idiom_profile","metric_form_learning_address"),
     )
