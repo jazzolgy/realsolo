@@ -1,0 +1,52 @@
+{
+  "schema": "realsolo.shared_audio_intelligence.event_dataset.v0.2",
+  "source_id": "BE-003",
+  "title": "Autumn Leaves",
+  "source_family": "be_playlist_project_audio",
+  "source_filename": "𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭 우리 모두가 사랑한 재즈 피아니스트 빌에반스 _ Bill Evans, A Jazz Pianist Loved by All of Us 🎹.mp3",
+  "source_sha256": "f38f3142ceafb3c83d79fbf1383cadd258fda1555fc2cc3ec2a7978b417eefa4",
+  "track_window_s": {"start": 708.0, "end": 1069.0, "duration": 361.0},
+  "training_rights_disposition": "DERIVED_ONLY",
+  "publication_class": "PUBLIC_DERIVED",
+  "analysis_method": {
+    "sample_rate": 22050,
+    "hop_length": 512,
+    "n_fft": 4096,
+    "hpss": "librosa.effects.hpss default",
+    "harmonic_onset_delta": 0.05,
+    "percussive_onset_delta": 0.12,
+    "pitch_peak_threshold_relative_to_onset_max": 0.18,
+    "max_pitch_hypotheses_per_onset": 6
+  },
+  "counts": {
+    "harmonic_onsets": 2043,
+    "pitch_hypotheses": 9627,
+    "percussive_events": 1273,
+    "beat_positions": 601,
+    "ambiguous_instrument_hypotheses": 5699
+  },
+  "tempo_bpm_estimate": 103.359375,
+  "percussive_class_counts": {
+    "snare_or_mid_percussion": 1053,
+    "kick_or_low_percussion": 178,
+    "cymbal_or_hi_hat": 11,
+    "unresolved_percussive_event": 31
+  },
+  "pitch_files": [
+    {"file": "pitch_hypotheses_part_01.csv", "rows": 2000},
+    {"file": "pitch_hypotheses_part_02.csv", "rows": 2000},
+    {"file": "pitch_hypotheses_part_03.csv", "rows": 2000},
+    {"file": "pitch_hypotheses_part_04.csv", "rows": 2000},
+    {"file": "pitch_hypotheses_part_05.csv", "rows": 1627}
+  ],
+  "files": {
+    "percussive_events": "percussive_events.csv",
+    "beat_grid": "beat_grid.csv"
+  },
+  "interpretation_limits": [
+    "pitch rows are spectral NOTE_HYPOTHESES, not confirmed notes",
+    "instrument probabilities are conservative acoustic/register priors, not final ownership",
+    "bar numbers are audio-grid estimates, not canonical score bars",
+    "canonical score/form alignment remains unresolved"
+  ]
+}
