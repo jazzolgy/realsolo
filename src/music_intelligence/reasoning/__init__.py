@@ -57,3 +57,22 @@ from .interaction_scheduler import (
     schedule_ensemble,
     schedule_player,
 )
+
+
+from .runtime_legend_resources import (
+    LegendRuntimeResources,
+    legend_runtime_resources,
+)
+from .canonical_runtime_context import (
+    CanonicalRuntimeContext,
+    RuntimeVocabularyChoice,
+    build_canonical_runtime_context,
+)
+
+__all__ += [
+    "LegendRuntimeResources",
+    "legend_runtime_resources",
+    "CanonicalRuntimeContext",
+    "RuntimeVocabularyChoice",
+    "build_canonical_runtime_context",
+]
