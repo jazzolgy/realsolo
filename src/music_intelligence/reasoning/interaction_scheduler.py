@@ -14,6 +14,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Sequence
 
+from music_intelligence.learning.engine import LearningPriorView
+from .learning_prior_runtime import categorical_prior_bias
+
 from .ensemble_state import (
     EnsembleState,
     InteractionKind,
@@ -112,6 +115,8 @@ def _strong_other_leader(
 def schedule_player(
     state: EnsembleState,
     player_id: str,
+    *,
+    interaction_prior: LearningPriorView | None = None,
 ) -> InteractionDirective:
     """Return a coordination directive for one player's next immediate action."""
     state.validate()
@@ -233,6 +238,26 @@ def schedule_player(
         confidence = .64
         reasons.append("maintain current interaction unless new ensemble evidence redirects it")
 
+    if interaction in {
+        InteractionKind.ANSWER,
+        InteractionKind.FOLLOW,
+        InteractionKind.SUPPORT,
+        InteractionKind.SETUP,
+    }:
+        learned_response_role = categorical_prior_bias(
+            interaction_prior,
+            "response_role",
+            p.role.value,
+            max_bonus=.08,
+        )
+        if learned_response_role.active:
+            confidence = min(
+                1.0,
+                confidence + learned_response_role.confidence_delta,
+            )
+            reasons.append(learned_response_role.reason)
+            tags.add("learned_interaction_prior")
+
     directive = InteractionDirective(
         player_id=player_id,
         interaction=interaction,
@@ -249,7 +274,11 @@ def schedule_player(
     return directive
 
 
-def schedule_ensemble(state: EnsembleState) -> tuple[InteractionDirective, ...]:
+def schedule_ensemble(
+    state: EnsembleState,
+    *,
+    interaction_prior: LearningPriorView | None = None,
+) -> tuple[InteractionDirective, ...]:
     """Compute simultaneous coordination advice from one immutable snapshot.
 
     All directives are derived from the same state generation. They should be
@@ -258,7 +287,11 @@ def schedule_ensemble(state: EnsembleState) -> tuple[InteractionDirective, ...]:
     """
     state.validate()
     return tuple(
-        schedule_player(state, p.player_id)
+        schedule_player(
+            state,
+            p.player_id,
+            interaction_prior=interaction_prior,
+        )
         for p in state.active_players()
     )
 
