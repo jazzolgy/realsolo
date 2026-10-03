@@ -5,7 +5,9 @@ from music_intelligence.transcribe.rhythm import (
     quantize_score_span,
     rest_for_gap,
     split_note_across_bars,
+    split_note_for_readability,
     tuplet_note,
+    written_note_type_and_dots,
 )
 
 
@@ -57,3 +59,50 @@ def test_arbitrary_tuplet_ratio_is_supported_without_artificial_maximum():
     assert atom.tuplet is not None
     assert atom.tuplet.actual == 11
     assert atom.tuplet.normal == 8
+
+
+
+def test_beat_aligned_dotted_quarter_is_preserved_without_unnecessary_tie():
+    ScoreSpan = __import__(
+        "music_intelligence.transcribe.notation",
+        fromlist=["ScoreSpan"],
+    ).ScoreSpan
+    atoms = split_note_for_readability(
+        ScoreSpan(Fraction(0), Fraction(3, 2)),
+        ("melody:dotted",),
+        grid=QuantizationGrid(step=Fraction(1, 2)),
+    )
+
+    assert len(atoms) == 1
+    assert atoms[0].span.duration == Fraction(3, 2)
+    assert atoms[0].tie_to_next is False
+
+
+def test_offbeat_syncopation_is_split_at_visible_quarter_beat():
+    ScoreSpan = __import__(
+        "music_intelligence.transcribe.notation",
+        fromlist=["ScoreSpan"],
+    ).ScoreSpan
+    atoms = split_note_for_readability(
+        ScoreSpan(Fraction(1, 2), Fraction(3, 2)),
+        ("melody:syncopation",),
+        grid=QuantizationGrid(step=Fraction(1, 2)),
+    )
+
+    assert len(atoms) == 2
+    assert atoms[0].span == ScoreSpan(Fraction(1, 2), Fraction(1, 2))
+    assert atoms[1].span == ScoreSpan(Fraction(1), Fraction(1))
+    assert atoms[0].tie_to_next is True
+    assert atoms[1].tie_from_previous is True
+
+
+def test_written_note_type_recognizes_dots_and_triplet_display_value():
+    assert written_note_type_and_dots(Fraction(3, 2)) == ("quarter", 1)
+    assert written_note_type_and_dots(Fraction(3, 4)) == ("eighth", 1)
+    assert written_note_type_and_dots(
+        Fraction(1, 3),
+        tuplet=__import__(
+            "music_intelligence.transcribe.notation",
+            fromlist=["TupletRatio"],
+        ).TupletRatio(3, 2),
+    ) == ("eighth", 0)
