@@ -1,0 +1,45 @@
+{
+  "schema_version": "0.4",
+  "legend_id": "bill_evans",
+  "recording_id": "portrait_in_jazz_autumn_leaves_take1_stereo",
+  "note_transcription_status": "PARTIAL_HYPOTHESIS_ONLY",
+  "exact_note_transcription_complete": false,
+  "source_analysis": {
+    "source": "owner-supplied mixed trio audio",
+    "regions": [
+      {
+        "performance_phase": "head",
+        "track_relative_s": [
+          8,
+          46
+        ],
+        "detected_onsets": 212,
+        "pitch_hypotheses": 725
+      },
+      {
+        "performance_phase": "solo1",
+        "track_relative_s": [
+          120,
+          158
+        ],
+        "detected_onsets": 248,
+        "pitch_hypotheses": 975
+      }
+    ],
+    "combined": {
+      "detected_onsets": 460,
+      "pitch_hypotheses": 1700
+    },
+    "method": "22.05 kHz mono; HPSS harmonic component; onset detection; 36-bin/octave CQT; up to 5 local spectral pitch hypotheses per onset",
+    "coordinate_alignment": "32-bar existing score/form map; bar/beat positions interpolated within verified 8-bar section windows"
+  },
+  "public_data_policy": "Exact candidate-note event list remains private/local and is not committed; public repository stores non-reconstructive counts/status only.",
+  "blockers": [
+    "mixed trio audio does not provide reliable piano/bass separation",
+    "automatic multi-pitch CQT peaks are note hypotheses, not ground truth",
+    "RH/LH attribution is not verified",
+    "note offsets, pedal-induced sustain and voicing membership are not yet ground truth",
+    "RealChord expected harmony is available as stable song identity but raw chart still requires full structural normalization for beat-level expected-chord join"
+  ],
+  "promotion_rule": "NOTE_HYPOTHESIS -> SCORE_ALIGNED_HYPOTHESIS -> INSTRUMENT_ATTRIBUTED -> EXPERT_VERIFIED -> GROUND_TRUTH_TRANSCRIPTION"
+}
