@@ -71,7 +71,6 @@ class YAMNetInstrumentBackend:
     model_handle: str=YAMNET_HANDLE
     analysis_window_s: float=1.92
     min_window_s: float=.96
-    _buffers: dict[int,deque]=field(default_factory=dict,init=False,repr=False)
     adaptation_path: Path | None=None
     adaptation_weight: float=.24
     _model: object | None=field(default=None,init=False,repr=False)
