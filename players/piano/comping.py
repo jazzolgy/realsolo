@@ -10,6 +10,8 @@ inferences and remain provisional until cross-source validation.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from music_intelligence.learning.engine import LearningPriorView
+from music_intelligence.reasoning.learning_prior_runtime import numeric_target_bias
 from enum import Enum
 from typing import Mapping, Sequence
 
@@ -371,8 +373,13 @@ class PianoCompingState:
 class PianoCompingEvaluator:
     """Contextual policy above the shared harmony and piano realization layers."""
 
-    def __init__(self, piano_evaluator: PianoPolicyEvaluator | None = None):
+    def __init__(
+        self,
+        piano_evaluator: PianoPolicyEvaluator | None = None,
+        comping_prior: LearningPriorView | None = None,
+    ):
         self.piano_evaluator = piano_evaluator or PianoPolicyEvaluator()
+        self.comping_prior = comping_prior
 
     @staticmethod
     def _add(
@@ -405,6 +412,24 @@ class PianoCompingEvaluator:
         components: dict[str, float] = {}
         reasons: list[str] = []
         piano_score: PianoActionScore | None = None
+
+        learned_density = numeric_target_bias(
+            self.comping_prior,
+            "density",
+            float(state._estimate_density(candidate).activity),
+            tolerance=.65,
+            max_bonus=.10,
+            max_penalty=.04,
+        )
+        if learned_density.active:
+            score = self._add(
+                score,
+                components,
+                reasons,
+                "learned_comping_density",
+                learned_density.score_delta,
+                learned_density.reason,
+            )
 
         foreground_activity = comping_context.soloist_activity
         if comping_context.ensemble_mode in {
