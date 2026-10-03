@@ -133,8 +133,14 @@ def test_resolved_hypothesis_projects_to_versioned_performance_evidence_payload(
     assert payload["confidence"]["overall_source"] == 0.84
     assert payload["alternatives"]
     assert payload["evidence"][0]["detail"] == "raw_observation:synthetic:c4:001"
-    assert "raw_instrument_probabilities" in payload["metadata"]
-    assert "posterior_instrument_probabilities" in payload["metadata"]
+    assert payload["raw_instrument_probabilities"][0]["label"] == "piano"
+    assert payload["context_instrument_probabilities"][0]["label"] == "piano"
+    assert payload["raw_confidence"]["instrument"] == 0.84
+    assert payload["contextual_confidence"]["instrument"] is not None
+    assert payload["context_corrections"][0]["source_ref"] == "audio-context"
+    assert payload["revision_history"][0]["attribute"] == "instrument_distribution"
+    assert "posterior_margin" in payload["metadata"]
+    assert "posterior_entropy" in payload["metadata"]
 
 
 def test_unpitched_observation_projects_without_pitch():
