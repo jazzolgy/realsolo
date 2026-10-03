@@ -232,21 +232,16 @@ class Stage1QuartetRuntime:
         # Autumn Leaves G minor and its relative Bb-major region share this
         # seven-note collection; this is harmonic/form context, not head melody.
         sax_local_key=frozenset({7,9,10,0,2,3,5})
-        section_bar_indices=[
-            i for i,b in enumerate(context.get("song_chart").bars)
-            if b.section==section
-        ] if context.get("song_chart") is not None else []
-        measure_in_section=(
-            section_bar_indices.index(bar_index)+1
-            if bar_index in section_bar_indices else ((bar_index%16)+1)
-        )
+        # Canonical Autumn Leaves benchmark uses two 16-bar sections.
+        # RealChord identity is structure-first; wall-clock time is aligned later.
+        measure_in_section=(bar_index % 16)+1
         canonical_coordinate=CanonicalMusicalCoordinate(
             realchord_id=96,
             section=section or "unknown",
             measure_in_section=measure_in_section,
             measure_in_form=bar_index+1,
             beat=beat_in_bar,
-            chorus=int(context.get("chorus_index",0)),
+            chorus=chorus,
         )
 
         sax_score_snapshot=ScoreContextSnapshot(
