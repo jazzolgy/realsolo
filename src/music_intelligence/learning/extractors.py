@@ -10,6 +10,7 @@ from math import isclose
 from statistics import mean
 from typing import Protocol
 
+from .canonical_position import canonicalize_structural_positions, position_feature_map
 from .representation import (
     LearningArtifact,
     LearningDomain,
@@ -36,6 +37,26 @@ def _pitched(events):
 def _intervals(events):
     p=_pitched(events)
     return tuple(int(round(b.pitch_midi-a.pitch_midi)) for a,b in zip(p,p[1:]))
+
+
+def _beats_per_measure(data):
+    if data.form_map is not None:
+        return float(data.form_map.meter_numerator)
+    if "/" in (data.meter or ""):
+        try:
+            n=int(data.meter.split("/",1)[0])
+            if n>0:
+                return float(n)
+        except ValueError:
+            pass
+    return None
+
+
+def _event_measure_beat(event):
+    p=event.metric_form_position
+    if p is None or not p.resolved_metric:
+        return None,None
+    return p.measure_index,p.beat_in_measure
 
 
 def _normalized_ioi(events):
@@ -78,7 +99,8 @@ class SoloPhraseExtractor:
         groups={}
         for e in data.events:
             if e.role=="solo" or "solo" in e.tags or e.phrase_id:
-                key=e.phrase_id or f"window:{int(e.onset_beats//4)}"
+                measure,_beat=_event_measure_beat(e)
+                key=e.phrase_id or (f"measure:{measure}" if measure is not None else f"beat_window:{int(e.onset_beats//4)}")
                 groups.setdefault(key,[]).append(e)
         out=[]
         for key,items in groups.items():
@@ -91,7 +113,8 @@ class SoloPhraseExtractor:
                 _id(data.source_id,self.domain,payload),data.source_id,self.domain,
                 "solo_phrase.relative.v1",
                 {"interval_schema":ints,"rhythm_schema":rhythm,"span_beats":round(span,3),
-                 "entry_phase":round(items[0].onset_beats%4,3),
+                 "entry_phase":round((_event_measure_beat(items[0])[1] if _event_measure_beat(items[0])[1] is not None else items[0].onset_beats),3),
+                 "entry_position":position_feature_map(items[0]),
                  "mean_accent":round(mean(e.accent for e in items),3)},
                 tuple(e.event_id for e in items),
                 min(e.confidence for e in items),
@@ -128,18 +151,23 @@ class CompingExtractor:
         comp=tuple(e for e in data.events if e.role=="comping" or "comping" in e.tags)
         if not comp: return ()
         windows={}
-        for e in comp: windows.setdefault(int(e.onset_beats//4),[]).append(e)
+        for e in comp:
+            measure,_beat=_event_measure_beat(e)
+            key=measure if measure is not None else int(e.onset_beats//4)
+            windows.setdefault(key,[]).append(e)
         out=[]
         for bar,items in windows.items():
             items=tuple(sorted(items,key=lambda e:e.onset_beats))
-            placements=tuple(round(e.onset_beats%4,3) for e in items)
+            placements=tuple(round((_event_measure_beat(e)[1] if _event_measure_beat(e)[1] is not None else e.onset_beats%4),3) for e in items)
             durations=tuple(round(e.duration_beats,3) for e in items)
             payload=f"{bar}|{placements}|{durations}"
             out.append(LearningArtifact(
                 _id(data.source_id,self.domain,payload),data.source_id,self.domain,
                 "comping.gesture_distribution.v1",
                 {"metric_placements":placements,"durations":durations,
-                 "density":round(len(items)/4,3),
+                 "measure_index":bar,
+                 "position":position_feature_map(items[0]),
+                 "density":round(len(items)/(max(1.0,_beats_per_measure(data) or 4.0)),3),
                  "mean_dynamic":round(mean(e.dynamic if e.dynamic is not None else .5 for e in items),3)},
                 tuple(e.event_id for e in items),min(e.confidence for e in items),
                 ("shared_learning:comping",),
@@ -231,11 +259,14 @@ class FormTensionExtractor:
         events=tuple(sorted(data.events,key=lambda e:e.onset_beats))
         if not events: return ()
         windows={}
-        for e in events: windows.setdefault(int(e.onset_beats//4),[]).append(e)
+        for e in events:
+            measure,_beat=_event_measure_beat(e)
+            key=measure if measure is not None else int(e.onset_beats//4)
+            windows.setdefault(key,[]).append(e)
         out=[]
         prev_density=None
         for bar,items in sorted(windows.items()):
-            density=len(items)/4.0
+            density=len(items)/max(1.0,_beats_per_measure(data) or 4.0)
             mean_accent=mean(e.accent for e in items)
             pitch_span=0.0
             p=[e.pitch_midi for e in items if e.pitch_midi is not None]
@@ -247,7 +278,8 @@ class FormTensionExtractor:
             out.append(LearningArtifact(
                 _id(data.source_id,self.domain,payload),data.source_id,self.domain,
                 "form.tension_window.v1",
-                {"window":bar,"density":round(density,3),"tension_proxy":round(tension,3),
+                {"window":bar,"measure_index":bar,"position":position_feature_map(items[0]),
+                 "density":round(density,3),"tension_proxy":round(tension,3),
                  "trajectory":direction,"form_label":data.form_label},
                 tuple(e.event_id for e in items),min(e.confidence for e in items),
                 ("shared_learning:form_tension",),
@@ -272,6 +304,7 @@ def extract_learning_artifacts(
     data: StructuralPerformanceData,
     extractors: tuple[LearningExtractor,...]=DEFAULT_EXTRACTORS,
 ) -> tuple[LearningArtifact,...]:
+    data=canonicalize_structural_positions(data)
     data.validate()
     out=[]
     for extractor in extractors:
