@@ -27,6 +27,10 @@ The system may anticipate and prepare, but it must not precompose an exact futur
 - `core/cognition/` — expectation, surprise, tension, release
 - `core/legend_profiles/` — multi-legend contextual tendencies
 - `core/online_evaluator/` — evaluates only unperformed immediate candidates
+- `src/music_intelligence/expression/` — shared instrument-neutral expressive
+  realization: perceptual intensity, dynamic level, accent, note body, timing
+  emphasis, foreground weight and relative contour. Players convert this HOW
+  intention into physical instrument controls.
 
 ## Canonical Musical Coordinate
 
@@ -69,6 +73,26 @@ audio timestamp / feature
 
 Unaligned timestamp-only acoustic data may be stored for navigation and anomaly
 detection, but it must not directly update musical research priors.
+
+## WHAT / WHEN / WHY / HOW
+
+Shared musical intelligence separates four questions:
+
+- **WHAT** — notes, motif, vocabulary, phrase identity
+- **WHEN** — form / section / bar / beat / subdivision
+- **WHY** — harmony, phrase role, tension, ensemble and formal intention
+- **HOW** — dynamic contour, accent, body, articulation, timing emphasis and
+  foreground/background realization
+
+HOW is not stored as one absolute MIDI velocity stamp. Relative expression
+profiles may be attached to learned vocabulary or motif/phrase memory and are
+rescaled by current context before Player realization.
+
+For example, a learned rise-fall contour can remain recognizable while its
+absolute level is reduced under high ensemble density or expanded at a climax.
+Repetition may vary accent, body or foreground weight without changing motif
+identity.
+
 
 ## Instrument layers
 
