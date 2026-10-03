@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "joe_labarbera",
+  "sources": [
+    {
+      "source_id": "bill_evans_nardis_buenos_aires_1979",
+      "song_id": "nardis",
+      "personnel_status": "verified",
+      "audio_status": "micro_analysis_pending",
+      "structural_status": "pending_audio_and_form_alignment"
+    }
+  ],
+  "rule": "future LaBarbera observations must attach to song/form/chorus/bar coordinate before promotion",
+  "provenance": [
+    "research/legends/joe_labarbera/README.md"
+  ]
+}
