@@ -188,7 +188,10 @@ def test_batch_piano_gesture_becomes_true_musicxml_chord():
             piano_event("pn:e", 64, 0.014),
             piano_event("pn:g", 67, 0.026),
         ),
-        staffs=(StaffProfile("pn:upper", "upper"),),
+        staffs=(
+            StaffProfile("pn:upper", "upper"),
+            StaffProfile("pn:lower", "lower"),
+        ),
     )
 
     result, xml = engine.transcribe_take_musicxml(
