@@ -1,0 +1,62 @@
+{
+  "schema_version": "0.1",
+  "legend_id": "bill_evans",
+  "source_id": "be_playlist_project_audio",
+  "status": "IN_PROGRESS_PRIVATE_NOTE_HYPOTHESIS_PASS",
+  "public_data_policy": "Exact event-level candidate-note hypotheses are kept private/local; this file stores non-reconstructive coverage and aggregate evidence.",
+  "coverage": [
+    {
+      "track_id": "BE-001",
+      "title": "Waltz For Debby",
+      "source_interval_s": [0.0, 120.0],
+      "note_hypothesis_status": "PRIVATE_LOCAL_COMPLETE_V0_1",
+      "detected_onsets": 454,
+      "pitch_hypotheses": 2063,
+      "onsets_per_second": 3.7899,
+      "expression_proxy": {
+        "rms_mean": 0.094507,
+        "rms_std": 0.040911,
+        "onset_strength_mean": 0.611737,
+        "onset_strength_p90": 1.06927,
+        "harmonic_body_ratio_median": 2.6504,
+        "harmonic_body_ratio_p90": 7.2462,
+        "spectral_centroid_mean_hz": 1256.68,
+        "spectral_centroid_std_hz": 479.78
+      },
+      "rhythm_proxy": {
+        "ioi_median_s": 0.2322,
+        "ioi_p25_s": 0.1625,
+        "ioi_p75_s": 0.3251
+      },
+      "salient_top_interval_abs_counts": {
+        "0": 195, "1": 37, "2": 11, "3": 10, "4": 6, "5": 19,
+        "6": 9, "7": 39, "8": 2, "9": 12, "10": 6, "11": 7,
+        "12": 11, "gt12": 89
+      },
+      "salient_top_contour_trigrams": [
+        {"pattern": [0,1,-1], "count": 38},
+        {"pattern": [1,-1,0], "count": 35},
+        {"pattern": [-1,0,0], "count": 35},
+        {"pattern": [0,-1,0], "count": 30},
+        {"pattern": [-1,0,1], "count": 30}
+      ],
+      "evidence_status": "OBSERVATION_ONLY",
+      "limitations": [
+        "mixed trio audio; event hypotheses are not reliable piano-only attribution",
+        "pedal/sustain and voicing membership are not ground truth",
+        "exact event list is intentionally not committed",
+        "form/bar/beat alignment for this interval has not yet been verified"
+      ]
+    }
+  ],
+  "already_studied_elsewhere": [
+    {
+      "track_id": "BE-003",
+      "title": "Autumn Leaves",
+      "track_relative_intervals_s": [[8,46],[120,158]],
+      "status_file": "observations/audio/autumn_leaves_note_transcription_status_v0_4.json"
+    }
+  ],
+  "next_unprocessed_source_interval_s": [120.0, 413.0],
+  "promotion_path": "NOTE_HYPOTHESIS -> SCORE_ALIGNED_HYPOTHESIS -> INSTRUMENT_ATTRIBUTED -> EXPERT_VERIFIED -> GROUND_TRUTH_TRANSCRIPTION"
+}
