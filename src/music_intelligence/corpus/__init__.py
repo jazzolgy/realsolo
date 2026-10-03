@@ -98,3 +98,25 @@ __all__ += [
     "resolve_score_context",
     "structured_evidence_from_locator",
 ]
+
+
+from .realchord import (
+    REALCHORD_1350_DATASET_ID,
+    REALCHORD_1350_DEFAULT_RELPATH,
+    RealChordChord,
+    RealChordMeasure,
+    RealChordSong,
+    ExpectedHarmonyReference,
+    realchord_1350_corpus_item,
+    register_realchord_1350,
+    song_from_normalized_record,
+    expected_harmony_at,
+    coordinate_from_realchord,
+)
+__all__ += [
+    "REALCHORD_1350_DATASET_ID","REALCHORD_1350_DEFAULT_RELPATH",
+    "RealChordChord","RealChordMeasure","RealChordSong",
+    "ExpectedHarmonyReference","realchord_1350_corpus_item",
+    "register_realchord_1350","song_from_normalized_record",
+    "expected_harmony_at","coordinate_from_realchord",
+]
