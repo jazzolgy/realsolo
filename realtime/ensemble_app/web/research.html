@@ -27,6 +27,8 @@ button.secondary{background:#303947;color:#eef}.player-wrap{width:360px;max-widt
 <button id="capture">Start Capture</button>
 <button id="next" class="secondary">Next Source</button>
 <button id="pause" class="secondary">Pause</button>
+<select id="teachInstrument"><option value="">Teach instrument…</option><option>piano</option><option>acoustic_bass</option><option>drums</option><option>saxophone</option><option>trumpet</option><option>guitar</option><option>electric_bass</option><option>vocal</option><option>flute</option></select>
+<button id="teach" class="secondary">Teach Current Window</button>
 </div>
 <p class="muted" id="notice">Checking YouTube API configuration…</p>
 </section>
@@ -78,7 +80,7 @@ async function flushAudio(){
  if(sending||pendingSamples<4096||!current)return;
  const all=concatFloat32(pending,pendingSamples);pending=[];pendingSamples=0;sending=true;
  try{
-  const r=await fetch("/api/research/audio",{method:"POST",headers:{"Content-Type":"application/octet-stream","X-RealSolo-Source-Id":current.source_id,"X-RealSolo-Sample-Rate":String(audioCtx.sampleRate)},body:all.buffer});
+  const mediaTime=(player&&player.getCurrentTime)?Number(player.getCurrentTime()):NaN;const headers={"Content-Type":"application/octet-stream","X-RealSolo-Source-Id":current.source_id,"X-RealSolo-Sample-Rate":String(audioCtx.sampleRate)};if(Number.isFinite(mediaTime)&&mediaTime>=0)headers["X-RealSolo-Media-Time"]=String(mediaTime);const r=await fetch("/api/research/audio",{method:"POST",headers,body:all.buffer});
   const j=await r.json();if(j.ok){$("#rms").textContent=Number(j.rms).toFixed(4);$("#pitch").textContent=j.pitch_hz?Number(j.pitch_hz).toFixed(1)+" Hz · "+Number(j.pitch_confidence).toFixed(2):"—";const ip=j.instrument_probabilities||{},rp=j.role_probabilities||{};$("#instrument").textContent=j.top_instrument?(j.top_instrument+" · "+Number(ip[j.top_instrument]||0).toFixed(2)):"unknown";$("#rolePosterior").textContent=j.top_role?(j.top_role+" · "+Number(rp[j.top_role]||0).toFixed(2)):"unknown";$("#beatContext").textContent=j.tempo_bpm?(Number(j.tempo_bpm).toFixed(1)+" BPM · phase "+Number(j.beat_position||0).toFixed(2)):"unknown";$("#register").textContent=(j.register_center!==null&&j.register_center!==undefined)?("MIDI "+Number(j.register_center).toFixed(1)):"unknown";$("#modelState").textContent=j.yamnet_window_ready===0?"YAMNet buffering":(j.learned_backend_available===1?"YAMNet / learned":"baseline fallback")}
  }catch(e){$("#notice").textContent="Evidence stream: "+e.message}finally{sending=false;if(pendingSamples>=4096)flushAudio()}
 }
@@ -98,6 +100,7 @@ $("#search").onclick=()=>search().catch(e=>$("#notice").textContent=e.message);
 $("#next").onclick=()=>loadNext(true);
 $("#capture").onclick=()=>startCapture().catch(e=>$("#notice").textContent=e.message);
 $("#pause").onclick=()=>{if(player)player.pauseVideo();event("paused")};
+$("#teach").onclick=async()=>{const label=$("#teachInstrument").value;if(!label){$("#notice").textContent="Choose an instrument label first.";return}try{const j=await api("/api/research/instrument-label",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({label})});$("#notice").textContent="Taught current YAMNet window as "+label+" · examples "+(j.counts[label]||0)}catch(e){$("#notice").textContent=e.message}};
 refreshStatus();
 </script>
 </body>
