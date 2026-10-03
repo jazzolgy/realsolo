@@ -10,6 +10,7 @@ from math import log2
 from typing import Mapping
 
 from .representation import StructuralPerformanceEvent
+from .form_position import MetricFormPosition
 
 
 def _validate_probability_map(values: Mapping[str,float], name: str) -> None:
@@ -40,6 +41,8 @@ class DetectorEvidence:
         for key,value in self.confidence_fields.items():
             if not key or not 0.0 <= float(value) <= 1.0:
                 raise ValueError("confidence_fields values must be named confidences within 0..1")
+        if self.metric_form_position is not None:
+            self.metric_form_position.validate()
         if self.pitch_hz is not None and self.pitch_hz <= 0:
             raise ValueError("pitch_hz must be positive when known")
 
@@ -68,6 +71,7 @@ class PerformanceEvidence:
     raw: DetectorEvidence
     posterior: ContextCorrection
     provenance: tuple[str,...] = ()
+    metric_form_position: MetricFormPosition | None = None
 
     def validate(self) -> None:
         if not self.source_id:
@@ -137,6 +141,7 @@ def musical_moment_from_evidence(
     tempo_bpm: float | None = None,
     beat_position: float | None = None,
     harmony_label: str | None = None,
+    metric_form_position: MetricFormPosition | None = None,
 ) -> MusicalMoment:
     evidence.validate()
     return MusicalMoment(
@@ -152,6 +157,7 @@ def musical_moment_from_evidence(
         role_probabilities=dict(evidence.posterior.role_probabilities),
         confidence_fields=dict(evidence.posterior.confidence_fields),
         provenance=evidence.provenance+("shared_audio_intelligence:musical_moment",),
+        metric_form_position=metric_form_position,
     )
 
 
@@ -198,4 +204,5 @@ def structural_event_from_evidence(
         role_probabilities=dict(posterior.role_probabilities),
         confidence_fields=dict(posterior.confidence_fields),
         provenance=evidence.provenance+("shared_audio_intelligence:structural_promotion",),
+        metric_form_position=None,
     )
