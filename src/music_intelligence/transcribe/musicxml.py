@@ -14,7 +14,14 @@ from .engraving import BeamState, EngravingIntent, EngravingPlan, StemDirection
 from .instrument_profiles import InstrumentProfile, resolve_instrument_profile
 from .notation import NotatedAtomKind
 from .rhythm import written_note_type_and_dots
-from .score import ReadableScore, ScoreEvent, ScoreKeySignature, ScorePart, ScoreSpanner
+from .score import (
+    ReadableScore,
+    ScoreEvent,
+    ScoreKeySignature,
+    ScorePart,
+    ScoreSpanner,
+    ScoreTextDirection,
+)
 
 
 def _divisions_for_score(score: ReadableScore) -> int:
@@ -86,6 +93,26 @@ def _append_dynamic_direction(
     ET.SubElement(dynamics, event.dynamic_marking)
     ET.SubElement(direction, "staff").text = str(staff_number)
 
+
+
+
+def _append_text_direction(
+    measure: ET.Element,
+    direction_spec: ScoreTextDirection,
+    *,
+    measure_start: Fraction,
+    divisions: int,
+) -> None:
+    direction = ET.SubElement(
+        measure,
+        "direction",
+        {"placement": direction_spec.placement},
+    )
+    direction_type = ET.SubElement(direction, "direction-type")
+    ET.SubElement(direction_type, "words").text = direction_spec.text
+    offset = direction_spec.onset - measure_start
+    if offset > 0:
+        ET.SubElement(direction, "offset").text = str(int(offset * divisions))
 
 
 def _append_wedge_direction(
@@ -363,7 +390,12 @@ def score_to_musicxml(
         score_part = ET.SubElement(part_list, "score-part", {"id": part.part_id})
         ET.SubElement(score_part, "part-name").text = part.name
 
-    for part in score.parts:
+    global_directions_by_measure: dict[int, list[ScoreTextDirection]] = defaultdict(list)
+    for direction in score.directions:
+        measure_index = floor(direction.onset / bar_length)
+        global_directions_by_measure[measure_index].append(direction)
+
+    for part_index, part in enumerate(score.parts):
         part_el = ET.SubElement(root, "part", {"id": part.part_id})
         measures = _part_measures(part, bar_length=bar_length)
         max_measure = max(measures, default=0)
@@ -386,6 +418,19 @@ def score_to_musicxml(
                 if len(part.staff_ids) > 1:
                     ET.SubElement(attrs, "staves").text = str(len(part.staff_ids))
                 _append_profile_attributes(attrs, part, concert_key=score.key_signature)
+
+            if part_index == 0:
+                measure_start = bar_length * measure_index
+                for direction_spec in global_directions_by_measure.get(
+                    measure_index,
+                    (),
+                ):
+                    _append_text_direction(
+                        measure,
+                        direction_spec,
+                        measure_start=measure_start,
+                        divisions=divisions,
+                    )
 
             events = measures.get(measure_index, [])
             groups: dict[tuple[str, str], list[ScoreEvent]] = defaultdict(list)
