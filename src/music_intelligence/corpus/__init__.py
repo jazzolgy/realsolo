@@ -176,3 +176,16 @@ __all__ += [
     "future_harmony",
     "session_state_at",
 ]
+
+
+from .realchord_library import (
+    RealChordLibrary,
+    library_from_normalized_corpus,
+    load_realchord_library,
+)
+
+__all__ += [
+    "RealChordLibrary",
+    "library_from_normalized_corpus",
+    "load_realchord_library",
+]
