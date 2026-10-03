@@ -17,7 +17,7 @@ from music_intelligence.reasoning.interaction_scheduler import (
     schedule_ensemble,
 )
 
-from .player_contract import RenderGesture
+from .player_contract import RenderGesture, apply_shared_expression_to_render_gesture
 from .portable_protocol import PortableRenderPacket
 
 
@@ -160,6 +160,23 @@ class EnsembleRuntimeLoop:
             decision.validate()
             if decision.player_id != presence.player_id:
                 raise ValueError("provider returned decision for another player")
+            expressive_intents=shared_context.get("expressive_intents_by_player", {})
+            expressive_intent=(
+                expressive_intents.get(presence.player_id)
+                if isinstance(expressive_intents, Mapping)
+                else None
+            )
+            if expressive_intent is not None and decision.gestures:
+                decision=PlayerRuntimeDecision(
+                    player_id=decision.player_id,
+                    intent=decision.intent,
+                    gestures=tuple(
+                        apply_shared_expression_to_render_gesture(g, expressive_intent)
+                        for g in decision.gestures
+                    ),
+                    interaction_events=decision.interaction_events,
+                )
+                decision.validate()
             decisions.append(decision)
 
         # Atomic publication phase: later providers did not see these updates.
