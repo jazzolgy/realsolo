@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Mapping
 
 from .jazz_instrument_embedding_head import JazzInstrumentEmbeddingHead
+from .instrument_catalog import normalize_instrument_label
 
 
 YAMNET_HANDLE="https://tfhub.dev/google/yamnet/1"
@@ -78,6 +79,7 @@ class YAMNetInstrumentBackend:
     _buffers: dict[int,deque]=field(default_factory=dict,init=False,repr=False)
     _buffer_counts: dict[int,int]=field(default_factory=dict,init=False,repr=False)
     _head: JazzInstrumentEmbeddingHead | None=field(default=None,init=False,repr=False)
+    _latest_embedding: object | None=field(default=None,init=False,repr=False)
 
     def __post_init__(self) -> None:
         self._head=JazzInstrumentEmbeddingHead(self.adaptation_path) if self.adaptation_path is not None else None
@@ -162,6 +164,7 @@ class YAMNetInstrumentBackend:
             if embedding_frames.ndim==2 and embedding_frames.size
             else None
         )
+        self._latest_embedding=(embedding.copy() if embedding is not None else None)
         head_probs={}
         if self._head is not None and embedding is not None:
             ordered=sorted(merged.items(),key=lambda kv:kv[1],reverse=True)
@@ -199,3 +202,21 @@ class YAMNetInstrumentBackend:
         # YAMNet is an event/instrument classifier, not a jazz-role classifier.
         # Role inference remains with the RealSolo baseline/context layers.
         return merged,{},confidence
+
+    def admit_explicit_label(self,label: str) -> bool:
+        """Attach the current YAMNet embedding to a human/curated instrument label."""
+        if self._head is None or self._latest_embedding is None:
+            return False
+        normalized=normalize_instrument_label(label)
+        if normalized is None:
+            raise ValueError("explicit label must match a baseline RealSolo instrument")
+        return self._head.observe(
+            normalized,
+            self._latest_embedding,
+            confidence=1.0,
+            margin=1.0,
+            explicit_label=True,
+        )
+
+    def adaptation_counts(self) -> Mapping[str,int]:
+        return self._head.counts() if self._head is not None else {}
