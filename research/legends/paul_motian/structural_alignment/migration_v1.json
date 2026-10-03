@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "paul_motian",
+  "sources": [
+    {
+      "source_id": "bill_evans_milestones_village_vanguard_1961",
+      "song_id": "milestones",
+      "personnel_status": "verified",
+      "audio_status": "micro_analysis_pending",
+      "structural_status": "pending_audio_and_form_alignment"
+    }
+  ],
+  "rule": "future Motian observations must attach to shared Bill Evans/recording structural coordinates before promotion",
+  "provenance": [
+    "research/legends/paul_motian/README.md"
+  ]
+}
