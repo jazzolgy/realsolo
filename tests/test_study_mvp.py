@@ -1,4 +1,5 @@
 from music_intelligence.learning.score_alignment import PerformancePhase
+from music_intelligence.study.alignment import alignment_clock_from_payload
 from music_intelligence.study.session import (
     ManualFormClock,
     SectionRange,
@@ -71,3 +72,60 @@ def test_study_artifacts_use_canonical_coordinate_when_aligned():
     artifacts=artifacts_for_window("source",window,coordinate)
     assert all(a.musical_position is coordinate for a in artifacts)
     assert artifacts[0].musical_position.form_bar == 2
+
+
+def test_existing_research_alignment_manifest_maps_time_to_canonical_position():
+    payload={
+        "schema_version":"0.1",
+        "recording_id":"portrait_in_jazz_autumn_leaves_take1_stereo",
+        "form":{"bars":32,"sections":["A1","A2","B","C"]},
+        "sections":[
+            {
+                "id":"head_A1",
+                "role":"head",
+                "bars":"1-8",
+                "time_s":[8.0,17.5],
+                "confidence":.88,
+            },
+            {
+                "id":"head_B",
+                "role":"head",
+                "bars":"17-24",
+                "time_s":[27.0,36.5],
+                "confidence":.9,
+            },
+        ],
+    }
+    clock=alignment_clock_from_payload(
+        payload,
+        song_id="Autumn Leaves",
+        source_offset_s=708.0,
+    )
+    p=clock.coordinate_at(716.0)
+    assert p is not None
+    assert p.song_id == "Autumn Leaves"
+    assert p.section == "A1"
+    assert p.form_bar == 1
+    assert p.performance_phase is PerformancePhase.HEAD
+    assert p.provenance[-1] == "research_alignment_manifest"
+
+
+def test_alignment_manifest_outside_verified_window_remains_unaligned():
+    payload={
+        "form":{"bars":32,"sections":["A1"]},
+        "sections":[
+            {
+                "id":"head_A1",
+                "role":"head",
+                "bars":"1-8",
+                "time_s":[8.0,17.5],
+                "confidence":.88,
+            },
+        ],
+    }
+    clock=alignment_clock_from_payload(
+        payload,
+        song_id="Autumn Leaves",
+        source_offset_s=708.0,
+    )
+    assert clock.coordinate_at(710.0) is None
