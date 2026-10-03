@@ -23,6 +23,7 @@ from music_intelligence.legends.interfaces import (
     VocabularyUseType,
 )
 from .retrieval import rank_vocabulary_items
+from .source_pattern_bridge import SOURCE_PATTERN_VOCABULARY_ITEMS
 
 
 _ABSTRACT_USES=frozenset({
@@ -557,7 +558,9 @@ SHARED_VOCABULARY_ITEMS: tuple[VocabularyMemoryItem,...]=(
 
 @dataclass(frozen=True)
 class SharedVocabularyIndex:
-    items: tuple[VocabularyMemoryItem,...]=SHARED_VOCABULARY_ITEMS
+    items: tuple[VocabularyMemoryItem,...]=(
+        SHARED_VOCABULARY_ITEMS + SOURCE_PATTERN_VOCABULARY_ITEMS
+    )
 
     def query(self, request: VocabularyQuery) -> tuple[VocabularyMemoryItem,...]:
         # General vocabulary is intentionally not gated by request.legend_id.
