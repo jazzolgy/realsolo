@@ -57,6 +57,7 @@ class ResearchAudioIngestor:
         *,
         sample_rate: int,
         timestamp: float | None = None,
+        metric_form_position: MetricFormPosition | None = None,
     ) -> dict:
         if not source_id:
             raise ValueError("source_id is required")
@@ -105,11 +106,13 @@ class ResearchAudioIngestor:
         posterior=self._musical_context_correctors.setdefault(
             source_id,MusicalContextCorrector()
         ).correct(raw,temporal,musical_context)
-        metric_form_position=MetricFormPosition(
-            absolute_beat=None,
-            confidence=0.0,
-            provenance=("research_listener:awaiting_meter_form_alignment",),
-        )
+        if metric_form_position is None:
+            metric_form_position=MetricFormPosition(
+                absolute_beat=None,
+                confidence=0.0,
+                provenance=("research_listener:awaiting_meter_form_alignment",),
+            )
+        metric_form_position.validate()
         evidence=PerformanceEvidence(
             source_id=source_id,
             timestamp_s=max(0.0,ts),
