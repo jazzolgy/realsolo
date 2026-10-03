@@ -12,6 +12,11 @@ import time
 
 from .audio_features import AudioFeatureExtractor
 from .research_checkpoint import default_research_state_root
+from .instrument_role_detector import (
+    AcousticDescriptorFrame,
+    BaselineInstrumentRoleDetector,
+    TemporalContextCorrector,
+)
 from music_intelligence.learning.shared_audio_intelligence import (
     DetectorEvidence,
     PerformanceEvidence,
@@ -24,6 +29,8 @@ class ResearchAudioIngestor:
     def __init__(self, *, evidence_root: Path | None = None) -> None:
         self.evidence_root=evidence_root or (default_research_state_root()/"evidence")
         self._extractors: dict[tuple[str,int],AudioFeatureExtractor]={}
+        self._detector=BaselineInstrumentRoleDetector()
+        self._context_correctors: dict[str,TemporalContextCorrector]={}
 
     def ingest_float32(
         self,
@@ -47,28 +54,32 @@ class ResearchAudioIngestor:
         extractor=self._extractors.setdefault((source_id,sample_rate),AudioFeatureExtractor(sample_rate=sample_rate))
         ts=time.monotonic() if timestamp is None else float(timestamp)
         obs=extractor.process(samples,ts)
-        confidence_fields={
-            "pitch":float(obs.pitch_confidence),
-            "onset":min(1.0,max(0.0,float(obs.onset_strength))),
-            "event":max(float(obs.pitch_confidence), min(1.0,max(0.0,float(obs.onset_strength)))),
-        }
-        raw=DetectorEvidence(
-            instrument_probabilities={},
-            role_probabilities={},
-            confidence_fields=confidence_fields,
+        frame=AcousticDescriptorFrame(
             pitch_hz=obs.pitch_hz,
+            pitch_confidence=float(obs.pitch_confidence),
             onset=bool(obs.onset),
             onset_strength=float(obs.onset_strength),
             rms=float(obs.rms),
+            spectral_centroid_hz=obs.spectral_centroid_hz,
+            spectral_flatness=obs.spectral_flatness,
+            zero_crossing_rate=obs.zero_crossing_rate,
+            low_energy_ratio=obs.low_energy_ratio,
+            mid_energy_ratio=obs.mid_energy_ratio,
+            high_energy_ratio=obs.high_energy_ratio,
         )
+        raw=self._detector.detect(frame)
+        corrector=self._context_correctors.setdefault(source_id,TemporalContextCorrector())
+        posterior=corrector.correct(raw)
         evidence=PerformanceEvidence(
             source_id=source_id,
             timestamp_s=max(0.0,ts),
             raw=raw,
-            posterior=identity_context_correction(raw),
+            posterior=posterior,
             provenance=(
                 "browser_user_authorized_capture",
                 "realtime_audio_feature_extractor",
+                "baseline_instrument_role_detector",
+                "temporal_context_corrector",
             ),
         )
         moment=musical_moment_from_evidence(evidence)
@@ -86,6 +97,8 @@ class ResearchAudioIngestor:
             "provenance":[
                 "browser_user_authorized_capture",
                 "realtime_audio_feature_extractor",
+                "baseline_instrument_role_detector",
+                "temporal_context_corrector",
                 "shared_audio_intelligence",
             ],
         }
