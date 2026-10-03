@@ -158,3 +158,44 @@ __all__ += [
     "find_realchord_song",
     "parse_realchord_playlist_html",
 ]
+
+
+from .realchord_parser import (
+    decode_progression,
+    normalize_playlist_html,
+    normalize_raw_song,
+    parse_progression,
+)
+
+from .realchord_library import (
+    RealChordLibrary,
+    library_from_normalized_corpus,
+    load_realchord_library,
+)
+
+from .realchord_runtime import (
+    RealChordPlaybackMeasure,
+    RealChordPlaybackTimeline,
+    SharedRealChordSessionState,
+    expand_playback_timeline,
+    expected_harmony_for_state,
+    future_harmony,
+    session_state_at,
+)
+
+__all__ += [
+    "decode_progression",
+    "normalize_playlist_html",
+    "normalize_raw_song",
+    "parse_progression",
+    "RealChordLibrary",
+    "library_from_normalized_corpus",
+    "load_realchord_library",
+    "RealChordPlaybackMeasure",
+    "RealChordPlaybackTimeline",
+    "SharedRealChordSessionState",
+    "expand_playback_timeline",
+    "expected_harmony_for_state",
+    "future_harmony",
+    "session_state_at",
+]
