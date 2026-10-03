@@ -1,0 +1,396 @@
+{
+  "schema_version": "1.0",
+  "study_id": "study.lafaro.alice.microsequence.A45_47.v0_1",
+  "title": "Alice In Wonderland — Chorus A bars 45-47 subdivision/contour response micro-sequence",
+  "source_identity": {
+    "track_id": "BE-011",
+    "recording_id": "bill_evans_trio.alice_in_wonderland.village_vanguard_1961",
+    "personnel": [
+      "Bill Evans — piano",
+      "Scott LaFaro — bass",
+      "Paul Motian — drums"
+    ],
+    "score_anchor": "Realbk1.pdf p.12",
+    "literature_anchor": "Clark 2014, Alice In Wonderland, Chorus A bars 45-47",
+    "audio_alignment_status": "absolute_project_audio_timestamp_not_yet_verified"
+  },
+  "sequence_semantics": {
+    "ordered": true,
+    "causal": false,
+    "reward": false,
+    "description": "Descriptive sequence around a piano subdivision change and contemporaneous bass activity/contour change."
+  },
+  "moments": [
+    {
+      "moment_id": "alice.Apre45.conservative_bass",
+      "order": 1,
+      "score_locator": {
+        "chorus": "A",
+        "bar_range": "few_bars_before_45"
+      },
+      "state_label": "conservative_bass_under_sixteenth_piano",
+      "position": {
+        "beat": 0,
+        "bar": 44,
+        "section": "A",
+        "chorus": 0,
+        "form_position": 0
+      },
+      "phrase": {
+        "phrase_id": "lafaro.pre45.support",
+        "phrase_position": null,
+        "maturity": null,
+        "boundary_pressure": null,
+        "space": null,
+        "tension": null,
+        "motif_id": null,
+        "confidence": 0.78,
+        "provenance": [
+          "literature:clark_2014"
+        ]
+      },
+      "player_actions": [
+        {
+          "player_id": "piano",
+          "instrument": "piano",
+          "role": "foreground",
+          "action_type": "sixteenth_note_dominant_texture",
+          "interaction": "",
+          "commitment": "observed",
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
+          "register_center": null,
+          "phrase_role": "develop",
+          "motif_id": null,
+          "semantic_tags": [
+            "sixteenth_note_groupings",
+            "foreground"
+          ],
+          "confidence": 0.82,
+          "provenance": [
+            "literature:clark_2014"
+          ],
+          "metadata": {
+            "evidence_scope": "preceding texture"
+          }
+        },
+        {
+          "player_id": "bass",
+          "instrument": "bass",
+          "role": "support",
+          "action_type": "conservative_low_register_accompaniment",
+          "interaction": "",
+          "commitment": "observed",
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
+          "register_center": null,
+          "phrase_role": "support",
+          "motif_id": null,
+          "semantic_tags": [
+            "low_register",
+            "quarter_or_half_notes",
+            "conservative_accompaniment"
+          ],
+          "confidence": 0.84,
+          "provenance": [
+            "literature:clark_2014"
+          ],
+          "metadata": {
+            "evidence_scope": "preceding few bars"
+          }
+        }
+      ],
+      "interactions": [],
+      "confidence": 0.78,
+      "provenance": [
+        "literature:clark_2014",
+        "sequence_order_only_not_causal"
+      ]
+    },
+    {
+      "moment_id": "alice.A45.piano_subdivision_change",
+      "order": 2,
+      "score_locator": {
+        "chorus": "A",
+        "bar_range": "45"
+      },
+      "state_label": "piano_subdivision_change",
+      "position": {
+        "beat": 0,
+        "bar": 45,
+        "section": "A",
+        "chorus": 0,
+        "form_position": 0
+      },
+      "phrase": {
+        "phrase_id": "evans.alice.A45.eighth_ascent",
+        "phrase_position": null,
+        "maturity": null,
+        "boundary_pressure": null,
+        "space": null,
+        "tension": null,
+        "motif_id": null,
+        "confidence": 0.86,
+        "provenance": [
+          "literature:clark_2014"
+        ]
+      },
+      "player_actions": [
+        {
+          "player_id": "piano",
+          "instrument": "piano",
+          "role": "foreground",
+          "action_type": "short_ascending_eighth_note_phrase",
+          "interaction": "",
+          "commitment": "observed",
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
+          "register_center": null,
+          "phrase_role": "contrast_subdivision",
+          "motif_id": null,
+          "semantic_tags": [
+            "ascending",
+            "eighth_notes",
+            "subdivision_change"
+          ],
+          "confidence": 0.88,
+          "provenance": [
+            "literature:clark_2014"
+          ],
+          "metadata": {
+            "bar_range": "45"
+          }
+        }
+      ],
+      "interactions": [],
+      "confidence": 0.82,
+      "provenance": [
+        "literature:clark_2014",
+        "sequence_order_only_not_causal"
+      ]
+    },
+    {
+      "moment_id": "alice.A45_46.bass_activity_change",
+      "order": 3,
+      "score_locator": {
+        "chorus": "A",
+        "bar_range": "45-46"
+      },
+      "state_label": "bass_activity_and_contour_change",
+      "position": {
+        "beat": 1,
+        "bar": 45,
+        "section": "A",
+        "chorus": 0,
+        "form_position": 0
+      },
+      "phrase": {
+        "phrase_id": "lafaro.alice.A45_47.response",
+        "phrase_position": null,
+        "maturity": null,
+        "boundary_pressure": null,
+        "space": null,
+        "tension": null,
+        "motif_id": null,
+        "confidence": 0.86,
+        "provenance": [
+          "literature:clark_2014"
+        ]
+      },
+      "player_actions": [
+        {
+          "player_id": "bass",
+          "instrument": "bass",
+          "role": "counterline",
+          "action_type": "ascending_eighth_note_response",
+          "interaction": "contour_response",
+          "commitment": "observed",
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
+          "register_center": null,
+          "phrase_role": "state_or_answer",
+          "motif_id": null,
+          "semantic_tags": [
+            "activity_increase",
+            "ascending",
+            "eighth_notes",
+            "contour_match"
+          ],
+          "confidence": 0.88,
+          "provenance": [
+            "literature:clark_2014",
+            "derived_abstract_no_literal_notes"
+          ],
+          "metadata": {
+            "bar_range": "45-46"
+          }
+        }
+      ],
+      "interactions": [
+        {
+          "source_player_id": "bass",
+          "kind": "contour_response",
+          "target_player_ids": [
+            "piano"
+          ],
+          "confidence": 0.82,
+          "tags": [
+            "observed_temporal_relation",
+            "ascending_contour_match"
+          ],
+          "provenance": [
+            "literature:clark_2014"
+          ]
+        }
+      ],
+      "confidence": 0.82,
+      "provenance": [
+        "literature:clark_2014",
+        "sequence_order_only_not_causal"
+      ]
+    },
+    {
+      "moment_id": "alice.A46_47.polyrhythmic_continuation",
+      "order": 4,
+      "score_locator": {
+        "chorus": "A",
+        "bar_range": "46-47"
+      },
+      "state_label": "polyrhythmic_continuation",
+      "position": {
+        "beat": 0,
+        "bar": 46,
+        "section": "A",
+        "chorus": 0,
+        "form_position": 0
+      },
+      "phrase": {
+        "phrase_id": "lafaro.alice.A45_47.response",
+        "phrase_position": null,
+        "maturity": null,
+        "boundary_pressure": null,
+        "space": null,
+        "tension": null,
+        "motif_id": null,
+        "confidence": 0.84,
+        "provenance": [
+          "literature:clark_2014"
+        ]
+      },
+      "player_actions": [
+        {
+          "player_id": "bass",
+          "instrument": "bass",
+          "role": "counterline",
+          "action_type": "polyrhythmic_continuation",
+          "interaction": "",
+          "commitment": "observed",
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
+          "register_center": null,
+          "phrase_role": "develop",
+          "motif_id": null,
+          "semantic_tags": [
+            "polyrhythm",
+            "continuation",
+            "active_phrase"
+          ],
+          "confidence": 0.86,
+          "provenance": [
+            "literature:clark_2014",
+            "derived_abstract_no_literal_notes"
+          ],
+          "metadata": {
+            "bar_range": "46-47"
+          }
+        }
+      ],
+      "interactions": [],
+      "confidence": 0.8,
+      "provenance": [
+        "literature:clark_2014",
+        "sequence_order_only_not_causal"
+      ]
+    },
+    {
+      "moment_id": "alice.A47.beat_one_resolution",
+      "order": 5,
+      "score_locator": {
+        "chorus": "A",
+        "bar_range": "47"
+      },
+      "state_label": "beat_one_resolution",
+      "position": {
+        "beat": 0,
+        "bar": 47,
+        "section": "A",
+        "chorus": 0,
+        "form_position": 0
+      },
+      "phrase": {
+        "phrase_id": "lafaro.alice.A45_47.response",
+        "phrase_position": null,
+        "maturity": null,
+        "boundary_pressure": null,
+        "space": null,
+        "tension": null,
+        "motif_id": null,
+        "confidence": 0.84,
+        "provenance": [
+          "literature:clark_2014"
+        ]
+      },
+      "player_actions": [
+        {
+          "player_id": "bass",
+          "instrument": "bass",
+          "role": "counterline_to_support",
+          "action_type": "resolve_on_beat_one",
+          "interaction": "",
+          "commitment": "observed",
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
+          "register_center": null,
+          "phrase_role": "resolve",
+          "motif_id": null,
+          "semantic_tags": [
+            "beat_one_resolution",
+            "phrase_end"
+          ],
+          "confidence": 0.86,
+          "provenance": [
+            "literature:clark_2014"
+          ],
+          "metadata": {
+            "bar_range": "47"
+          }
+        }
+      ],
+      "interactions": [],
+      "confidence": 0.8,
+      "provenance": [
+        "literature:clark_2014",
+        "sequence_order_only_not_causal"
+      ]
+    }
+  ],
+  "unresolved": [
+    "absolute project-audio timestamps",
+    "exact score harmony refs for each moment",
+    "drum-set behavior",
+    "quantitative density/energy/tension/register values",
+    "causal direction between piano subdivision change and bass response"
+  ]
+}
