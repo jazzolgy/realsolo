@@ -120,3 +120,33 @@ Perceive
 → Evaluate with learned evidence
 → Commit one event
 → Listen again
+
+
+## Form-relative fallback
+
+A full score is preferred but is not required for useful musical alignment.
+
+When the recurring form length is known, research may use:
+
+- form_length_bars
+- form_bar
+- chorus/recurrence index
+- performance phase
+- arrangement segment
+- distance to section/form boundary
+
+This is especially important for drums, where knowing "32-bar form, chorus 3,
+bar 29" can already support coherent setup, restraint, release and re-entry.
+
+Form-relative alignment is not permission to force every moment into the loop.
+Rubato intros, interludes, vamps, tags, codas, outros, cadenzas and special
+arranged inserts should be marked outside the core form until their navigation
+relationship is verified.
+
+The hierarchy is therefore:
+
+beat-aligned score evidence
+> bar-aligned score evidence
+> section-aligned evidence
+> form-relative evidence
+> unaligned timestamp navigation.
