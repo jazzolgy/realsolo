@@ -115,7 +115,18 @@ class HybridInstrumentRoleDetector:
                 rms=base.rms,
             )
         if not learned.instrument_probabilities and not learned.role_probabilities:
-            return base
+            confidence=dict(base.confidence_fields)
+            confidence.update(learned.confidence_fields)
+            confidence["learned_backend_available"]=1.0
+            return DetectorEvidence(
+                instrument_probabilities=base.instrument_probabilities,
+                role_probabilities=base.role_probabilities,
+                confidence_fields=confidence,
+                pitch_hz=base.pitch_hz,
+                onset=base.onset,
+                onset_strength=base.onset_strength,
+                rms=base.rms,
+            )
         confidence=dict(learned.confidence_fields)
         confidence["learned_backend_available"]=1.0
         confidence["baseline_crosscheck"]=max(
