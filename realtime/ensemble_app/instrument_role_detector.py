@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Mapping
 
-from music_intelligence.learning.shared_audio_intelligence import (
+from music_intelligence.audio_evidence import (
     ContextCorrection,
     DetectorEvidence,
 )
