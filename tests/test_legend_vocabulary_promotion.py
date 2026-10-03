@@ -26,6 +26,7 @@ def test_single_detector_sensitive_window_cannot_enter_runtime():
         VocabularyPromotionEvidence(
             source_personnel_verified=True,
             phrase_context_verified=True,
+            structural_coordinate_verified=True,
             provenance_complete=True,
             dimension_confidence=0.9,
             detector_robustness=0.2,
@@ -43,6 +44,7 @@ def test_independent_recording_recurrence_can_promote_robust_item():
         VocabularyPromotionEvidence(
             source_personnel_verified=True,
             phrase_context_verified=True,
+            structural_coordinate_verified=True,
             provenance_complete=True,
             dimension_confidence=0.91,
             detector_robustness=0.88,
@@ -61,6 +63,7 @@ def test_generic_pattern_can_be_validated_without_becoming_legend_signature():
         VocabularyPromotionEvidence(
             source_personnel_verified=True,
             phrase_context_verified=True,
+            structural_coordinate_verified=True,
             provenance_complete=True,
             dimension_confidence=0.95,
             detector_robustness=0.95,
