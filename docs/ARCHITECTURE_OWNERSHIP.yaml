@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "principles": [
+    "Audio Evidence may know the Performance Evidence contract but does not own it.",
+    "Transcription consumes Performance Evidence and must not depend on Audio Evidence internal schemas.",
+    "Music Intelligence Core owns shared musical meaning and instrument-neutral reasoning.",
+    "Performance Representation is not Notation Representation."
+  ],
+  "domains": {
+    "audio_evidence": {
+      "owns": ["src/music_intelligence/audio_evidence/**"],
+      "may_read": ["src/music_intelligence/transcribe/events.py", "tests/contracts/performance_evidence_v1_expected.json", "docs/PERFORMANCE_EVIDENCE_CONTRACT.md"],
+      "must_not_modify": ["src/music_intelligence/transcribe/**", "src/music_intelligence/learning/**", "src/music_intelligence/runtime/**"]
+    },
+    "transcription_notation": {
+      "owns": ["src/music_intelligence/transcribe/**", "transcribe/**"],
+      "consumes": ["PerformanceEvidence", "Shared Harmony/Form references", "Committed player events"],
+      "must_not_depend_on": ["music_intelligence.audio_evidence.observation", "music_intelligence.audio_evidence.posterior", "music_intelligence.audio_evidence.detectors", "music_intelligence.audio_evidence.separation"]
+    },
+    "core": {
+      "owns_concepts": ["harmony", "form", "ensemble reasoning", "musical meaning", "instrument-neutral reasoning"],
+      "must_not_be_duplicated_by": ["audio_evidence", "transcription_notation"]
+    }
+  },
+  "allowed_flow": ["Audio/MIDI Source", "Audio Evidence Engine", "Performance Evidence", "Music Intelligence Core / Transcription", "Notation Candidates", "LogicalScore", "EngravingPlan", "Renderer/MusicXML"]
+}
