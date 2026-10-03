@@ -72,11 +72,15 @@ class ResearchAudioIngestor:
             ),
         )
         moment=musical_moment_from_evidence(evidence)
+        observation_payload=asdict(obs)
+        kind=observation_payload.get("kind")
+        if hasattr(kind,"value"):
+            observation_payload["kind"]=kind.value
         row={
             "source_id":source_id,
             "sample_rate":sample_rate,
             "sample_count":int(samples.size),
-            "observation":asdict(obs),
+            "observation":observation_payload,
             "performance_evidence":asdict(evidence),
             "musical_moment":asdict(moment),
             "provenance":[
