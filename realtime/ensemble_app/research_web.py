@@ -14,10 +14,6 @@ from urllib.parse import parse_qs, urlparse
 
 from .autonomous_research_session import AutonomousResearchSession
 from .research_audio_ingest import ResearchAudioIngestor
-from .model_service_backend import LocalInstrumentModelServiceBackend
-from .separation_service_backend import LocalSourceSeparationServiceBackend
-from .stem_aware_instrument_backend import StemAwareInstrumentBackend
-from .yamnet_instrument_backend import YAMNetInstrumentBackend
 from .research_checkpoint import ResearchCheckpoint, default_research_state_root
 from .youtube_data_api import YouTubeDataAPIError, YouTubeDataAPIProvider
 from .youtube_research_provider import YouTubeSearchQuery, youtube_embed_url
@@ -33,42 +29,15 @@ class ResearchRuntime:
         self.checkpoint_path=self.state_root/"listener_checkpoint.json"
         self.checkpoint=ResearchCheckpoint.load(self.checkpoint_path)
         self.checkpoint.restore_session(self.session)
-        model_endpoint=os.environ.get("REALSOLO_INSTRUMENT_MODEL_URL","").strip()
-        model_name=os.environ.get("REALSOLO_INSTRUMENT_MODEL","yamnet").strip().lower()
-        self.yamnet_backend=None
-        if model_endpoint:
-            model_backend=LocalInstrumentModelServiceBackend(
-                endpoint=model_endpoint,
-                allow_remote=os.environ.get("REALSOLO_ALLOW_REMOTE_AUDIO_MODEL","").strip().lower() in {"1","true","yes"},
-            )
-            self.instrument_model_backend="local_service"
-        elif model_name=="yamnet":
-            self.yamnet_backend=YAMNetInstrumentBackend(
-                adaptation_path=self.state_root/"yamnet_jazz_instrument_prototypes.json"
-            )
-            model_backend=self.yamnet_backend
-            self.instrument_model_backend="yamnet"
-        elif model_name in {"baseline","none","off"}:
-            model_backend=None
-            self.instrument_model_backend="baseline"
-        else:
-            raise ValueError(
-                "REALSOLO_INSTRUMENT_MODEL must be yamnet, baseline, none, or off"
-            )
-        separator_endpoint=os.environ.get("REALSOLO_SOURCE_SEPARATOR_URL","").strip()
-        if model_backend is not None and separator_endpoint:
-            separator=LocalSourceSeparationServiceBackend(
-                endpoint=separator_endpoint,
-                allow_remote=os.environ.get("REALSOLO_ALLOW_REMOTE_AUDIO_SEPARATOR","").strip().lower() in {"1","true","yes"},
-            )
-            model_backend=StemAwareInstrumentBackend(
-                separator=separator,
-                classifier=model_backend,
-            )
         self.ingestor=ResearchAudioIngestor(
             evidence_root=self.state_root/"evidence",
-            learned_instrument_backend=model_backend,
         )
+        self.instrument_model_backend=(
+            "music_intelligence.audio_evidence"
+            if self.ingestor.canonical_audio_attached
+            else "awaiting_canonical_audio_evidence_bridge"
+        )
+        self.yamnet_backend=None
         self.last_query=self.checkpoint.last_query
         self.last_artist=self.checkpoint.last_artist
 
@@ -153,8 +122,9 @@ class ResearchHandler(SimpleHTTPRequestHandler):
                 "last_query":self.runtime.last_query,
                 "last_artist":self.runtime.last_artist,
                 "instrument_model_backend":self.runtime.instrument_model_backend,
-                "source_separator_backend":("local_service" if os.environ.get("REALSOLO_SOURCE_SEPARATOR_URL","").strip() else "none"),
-                "yamnet_adaptation_counts":(self.runtime.yamnet_backend.adaptation_counts() if self.runtime.yamnet_backend is not None else {}),
+                "source_separator_backend":"owned_by_music_intelligence.audio_evidence",
+                "yamnet_adaptation_counts":{},
+                "canonical_audio_evidence_attached":self.runtime.ingestor.canonical_audio_attached,
             })
             return
         if parsed.path=="/api/research/search":
@@ -211,20 +181,10 @@ class ResearchHandler(SimpleHTTPRequestHandler):
                 self._json({"ok":False,"error":str(exc)},400)
             return
         if parsed.path=="/api/research/instrument-label":
-            try:
-                payload=json.loads(body.decode("utf-8") or "{}")
-                label=str(payload.get("label","")).strip()
-                if self.runtime.yamnet_backend is None:
-                    raise ValueError("YAMNet adaptation is not active")
-                if not self.runtime.yamnet_backend.admit_explicit_label(label):
-                    raise ValueError("no current YAMNet embedding is ready to label")
-                self._json({
-                    "ok":True,
-                    "label":label,
-                    "counts":self.runtime.yamnet_backend.adaptation_counts(),
-                })
-            except (ValueError,RuntimeError,json.JSONDecodeError) as exc:
-                self._json({"ok":False,"error":str(exc)},400)
+            self._json({
+                "ok":False,
+                "error":"instrument labeling belongs to music_intelligence.audio_evidence; listener-local adaptation is disabled",
+            },409)
             return
         if parsed.path=="/api/research/audio":
             source_id=self.headers.get("X-RealSolo-Source-Id","").strip()
@@ -238,35 +198,12 @@ class ResearchHandler(SimpleHTTPRequestHandler):
                 if self.runtime.session.current is not None:
                     self.runtime.session.mark_analyzing()
                 self.runtime.save()
-                obs=row["observation"]
-                pe=row["performance_evidence"]
-                moment=row["musical_moment"]
-                raw=pe["raw"]
-                posterior=pe["posterior"]
-                form_position=pe.get("metric_form_position") or moment.get("metric_form_position") or {}
-                instruments=posterior.get("instrument_probabilities",{})
-                roles=posterior.get("role_probabilities",{})
                 self._json({
                     "ok":True,
-                    "rms":obs["rms"],
-                    "onset":obs["onset"],
-                    "pitch_hz":obs["pitch_hz"],
-                    "pitch_confidence":obs["pitch_confidence"],
-                    "instrument_probabilities":instruments,
-                    "role_probabilities":roles,
-                    "top_instrument":max(instruments,key=instruments.get) if instruments else None,
-                    "top_role":max(roles,key=roles.get) if roles else None,
-                    "context_reasons":posterior.get("reasons",[]),
-                    "tempo_bpm":moment.get("tempo_bpm"),
-                    "beat_position":moment.get("beat_position"),
-                    "register_center":moment.get("register_center"),
-                    "learned_backend_available":raw.get("confidence_fields",{}).get("learned_backend_available"),
-                    "yamnet_window_ready":raw.get("confidence_fields",{}).get("yamnet_window_ready"),
-                    "metric_form_position":form_position,
-                    "form_learning_ready":(
-                        form_position.get("measure_index") is not None
-                        and form_position.get("beat_in_measure") is not None
-                    ),
+                    "audio_evidence":row.get("audio_evidence",{}),
+                    "musical_position":row.get("musical_position"),
+                    "learning_status":row.get("learning_status","navigation_only"),
+                    "form_learning_ready":row.get("musical_position") is not None,
                 })
             except (ValueError,RuntimeError) as exc:
                 self._json({"ok":False,"error":str(exc)},400)
