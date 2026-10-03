@@ -142,3 +142,19 @@ __all__ += [
     "register_realchord_1350",
     "song_from_normalized_record",
 ]
+
+from .realchord_ingestion import (
+    REALCHORD_1350_EXPECTED_COUNT,
+    REALCHORD_1350_SOURCE_FILENAME,
+    RealChordRawSong,
+    find_realchord_song,
+    parse_realchord_playlist_html,
+)
+
+__all__ += [
+    "REALCHORD_1350_EXPECTED_COUNT",
+    "REALCHORD_1350_SOURCE_FILENAME",
+    "RealChordRawSong",
+    "find_realchord_song",
+    "parse_realchord_playlist_html",
+]

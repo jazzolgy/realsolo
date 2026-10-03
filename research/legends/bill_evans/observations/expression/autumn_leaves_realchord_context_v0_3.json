@@ -1,0 +1,46 @@
+{
+  "schema_version": "0.3",
+  "legend_id": "bill_evans",
+  "recording_id": "portrait_in_jazz_autumn_leaves_take1_stereo",
+  "realchord_reference": {
+    "dataset_id": "symbolic.realchord.1350",
+    "source_filename": "Jazz 1350.html",
+    "realchord_id": "96",
+    "title": "Autumn Leaves",
+    "key": "G-",
+    "style": "Medium Swing",
+    "status": "SOURCE_IDENTITY_VERIFIED_STRUCTURE_PENDING_NORMALIZATION",
+    "role": "expected_harmony_and_form_reference"
+  },
+  "existing_performance_form": {
+    "bars": 32,
+    "sections": ["A1", "A2", "B", "C"],
+    "source": "existing Bill Evans score/form alignment",
+    "note": "Do not force RealChord section labels to match this vocabulary until the raw chart is structurally normalized."
+  },
+  "join_policy": {
+    "canonical_key": [
+      "realchord_id",
+      "form_bar",
+      "beat",
+      "chorus_index",
+      "performance_phase"
+    ],
+    "expected_harmony": "RealChord",
+    "observed_harmony": "performance audio/transcription",
+    "inferred_harmony": "reasoning layer",
+    "audio_seconds": "provenance_only"
+  },
+  "research_questions": [
+    "At the same RealChord expected harmony and same form bar, how does Bill Evans change dynamic/accent/body/brightness between head and solo?",
+    "When a motif returns over the same expected harmony, which HOW dimensions are preserved and which are transformed?",
+    "When observed/inferred harmony departs from RealChord expected harmony, does expression change with the reharmonization/substitution?",
+    "Does cadential release depend more on expected harmonic function, observed harmonic event, phrase maturity, or ensemble role?"
+  ],
+  "promotion_gate": [
+    "RealChord structural normalization completed",
+    "audio/form alignment confidence sufficient",
+    "instrument attribution verified when claiming pianist-specific behavior",
+    "repeated examples across more than one context before Bill Evans tendency promotion"
+  ]
+}
