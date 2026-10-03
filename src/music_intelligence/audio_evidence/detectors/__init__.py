@@ -37,6 +37,7 @@ from .librosa_baseline import (
 )
 from .separation import SeparatedSource, SourceSeparator
 from .stem_prior import StemMetadataInstrumentDetector
+from .torchaudio_hdemucs import TorchAudioHDemucsSeparator
 from .torchscript_instrument import TorchScriptInstrumentBackend
 from .yamnet_backend import YAMNetAudioSetBackend
 
@@ -69,6 +70,7 @@ __all__ = [
     "SourceSeparator",
     "StemMetadataInstrumentDetector",
     "TimbreDetection",
+    "TorchAudioHDemucsSeparator",
     "TorchScriptInstrumentBackend",
     "TimbreDetector",
     "UnpitchedDetection",
