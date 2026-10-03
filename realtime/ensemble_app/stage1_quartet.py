@@ -9,6 +9,10 @@ from music_intelligence.reasoning.ensemble_state import (
     TransportState,
 )
 from music_intelligence.reasoning.legend_style_core import MusicalContextVector
+from music_intelligence.harmony.orchestrator import (
+    HarmonicReasoningInput,
+    reason_about_harmony,
+)
 from music_intelligence.reasoning.performance_convention import (
     default_performance_convention,
 )
@@ -114,6 +118,7 @@ class Stage1QuartetRuntime:
             next_chord,
             phrase_position=phrase_position,
         )
+        harmonic_reasoning=reason_about_harmony(HarmonicReasoningInput(frame=frame))
         affordance = _affordance(frame)
         material = _resolved_material(chord_symbol, affordance.affordance_id)
         piano_request = PianoVoicingRequest(
@@ -225,14 +230,23 @@ class Stage1QuartetRuntime:
             context={
                 "harmonic_frame": frame,
                 "harmonic_affordance": affordance,
+                "harmonic_reasoning": harmonic_reasoning,
+                "chord_symbol": chord_symbol,
+                "next_chord": next_chord,
+                "beat_in_bar": beat_in_bar,
+                "bar_index": bar_index,
+                "tempo_bpm": tempo_bpm,
+                "beats_per_bar": 4,
                 "piano_voicing_request": piano_request,
                 "musical_context": musical_context,
                 "ensemble_tension": frame.tension,
                 "harmonic_transition_confidence": 0.9 if next_chord else 0.0,
                 "phrase_position": phrase_position,
+                "phrase_boundary": phrase_position <= .03 or phrase_position >= .97,
                 "bass_mode": "walking",
                 "groove_context": groove,
                 "time_feel": groove.feel.value,
+                "style_tags": ("jazz","bebop","swing"),
                 "sax_allow_improvisation": True,
                 "sax_score_snapshot": sax_score_snapshot,
                 "sax_target_pitch_classes": sax_targets,

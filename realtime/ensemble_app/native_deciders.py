@@ -16,6 +16,18 @@ from players.drums import (
     DrummerPerformanceMemory,
     DrummerRuntimeContext,
     DrummerSoftPlan,
+    BebopPhraseMemory,
+    SoloistEnergyProjection,
+    BebopRuntimeProjection,
+    perform_one_bebop_gesture,
+    RideContinuityMemory,
+    RideSurfaceAction,
+    RidePhase,
+    classify_ride_phase,
+    update_ride_memory,
+    SnarePhraseMemory,
+    CompPhraseAction,
+    update_snare_phrase_memory,
     DrumVoice,
     TimeFeel,
     perform_one_gesture,
@@ -23,6 +35,18 @@ from players.drums import (
 from music_intelligence.corpus import ScoreContextSnapshot, ScorePosition
 from music_intelligence.reasoning.legend_style_core import MusicalContextVector
 from music_intelligence.reasoning.online_improviser import SoftPlan
+from music_intelligence.reasoning.solo_runtime import build_solo_tick
+from music_intelligence.reasoning.motif import (
+    MotifEvaluationContext,
+    MotifGenerationContext,
+    MotifMemory,
+)
+from music_intelligence.reasoning.contextual_prior_gating import (
+    improvisation_gating_context,
+)
+from music_intelligence.reasoning.musical_policy_projection import (
+    project_musical_policy,
+)
 from players.sax import (
     SaxArcContext,
     SaxExpressionContext,
@@ -49,6 +73,7 @@ from players.piano import (
 
 from .player_contract import RenderGesture, RenderVoice
 from .native_trio_players import Stage1BassNativeDecider
+from .shared_intelligence_bridge import derive_shared_solo_moment
 from .trio_adapters import NativeImmediateResult
 
 
@@ -113,6 +138,18 @@ class BassNativeDecider:
     def __call__(self, context: Mapping[str, object]) -> NativeImmediateResult | None:
         forwarded = dict(context)
         forwarded.setdefault("bass_mode", self.mode.value)
+
+        # Walking harmony lives on the quarter-note spine. Swung offbeats are
+        # optional ghost/dead-note opportunities, not a second harmonic bass
+        # decision. This keeps the causal eighth-note ensemble clock without
+        # turning walking bass into eight pitched attacks per bar.
+        beat=float(forwarded.get("beat_in_bar",0.0))
+        if forwarded["bass_mode"]=="walking":
+            frac=beat%1.0
+            forwarded.setdefault(
+                "bass_ghost_only",
+                abs(frac-.5)<=.08,
+            )
         return self.delegate(forwarded)
 
 
@@ -120,6 +157,9 @@ class BassNativeDecider:
 class DrumsNativeDecider:
     memory: DrummerPerformanceMemory = field(default_factory=DrummerPerformanceMemory)
     feel: TimeFeel = TimeFeel.SWING
+    bebop_phrase_memory: BebopPhraseMemory = field(default_factory=BebopPhraseMemory)
+    ride_memory: RideContinuityMemory = field(default_factory=RideContinuityMemory)
+    snare_memory: SnarePhraseMemory = field(default_factory=SnarePhraseMemory)
 
     def __call__(self, context: Mapping[str, object]) -> NativeImmediateResult | None:
         snapshot = context["ensemble_snapshot"]
@@ -154,7 +194,61 @@ class DrumsNativeDecider:
             harmony=context.get("harmonic_frame"),
             groove=snapshot.groove,
         )
-        chosen = perform_one_gesture(plan, dctx, self.memory)
+        style_tags={str(x).lower() for x in context.get("style_tags", ())}
+        if "bebop" in style_tags:
+            sax_intent=snapshot.intent_for("sax")
+            soloist=SoloistEnergyProjection(
+                activity=(sax_intent.density if sax_intent is not None else .45),
+                current_energy=(sax_intent.energy if sax_intent is not None else snapshot.ensemble_energy),
+                energy_slope=0.0,
+                phrase_terminal_probability=(
+                    sax_intent.phrase_maturity if sax_intent is not None else phrase_position
+                ),
+                climax_probability=max(
+                    0.0,
+                    min(1.0,(sax_intent.tension if sax_intent is not None else snapshot.ensemble_tension)),
+                ),
+            )
+            projection=BebopRuntimeProjection(
+                soloist=soloist,
+                phrase_memory=self.bebop_phrase_memory,
+                bass=BebopRuntimeProjection.from_ensemble_state(
+                    soloist=soloist,
+                    phrase_memory=self.bebop_phrase_memory,
+                    ensemble_state=snapshot,
+                ).bass,
+                ride_memory=self.ride_memory,
+                snare_memory=self.snare_memory,
+            )
+            chosen=perform_one_bebop_gesture(plan,dctx,projection,self.memory)
+
+            phase=classify_ride_phase(dctx)
+            for action in RideSurfaceAction:
+                if action.value in chosen.gesture.tags:
+                    self.ride_memory=update_ride_memory(self.ride_memory,action,phase)
+                    break
+            normalized=(beat%snapshot.transport.meter_numerator)/snapshot.transport.meter_numerator
+            for action in CompPhraseAction:
+                if action.value in chosen.gesture.tags:
+                    self.snare_memory=update_snare_phrase_memory(
+                        self.snare_memory,
+                        action,
+                        phase=normalized,
+                        bar_advance=.125,
+                    )
+                    break
+            active=1.0 if chosen.gesture.hits else 0.0
+            self.bebop_phrase_memory=BebopPhraseMemory(
+                recent_comp_density=max(0.0,min(1.0,.78*self.bebop_phrase_memory.recent_comp_density+.22*active)),
+                bars_since_last_statement=(
+                    0.0 if active else self.bebop_phrase_memory.bars_since_last_statement+.125
+                ),
+                recent_response_count=self.bebop_phrase_memory.recent_response_count+(1 if active else 0),
+                recent_non_response_count=self.bebop_phrase_memory.recent_non_response_count+(0 if active else 1),
+                last_comp_phase=(normalized if active else self.bebop_phrase_memory.last_comp_phase),
+            )
+        else:
+            chosen = perform_one_gesture(plan, dctx, self.memory)
         hits = tuple(
             RenderVoice(
                 _DRUM_MIDI[h.voice],
@@ -183,7 +277,7 @@ class DrumsNativeDecider:
             leadership=.12 if chosen.gesture.role.value in {"setup", "accent"} else .03,
             phrase_maturity=0.0,
             tags=frozenset(set(chosen.gesture.tags) | {chosen.gesture.role.value}),
-            provenance=("drummer_online_policy",),
+            provenance=(("drummer_bebop_runtime" if "bebop" in style_tags else "drummer_online_policy"),),
         )
 
 
@@ -200,6 +294,17 @@ class PianoNativeDecider:
         snapshot = context["ensemble_snapshot"]
         directive = context["interaction_directive"]
         phrase = _latest_other_phrase_maturity(snapshot, "piano")
+        sax_intent=snapshot.intent_for("sax")
+        shared_piano_moment=derive_shared_solo_moment(
+            snapshot,
+            context.get("harmonic_frame"),
+            foreground_player_id="sax",
+        ) if context.get("harmonic_frame") is not None else None
+        sax_has_motif=bool(
+            sax_intent is not None
+            and any(str(tag).startswith("motif:") for tag in sax_intent.tags)
+        )
+
         comping_context = PianoCompingContext(
             soloist_activity=_soloist_activity(snapshot),
             phrase_boundary_probability=phrase,
@@ -213,6 +318,13 @@ class PianoNativeDecider:
             ensemble_density=snapshot.ensemble_density,
             recent_piano_density=min(1.0, self.state.recent_density.voice_count / 6.0),
             section_energy=snapshot.ensemble_energy,
+            motif_continuity_strength=.72 if sax_has_motif else .18,
+            pattern_consistency_strength=.58 if sax_has_motif else .25,
+            harmonic_turn=(
+                shared_piano_moment.harmonic_turn
+                if shared_piano_moment is not None
+                else PianoCompingContext().harmonic_turn
+            ),
             time_feel=(snapshot.groove.feel.value if snapshot.groove is not None else "swing"),
         )
         interaction_state = self.state.interaction_state_from_context(comping_context)
@@ -305,6 +417,7 @@ class SaxNativeDecider:
 
     phrase_memory: SaxPhraseMemory = field(default_factory=SaxPhraseMemory)
     intention_memory: SaxPhraseIntentionMemory = field(default_factory=SaxPhraseIntentionMemory)
+    motif_memory: MotifMemory = field(default_factory=MotifMemory)
     physical_constraints: SaxPhysicalConstraints = field(
         default_factory=lambda: SaxPhysicalConstraints(
             lowest_playable_midi=50,
@@ -374,6 +487,61 @@ class SaxNativeDecider:
         )
 
         previous_pitch = self.phrase_memory.last_pitch_midi
+
+        # Shared Solo Intelligence owns generic phrase/turn/motif development.
+        # Sax remains responsible only for instrument-specific realization and
+        # physical/expression constraints.
+        shared_moment=derive_shared_solo_moment(
+            snapshot,
+            frame,
+            foreground_player_id="sax",
+        )
+        motif_generation=MotifGenerationContext(
+            tension=max(0.0,min(1.0,snapshot.ensemble_tension)),
+            ensemble_activity=max(0.0,min(1.0,snapshot.ensemble_density)),
+            phrase_space=max(0.0,min(1.0,snapshot.space_available)),
+            future_harmony_available=frame.next_expected is not None,
+            interaction_role=directive.interaction.value,
+            active_motif_id=(
+                next(iter(self.motif_memory.active())).identity.motif_id
+                if self.motif_memory.active() else ""
+            ),
+        )
+        motif_eval=MotifEvaluationContext(
+            harmonic_fit=.72,
+            ensemble_fit=max(.25,1.0-snapshot.ensemble_density*.35),
+            novelty_need=.52,
+            coherence_need=.78,
+            recent_similarity=.20 if self.motif_memory.active() else 0.0,
+        )
+        shared_plan=build_solo_tick(
+            harmonic_frame=frame,
+            harmonic_turn=shared_moment.harmonic_turn,
+            turn=shared_moment.turn,
+            complementarity=shared_moment.complementarity,
+            current_pitch_class=(previous_pitch%12 if previous_pitch is not None else None),
+            target_pitch_classes=frozenset(context.get("sax_target_pitch_classes", ())),
+            local_key_pitch_classes=frozenset(context.get("sax_local_key_pitch_classes", ())),
+            structural_pitch_classes=(
+                frame.expected.pitch_classes
+                if frame.expected is not None else frozenset()
+            ),
+            duration_beats=phrase_intention.duration_beats,
+            motif_generation_context=motif_generation,
+            motif_evaluation_context=motif_eval,
+            motif_memory=self.motif_memory,
+        )
+        policy_projection=project_musical_policy(
+            priors=context.get("hierarchical_priors"),
+            gating_context=improvisation_gating_context(
+                ensemble_complexity=max(0.0,min(1.0,snapshot.ensemble_density)),
+                live_context_confidence=.78,
+                structural_constraint=.18,
+            ),
+            motif_decision=shared_plan.motif_decision,
+            active_tags=tuple(sorted(directive.tags)),
+        )
+
         immediate = SaxImmediateContext(
             previous_pitch_midi=previous_pitch,
             duration_beats=phrase_intention.duration_beats,
@@ -402,7 +570,33 @@ class SaxNativeDecider:
         if not candidates:
             return None
 
-        chosen = max(candidates, key=lambda item: item.score)
+        shared_specs=shared_plan.candidates
+        shared_pcs={x.pitch_class for x in shared_specs if x.pitch_class is not None}
+        shared_tags=set().union(*(set(x.tags) for x in shared_specs)) if shared_specs else set()
+        shared_space=any(x.pitch_class is None for x in shared_specs)
+
+        def _integrated_sax_score(item):
+            score=item.score
+            event=item.event
+            if event.pitch_midi is None:
+                if shared_space:
+                    score += .18
+                score += .24*max(0.0,policy_projection.space_bias)
+                return score
+
+            if event.pitch_midi%12 in shared_pcs:
+                score += .13
+            overlap=len(set(event.tags).intersection(shared_tags))
+            score += min(.08,.02*overlap)
+            if "directed_target" in event.tags or "future_harmony" in event.tags:
+                score += .18*max(0.0,policy_projection.harmonic_retarget_bias)
+            if previous_pitch is not None and policy_projection.register_direction:
+                delta=event.pitch_midi-previous_pitch
+                if delta*policy_projection.register_direction>0:
+                    score += .06*abs(policy_projection.register_direction)
+            return score
+
+        chosen = max(candidates, key=_integrated_sax_score)
         event = chosen.event
         if event.pitch_midi is None:
             self.intention_memory.commit_duration(
@@ -465,6 +659,11 @@ class SaxNativeDecider:
         )
 
         self.phrase_memory.commit(phrase_context, phrase_decision)
+        if shared_plan.motif_decision is not None:
+            self.motif_memory.observe(
+                shared_plan.motif_decision.candidate.identity,
+                development_success=.5,
+            )
         self.intention_memory.last_phase=phrase_intention.phase
         self.intention_memory.commit_duration(
             event.duration_beats,
@@ -490,6 +689,14 @@ class SaxNativeDecider:
                 "sax_score": f"{chosen.score:.4f}",
                 "arc_phase": arc.phase,
                 "phrase_intention": phrase_intention.phase,
+                "shared_solo_method": shared_plan.intent.solo_method.value,
+                "shared_entry_mode": shared_plan.intent.entry_mode.value,
+                "shared_target_mode": shared_plan.intent.target_mode.value,
+                "motif_id": (
+                    shared_plan.motif_decision.candidate.identity.motif_id
+                    if shared_plan.motif_decision is not None else ""
+                ),
+                "policy_projection_confidence": f"{policy_projection.confidence:.3f}",
             },
         )
         return NativeImmediateResult(
@@ -500,7 +707,7 @@ class SaxNativeDecider:
             leadership=max(0.0, min(1.0, .58 + directive.leadership_delta)),
             phrase_maturity=phrase_maturity,
             tags=frozenset(set(event.tags) | set(policy.interaction.tags) | {f"arc:{arc.phase}",f"phrase_intention:{phrase_intention.phase}"}),
-            provenance=("sax_runtime_policy", "sax_immediate_candidate", "sax_phrase_intention", "sax_phrase_expression"),
+            provenance=("sax_runtime_policy", "shared_solo_runtime", "shared_motif_policy", "sax_immediate_candidate", "sax_phrase_intention", "sax_phrase_expression"),
         )
 
 

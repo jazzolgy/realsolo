@@ -213,6 +213,9 @@ class Stage1BassNativeDecider:
                 if mode is BassMode.SOLO
                 else signals.phrase_progress
             ),
+            local_key_pitch_classes=frozenset(
+                context.get("sax_local_key_pitch_classes", ())
+            ),
             directive=directive,
             legend_profile=legend_profile,
         ))
