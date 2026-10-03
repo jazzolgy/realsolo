@@ -6,6 +6,7 @@ from music_intelligence.audio_evidence import (
     AudioSource,
     BoundedContextPosterior,
     ContextEvidence,
+    RevisionLedger,
     confidence_report,
     to_performance_evidence_payload,
 )
@@ -185,3 +186,29 @@ def test_pipeline_keeps_detector_and_context_stages_replaceable():
     assert result[0].observation.observation_id == "synthetic:f3:001"
     assert result[0].revision is not None
     assert result[0].revision.factor_ids == ("register-continuity",)
+
+
+def test_revision_ledger_preserves_history_and_collects_hard_examples():
+    raw = ambiguous_f3()
+    posterior = BoundedContextPosterior()
+    first = posterior.revise_instrument(raw)
+    second = posterior.revise_instrument(
+        raw,
+        (
+            ContextEvidence(
+                factor_id="weak-continuity",
+                likelihoods={"bass": 1.1, "piano_lh": 1.0, "other": 0.9},
+                weight=0.3,
+            ),
+        ),
+    )
+
+    ledger = RevisionLedger()
+    first_record = ledger.record(first)
+    second_record = ledger.record(second)
+
+    assert first_record.revision_index == 1
+    assert second_record.revision_index == 2
+    assert len(ledger.history_for(raw.observation_id)) == 2
+    assert ledger.hard_examples
+    assert ledger.hard_examples[-1].observation_id == raw.observation_id
