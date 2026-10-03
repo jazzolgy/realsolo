@@ -216,6 +216,7 @@ class ResearchHandler(SimpleHTTPRequestHandler):
                 obs=row["observation"]
                 pe=row["performance_evidence"]
                 moment=row["musical_moment"]
+                raw=pe["raw"]
                 posterior=pe["posterior"]
                 instruments=posterior.get("instrument_probabilities",{})
                 roles=posterior.get("role_probabilities",{})
@@ -233,6 +234,8 @@ class ResearchHandler(SimpleHTTPRequestHandler):
                     "tempo_bpm":moment.get("tempo_bpm"),
                     "beat_position":moment.get("beat_position"),
                     "register_center":moment.get("register_center"),
+                    "learned_backend_available":raw.get("confidence_fields",{}).get("learned_backend_available"),
+                    "yamnet_window_ready":raw.get("confidence_fields",{}).get("yamnet_window_ready"),
                 })
             except (ValueError,RuntimeError) as exc:
                 self._json({"ok":False,"error":str(exc)},400)
