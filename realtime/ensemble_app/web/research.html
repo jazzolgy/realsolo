@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RealSolo Research Listener</title>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;background:#11151b;color:#e9eef5}
+body{margin:0}.app{max-width:980px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+h1{margin:0;font-size:22px}.sub,.muted{color:#9ca9b8}.panel{margin-top:16px;padding:14px;border:1px solid #303947;border-radius:12px;background:#171d25}
+.controls{display:flex;gap:8px;flex-wrap:wrap}.controls input{background:#0f141b;color:#eef;border:1px solid #394454;border-radius:8px;padding:9px}
+button{background:#e9eef5;color:#111820;border:0;border-radius:8px;padding:9px 13px;font-weight:700;cursor:pointer}
+button.secondary{background:#303947;color:#eef}.player-wrap{width:360px;max-width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
+#player{width:100%;height:100%}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.status>div{background:#10151c;padding:10px;border-radius:8px}
+.label{font-size:11px;color:#8996a7}.value{font-size:15px;font-weight:700;margin-top:3px}
+@media(max-width:700px){.status{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<main class="app">
+<div class="top"><div><h1>RealSolo · Autonomous Research Listener</h1><div class="sub">Visible YouTube playback + user-authorized realtime audio evidence</div></div></div>
+<section class="panel">
+<div class="controls">
+<input id="query" size="34" placeholder="bootstrap search (optional)">
+<input id="artist" size="20" placeholder="artist override (optional)">
+<button id="search">Search</button>
+<button id="capture">Start Capture</button>
+<button id="next" class="secondary">Next Source</button>
+<button id="pause" class="secondary">Pause</button>
+</div>
+<p class="muted" id="notice">Checking YouTube API configuration…</p>
+</section>
+<section class="panel">
+<div class="player-wrap"><div id="player"></div></div>
+<p id="title">No source loaded.</p>
+</section>
+<section class="panel status">
+<div><div class="label">Listener</div><div class="value" id="state">idle</div></div>
+<div><div class="label">Capture</div><div class="value" id="captureState">off</div></div>
+<div><div class="label">Evidence RMS</div><div class="value" id="rms">—</div></div>
+<div><div class="label">Pitch evidence</div><div class="value" id="pitch">—</div></div>
+</section>
+</main>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+let player=null,current=null,captureStream=null,audioCtx=null,workletNode=null,pending=[],pendingSamples=0,sending=false;
+const $=s=>document.querySelector(s);
+async function api(path,opts){const r=await fetch(path,opts);const j=await r.json();if(!r.ok||j.ok===false)throw new Error(j.error||("HTTP "+r.status));return j}
+async function refreshStatus(){try{const s=await api("/api/research/status");$("#state").textContent=s.state;$("#notice").textContent=s.configured?"YouTube API configured · research state is resumable":"Set YOUTUBE_API_KEY before starting research.";if(s.last_query&&!$("#query").value)$("#query").value=s.last_query;if(s.last_artist&&!$("#artist").value)$("#artist").value=s.last_artist}catch(e){$("#notice").textContent=e.message}}
+function onYouTubeIframeAPIReady(){player=new YT.Player("player",{width:"360",height:"203",playerVars:{playsinline:1,autoplay:0},events:{onReady:()=>{},onStateChange:onPlayerState,onError:onPlayerError,onAutoplayBlocked:()=>{$("#notice").textContent="Browser blocked autoplay. Click the YouTube play control once to continue."}}})}
+async function onPlayerState(ev){
+ if(ev.data===YT.PlayerState.PLAYING){await event("playing")}
+ if(ev.data===YT.PlayerState.ENDED){await event("ended");await loadNext(true)}
+}
+async function onPlayerError(ev){await event("failed");$("#notice").textContent="YouTube playback error "+ev.data+"; advancing.";await loadNext(true)}
+async function event(name){try{await api("/api/research/event",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({event:name})});await refreshStatus()}catch(e){$("#notice").textContent=e.message}}
+async function search(){
+ const terms=$("#query").value.trim();const artist=$("#artist").value.trim();
+ const p=new URLSearchParams();if(terms)p.set("terms",terms);if(artist)p.set("artist",artist);
+ const j=await api("/api/research/search?"+p.toString());$("#notice").textContent="Found "+j.count+" research candidates.";await loadNext(false)
+}
+async function loadNext(autoplay){
+ try{
+   const j=await api("/api/research/next");current=j.source;
+   if(!current){$("#title").textContent="No eligible source in the current search batch.";return}
+   $("#title").textContent=current.title+" · "+current.artist;
+   if(player&&player.loadVideoById){if(autoplay)player.loadVideoById(current.video_id);else player.cueVideoById(current.video_id)}
+   await refreshStatus()
+ }catch(e){$("#notice").textContent=e.message}
+}
+function concatFloat32(chunks,total){const out=new Float32Array(total);let o=0;for(const c of chunks){out.set(c,o);o+=c.length}return out}
+async function flushAudio(){
+ if(sending||pendingSamples<4096||!current)return;
+ const all=concatFloat32(pending,pendingSamples);pending=[];pendingSamples=0;sending=true;
+ try{
+  const r=await fetch("/api/research/audio",{method:"POST",headers:{"Content-Type":"application/octet-stream","X-RealSolo-Source-Id":current.source_id,"X-RealSolo-Sample-Rate":String(audioCtx.sampleRate)},body:all.buffer});
+  const j=await r.json();if(j.ok){$("#rms").textContent=Number(j.rms).toFixed(4);$("#pitch").textContent=j.pitch_hz?Number(j.pitch_hz).toFixed(1)+" Hz · "+Number(j.pitch_confidence).toFixed(2):"—"}
+ }catch(e){$("#notice").textContent="Evidence stream: "+e.message}finally{sending=false;if(pendingSamples>=4096)flushAudio()}
+}
+async function startCapture(){
+ if(captureStream)return;
+ captureStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:{suppressLocalAudioPlayback:false},preferCurrentTab:true,systemAudio:"include"});
+ const tracks=captureStream.getAudioTracks();if(!tracks.length){captureStream.getTracks().forEach(t=>t.stop());captureStream=null;throw new Error("No audio track was shared. Select a browser tab and enable Share tab audio.")}
+ audioCtx=new AudioContext();const source=audioCtx.createMediaStreamSource(new MediaStream(tracks));
+ const code=`class PCMForwarder extends AudioWorkletProcessor{process(inputs){const c=inputs[0]&&inputs[0][0];if(c)this.port.postMessage(c.slice());return true}}registerProcessor("pcm-forwarder",PCMForwarder)`;
+ const url=URL.createObjectURL(new Blob([code],{type:"application/javascript"}));await audioCtx.audioWorklet.addModule(url);URL.revokeObjectURL(url);
+ workletNode=new AudioWorkletNode(audioCtx,"pcm-forwarder");const silent=audioCtx.createGain();silent.gain.value=0;source.connect(workletNode);workletNode.connect(silent);silent.connect(audioCtx.destination);
+ workletNode.port.onmessage=e=>{const c=new Float32Array(e.data);pending.push(c);pendingSamples+=c.length;flushAudio()};
+ tracks[0].addEventListener("ended",stopCapture,{once:true});$("#captureState").textContent="on";$("#notice").textContent="Capture active. Keep this tab selected and the computer awake.";
+}
+function stopCapture(){if(workletNode){workletNode.disconnect();workletNode=null}if(captureStream){captureStream.getTracks().forEach(t=>t.stop());captureStream=null}if(audioCtx){audioCtx.close();audioCtx=null}pending=[];pendingSamples=0;$("#captureState").textContent="off"}
+$("#search").onclick=()=>search().catch(e=>$("#notice").textContent=e.message);
+$("#next").onclick=()=>loadNext(true);
+$("#capture").onclick=()=>startCapture().catch(e=>$("#notice").textContent=e.message);
+$("#pause").onclick=()=>{if(player)player.pauseVideo();event("paused")};
+refreshStatus();
+</script>
+</body>
+</html>
