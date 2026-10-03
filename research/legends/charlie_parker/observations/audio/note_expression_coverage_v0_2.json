@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.2",
+  "legend_id": "charlie_parker",
+  "source_id": "cp_audio_greatest_hits_project",
+  "status": "IN_PROGRESS_PRIVATE_NOTE_HYPOTHESIS_PASS",
+  "public_data_policy": "Exact event-level candidate-note hypotheses are kept private/local; this file stores non-reconstructive coverage and aggregate evidence.",
+  "coverage": [
+    {
+      "source_interval_s": [0.0, 178.352],
+      "segment_role": "compilation_track_01_by_silence_boundary",
+      "note_hypothesis_status": "PRIVATE_LOCAL_COMPLETE_V0_1",
+      "detected_onsets": 711,
+      "pitch_hypotheses": 3411,
+      "onsets_per_second": 4.0089,
+      "expression_proxy": {
+        "rms_mean": 0.074719,
+        "rms_std": 0.03069,
+        "onset_strength_mean": 0.63917,
+        "onset_strength_p90": 1.15799,
+        "harmonic_body_ratio_median": 2.245,
+        "harmonic_body_ratio_p90": 5.3062,
+        "spectral_centroid_mean_hz": 2287.0,
+        "spectral_centroid_std_hz": 521.29
+      },
+      "rhythm_proxy": {
+        "ioi_median_s": 0.209,
+        "ioi_p25_s": 0.1625,
+        "ioi_p75_s": 0.3019
+      },
+      "salient_top_interval_abs_counts": {
+        "0": 192, "1": 91, "2": 64, "3": 56, "4": 34, "5": 30,
+        "6": 18, "7": 31, "8": 6, "9": 5, "10": 3, "11": 6,
+        "12": 5, "gt12": 169
+      },
+      "salient_top_contour_trigrams": [
+        {"pattern": [-1,1,-1], "count": 64},
+        {"pattern": [1,-1,1], "count": 54},
+        {"pattern": [1,-1,0], "count": 46},
+        {"pattern": [0,1,-1], "count": 44},
+        {"pattern": [-1,0,1], "count": 43}
+      ],
+      "evidence_status": "OBSERVATION_ONLY",
+      "limitations": [
+        "mixed full-band recording; no guaranteed Parker-only event attribution",
+        "CQT peak set is a multi-pitch hypothesis, not verified transcription",
+        "exact event list is intentionally not committed",
+        "form/bar/beat alignment is still unresolved for this segment"
+      ]
+    }
+  ],
+  "next_unprocessed_source_interval_s": [181.421, 359.277],
+  "promotion_path": "NOTE_HYPOTHESIS -> SCORE_ALIGNED_HYPOTHESIS -> INSTRUMENT_ATTRIBUTED -> EXPERT_VERIFIED -> GROUND_TRUTH_TRANSCRIPTION"
+}
