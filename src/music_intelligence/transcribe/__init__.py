@@ -225,6 +225,9 @@ __all__ = [
     "TakeTranscriptionResult",
     "transcribe_part",
     "transcribe_take",
+    "LeadSheetProjection",
+    "OutputProfile",
+    "project_lead_sheet",
     "CommittedPerformanceEvent",
     "ConfidenceBundle",
     "EventAlternative",
@@ -359,4 +362,11 @@ from .take import (
     TakeTranscriptionResult,
     transcribe_part,
     transcribe_take,
+)
+
+
+from .output_profiles import (
+    LeadSheetProjection,
+    OutputProfile,
+    project_lead_sheet,
 )
