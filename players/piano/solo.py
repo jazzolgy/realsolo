@@ -23,6 +23,7 @@ from music_intelligence.reasoning.online_improviser import (
 )
 from music_intelligence.learning.engine import LearningPriorView
 from music_intelligence.reasoning.learning_prior_runtime import circular_phase_bias
+from music_intelligence.reasoning.hierarchical_priors import HierarchicalPriorSet
 
 from .bebop_phrase_space import BebopPhraseSpaceEvidence, PhraseSpaceType
 from .bebop_complementarity import (
@@ -132,10 +133,17 @@ class PianoSoloEvaluator:
         self,
         legend_blend: LegendBlend | None = None,
         solo_phrase_prior: LearningPriorView | None = None,
+        prior_hierarchy: HierarchicalPriorSet | None = None,
     ):
-        self.legend_blend = legend_blend or default_bebop_legend_blend()
+        hierarchy_legend = (
+            prior_hierarchy.legend_blend
+            if prior_hierarchy is not None
+            else None
+        )
+        self.legend_blend = legend_blend or hierarchy_legend or default_bebop_legend_blend()
         self.shared = OnlineMusicalEvaluator(self.legend_blend)
         self.solo_phrase_prior = solo_phrase_prior
+        self.prior_hierarchy = prior_hierarchy
 
     def evaluate(
         self,
@@ -166,8 +174,13 @@ class PianoSoloEvaluator:
 
         tags = set(candidate.tags)
 
+        effective_solo_prior = (
+            self.prior_hierarchy.domain_prior
+            if self.prior_hierarchy is not None
+            else self.solo_phrase_prior
+        )
         learned_entry = circular_phase_bias(
-            self.solo_phrase_prior,
+            effective_solo_prior,
             "entry_phase",
             context.musical.metric_position + candidate.onset_offset_beats,
             cycle=4.0,
