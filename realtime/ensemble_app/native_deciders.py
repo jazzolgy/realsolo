@@ -20,8 +20,22 @@ from players.drums import (
     TimeFeel,
     perform_one_gesture,
 )
+from music_intelligence.corpus import ScoreContextSnapshot, ScorePosition
 from music_intelligence.reasoning.legend_style_core import MusicalContextVector
 from music_intelligence.reasoning.online_improviser import SoftPlan
+from players.sax import (
+    SaxArcContext,
+    SaxExpressionContext,
+    SaxImmediateContext,
+    SaxPhraseContext,
+    SaxPhraseMemory,
+    SaxPhysicalConstraints,
+    apply_sax_arc,
+    choose_sax_articulation_arc,
+    choose_sax_expression,
+    choose_sax_runtime_policy,
+    generate_immediate_sax_candidates,
+)
 from players.piano import (
     PianoCompingContext,
     PianoCompingEvaluator,
@@ -277,6 +291,181 @@ class PianoNativeDecider:
             provenance=("piano_comping_policy",),
         )
 
+
+@dataclass
+class SaxNativeDecider:
+    """Canonical one-event Sax provider for the shared ensemble runtime.
+
+    The provider delegates musical choice to players.sax and returns exactly one
+    immediate renderer gesture (or intentional space). Shared groove is not
+    applied here; the runtime adapter boundary owns that projection.
+    """
+
+    phrase_memory: SaxPhraseMemory = field(default_factory=SaxPhraseMemory)
+    physical_constraints: SaxPhysicalConstraints = field(
+        default_factory=lambda: SaxPhysicalConstraints(
+            lowest_playable_midi=50,
+            highest_playable_midi=94,
+            comfortable_interval_semitones=12,
+            max_notes_since_breath=10,
+            max_beats_since_breath=8.0,
+        )
+    )
+
+    def __call__(self, context: Mapping[str, object]) -> NativeImmediateResult | None:
+        snapshot = context["ensemble_snapshot"]
+        directive = context["interaction_directive"]
+        frame = context.get("harmonic_frame")
+        if frame is None:
+            return None
+
+        phrase_maturity = float(context.get(
+            "phrase_position",
+            _latest_other_phrase_maturity(snapshot, "sax"),
+        ))
+        phrase_maturity = max(0.0, min(1.0, phrase_maturity))
+
+        score_snapshot = context.get("sax_score_snapshot")
+        if not isinstance(score_snapshot, ScoreContextSnapshot):
+            score_snapshot = ScoreContextSnapshot(
+                book_id="runtime",
+                song_id=str(context.get("song_id", "runtime")),
+                position=ScorePosition(
+                    page=1,
+                    bar=max(1, int(snapshot.transport.bar) + 1),
+                    beat=max(0.0, float(snapshot.transport.beat)),
+                ),
+                section=snapshot.transport.section or None,
+                confidence=0.0,
+                provenance=("runtime_unspecified_score_context",),
+            )
+
+        policy = choose_sax_runtime_policy(
+            score_snapshot,
+            previous_score_snapshot=context.get("previous_sax_score_snapshot")
+            if isinstance(context.get("previous_sax_score_snapshot"), ScoreContextSnapshot)
+            else None,
+            interaction_directive=directive,
+            external_allow_improvisation=bool(context.get("sax_allow_improvisation", True)),
+        )
+
+        previous_pitch = self.phrase_memory.last_pitch_midi
+        immediate = SaxImmediateContext(
+            previous_pitch_midi=previous_pitch,
+            duration_beats=float(context.get("sax_duration_beats", .5)),
+            target_pitch_classes=frozenset(context.get("sax_target_pitch_classes", ())),
+            local_key_pitch_classes=frozenset(context.get("sax_local_key_pitch_classes", ())),
+            allow_improvisation=policy.allow_improvisation,
+            written_pitch_midi=context.get("sax_written_pitch_midi"),
+            written_duration_beats=context.get("sax_written_duration_beats"),
+            notes_since_breath=self.phrase_memory.notes_since_breath,
+            beats_since_breath=self.phrase_memory.beats_since_breath,
+            physical_constraints=self.physical_constraints,
+            score_policy=policy.score,
+            interaction=policy.interaction,
+            legend_materials=(
+                policy.legend.materials if policy.legend is not None else ()
+            ),
+            memory_intention=(
+                policy.legend.intention if policy.legend is not None else None
+            ),
+        )
+        candidates = generate_immediate_sax_candidates(frame, immediate)
+        if not candidates:
+            return None
+
+        chosen = max(candidates, key=lambda item: item.score)
+        event = chosen.event
+        if event.pitch_midi is None:
+            return NativeImmediateResult(
+                gesture=None,
+                density=0.0,
+                energy=max(.1, snapshot.ensemble_energy * .45),
+                tension=snapshot.ensemble_tension,
+                leadership=max(0.0, min(1.0, .18 + directive.leadership_delta)),
+                phrase_maturity=phrase_maturity,
+                tags=frozenset(set(event.tags) | {"sax_space"}),
+                provenance=("sax_runtime_policy", "sax_immediate_candidate"),
+            )
+
+        phrase_context = SaxPhraseContext(
+            pitch_midi=event.pitch_midi,
+            previous_pitch_midi=previous_pitch,
+            duration_beats=event.duration_beats,
+            beat_in_bar=float(snapshot.transport.beat) % snapshot.transport.meter_numerator,
+            phrase_maturity=phrase_maturity,
+            source_family=event.source_family,
+            score_phrase_boundary_before=policy.score.phrase_boundary_before,
+            score_phrase_boundary_after=policy.score.phrase_boundary_after,
+        )
+        phrase_decision = self.phrase_memory.decide(phrase_context)
+
+        expression = choose_sax_expression(SaxExpressionContext(
+            pitch_midi=event.pitch_midi,
+            previous_pitch_midi=previous_pitch,
+            duration_beats=event.duration_beats,
+            beat_in_bar=phrase_context.beat_in_bar,
+            phrase_maturity=phrase_maturity,
+            tension=snapshot.ensemble_tension,
+            velocity=int(context.get("sax_velocity", 82)),
+        ))
+        articulations=list(expression.tags)
+        if phrase_decision.connect_legato and "legato" not in articulations:
+            articulations.append("legato")
+
+        arc = choose_sax_articulation_arc(SaxArcContext(
+            pitch_midi=event.pitch_midi,
+            previous_pitch_midi=previous_pitch,
+            duration_beats=event.duration_beats,
+            phrase_maturity=phrase_maturity,
+            notes_since_breath=self.phrase_memory.notes_since_breath,
+            breath_before=phrase_decision.breath_before,
+            phrase_start=phrase_decision.phrase_start,
+            phrase_end=phrase_decision.phrase_end,
+            tension=snapshot.ensemble_tension,
+        ))
+        articulation, velocity, attack_scale, release_shape = apply_sax_arc(
+            tuple(articulations),
+            expression.velocity,
+            .72 if phrase_decision.soften_attack else 1.0,
+            phrase_decision.release_shape,
+            arc,
+        )
+
+        self.phrase_memory.commit(phrase_context, phrase_decision)
+
+        gesture = RenderGesture(
+            role="soloist",
+            voices=(RenderVoice(
+                event.pitch_midi,
+                velocity,
+                event.duration_beats,
+                event.onset_offset_beats,
+                articulation=articulation,
+                instrument_role="tenor_sax",
+                breath_before_beats=.125 if phrase_decision.breath_before else 0.0,
+                attack_scale=attack_scale,
+                release_shape=release_shape,
+            ),),
+            source="player/sax:canonical_immediate",
+            tags=tuple(sorted(set(event.tags) | set(policy.interaction.tags) | {f"arc:{arc.phase}"})),
+            annotations={
+                "sax_score": f"{chosen.score:.4f}",
+                "arc_phase": arc.phase,
+            },
+        )
+        return NativeImmediateResult(
+            gesture=gesture,
+            density=min(1.0, .32 + .18 * max(0.0, policy.interaction.density_delta)),
+            energy=max(.1, min(1.0, snapshot.ensemble_energy + directive.energy_delta)),
+            tension=snapshot.ensemble_tension,
+            leadership=max(0.0, min(1.0, .58 + directive.leadership_delta)),
+            phrase_maturity=phrase_maturity,
+            tags=frozenset(set(event.tags) | set(policy.interaction.tags) | {f"arc:{arc.phase}"}),
+            provenance=("sax_runtime_policy", "sax_immediate_candidate", "sax_phrase_expression"),
+        )
+
+
 def build_native_trio_runtime():
     """Construct the current executable piano/bass/drums runtime loop."""
     from .runtime_loop import EnsembleRuntimeLoop
@@ -286,4 +475,22 @@ def build_native_trio_runtime():
         PianoRuntimeAdapter(PianoNativeDecider()),
         BassRuntimeAdapter(BassNativeDecider()),
         DrumsRuntimeAdapter(DrumsNativeDecider()),
+    ))
+
+
+def build_native_quartet_runtime():
+    """Construct Piano/Bass/Drums/Tenor-Sax from the same causal snapshot."""
+    from .runtime_loop import EnsembleRuntimeLoop
+    from .trio_adapters import (
+        PianoRuntimeAdapter,
+        BassRuntimeAdapter,
+        DrumsRuntimeAdapter,
+        SaxRuntimeAdapter,
+    )
+
+    return EnsembleRuntimeLoop((
+        PianoRuntimeAdapter(PianoNativeDecider()),
+        BassRuntimeAdapter(BassNativeDecider()),
+        DrumsRuntimeAdapter(DrumsNativeDecider()),
+        SaxRuntimeAdapter(SaxNativeDecider()),
     ))
