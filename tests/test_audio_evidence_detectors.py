@@ -52,7 +52,7 @@ class FakePitches:
 class FakeInstrument:
     detector_id = "fake-instrument"
 
-    def detect_instruments(self, source: AudioSource, onsets, pitches=(), unpitched=()):
+    def detect_instruments(self, source: AudioSource, onsets, pitches=(), unpitched=(), timbre=()):
         return (
             InstrumentDetection(
                 onset_id="o1",
