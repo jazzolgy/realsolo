@@ -47,6 +47,7 @@ class ResearchAudioIngestor:
         self._musical_context_correctors: dict[str,MusicalContextCorrector]={}
         self._beat_trackers: dict[str,AdaptiveBeatTracker]={}
         self._phrase_trackers: dict[str,PhraseTracker]={}
+        self._source_origins: dict[str,float]={}
 
     def ingest_float32(
         self,
@@ -68,7 +69,12 @@ class ResearchAudioIngestor:
             raise RuntimeError('Install audio support with: pip install -e ".[audio]"') from exc
         samples=np.frombuffer(payload,dtype="<f4")
         extractor=self._extractors.setdefault((source_id,sample_rate),AudioFeatureExtractor(sample_rate=sample_rate))
-        ts=time.monotonic() if timestamp is None else float(timestamp)
+        if timestamp is None:
+            now=time.monotonic()
+            origin=self._source_origins.setdefault(source_id,now)
+            ts=max(0.0,now-origin)
+        else:
+            ts=max(0.0,float(timestamp))
         obs=extractor.process(samples,ts)
         frame=AcousticDescriptorFrame(
             pitch_hz=obs.pitch_hz,
