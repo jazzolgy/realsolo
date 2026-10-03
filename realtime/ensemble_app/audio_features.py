@@ -69,6 +69,17 @@ class AudioFeatureExtractor:
         onset = self._frames > 4 and rms >= self.min_onset_rms and flux > threshold
 
         pitch_hz, pitch_conf = self._estimate_pitch(x, rms)
+        freqs = np.fft.rfftfreq(x.size, 1.0 / self.sample_rate)
+        mag_sum = float(np.sum(mag)) + 1e-12
+        spectral_centroid = float(np.sum(freqs * mag) / mag_sum) if mag.size else None
+        power = mag * mag
+        power_sum = float(np.sum(power)) + 1e-12
+        low = float(np.sum(power[freqs < 250.0]) / power_sum)
+        mid = float(np.sum(power[(freqs >= 250.0) & (freqs < 2500.0)]) / power_sum)
+        high = float(np.sum(power[freqs >= 2500.0]) / power_sum)
+        eps = 1e-12
+        flatness = float(np.exp(np.mean(np.log(mag + eps))) / (np.mean(mag + eps)))
+        zcr = float(np.mean(x[:-1] * x[1:] < 0.0)) if x.size > 1 else 0.0
         return AudioObservation(
             timestamp=timestamp,
             rms=rms,
@@ -77,6 +88,12 @@ class AudioFeatureExtractor:
             onset=bool(onset),
             pitch_hz=pitch_hz,
             pitch_confidence=pitch_conf,
+            spectral_centroid_hz=spectral_centroid,
+            spectral_flatness=max(0.0, min(1.0, flatness)),
+            zero_crossing_rate=max(0.0, min(1.0, zcr)),
+            low_energy_ratio=max(0.0, min(1.0, low)),
+            mid_energy_ratio=max(0.0, min(1.0, mid)),
+            high_energy_ratio=max(0.0, min(1.0, high)),
         )
 
     def _estimate_pitch(self, x, rms: float) -> tuple[float | None, float]:
