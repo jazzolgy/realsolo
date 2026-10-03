@@ -135,7 +135,12 @@ class PianoSoloEvaluator:
         solo_phrase_prior: LearningPriorView | None = None,
         prior_hierarchy: HierarchicalPriorSet | None = None,
     ):
-        self.legend_blend = legend_blend or default_bebop_legend_blend()
+        hierarchy_legend = (
+            prior_hierarchy.legend_blend
+            if prior_hierarchy is not None
+            else None
+        )
+        self.legend_blend = legend_blend or hierarchy_legend or default_bebop_legend_blend()
         self.shared = OnlineMusicalEvaluator(self.legend_blend)
         self.solo_phrase_prior = solo_phrase_prior
         self.prior_hierarchy = prior_hierarchy
