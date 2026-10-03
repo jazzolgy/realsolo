@@ -130,3 +130,27 @@ canonical Shared Core boundaries.
 The next upgrade should replace/manual-assist the `ManualFormClock` with Shared
 Beat/Downbeat/Meter/Form Intelligence, then attach RealChord Expected Harmony to
 the resulting `MusicalScoreCoordinate`.
+
+
+## Reuse an existing verified research alignment
+
+The preferred bootstrap is to reuse an existing research alignment manifest
+rather than type a new manual clock.
+
+For the existing Bill Evans *Autumn Leaves* research:
+
+    realsolo-study bill_evans_compilation.mp3 \
+      --source-id bill_evans:portrait_in_jazz:autumn_leaves_take1 \
+      --start-s 708 \
+      --max-seconds 361 \
+      --song "Autumn Leaves" \
+      --alignment-json research/legends/bill_evans/observations/score_alignment/autumn_leaves_take1_sections_v0_1.json \
+      --alignment-offset-s 708 \
+      --output autumn_leaves_take1_study.jsonl
+
+The alignment manifest is evidence, not a new canonical coordinate. Its verified
+time/bar windows are converted into `MusicalScoreCoordinate` at ingestion.
+Windows outside the manifest's supported ranges remain navigation-only.
+
+This allows the project to begin studying the actual recording immediately while
+automatic Beat/Downbeat/Meter/Form Intelligence is still being developed.
