@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0",
+  "canonical_rule": "absolute_time_is_provenance_musical_structure_is_learning_coordinate",
+  "legends": [
+    {
+      "legend_id": "bill_evans",
+      "source_branch": "main",
+      "source_root": "research/legends/bill_evans",
+      "migration_status": "in_progress",
+      "aligned_assets": [
+        "observations/score_alignment/autumn_leaves_take1_sections_v0_1.json"
+      ],
+      "timestamp_only_assets": [
+        "observations/audio/track_feature_scan.json",
+        "observations/audio/full_source_note_hypothesis_aggregate_v0_2.json",
+        "analyses/album_1000pass_robustness_v0_1.md"
+      ],
+      "next_action": "map all track-level derived evidence to arrangement/form/chorus coordinates before learning"
+    },
+    {
+      "legend_id": "scott_lafaro",
+      "source_branch": "main",
+      "source_root": "research/legends/scott_lafaro",
+      "migration_status": "in_progress",
+      "aligned_assets": [],
+      "timestamp_only_assets": [
+        "observations/audio/verified_phrase_queue.json"
+      ],
+      "next_action": "replace phrase queue time-only windows with form/section/bar/chorus coordinates per verified track"
+    },
+    {
+      "legend_id": "charlie_parker",
+      "source_branch": "main",
+      "source_root": "research/legends/charlie_parker",
+      "migration_status": "pending_track_identity_alignment",
+      "aligned_assets": [],
+      "timestamp_only_assets": [
+        "observations/audio/greatest_hits_annotations_v0_1.json"
+      ],
+      "next_action": "resolve compilation segment identity/form first; current windows remain navigation_only"
+    },
+    {
+      "legend_id": "paul_motian",
+      "source_branch": "player/drums",
+      "source_root": "research/legends/paul_motian",
+      "migration_status": "source_registered_alignment_pending",
+      "aligned_assets": [],
+      "timestamp_only_assets": [],
+      "next_action": "attach Motian observations to Bill Evans track/form coordinates as they are created"
+    },
+    {
+      "legend_id": "eliot_zigmund",
+      "source_branch": "player/drums",
+      "source_root": "research/legends/eliot_zigmund",
+      "migration_status": "partial",
+      "aligned_assets": [],
+      "timestamp_only_assets": [
+        "observations/without_a_song_solo_window.json",
+        "observations/without_a_song_cell_robustness_v2.json"
+      ],
+      "next_action": "map Without a Song window to 56-bar form, chorus/form-bar/drum-foreground position"
+    },
+    {
+      "legend_id": "joe_labarbera",
+      "source_branch": "player/drums",
+      "source_root": "research/legends/joe_labarbera",
+      "migration_status": "source_registered_alignment_pending",
+      "aligned_assets": [],
+      "timestamp_only_assets": [],
+      "next_action": "align Nardis source to 32-bar form after audio availability/verification"
+    }
+  ]
+}
