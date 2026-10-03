@@ -80,3 +80,62 @@ def test_six_eight_projection_uses_eighth_note_meter_units():
     assert p.measure_index == 0
     assert p.beat_in_measure == 3.0
     assert p.display_beat == 4.0
+
+
+def test_unresolved_metric_artifact_is_stored_but_does_not_change_prior():
+    data=StructuralPerformanceData(
+        source_id="unresolved",
+        events=(e(0,0),e(1,1),e(2,2)),
+        meter="",
+    )
+    artifacts=extract_learning_artifacts(data)
+    engine=SharedLearningEngine()
+    added=engine.ingest_artifacts(artifacts,learn=False,study_as_evidence=True)
+    assert added == len(artifacts)
+    prior=engine.evidence_prior(LearningDomain.COMPING)
+    assert prior.observations == 0
+    assert prior.unresolved_metric_observations >= 1
+
+
+def test_same_pattern_at_different_form_positions_has_distinct_artifact_identity():
+    fmap=FormMap(
+        form_id="song",
+        meter_numerator=4,
+        meter_denominator=4,
+        sections=(
+            FormSection("verse",0,4),
+            FormSection("chorus",4,4),
+        ),
+    )
+    verse=StructuralPerformanceData(
+        source_id="same",
+        events=(e(0,0),e(1,1),e(2,2)),
+        meter="4/4",
+        form_map=fmap,
+    )
+    chorus=StructuralPerformanceData(
+        source_id="same",
+        events=(e(0,16),e(1,17),e(2,18)),
+        meter="4/4",
+        form_map=fmap,
+    )
+    a1=[a for a in extract_learning_artifacts(verse) if a.domain is LearningDomain.COMPING][0]
+    a2=[a for a in extract_learning_artifacts(chorus) if a.domain is LearningDomain.COMPING][0]
+    assert a1.artifact_id != a2.artifact_id
+    assert a1.features["metric_form_context"]["sections"] != a2.features["metric_form_context"]["sections"]
+
+
+def test_hierarchical_form_path_supports_classical_or_nested_pop_forms():
+    fmap=FormMap(
+        form_id="sonata_mvt1",
+        meter_numerator=4,
+        meter_denominator=4,
+        sections=(
+            FormSection("exposition",0,32,section_type="large_section"),
+            FormSection("primary_theme",0,8,parent_section_id="exposition",section_type="theme"),
+            FormSection("transition",8,8,parent_section_id="exposition",section_type="transition"),
+        ),
+    )
+    p=fmap.position_from_absolute_beat(2.0)
+    assert p.section_id == "primary_theme"
+    assert p.form_path == ("exposition","primary_theme")
