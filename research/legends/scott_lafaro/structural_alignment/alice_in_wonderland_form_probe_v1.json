@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "scott_lafaro",
+  "performer_links": [
+    "bill_evans",
+    "scott_lafaro",
+    "paul_motian"
+  ],
+  "track_id": "BE-011",
+  "song_id": "alice_in_wonderland",
+  "source_id": "be_playlist_project_audio",
+  "audio_provenance": {
+    "track_absolute_seconds": [
+      3388,
+      3809
+    ],
+    "duration_s": 421
+  },
+  "score_evidence": {
+    "source": "Realbk1.pdf",
+    "page": 12,
+    "status": "visual_verified"
+  },
+  "signal_probe": {
+    "representation": "full-mix chroma CQT",
+    "strongest_cycle_period_s": 65.5,
+    "mean_cosine_similarity_64bar_candidate": 0.7271,
+    "implied_bar_duration_s_if_64_bar_waltz": 1.0234,
+    "implied_quarter_bpm_if_3_4": 175.88,
+    "candidate_bar_grid_phase_s": 0.491,
+    "candidate_64bar_bar_grid_similarity": 0.8763,
+    "legacy_track_tempo_proxy_bpm": 117.454,
+    "pulse_relationship": "legacy proxy is approximately 2/3 of form-aligned quarter-note hypothesis, consistent with waltz pulse ambiguity"
+  },
+  "interpretation": {
+    "form": "64 notated bars / AA'BA' waltz",
+    "core_form_recurrence_status": "strong_candidate",
+    "exact_form_rotation_status": "unresolved",
+    "exact_form_bar_status": "not_canonical"
+  },
+  "promotion_gate": [
+    "resolve score/harmony rotation",
+    "verify downbeat on multiple cycles",
+    "identify head/solo/bass-foreground roles"
+  ],
+  "provenance": [
+    "user_provided_bill_evans_compilation",
+    "score_anchor:Realbk1:p12",
+    "existing_lafaro_verified_track_registry",
+    "full_mix_chroma_cycle_probe"
+  ]
+}
