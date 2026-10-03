@@ -37,6 +37,7 @@ from .instrument_profiles import (
 from .instrument_rules import InstrumentNotationDirective
 from .musicxml import score_to_musicxml
 from .projection import EventProjectionResult, project_pitched_event
+from .notation import RhythmNotationContext
 from .quality import ScoreQualityReport, audit_score_for_performance
 from .score import ReadableScore, ScoreEvent, ScoreSpanner
 from .spelling import PitchSpellingContext
@@ -84,6 +85,7 @@ class NotationEngine:
         staffs: tuple[StaffProfile, ...],
         spelling_context: PitchSpellingContext = PitchSpellingContext(),
         directive: InstrumentNotationDirective | None = None,
+        rhythm_context: RhythmNotationContext = RhythmNotationContext(),
     ) -> EventProjectionResult:
         profile = self.resolve_instrument(event.instrument)
         return project_pitched_event(
@@ -99,6 +101,7 @@ class NotationEngine:
             ),
             meter_numerator=self.config.meter_numerator,
             meter_denominator=self.config.meter_denominator,
+            rhythm_context=rhythm_context,
         )
 
     def chart_position(
