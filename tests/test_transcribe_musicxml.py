@@ -8,6 +8,7 @@ from music_intelligence.transcribe.notation import (
 )
 from music_intelligence.transcribe.score import ScoreEvent, ScoreKeySignature, ScorePart, assemble_score
 from music_intelligence.transcribe.spelling import WrittenPitch
+from music_intelligence.transcribe.engraving import build_default_engraving_plan
 from music_intelligence.transcribe.musicxml import score_to_musicxml
 
 
@@ -181,3 +182,95 @@ def test_musicxml_triplet_duration_keeps_written_eighth_type():
     assert note.findtext("type") == "eighth"
     assert note.findtext("time-modification/actual-notes") == "3"
     assert note.findtext("time-modification/normal-notes") == "2"
+
+
+
+def test_musicxml_emits_compound_meter_beams_in_three_eighth_groups():
+    events = tuple(
+        ScoreEvent(
+            event_id=f"e{i}",
+            part_id="flute",
+            staff_id="flute:staff",
+            voice_id="v1",
+            kind=NotatedAtomKind.NOTE,
+            span=ScoreSpan(Fraction(i, 2), Fraction(1, 2)),
+            source_event_ids=(f"src:e{i}",),
+            written_pitch=WrittenPitch("C", 0, 5),
+        )
+        for i in range(6)
+    )
+    part = ScorePart("flute", "Flute", "flute", ("flute:staff",), events)
+    score = assemble_score(
+        score_id="beam:68",
+        title="Compound Beams",
+        parts=(part,),
+        meter_numerator=6,
+        meter_denominator=8,
+    )
+
+    root = ET.fromstring(
+        score_to_musicxml(score, build_default_engraving_plan(score))
+    )
+    beam_values = [
+        note.findtext("beam[@number='1']")
+        for note in root.findall(".//part[@id='flute']/measure/note")
+    ]
+
+    assert beam_values == [
+        "begin",
+        "continue",
+        "end",
+        "begin",
+        "continue",
+        "end",
+    ]
+
+
+def test_musicxml_does_not_emit_beam_on_short_rest():
+    note1 = ScoreEvent(
+        event_id="n1",
+        part_id="flute",
+        staff_id="flute:staff",
+        voice_id="v1",
+        kind=NotatedAtomKind.NOTE,
+        span=ScoreSpan(Fraction(0), Fraction(1, 2)),
+        source_event_ids=("src:n1",),
+        written_pitch=WrittenPitch("C", 0, 5),
+    )
+    rest = ScoreEvent(
+        event_id="r1",
+        part_id="flute",
+        staff_id="flute:staff",
+        voice_id="v1",
+        kind=NotatedAtomKind.REST,
+        span=ScoreSpan(Fraction(1, 2), Fraction(1, 2)),
+    )
+    note2 = ScoreEvent(
+        event_id="n2",
+        part_id="flute",
+        staff_id="flute:staff",
+        voice_id="v1",
+        kind=NotatedAtomKind.NOTE,
+        span=ScoreSpan(Fraction(1), Fraction(1, 2)),
+        source_event_ids=("src:n2",),
+        written_pitch=WrittenPitch("D", 0, 5),
+    )
+    part = ScorePart(
+        "flute",
+        "Flute",
+        "flute",
+        ("flute:staff",),
+        (note1, rest, note2),
+    )
+    score = assemble_score(score_id="beam:rest", title="Rest Break", parts=(part,))
+
+    root = ET.fromstring(
+        score_to_musicxml(score, build_default_engraving_plan(score))
+    )
+    rest_note = next(
+        note
+        for note in root.findall(".//part[@id='flute']/measure/note")
+        if note.find("rest") is not None
+    )
+
+    assert rest_note.find("beam") is None
