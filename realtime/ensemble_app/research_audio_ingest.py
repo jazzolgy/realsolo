@@ -12,6 +12,12 @@ import time
 
 from .audio_features import AudioFeatureExtractor
 from .research_checkpoint import default_research_state_root
+from music_intelligence.learning.shared_audio_intelligence import (
+    DetectorEvidence,
+    PerformanceEvidence,
+    identity_context_correction,
+    musical_moment_from_evidence,
+)
 
 
 class ResearchAudioIngestor:
@@ -41,15 +47,42 @@ class ResearchAudioIngestor:
         extractor=self._extractors.setdefault((source_id,sample_rate),AudioFeatureExtractor(sample_rate=sample_rate))
         ts=time.monotonic() if timestamp is None else float(timestamp)
         obs=extractor.process(samples,ts)
+        confidence_fields={
+            "pitch":float(obs.pitch_confidence),
+            "onset":min(1.0,max(0.0,float(obs.onset_strength))),
+            "event":max(float(obs.pitch_confidence), min(1.0,max(0.0,float(obs.onset_strength)))),
+        }
+        raw=DetectorEvidence(
+            instrument_probabilities={},
+            role_probabilities={},
+            confidence_fields=confidence_fields,
+            pitch_hz=obs.pitch_hz,
+            onset=bool(obs.onset),
+            onset_strength=float(obs.onset_strength),
+            rms=float(obs.rms),
+        )
+        evidence=PerformanceEvidence(
+            source_id=source_id,
+            timestamp_s=max(0.0,ts),
+            raw=raw,
+            posterior=identity_context_correction(raw),
+            provenance=(
+                "browser_user_authorized_capture",
+                "realtime_audio_feature_extractor",
+            ),
+        )
+        moment=musical_moment_from_evidence(evidence)
         row={
             "source_id":source_id,
             "sample_rate":sample_rate,
             "sample_count":int(samples.size),
             "observation":asdict(obs),
+            "performance_evidence":asdict(evidence),
+            "musical_moment":asdict(moment),
             "provenance":[
                 "browser_user_authorized_capture",
                 "realtime_audio_feature_extractor",
-                "raw_observation",
+                "shared_audio_intelligence",
             ],
         }
         self._append_jsonl(source_id,row)
