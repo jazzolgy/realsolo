@@ -98,3 +98,42 @@ __all__ += [
     "resolve_score_context",
     "structured_evidence_from_locator",
 ]
+
+
+from .canonical_coordinate import (
+    CanonicalMusicalCoordinate,
+    AudioCoordinateAlignment,
+)
+from .realchord import (
+    RealChordChordEvent,
+    RealChordMeasure,
+    RealChordSong,
+    expected_harmony_frame,
+)
+from .realchord_ingestion import (
+    RealChordRawSong,
+    parse_realchord_playlist_html,
+)
+from .realchord_registry import (
+    REALCHORD_1350_DATASET_ID,
+    REALCHORD_1350_EXPECTED_COUNT,
+    REALCHORD_1350_SOURCE_FILENAME,
+    realchord_1350_corpus_item,
+    register_realchord_1350,
+)
+
+__all__ += [
+    "CanonicalMusicalCoordinate",
+    "AudioCoordinateAlignment",
+    "RealChordChordEvent",
+    "RealChordMeasure",
+    "RealChordSong",
+    "expected_harmony_frame",
+    "RealChordRawSong",
+    "parse_realchord_playlist_html",
+    "REALCHORD_1350_DATASET_ID",
+    "REALCHORD_1350_EXPECTED_COUNT",
+    "REALCHORD_1350_SOURCE_FILENAME",
+    "realchord_1350_corpus_item",
+    "register_realchord_1350",
+]
