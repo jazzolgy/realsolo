@@ -1,0 +1,16 @@
+{
+  "title": "Golden 8-Bar Phrase",
+  "meter": "4/4",
+  "measures": 8,
+  "part_id": "fl",
+  "note_count": 12,
+  "rest_count_min": 8,
+  "wedge_types": [
+    "crescendo",
+    "stop",
+    "diminuendo",
+    "stop"
+  ],
+  "key_fifths": 0,
+  "score_end_beat": 32
+}
