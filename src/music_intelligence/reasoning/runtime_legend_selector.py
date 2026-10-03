@@ -137,3 +137,43 @@ def legend_blend_for(
     blend=choice.profile_view.blend(choice.weight)
     blend.validate()
     return blend
+
+
+
+def select_showcase_legends(
+    *,
+    style_tags: tuple[str,...],
+) -> tuple[LegendRuntimeChoice,...]:
+    """Activate every currently *usable* promoted Legend for listening showcase.
+
+    This mode is intentionally stronger than the conservative production
+    selector. It is for audible evaluation of the research already encoded in
+    LegendProfileView objects. Empty/evidence-only profiles remain excluded
+    rather than being fabricated into runtime tendencies.
+    """
+
+    out: list[LegendRuntimeChoice] = []
+    if _usable(PARKER_PROFILE_VIEW):
+        out.append(LegendRuntimeChoice(
+            player_id="sax",
+            legend_id="charlie_parker",
+            profile_view=PARKER_PROFILE_VIEW,
+            vocabulary_provider=PARKER_VOCABULARY_INDEX,
+            weight=1.0,
+            reason="legend showcase: full promoted Parker profile stack",
+        ))
+    if _usable(SCOTT_LAFARO_PROFILE_VIEW):
+        out.append(LegendRuntimeChoice(
+            player_id="bass",
+            legend_id="scott_lafaro",
+            profile_view=SCOTT_LAFARO_PROFILE_VIEW,
+            vocabulary_provider=SCOTT_LAFARO_VOCABULARY_INDEX,
+            weight=1.0,
+            reason="legend showcase: full promoted LaFaro profile stack",
+        ))
+
+    # BILL_EVANS_PROFILE_VIEW is currently an evidence-gated empty scaffold.
+    # It is deliberately omitted until tendencies are promoted.
+    for item in out:
+        item.validate()
+    return tuple(out)
