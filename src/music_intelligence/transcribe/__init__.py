@@ -62,3 +62,18 @@ __all__ = [
     "notation_intent_from_payload",
     "notation_intent_to_payload",
 ]
+
+
+from .product import (
+    EventTranscriptionResult,
+    PerformanceEvidenceSource,
+    TranscriptionNotationConfig,
+    TranscriptionNotationEngine,
+)
+
+__all__ += [
+    "EventTranscriptionResult",
+    "PerformanceEvidenceSource",
+    "TranscriptionNotationConfig",
+    "TranscriptionNotationEngine",
+]
