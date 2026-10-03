@@ -65,8 +65,13 @@ class PartTranscriptionResult:
     part: ScorePart
     projections: tuple[EventProjectionResult, ...]
     piano_gestures: tuple[PianoGestureCandidate, ...] = ()
-    dynamic_trajectory: DynamicTrajectoryCandidate | None = None
+    dynamic_trajectories: tuple[DynamicTrajectoryCandidate, ...] = ()
     spanners: tuple[ScoreSpanner, ...] = ()
+
+    @property
+    def dynamic_trajectory(self) -> DynamicTrajectoryCandidate | None:
+        """Backward-compatible access when exactly one trajectory is inferred."""
+        return self.dynamic_trajectories[0] if len(self.dynamic_trajectories) == 1 else None
 
 
 @dataclass(frozen=True)
@@ -177,32 +182,78 @@ def _apply_piano_gestures(
     return current, tuple(selected)
 
 
+def _dynamic_segments(
+    events: tuple[CommittedPerformanceEvent, ...],
+    *,
+    max_transport_gap_beats: float = 4.0,
+    max_seconds_gap: float = 3.0,
+) -> tuple[tuple[CommittedPerformanceEvent, ...], ...]:
+    """Split dynamic evidence at phrase changes or clearly discontinuous gaps."""
+
+    ordered = tuple(
+        event for event in sorted(events, key=_event_sort_key)
+        if event.dynamic is not None
+    )
+    if not ordered:
+        return ()
+
+    segments: list[list[CommittedPerformanceEvent]] = [[ordered[0]]]
+    for event in ordered[1:]:
+        prior = segments[-1][-1]
+        phrase_break = (
+            prior.phrase_context_id is not None
+            and event.phrase_context_id is not None
+            and prior.phrase_context_id != event.phrase_context_id
+        )
+        beat_break = (
+            prior.time.transport_beat is not None
+            and event.time.transport_beat is not None
+            and event.time.transport_beat - prior.time.transport_beat
+            > max_transport_gap_beats
+        )
+        seconds_break = (
+            prior.time.transport_beat is None
+            and event.time.transport_beat is None
+            and event.time.onset_seconds - prior.time.onset_seconds
+            > max_seconds_gap
+        )
+        if phrase_break or beat_break or seconds_break:
+            segments.append([event])
+        else:
+            segments[-1].append(event)
+
+    return tuple(tuple(segment) for segment in segments)
+
+
 def _infer_part_dynamic(
     request: PartTranscriptionRequest,
     score_events: tuple[ScoreEvent, ...],
-) -> tuple[DynamicTrajectoryCandidate | None, tuple[ScoreSpanner, ...]]:
+) -> tuple[tuple[DynamicTrajectoryCandidate, ...], tuple[ScoreSpanner, ...]]:
     if not request.infer_dynamic_hairpins:
-        return None, ()
-    dynamic_events = tuple(
-        event for event in sorted(request.events, key=_event_sort_key)
-        if event.dynamic is not None
-    )
-    if len(dynamic_events) < 3:
-        return None, ()
+        return (), ()
 
-    candidate = infer_dynamic_trajectory(dynamic_events)
-    if candidate.kind not in {
-        DynamicTrajectoryKind.CRESCENDO,
-        DynamicTrajectoryKind.DIMINUENDO,
-    }:
-        return candidate, ()
+    candidates: list[DynamicTrajectoryCandidate] = []
+    spanners: list[ScoreSpanner] = []
+    for index, segment in enumerate(_dynamic_segments(request.events), start=1):
+        if len(segment) < 3:
+            continue
+        candidate = infer_dynamic_trajectory(segment)
+        candidates.append(candidate)
+        if candidate.kind not in {
+            DynamicTrajectoryKind.CRESCENDO,
+            DynamicTrajectoryKind.DIMINUENDO,
+        }:
+            continue
+        spanner = score_spanner_from_dynamic_trajectory(
+            candidate,
+            part_id=request.part_id,
+            score_events=score_events,
+            spanner_id=f"dynamic:{request.part_id}:{index}:{candidate.kind.value}",
+        )
+        if spanner is not None:
+            spanners.append(spanner)
 
-    spanner = score_spanner_from_dynamic_trajectory(
-        candidate,
-        part_id=request.part_id,
-        score_events=score_events,
-    )
-    return candidate, (spanner,) if spanner is not None else ()
+    return tuple(candidates), tuple(spanners)
 
 
 def transcribe_part(
@@ -253,7 +304,7 @@ def transcribe_part(
         request,
         score_events,
     )
-    dynamic_trajectory, spanners = _infer_part_dynamic(
+    dynamic_trajectories, spanners = _infer_part_dynamic(
         request,
         score_events,
     )
@@ -273,7 +324,7 @@ def transcribe_part(
         part=part,
         projections=projections,
         piano_gestures=selected_piano_gestures,
-        dynamic_trajectory=dynamic_trajectory,
+        dynamic_trajectories=dynamic_trajectories,
         spanners=spanners,
     )
 
