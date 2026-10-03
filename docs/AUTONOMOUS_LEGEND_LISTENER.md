@@ -112,3 +112,42 @@ v0.1 only defines the queue/policy contract. Follow-up work should connect it to
 - streaming PCM endpoint,
 - Shared Audio Intelligence evidence ingestion,
 - resumable research manifest.
+
+
+## Open-set instrument discovery
+
+The research listener must not assume that the permanent RealSolo instrument set is
+piano/bass/drums/saxophone. Instrument recognition is open-set.
+
+When an unsupported instrument is heard, keep its detector distribution and role
+evidence rather than forcing it into the nearest supported class. Repeated evidence
+across multiple sources can promote it to an `InstrumentProfileCandidate`.
+
+Promotion criteria are conservative by default:
+
+- evidence from multiple distinct sources,
+- repeated occurrences,
+- enough accumulated audible duration,
+- sufficiently high mean confidence,
+- retained role probabilities and family evidence.
+
+Example:
+
+```text
+unknown / trombone candidate
+    -> source A evidence
+    -> source B evidence
+    -> source C evidence
+    -> promotion threshold met
+    -> InstrumentProfileCandidate(trombone, brass)
+    -> research profile begins accumulating
+```
+
+Promotion into the research taxonomy is **not** the same as declaring full runtime
+playback support. The system may understand and study a trombone before it has a
+trombone-specific generator, feasibility model, articulation grammar, samples, or
+renderer. These capability layers should be added progressively from evidence rather
+than fabricated from another instrument.
+
+User direction can override research priority, but the default discovery policy is
+autonomous and gap-driven.
