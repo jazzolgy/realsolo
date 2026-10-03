@@ -16,6 +16,13 @@ from .contracts import (
     UnpitchedDetector,
 )
 from .hpss_separator import LibrosaHPSSSeparator
+from .learned_instrument import (
+    DetectorFeatureEncoder,
+    InstrumentFeatureVector,
+    InstrumentFeatureEncoder,
+    InstrumentProbabilityBackend,
+    LearnedInstrumentClassifier,
+)
 from .librosa_baseline import (
     LibrosaOnsetDetector,
     LibrosaPercussiveTokenDetector,
@@ -25,13 +32,18 @@ from .librosa_baseline import (
 )
 from .separation import SeparatedSource, SourceSeparator
 from .stem_prior import StemMetadataInstrumentDetector
+from .torchscript_instrument import TorchScriptInstrumentBackend
 
 __all__ = [
     "AcousticInstrumentPriorDetector",
     "AudioObservationDetector",
     "CompositeObservationDetector",
     "DemucsCLISeparator",
+    "DetectorFeatureEncoder",
     "InstrumentDetection",
+    "InstrumentFeatureEncoder",
+    "InstrumentFeatureVector",
+    "InstrumentProbabilityBackend",
     "InstrumentDetector",
     "LibrosaHPSSSeparator",
     "LibrosaOnsetDetector",
@@ -39,6 +51,7 @@ __all__ = [
     "LibrosaSourceLoader",
     "LibrosaSpectralPeakPitchDetector",
     "LibrosaTimbreDetector",
+    "LearnedInstrumentClassifier",
     "OnsetDetection",
     "OnsetDetector",
     "PitchDetection",
@@ -47,6 +60,7 @@ __all__ = [
     "SourceSeparator",
     "StemMetadataInstrumentDetector",
     "TimbreDetection",
+    "TorchScriptInstrumentBackend",
     "TimbreDetector",
     "UnpitchedDetection",
     "UnpitchedDetector",
