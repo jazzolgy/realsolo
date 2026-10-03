@@ -3,6 +3,7 @@ from music_intelligence.transcribe import (
     CommittedPerformanceEvent,
     PerformedPitch,
     PerformanceTimeSpan,
+    PerceptualDynamics,
 )
 from music_intelligence.transcribe.allocation import StaffProfile
 from music_intelligence.transcribe.musicxml import score_to_musicxml
@@ -69,3 +70,9 @@ def test_committed_sax_event_reaches_readable_musicxml_without_mutating_performa
     assert performed.pitch.continuous_pitch_ref == "curve:sax:1"
     assert len(projection.rhythm_candidates) > 1
     assert len(projection.spelling_candidates) > 1
+
+
+def test_score_projection_prefers_perceptual_dynamic():
+    performed = CommittedPerformanceEvent(event_id="piano:dyn:1", player_id="piano", instrument="piano", commitment=CommitmentState.PLAYED, time=PerformanceTimeSpan(onset_seconds=1.0, offset_seconds=1.5, transport_beat=0.0, transport_offset_beat=1.0), pitch=PerformedPitch(nominal_midi=60), dynamic=.92, dynamics=PerceptualDynamics(dynamic_absolute_ordinal=.24, dynamic_confidence=.88, dynamic_evidence=("calibrated",)))
+    projection = project_pitched_event(performed, part_id="piano", staffs=(StaffProfile("piano:upper", "piano"),))
+    assert projection.score_events[0].dynamic_marking == "p"
