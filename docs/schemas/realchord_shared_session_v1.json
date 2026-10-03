@@ -1,0 +1,27 @@
+{
+  "schema": "RealChordSharedSessionState",
+  "schema_version": "1.0",
+  "required": [
+    "realchord_id",
+    "playback_measure",
+    "source_measure",
+    "beat",
+    "section",
+    "chorus_index",
+    "transpose",
+    "tempo",
+    "transport"
+  ],
+  "fields": {
+    "realchord_id": "stable string id",
+    "playback_measure": "integer >= 1",
+    "source_measure": "integer >= 1",
+    "beat": "number >= 0",
+    "section": "string",
+    "chorus_index": "integer >= 1",
+    "transpose": "integer semitones",
+    "tempo": "number > 0",
+    "style_override": "string",
+    "transport": "stopped|count_in|playing|ending"
+  }
+}
