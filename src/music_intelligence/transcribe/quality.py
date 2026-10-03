@@ -111,19 +111,33 @@ def audit_score_for_performance(score: ReadableScore) -> ScoreQualityReport:
                         )
                     )
 
-        by_slot: dict[tuple[str, Fraction], set[str]] = {}
-        for event in part.events:
-            by_slot.setdefault((event.staff_id, event.span.onset), set()).add(
-                event.voice_id
-            )
-        for (staff_id, onset), voices in by_slot.items():
-            if len(voices) > 4:
+        boundaries = sorted({
+            point
+            for event in part.events
+            if event.written_pitch is not None or event.unpitched is not None
+            for point in (event.span.onset, event.span.offset)
+        })
+        warned_slots: set[tuple[str, Fraction]] = set()
+        for onset in boundaries[:-1]:
+            by_staff: dict[str, set[str]] = {}
+            for event in part.events:
+                if event.kind.value != "note" or event.grace_kind is not None:
+                    continue
+                if event.span.onset <= onset < event.span.offset:
+                    by_staff.setdefault(event.staff_id, set()).add(event.voice_id)
+            for staff_id, voices in by_staff.items():
+                if len(voices) <= 4:
+                    continue
+                slot = (staff_id, onset)
+                if slot in warned_slots:
+                    continue
+                warned_slots.add(slot)
                 issues.append(
                     ScoreQualityIssue(
                         QualityIssueSeverity.WARNING,
                         "dense-voice-stack",
                         (
-                            f"{len(voices)} simultaneous voices on {staff_id} at "
+                            f"{len(voices)} overlapping voices on {staff_id} at "
                             f"score beat {onset}; manual voice/layout review recommended."
                         ),
                         part_id=part.part_id,
