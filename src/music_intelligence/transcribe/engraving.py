@@ -160,11 +160,12 @@ class EngravingPlan:
 
 def _voice_stem_order_key(voice_id: str) -> tuple[int, str]:
     label = voice_id.lower()
+    role = label.rsplit(":", 1)[-1]
     upper_hints = ("voice1", "upper", "top", "soprano", "melody", "lead")
     lower_hints = ("voice2", "lower", "bottom", "bass")
-    if any(hint in label for hint in upper_hints):
+    if any(hint in role for hint in upper_hints):
         return (0, label)
-    if any(hint in label for hint in lower_hints):
+    if any(hint in role for hint in lower_hints):
         return (2, label)
     return (1, label)
 
