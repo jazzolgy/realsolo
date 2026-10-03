@@ -17,6 +17,9 @@ from enum import Enum
 from typing import Mapping
 
 
+PERFORMANCE_EVIDENCE_CONTRACT_VERSION = "performance-evidence.v1"
+
+
 class PerformanceCommitment(str, Enum):
     COMMITTED = "committed"
     PLAYED = "played"
