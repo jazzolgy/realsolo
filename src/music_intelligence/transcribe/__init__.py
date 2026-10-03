@@ -138,3 +138,24 @@ __all__ += [
     "audit_score_for_performance",
     "score_to_musicxml",
 ]
+
+
+from .evidence_diagnostics import (
+    CorrectionRiskLevel,
+    CorrectionRiskPolicy,
+    DistributionShift,
+    EventCorrectionReport,
+    analyze_distribution_shift,
+    analyze_event_correction,
+    total_variation_distance,
+)
+
+__all__ += [
+    "CorrectionRiskLevel",
+    "CorrectionRiskPolicy",
+    "DistributionShift",
+    "EventCorrectionReport",
+    "analyze_distribution_shift",
+    "analyze_event_correction",
+    "total_variation_distance",
+]
