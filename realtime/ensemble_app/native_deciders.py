@@ -16,6 +16,18 @@ from players.drums import (
     DrummerPerformanceMemory,
     DrummerRuntimeContext,
     DrummerSoftPlan,
+    BebopPhraseMemory,
+    SoloistEnergyProjection,
+    BebopRuntimeProjection,
+    perform_one_bebop_gesture,
+    RideContinuityMemory,
+    RideSurfaceAction,
+    RidePhase,
+    classify_ride_phase,
+    update_ride_memory,
+    SnarePhraseMemory,
+    CompPhraseAction,
+    update_snare_phrase_memory,
     DrumVoice,
     TimeFeel,
     perform_one_gesture,
@@ -145,6 +157,9 @@ class BassNativeDecider:
 class DrumsNativeDecider:
     memory: DrummerPerformanceMemory = field(default_factory=DrummerPerformanceMemory)
     feel: TimeFeel = TimeFeel.SWING
+    bebop_phrase_memory: BebopPhraseMemory = field(default_factory=BebopPhraseMemory)
+    ride_memory: RideContinuityMemory = field(default_factory=RideContinuityMemory)
+    snare_memory: SnarePhraseMemory = field(default_factory=SnarePhraseMemory)
 
     def __call__(self, context: Mapping[str, object]) -> NativeImmediateResult | None:
         snapshot = context["ensemble_snapshot"]
@@ -179,7 +194,61 @@ class DrumsNativeDecider:
             harmony=context.get("harmonic_frame"),
             groove=snapshot.groove,
         )
-        chosen = perform_one_gesture(plan, dctx, self.memory)
+        style_tags={str(x).lower() for x in context.get("style_tags", ())}
+        if "bebop" in style_tags:
+            sax_intent=snapshot.intent_for("sax")
+            soloist=SoloistEnergyProjection(
+                activity=(sax_intent.density if sax_intent is not None else .45),
+                current_energy=(sax_intent.energy if sax_intent is not None else snapshot.ensemble_energy),
+                energy_slope=0.0,
+                phrase_terminal_probability=(
+                    sax_intent.phrase_maturity if sax_intent is not None else phrase_position
+                ),
+                climax_probability=max(
+                    0.0,
+                    min(1.0,(sax_intent.tension if sax_intent is not None else snapshot.ensemble_tension)),
+                ),
+            )
+            projection=BebopRuntimeProjection(
+                soloist=soloist,
+                phrase_memory=self.bebop_phrase_memory,
+                bass=BebopRuntimeProjection.from_ensemble_state(
+                    soloist=soloist,
+                    phrase_memory=self.bebop_phrase_memory,
+                    ensemble_state=snapshot,
+                ).bass,
+                ride_memory=self.ride_memory,
+                snare_memory=self.snare_memory,
+            )
+            chosen=perform_one_bebop_gesture(plan,dctx,projection,self.memory)
+
+            phase=classify_ride_phase(dctx)
+            for action in RideSurfaceAction:
+                if action.value in chosen.gesture.tags:
+                    self.ride_memory=update_ride_memory(self.ride_memory,action,phase)
+                    break
+            normalized=(beat%snapshot.transport.meter_numerator)/snapshot.transport.meter_numerator
+            for action in CompPhraseAction:
+                if action.value in chosen.gesture.tags:
+                    self.snare_memory=update_snare_phrase_memory(
+                        self.snare_memory,
+                        action,
+                        phase=normalized,
+                        bar_advance=.125,
+                    )
+                    break
+            active=1.0 if chosen.gesture.hits else 0.0
+            self.bebop_phrase_memory=BebopPhraseMemory(
+                recent_comp_density=max(0.0,min(1.0,.78*self.bebop_phrase_memory.recent_comp_density+.22*active)),
+                bars_since_last_statement=(
+                    0.0 if active else self.bebop_phrase_memory.bars_since_last_statement+.125
+                ),
+                recent_response_count=self.bebop_phrase_memory.recent_response_count+(1 if active else 0),
+                recent_non_response_count=self.bebop_phrase_memory.recent_non_response_count+(0 if active else 1),
+                last_comp_phase=(normalized if active else self.bebop_phrase_memory.last_comp_phase),
+            )
+        else:
+            chosen = perform_one_gesture(plan, dctx, self.memory)
         hits = tuple(
             RenderVoice(
                 _DRUM_MIDI[h.voice],
@@ -208,7 +277,7 @@ class DrumsNativeDecider:
             leadership=.12 if chosen.gesture.role.value in {"setup", "accent"} else .03,
             phrase_maturity=0.0,
             tags=frozenset(set(chosen.gesture.tags) | {chosen.gesture.role.value}),
-            provenance=("drummer_online_policy",),
+            provenance=(("drummer_bebop_runtime" if "bebop" in style_tags else "drummer_online_policy"),),
         )
 
 
