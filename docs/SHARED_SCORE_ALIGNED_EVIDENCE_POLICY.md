@@ -150,3 +150,61 @@ beat-aligned score evidence
 > section-aligned evidence
 > form-relative evidence
 > unaligned timestamp navigation.
+
+
+## Canonical coordinate contract
+
+Project-wide convention:
+
+- absolute time is provenance and source lookup
+- musical structure is the canonical learning/comparison/inference coordinate
+
+Preferred canonical fields, when known:
+
+- form / core-form identity
+- section
+- chorus / recurrence index
+- section_bar
+- form_bar
+- beat
+- subdivision
+- phrase_position
+- harmonic_position
+- cadence_position
+- role
+- motif_state
+- ensemble_state
+
+Example:
+
+form = AABA
+section = B
+chorus = 2
+section_bar = 5
+form_bar = 21
+beat = 3
+subdivision = 0.666...
+
+Audio provenance remains alongside it:
+
+onset_sec = 83.417
+offset_sec = 83.962
+
+Rubato, fermata, free-time, pickup, meter/feel changes, interludes, vamps, tags,
+codas and special arrangements are not discarded. Their absolute time remains
+preserved while musical position is represented through arrangement_segment,
+performance_phase, navigation_state and verified form coordinates where
+available.
+
+Final-learning rule:
+
+audio timestamp
+→ beat grid
+→ bar
+→ section
+→ chorus
+→ form position
+→ musical/ensemble interpretation
+
+Temporary coordinates such as bar estimates are navigation evidence until
+promoted through this chain.
