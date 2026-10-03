@@ -71,8 +71,7 @@ def test_quartet_second_tick_lets_accompanists_see_prior_sax_intent_only():
         tempo_bpm=172.0,
         section="A",
     )
-    assert second.snapshot_generation == quartet.state.generation - (
-        second.state.generation - second.snapshot_generation
-    ) or second.snapshot_generation >= first.state.generation
+    assert second.snapshot_generation >= first.state.generation
+    assert {d.player_id for d in second.decisions} == {"piano","bass","drums","sax"}
     assert second.state.intent_for("piano") is not None
     assert second.state.intent_for("drums") is not None
