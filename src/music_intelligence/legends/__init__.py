@@ -23,4 +23,18 @@ __all__ = [
     "VocabularyDimension",
     "ContextualLegendMixture",
     "LegendViewWeight",
+    "VocabularyPromotionDecision",
+    "VocabularyPromotionEvidence",
+    "VocabularyPromotionStatus",
+    "active_runtime_items",
+    "assess_vocabulary_promotion",
 ]
+
+
+from .promotion import (
+    VocabularyPromotionDecision,
+    VocabularyPromotionEvidence,
+    VocabularyPromotionStatus,
+    active_runtime_items,
+    assess_vocabulary_promotion,
+)
