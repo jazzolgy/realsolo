@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "charlie_parker",
+  "source_id": "uploaded_greatest_hits_compilation",
+  "structural_status": "navigation_only_pending_track_and_form_identity",
+  "reason": "current annotation file contains compilation time windows but does not establish tune/form identity for each segment",
+  "preserved_evidence": [
+    "clear_silence_boundaries_seconds",
+    "early_segment_features",
+    "representative_windows",
+    "phrase_space_morphology",
+    "turn_taking_fixed_window_probe",
+    "whole_album_turn_taking_scan"
+  ],
+  "promotion_rule": "no Parker or accompaniment tendency may be learned from absolute-window position until segment -> tune -> form mapping is verified",
+  "provenance": [
+    "main:research/legends/charlie_parker/observations/audio/greatest_hits_annotations_v0_1.json"
+  ]
+}
