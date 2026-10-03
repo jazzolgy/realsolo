@@ -72,6 +72,7 @@ def project_pitched_event(
     meter_numerator: int = 4,
     meter_denominator: int = 4,
     rhythm_context: RhythmNotationContext = RhythmNotationContext(),
+    previous_staff_id: str | None = None,
 ) -> EventProjectionResult:
     """Project one committed pitched event into score-domain events.
 
@@ -121,6 +122,7 @@ def project_pitched_event(
             nominal_midi=event.pitch.nominal_midi,
             voice_role=event.voice_role,
             layer_role=event.layer_role,
+            previous_staff_id=previous_staff_id,
         ),
         staffs,
     )
