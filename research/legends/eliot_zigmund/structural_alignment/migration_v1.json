@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "eliot_zigmund",
+  "source_id": "bill_evans_without_a_song_1977",
+  "song_id": "without_a_song",
+  "audio_provenance": {
+    "track_start_abs_s": 5368,
+    "analysis_window_track_s": [
+      402,
+      427
+    ],
+    "analysis_window_abs_s": [
+      5770,
+      5795
+    ],
+    "documented_drum_solo_entry_track_s": 412
+  },
+  "musical_coordinate": {
+    "performance_phase": "drum_foreground",
+    "role": "foreground_solo",
+    "form_length_bars": null,
+    "form_bar": null,
+    "chorus_index": null,
+    "section": "",
+    "structural_status": "performance_phase_aligned_form_bar_pending"
+  },
+  "evidence_status": "provisional_research_only",
+  "provenance": [
+    "research/legends/eliot_zigmund/observations/without_a_song_solo_window.json",
+    "research/legends/eliot_zigmund/analyses/vocabulary_correction_v2.md"
+  ]
+}
