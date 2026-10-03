@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "scott_lafaro",
+  "performer_links": [
+    "bill_evans",
+    "scott_lafaro",
+    "paul_motian"
+  ],
+  "track_id": "BE-012",
+  "song_id": "how_deep_is_the_ocean",
+  "source_id": "be_playlist_project_audio",
+  "audio_provenance": {
+    "track_absolute_seconds": [
+      3809,
+      4023
+    ],
+    "duration_s": 214
+  },
+  "score_evidence": {
+    "source": "RealBk3.pdf",
+    "page": 115,
+    "status": "indexed_not_yet_visual_verified"
+  },
+  "signal_probe": {
+    "representation": "full-mix chroma CQT",
+    "strongest_cycle_period_s": 31.95,
+    "mean_cosine_similarity_32bar_candidate": 0.6101,
+    "implied_bar_duration_s_if_32_bar_form": 0.9984,
+    "implied_quarter_bpm_if_4_4": 240.38,
+    "candidate_bar_grid_phase_s": 0.729,
+    "candidate_32bar_bar_grid_similarity": 0.7584,
+    "legacy_track_tempo_proxy_bpm": 117.454
+  },
+  "interpretation": {
+    "form": "32-bar ABAC",
+    "core_form_recurrence_status": "strong_candidate",
+    "exact_form_rotation_status": "unresolved",
+    "exact_form_bar_status": "not_canonical"
+  },
+  "promotion_gate": [
+    "visual-verify score anchor",
+    "resolve harmonic rotation",
+    "verify downbeat locally",
+    "identify chorus/foreground role"
+  ],
+  "provenance": [
+    "user_provided_bill_evans_compilation",
+    "existing_lafaro_verified_track_registry",
+    "full_mix_chroma_cycle_probe"
+  ]
+}
