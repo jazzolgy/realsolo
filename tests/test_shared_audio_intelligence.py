@@ -1,3 +1,4 @@
+from music_intelligence.learning.form_position import MetricFormPosition
 from music_intelligence.learning.shared_audio_intelligence import (
     ContextCorrection,
     DetectorEvidence,
@@ -65,7 +66,13 @@ def test_structural_event_preserves_probability_fields():
         confidence_fields={"instrument":.82,"role":.9,"event":.84},
         reasons=("phrase_role_context",),
     )
-    ev=PerformanceEvidence("youtube:x",1.0,raw,posterior)
+    ev=PerformanceEvidence(
+        "youtube:x",1.0,raw,posterior,
+        metric_form_position=MetricFormPosition(
+            measure_index=0,beat_in_measure=2.0,meter_numerator=4,meter_denominator=4,
+            absolute_beat=2.0,confidence=.9,
+        ),
+    )
     structural=structural_event_from_evidence(
         ev,event_id="e1",onset_beats=2.0,duration_beats=.5
     )
@@ -74,3 +81,18 @@ def test_structural_event_preserves_probability_fields():
     assert structural.role == "solo"
     assert structural.confidence == .84
     assert structural.instrument_probabilities["trumpet"] == .82
+
+
+def test_structural_promotion_requires_measure_and_beat_not_only_absolute_beats():
+    raw=DetectorEvidence(pitch_hz=440.0,onset=True,confidence_fields={"pitch":.9})
+    ev=PerformanceEvidence(
+        "youtube:x",1.0,raw,identity_context_correction(raw),
+        metric_form_position=MetricFormPosition(
+            absolute_beat=2.0,
+            confidence=.4,
+            provenance=("unresolved_metric",),
+        ),
+    )
+    assert structural_event_from_evidence(
+        ev,event_id="e2",onset_beats=2.0,duration_beats=.5
+    ) is None
