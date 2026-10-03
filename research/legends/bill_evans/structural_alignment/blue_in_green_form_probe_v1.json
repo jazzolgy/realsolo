@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "bill_evans",
+  "track_id": "BE-004",
+  "song_id": "blue_in_green",
+  "source_id": "be_playlist_project_audio",
+  "audio_provenance": {
+    "track_absolute_seconds": [
+      1069,
+      1393
+    ],
+    "duration_s": 324,
+    "analysis_sample_rate_hz": 11025
+  },
+  "score_evidence": {
+    "source": "Realbk1.pdf",
+    "page": 53,
+    "visual_status": "verified_in_project",
+    "core_form_bars": 10,
+    "separate_ending_bars": 3,
+    "note": "The main lead-sheet body contains 10 measures before a separately labeled ENDING line."
+  },
+  "expected_harmony_sources": [
+    "chart.standard100.blue_in_green",
+    "scorebook.real.1:p53"
+  ],
+  "signal_probe": {
+    "representation": "full-mix chroma CQT",
+    "searched_cycle_period_seconds": [
+      30,
+      50
+    ],
+    "strongest_cycle_period_s": 36.6,
+    "mean_cosine_similarity_at_strongest_period": 0.7104,
+    "implied_bar_duration_s_if_10_bar_form": 3.66,
+    "implied_quarter_bpm_if_4_4": 65.57,
+    "candidate_bar_grid_phase_s": 1.875,
+    "candidate_bar_grid_10bar_lag_similarity": 0.9234
+  },
+  "interpretation": {
+    "core_form_recurrence_status": "strong_candidate",
+    "bar_grid_status": "candidate",
+    "exact_form_rotation_status": "unresolved",
+    "exact_form_bar_status": "not_canonical",
+    "reason": "Cyclic recurrence and bar grid are strong, but the 10 possible form rotations require chord/harmony alignment before bar 1 can be named."
+  },
+  "promotion_gate": [
+    "resolve chart/harmony rotation against audio",
+    "verify local downbeat phase around at least two cycles",
+    "identify transition into separate ending segment",
+    "only then attach canonical form_bar to events"
+  ],
+  "provenance": [
+    "user_provided_bill_evans_compilation",
+    "visual_score_review:Realbk1:p53",
+    "shared_standard100:blue_in_green",
+    "full_mix_chroma_cycle_probe"
+  ]
+}
