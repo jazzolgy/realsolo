@@ -1,0 +1,227 @@
+{
+  "source_id": "cp_charlie_parker_licks_pdf",
+  "recording_id": "",
+  "items": [
+    {
+      "vocabulary_id": "parker.source.licksheet.ii_v_i.honeysuckle",
+      "tune_id": "",
+      "bar": "page1:II-V-I-1",
+      "literal_representation": "",
+      "transposition_normalized_representation": "ii7-V7-Imaj7 | honeysuckle-like opening motif | source-note-payload-pending",
+      "harmony_context": "Bbm7 | Eb7 | Abmaj7",
+      "harmonic_function": "ii-V-I major resolution",
+      "phrase_position": "cadential",
+      "rhythm": "source score verified; event-level rhythm transcription pending",
+      "contour": "source score verified; contour extraction pending",
+      "interval_pattern": "Honeysuckle Rose motif family in first bar",
+      "source_instrument": "alto_saxophone",
+      "dimensions": [
+        "pitch_interval",
+        "rhythm",
+        "contour",
+        "phrase_shape",
+        "target_behavior"
+      ],
+      "transferable_to": [
+        "alto_saxophone",
+        "tenor_sax",
+        "sax",
+        "trumpet",
+        "piano",
+        "guitar"
+      ],
+      "domains": [
+        "linear_connection",
+        "harmony_target_selection",
+        "motif_development"
+      ],
+      "context_tags": [
+        "bebop",
+        "charlie_parker",
+        "ii_v_i",
+        "major_cadence",
+        "honeysuckle_motif"
+      ],
+      "candidate_uses": [
+        "adapted_lick",
+        "fragment_recall",
+        "abstracted_pattern",
+        "hybrid_composition"
+      ],
+      "signature_status": "recurring",
+      "signature_evidence_count": 2,
+      "confidence": 0.92,
+      "provenance": [
+        "charlie-parker-licks.pdf",
+        "page:1",
+        "figure:II-V-I Licks 1",
+        "source_image_verified",
+        "note_payload_pending"
+      ]
+    },
+    {
+      "vocabulary_id": "parker.source.licksheet.ii_v_i.dm_shape",
+      "bar": "page1:II-V-I-2",
+      "transposition_normalized_representation": "ii7-V7-Imaj7 | ii-minor chord-shape opening | source-note-payload-pending",
+      "harmony_context": "Dm7 | G7 | Cmaj7",
+      "harmonic_function": "ii-V-I major resolution",
+      "phrase_position": "cadential",
+      "rhythm": "source score verified; event-level rhythm transcription pending",
+      "contour": "source score verified; contour extraction pending",
+      "interval_pattern": "opens from Dm chord-shape material",
+      "source_instrument": "alto_saxophone",
+      "dimensions": [
+        "pitch_interval",
+        "rhythm",
+        "contour",
+        "phrase_shape",
+        "target_behavior"
+      ],
+      "transferable_to": [
+        "alto_saxophone",
+        "tenor_sax",
+        "sax",
+        "trumpet",
+        "piano",
+        "guitar"
+      ],
+      "domains": [
+        "linear_connection",
+        "harmony_target_selection"
+      ],
+      "context_tags": [
+        "bebop",
+        "charlie_parker",
+        "ii_v_i",
+        "major_cadence",
+        "minor_chord_shape"
+      ],
+      "candidate_uses": [
+        "adapted_lick",
+        "fragment_recall",
+        "abstracted_pattern",
+        "hybrid_composition"
+      ],
+      "signature_status": "recurring",
+      "signature_evidence_count": 2,
+      "confidence": 0.92,
+      "provenance": [
+        "charlie-parker-licks.pdf",
+        "page:1",
+        "figure:II-V-I Licks 2",
+        "source_image_verified",
+        "note_payload_pending"
+      ]
+    },
+    {
+      "vocabulary_id": "parker.source.licksheet.major.cmaj_shape",
+      "bar": "page1:Major-Licks-1",
+      "transposition_normalized_representation": "Imaj7 major-line | second bar around maj7 chord shape | source-note-payload-pending",
+      "harmony_context": "Cmaj7",
+      "harmonic_function": "major tonic elaboration",
+      "phrase_position": "internal",
+      "rhythm": "source score verified; event-level rhythm transcription pending",
+      "contour": "source score verified; contour extraction pending",
+      "interval_pattern": "second-bar Cmaj7 chord-shape material",
+      "source_instrument": "alto_saxophone",
+      "dimensions": [
+        "pitch_interval",
+        "rhythm",
+        "contour",
+        "phrase_shape"
+      ],
+      "transferable_to": [
+        "alto_saxophone",
+        "tenor_sax",
+        "sax",
+        "trumpet",
+        "piano",
+        "guitar"
+      ],
+      "domains": [
+        "linear_connection",
+        "motif_development"
+      ],
+      "context_tags": [
+        "bebop",
+        "charlie_parker",
+        "major_tonic",
+        "maj7_shape"
+      ],
+      "candidate_uses": [
+        "adapted_lick",
+        "fragment_recall",
+        "abstracted_pattern",
+        "hybrid_composition"
+      ],
+      "signature_status": "recurring",
+      "signature_evidence_count": 2,
+      "confidence": 0.9,
+      "provenance": [
+        "charlie-parker-licks.pdf",
+        "page:1",
+        "figure:Major Licks 1",
+        "source_image_verified",
+        "note_payload_pending"
+      ]
+    },
+    {
+      "vocabulary_id": "parker.source.licksheet.anthropology_opening",
+      "tune_id": "Anthropology",
+      "bar": "page2:Major-Licks-2",
+      "transposition_normalized_representation": "ii7-V7-Imaj7 | Anthropology opening phrase identity | source-note-payload-pending",
+      "harmony_context": "Dm7 | G7 | Cmaj7",
+      "harmonic_function": "ii-V-I major resolution",
+      "phrase_position": "opening",
+      "entrance": "opening phrase",
+      "rhythm": "source score verified; event-level rhythm transcription pending",
+      "contour": "source score verified; contour extraction pending",
+      "interval_pattern": "Anthropology opening lick identity",
+      "source_instrument": "alto_saxophone",
+      "dimensions": [
+        "pitch_interval",
+        "rhythm",
+        "contour",
+        "phrase_shape",
+        "target_behavior"
+      ],
+      "transferable_to": [
+        "alto_saxophone",
+        "tenor_sax",
+        "sax",
+        "trumpet",
+        "piano",
+        "guitar"
+      ],
+      "domains": [
+        "phrase_entrance",
+        "linear_connection",
+        "harmony_target_selection",
+        "motif_development"
+      ],
+      "context_tags": [
+        "bebop",
+        "charlie_parker",
+        "anthropology",
+        "opening_lick",
+        "ii_v_i"
+      ],
+      "candidate_uses": [
+        "adapted_lick",
+        "fragment_recall",
+        "abstracted_pattern",
+        "hybrid_composition"
+      ],
+      "signature_status": "signature_candidate",
+      "signature_evidence_count": 1,
+      "confidence": 0.95,
+      "provenance": [
+        "charlie-parker-licks.pdf",
+        "page:2",
+        "figure:Major Licks 2",
+        "source_image_verified",
+        "note_payload_pending"
+      ]
+    }
+  ]
+}

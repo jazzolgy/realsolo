@@ -29,6 +29,23 @@
       "type": "alignment_manifest",
       "status": "provisional_identity_checks_required",
       "derived_runtime_data": "src/music_intelligence/legends/parker/data/alignment_benchmarks.json"
+    },
+    {
+      "source_id": "cp_charlie_parker_licks_pdf",
+      "type": "pedagogical_lick_sheet",
+      "status": "project_library_source_locators_promoted",
+      "source_title": "charlie-parker-licks.pdf",
+      "visible_items": 4,
+      "derived_runtime_data": "src/music_intelligence/legends/parker/data/vocabulary_source_grounded.json",
+      "note_payload_status": "pending_verified_event_transcription"
+    },
+    {
+      "source_id": "cp_omnibook_project",
+      "type": "scorebook",
+      "status": "project_library_alignment_source",
+      "source_title": "Charlie Parker Omnibook 1.pdf",
+      "benchmark_manifest": "src/music_intelligence/legends/parker/data/alignment_benchmarks.json",
+      "note_payload_status": "selected_pages_available_extraction_pending"
     }
   ]
 }

@@ -50,3 +50,29 @@ def test_literal_loader_contract_can_support_direct_use_when_data_arrives():
     literal=[x for x in PARKER_VOCABULARY_INDEX.items if x.literal_representation]
     for item in literal:
         assert VocabularyUseType.LITERAL_QUOTE in item.candidate_uses
+
+
+
+def test_all_four_recovered_lick_sheet_items_are_in_parker_vocabulary():
+    ids={x.vocabulary_id for x in PARKER_VOCABULARY_INDEX.items}
+    assert {
+        "parker.source.licksheet.ii_v_i.honeysuckle",
+        "parker.source.licksheet.ii_v_i.dm_shape",
+        "parker.source.licksheet.major.cmaj_shape",
+        "parker.source.licksheet.anthropology_opening",
+    }.issubset(ids)
+
+
+def test_recovered_source_locators_do_not_enable_literal_quote_before_note_verification():
+    recovered=[
+        x for x in PARKER_VOCABULARY_INDEX.items
+        if x.source_id=="cp_charlie_parker_licks_pdf"
+    ]
+    assert len(recovered)==4
+    assert all("source_image_verified" in x.provenance for x in recovered)
+    assert all("note_payload_pending" in x.provenance for x in recovered)
+    assert all(not x.literal_representation for x in recovered)
+    assert all(
+        VocabularyUseType.LITERAL_QUOTE not in x.candidate_uses
+        for x in recovered
+    )

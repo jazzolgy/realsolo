@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "charlie_parker",
+  "purpose": "recover playable literal vocabulary from project-held Parker score sources",
+  "rules": {
+    "literal_quote_unlock": "only after pitches and rhythms are explicitly verified",
+    "preserve_source_locator": true,
+    "preserve_context": true,
+    "emit_normalized_representation": true,
+    "runtime_policy": "30_percent_direct_when_literal_verified_else_transformed"
+  },
+  "jobs": [
+    {
+      "job_id": "cp-licksheet-001",
+      "source_id": "cp_charlie_parker_licks_pdf",
+      "source_title": "charlie-parker-licks.pdf",
+      "page": 1,
+      "figure": "II-V-I Licks 1",
+      "target_vocabulary_id": "parker.source.licksheet.ii_v_i.honeysuckle",
+      "priority": 1,
+      "status": "needs_event_transcription"
+    },
+    {
+      "job_id": "cp-licksheet-002",
+      "source_id": "cp_charlie_parker_licks_pdf",
+      "source_title": "charlie-parker-licks.pdf",
+      "page": 1,
+      "figure": "II-V-I Licks 2",
+      "target_vocabulary_id": "parker.source.licksheet.ii_v_i.dm_shape",
+      "priority": 1,
+      "status": "needs_event_transcription"
+    },
+    {
+      "job_id": "cp-licksheet-003",
+      "source_id": "cp_charlie_parker_licks_pdf",
+      "source_title": "charlie-parker-licks.pdf",
+      "page": 1,
+      "figure": "Major Licks 1",
+      "target_vocabulary_id": "parker.source.licksheet.major.cmaj_shape",
+      "priority": 1,
+      "status": "needs_event_transcription"
+    },
+    {
+      "job_id": "cp-licksheet-004",
+      "source_id": "cp_charlie_parker_licks_pdf",
+      "source_title": "charlie-parker-licks.pdf",
+      "page": 2,
+      "figure": "Major Licks 2",
+      "target_vocabulary_id": "parker.source.licksheet.anthropology_opening",
+      "priority": 1,
+      "status": "needs_event_transcription"
+    },
+    {
+      "job_id": "cp-omnibook-confirmation",
+      "source_id": "cp_omnibook_project",
+      "source_title": "Charlie Parker Omnibook 1.pdf",
+      "tune": "Confirmation",
+      "pages": [
+        1,
+        2,
+        3
+      ],
+      "priority": 2,
+      "status": "needs_phrase_segmentation_and_event_transcription"
+    },
+    {
+      "job_id": "cp-omnibook-blues-for-alice",
+      "source_id": "cp_omnibook_project",
+      "source_title": "Charlie Parker Omnibook 1.pdf",
+      "tune": "Blues For Alice",
+      "pages": [
+        18,
+        19
+      ],
+      "priority": 2,
+      "status": "needs_phrase_segmentation_and_event_transcription"
+    },
+    {
+      "job_id": "cp-omnibook-billies-bounce",
+      "source_id": "cp_omnibook_project",
+      "source_title": "Charlie Parker Omnibook 1.pdf",
+      "tune": "Billie's Bounce",
+      "pages": [
+        80,
+        81
+      ],
+      "priority": 2,
+      "status": "needs_phrase_segmentation_and_event_transcription"
+    },
+    {
+      "job_id": "cp-omnibook-ko-ko",
+      "source_id": "cp_omnibook_project",
+      "source_title": "Charlie Parker Omnibook 1.pdf",
+      "tune": "Ko Ko",
+      "pages": [
+        62,
+        63,
+        64,
+        65
+      ],
+      "priority": 2,
+      "status": "needs_phrase_segmentation_and_event_transcription"
+    },
+    {
+      "job_id": "cp-omnibook-nows-the-time",
+      "source_id": "cp_omnibook_project",
+      "source_title": "Charlie Parker Omnibook 1.pdf",
+      "tune": "Now's The Time",
+      "pages": [
+        74,
+        76
+      ],
+      "priority": 2,
+      "status": "needs_phrase_segmentation_and_event_transcription"
+    },
+    {
+      "job_id": "cp-omnibook-yardbird-suite",
+      "source_id": "cp_omnibook_project",
+      "source_title": "Charlie Parker Omnibook 1.pdf",
+      "tune": "Yardbird Suite",
+      "pages": [
+        8
+      ],
+      "priority": 2,
+      "status": "needs_phrase_segmentation_and_event_transcription"
+    }
+  ]
+}

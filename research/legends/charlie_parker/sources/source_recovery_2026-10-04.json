@@ -1,0 +1,123 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "charlie_parker",
+  "recovered_at": "2026-10-04",
+  "findings": {
+    "exact_131_git_status": "not_committed",
+    "exact_131_first_aggregate_commit": "2c98a2bd8b9562585682115158389f9c59af7f87",
+    "exact_131_parent_commit": "7db9a21210198972abcb4ae762390a328ca2d2be",
+    "exact_131_note": "The v1.31 commit explicitly states that only aggregate data was committed and the raw exact-131 pedagogical symbolic source was not committed to the public repository. The parent tree contains no Parker lick/symbolic source files."
+  },
+  "sources": [
+    {
+      "source_id": "cp_symbolic_131",
+      "kind": "pedagogical_symbolic",
+      "availability": "aggregate_only_in_git",
+      "aggregate_path": "src/music_intelligence/legends/parker/data/conditional_stats.json",
+      "item_count": 131,
+      "exact_note_payload_available": false,
+      "action": "recover from original local/private source if it can be located; do not reconstruct note sequences from aggregate statistics"
+    },
+    {
+      "source_id": "cp_charlie_parker_licks_pdf",
+      "kind": "pedagogical_lick_sheet",
+      "title": "charlie-parker-licks.pdf",
+      "availability": "project_library",
+      "pages": 2,
+      "visible_licks": 4,
+      "exact_score_image_available": true,
+      "exact_note_payload_available": false,
+      "extraction_status": "source_locators_promoted_note_transcription_pending",
+      "entries": [
+        {
+          "vocabulary_id": "parker.source.licksheet.ii_v_i.honeysuckle",
+          "page": 1,
+          "figure": "II-V-I Licks 1",
+          "harmony_context": "Bbm7 | Eb7 | Abmaj7",
+          "annotation": "Honeysuckle Rose motif in the first bar"
+        },
+        {
+          "vocabulary_id": "parker.source.licksheet.ii_v_i.dm_shape",
+          "page": 1,
+          "figure": "II-V-I Licks 2",
+          "harmony_context": "Dm7 | G7 | Cmaj7",
+          "annotation": "first bar starts with a Dm chord shape"
+        },
+        {
+          "vocabulary_id": "parker.source.licksheet.major.cmaj_shape",
+          "page": 1,
+          "figure": "Major Licks 1",
+          "harmony_context": "Cmaj7",
+          "annotation": "second bar is played around a Cmaj7 chord shape"
+        },
+        {
+          "vocabulary_id": "parker.source.licksheet.anthropology_opening",
+          "page": 2,
+          "figure": "Major Licks 2",
+          "harmony_context": "Dm7 | G7 | Cmaj7",
+          "annotation": "opening lick from Anthropology"
+        }
+      ]
+    },
+    {
+      "source_id": "cp_omnibook_project",
+      "kind": "scorebook",
+      "title": "Charlie Parker Omnibook 1.pdf",
+      "availability": "project_library",
+      "exact_score_image_available": true,
+      "extraction_status": "selected_alignment_pages_known_note_transcription_pending",
+      "benchmark_pages": [
+        {
+          "title": "Confirmation",
+          "pages": [
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "title": "Blues For Alice",
+          "pages": [
+            18,
+            19
+          ]
+        },
+        {
+          "title": "Billie's Bounce",
+          "pages": [
+            80,
+            81
+          ]
+        },
+        {
+          "title": "Ko Ko",
+          "pages": [
+            62,
+            63,
+            64,
+            65
+          ]
+        },
+        {
+          "title": "Now's The Time",
+          "pages": [
+            74,
+            76
+          ]
+        },
+        {
+          "title": "Yardbird Suite",
+          "pages": [
+            8
+          ]
+        }
+      ]
+    },
+    {
+      "source_id": "cp_audio_greatest_hits_project",
+      "kind": "audio",
+      "availability": "project_source",
+      "extraction_status": "audio_observation_and_alignment_benchmarks_available"
+    }
+  ]
+}
