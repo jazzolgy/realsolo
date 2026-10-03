@@ -59,6 +59,11 @@ class CompositeObservationDetector:
             if self.unpitched_detector is not None
             else ()
         )
+        timbres = (
+            tuple(self.timbre_detector.detect_timbre(source, onsets))
+            if self.timbre_detector is not None
+            else ()
+        )
         instruments = (
             tuple(
                 self.instrument_detector.detect_instruments(
@@ -66,14 +71,10 @@ class CompositeObservationDetector:
                     onsets,
                     pitches,
                     unpitched,
+                    timbres,
                 )
             )
             if self.instrument_detector is not None
-            else ()
-        )
-        timbres = (
-            tuple(self.timbre_detector.detect_timbre(source, onsets))
-            if self.timbre_detector is not None
             else ()
         )
         for item in (*pitches, *instruments, *timbres, *unpitched):
