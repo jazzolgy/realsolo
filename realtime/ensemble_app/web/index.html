@@ -134,24 +134,37 @@ if(!gesture)return;
 (gesture.voices||[]).forEach(function(v){
 var controls=v.expression_controls||{};
 var breathBeats=("breath_before_beats" in controls)?Number(controls.breath_before_beats||0):(v.breath_before_beats||0);
-var t=when+((v.onset_offset_beats||0)+breathBeats)*beatDur,d=Math.max(.03,(v.duration_beats||.5)*beatDur),role=v.instrument_role||"solo";
-if(role==="bass"&&approvedSamples&&approvedSamples.ready){approvedSamples.bass(v.pitch_midi,v.velocity||88,t,d,v.articulation||[]);}
-else if(role==="piano"&&approvedSamples&&approvedSamples.ready){approvedSamples.piano(v.pitch_midi,v.velocity||72,t,d);}
-else if((role==="solo"||role==="solo_sax"||role==="tenor_sax")&&approvedSamples&&approvedSamples.ready){approvedSamples.solo("tenor_sax",v.pitch_midi,v.velocity||82,t,d,v.articulation||[],Object.assign({attack_scale:v.attack_scale||1,release_shape:v.release_shape||"normal"},controls));}
-else if((role==="solo_trumpet"||role==="trumpet")&&approvedSamples&&approvedSamples.ready){approvedSamples.solo("trumpet",v.pitch_midi,v.velocity||82,t,d,v.articulation||[],Object.assign({attack_scale:v.attack_scale||1,release_shape:v.release_shape||"normal"},controls));}
+var timingEmphasis=Number(controls.timing_emphasis_beats||0);
+var dynamicLevel=("dynamic_level" in controls)?Number(controls.dynamic_level):.5;
+var accentStrength=("accent_strength" in controls)?Number(controls.accent_strength):.5;
+var noteBody=("note_body" in controls)?Number(controls.note_body):.5;
+var velocityScale=Math.max(.62,Math.min(1.34,.78+.44*dynamicLevel+.12*(accentStrength-.5)));
+var renderedVelocity=Math.max(1,Math.min(127,Math.round((v.velocity||72)*velocityScale)));
+var bodyScale=Math.max(.55,Math.min(1.35,.70+.60*noteBody));
+var t=when+((v.onset_offset_beats||0)+breathBeats+timingEmphasis)*beatDur,d=Math.max(.03,(v.duration_beats||.5)*beatDur*bodyScale),role=v.instrument_role||"solo";
+if(role==="bass"&&approvedSamples&&approvedSamples.ready){approvedSamples.bass(v.pitch_midi,renderedVelocity,t,d,v.articulation||[]);}
+else if(role==="piano"&&approvedSamples&&approvedSamples.ready){approvedSamples.piano(v.pitch_midi,renderedVelocity,t,d);}
+else if((role==="solo"||role==="solo_sax"||role==="tenor_sax")&&approvedSamples&&approvedSamples.ready){approvedSamples.solo("tenor_sax",v.pitch_midi,renderedVelocity,t,d,v.articulation||[],Object.assign({attack_scale:v.attack_scale||1,release_shape:v.release_shape||"normal"},controls));}
+else if((role==="solo_trumpet"||role==="trumpet")&&approvedSamples&&approvedSamples.ready){approvedSamples.solo("trumpet",v.pitch_midi,renderedVelocity,t,d,v.articulation||[],Object.assign({attack_scale:v.attack_scale||1,release_shape:v.release_shape||"normal"},controls));}
 else if(sampleReady()){
-if(role==="bass")sampler.bass(v.pitch_midi,v.velocity||88,t,d,v.articulation||[]);
-else if(role==="piano")sampler.piano(v.pitch_midi,v.velocity||72,t,d);
-else sampler.solo(v.pitch_midi,v.velocity||82,t,d);
+if(role==="bass")sampler.bass(v.pitch_midi,renderedVelocity,t,d,v.articulation||[]);
+else if(role==="piano")sampler.piano(v.pitch_midi,renderedVelocity,t,d);
+else sampler.solo(v.pitch_midi,renderedVelocity,t,d);
 }else{
 var type=role==="bass"?"sine":(role==="piano"?"triangle":"sawtooth");
 tone(v.pitch_midi,t,d,type,role==="bass"?.075:(role==="piano"?.035:.045));
 }
 });
 (gesture.drum_hits||[]).forEach(function(v){
-var t=when+(v.onset_offset_beats||0)*beatDur,d=Math.max(.03,(v.duration_beats||.1)*beatDur);
-if(approvedSamples&&approvedSamples.ready)approvedSamples.drum(v.pitch_midi,v.velocity||70,t,d);
-else if(sampleReady())sampler.drum(v.pitch_midi,v.velocity||70,t,d);
+var controls=v.expression_controls||{};
+var timingEmphasis=Number(controls.timing_emphasis_beats||0);
+var dynamicLevel=("dynamic_level" in controls)?Number(controls.dynamic_level):.5;
+var accentStrength=("accent_strength" in controls)?Number(controls.accent_strength):.5;
+var velocityScale=Math.max(.62,Math.min(1.34,.78+.44*dynamicLevel+.12*(accentStrength-.5)));
+var renderedVelocity=Math.max(1,Math.min(127,Math.round((v.velocity||70)*velocityScale)));
+var t=when+((v.onset_offset_beats||0)+timingEmphasis)*beatDur,d=Math.max(.03,(v.duration_beats||.1)*beatDur);
+if(approvedSamples&&approvedSamples.ready)approvedSamples.drum(v.pitch_midi,renderedVelocity,t,d);
+else if(sampleReady())sampler.drum(v.pitch_midi,renderedVelocity,t,d);
 else noiseHit(t,Math.min(.08,d),.025);
 });
 }
