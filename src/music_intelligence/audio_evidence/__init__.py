@@ -17,18 +17,26 @@ from .posterior.fusion import (
     ContextualAudioHypothesis,
     PosteriorRevision,
 )
+from .posterior.revision import (
+    AttributionRevisionRecord,
+    HardExample,
+    RevisionLedger,
+)
 
 __all__ = [
     "AudioEvidencePipeline",
     "AudioObservation",
     "AudioSource",
+    "AttributionRevisionRecord",
     "BoundedContextPosterior",
     "ConfidenceReport",
     "ContextEvidence",
     "ContextualAudioHypothesis",
     "DetectorEvidence",
+    "HardExample",
     "PERFORMANCE_EVIDENCE_VERSION",
     "PosteriorRevision",
+    "RevisionLedger",
     "SeparationMetadata",
     "confidence_report",
     "to_performance_evidence_payload",
