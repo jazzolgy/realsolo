@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "scott_lafaro",
+  "rule": "phrase observations require structural coordinate before promotion",
+  "verified_tracks": [
+    {
+      "track_id": "BE-011",
+      "title": "Alice In Wonderland",
+      "source_abs_s": [
+        3388,
+        3809
+      ],
+      "score_anchor": {
+        "file": "Realbk1.pdf",
+        "page": 12,
+        "status": "visual_verified"
+      },
+      "structural_status": "pending_form_section_bar_alignment",
+      "source_separation_status": "mixed_audio",
+      "personnel_status": "verified"
+    },
+    {
+      "track_id": "BE-012",
+      "title": "How Deep Is The Ocean",
+      "source_abs_s": [
+        3809,
+        4023
+      ],
+      "score_anchor": {
+        "file": "RealBk3.pdf",
+        "page": 115,
+        "status": "indexed_not_yet_visual_verified"
+      },
+      "structural_status": "pending_form_section_bar_alignment",
+      "source_separation_status": "mixed_audio",
+      "personnel_status": "verified"
+    },
+    {
+      "track_id": "BE-015",
+      "title": "Israel",
+      "source_abs_s": [
+        4603,
+        4976
+      ],
+      "score_anchor": {
+        "file": "Realbk1.pdf",
+        "page": 240,
+        "status": "visual_verified"
+      },
+      "structural_status": "pending_form_section_bar_alignment",
+      "source_separation_status": "mixed_audio",
+      "personnel_status": "verified"
+    }
+  ],
+  "observation_contract": {
+    "required_before_vocabulary_candidate": [
+      "song_id",
+      "performance_phase",
+      "chorus_or_recurrence",
+      "section_or_form_bar",
+      "role",
+      "confidence",
+      "provenance"
+    ],
+    "timestamp_only_status": "navigation_only"
+  },
+  "provenance": [
+    "main:research/legends/scott_lafaro/sources/verified_project_tracks.json",
+    "main:research/legends/scott_lafaro/observations/audio/verified_phrase_queue.json"
+  ]
+}
