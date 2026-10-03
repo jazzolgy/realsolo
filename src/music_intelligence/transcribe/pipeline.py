@@ -14,6 +14,8 @@ from .notation import (
     NotationCandidate,
     NotationIntent,
     NotationRelevance,
+    RhythmNotationContext,
+    RhythmicFeel,
     TupletRatio,
 )
 from .rhythm import (
@@ -131,12 +133,48 @@ def rhythm_candidate_from_event(
     return candidate
 
 
+
+def _explicit_tuplet_from_metadata(
+    event: CommittedPerformanceEvent,
+) -> TupletRatio | None:
+    raw = event.metadata.get("notation_tuplet")
+    if raw is None:
+        return None
+    parts = str(raw).split(":")
+    if len(parts) != 2:
+        raise ValueError("notation_tuplet metadata must use N:M form")
+    try:
+        ratio = TupletRatio(int(parts[0]), int(parts[1]))
+    except ValueError as exc:
+        raise ValueError("notation_tuplet metadata must use integer N:M values") from exc
+    ratio.validate()
+    return ratio
+
+
+def _candidate_with_cost_adjustment(
+    candidate: NotationCandidate,
+    *,
+    complexity_delta: float = 0.0,
+    readability_delta: float = 0.0,
+    reason: str | None = None,
+) -> NotationCandidate:
+    updated = replace(
+        candidate,
+        complexity_cost=max(0.0, candidate.complexity_cost + complexity_delta),
+        readability_cost=max(0.0, candidate.readability_cost + readability_delta),
+        reasons=candidate.reasons + ((reason,) if reason is not None else ()),
+    )
+    updated.validate()
+    return updated
+
+
 def basic_rhythm_candidates(
     event: CommittedPerformanceEvent,
     intent: NotationIntent,
     *,
     meter_numerator: int = 4,
     meter_denominator: int = 4,
+    rhythm_context: RhythmNotationContext = RhythmNotationContext(),
 ) -> tuple[NotationCandidate, ...]:
     """Generate a small readable candidate family.
 
@@ -152,6 +190,9 @@ def basic_rhythm_candidates(
 
     if intent.relevance is NotationRelevance.OMIT:
         return ()
+    rhythm_context.validate()
+
+    explicit_tuplet = _explicit_tuplet_from_metadata(event)
 
     grids = (
         ("quarter", Fraction(1, 1), None, 0.00),
@@ -173,7 +214,32 @@ def basic_rhythm_candidates(
         for name, step, _, complexity in grids
     ]
 
-    if intent.allow_tuplet:
+    if explicit_tuplet is not None:
+        step = Fraction(explicit_tuplet.normal, explicit_tuplet.actual) * Fraction(1, 2)
+        explicit_candidate = rhythm_candidate_from_event(
+            event,
+            intent,
+            grid=QuantizationGrid(
+                step=step,
+                meter_numerator=meter_numerator,
+                meter_denominator=meter_denominator,
+            ),
+            candidate_suffix=f"explicit-tuplet-{explicit_tuplet.actual}-{explicit_tuplet.normal}",
+            tuplet=explicit_tuplet,
+            complexity_cost=0.0,
+        )
+        candidates.append(
+            _candidate_with_cost_adjustment(
+                explicit_candidate,
+                complexity_delta=-0.18,
+                readability_delta=-0.12,
+                reason="explicit notation tuplet evidence",
+            )
+        )
+    elif (
+        intent.allow_tuplet
+        and rhythm_context.feel is RhythmicFeel.AUTO
+    ):
         candidates.append(
             rhythm_candidate_from_event(
                 event,
@@ -188,5 +254,26 @@ def basic_rhythm_candidates(
                 complexity_cost=.08,
             )
         )
+
+    if (
+        rhythm_context.feel is RhythmicFeel.SWING
+        and rhythm_context.prefer_written_eighths_for_swing
+        and explicit_tuplet is None
+    ):
+        candidates = [
+            _candidate_with_cost_adjustment(
+                candidate,
+                complexity_delta=-0.04
+                if candidate.candidate_id.endswith(":eighth")
+                else 0.0,
+                readability_delta=-0.04
+                if candidate.candidate_id.endswith(":eighth")
+                else 0.0,
+                reason="swing feel prefers written eighth-note notation"
+                if candidate.candidate_id.endswith(":eighth")
+                else None,
+            )
+            for candidate in candidates
+        ]
 
     return tuple(candidates)
