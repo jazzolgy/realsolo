@@ -11,6 +11,7 @@ from enum import Enum
 
 from music_intelligence.harmony import HarmonicFrame
 from music_intelligence.reasoning.groove_context import GrooveTemporalContext
+from music_intelligence.learning.form_position import MetricFormPosition
 
 
 class DrumVoice(str, Enum):
@@ -145,6 +146,7 @@ class DrummerRuntimeContext:
     harmonic_transition_confidence: float = 0.0
     harmony: HarmonicFrame | None = None
     groove: GrooveTemporalContext | None = None
+    metric_form_position: MetricFormPosition | None = None
 
     def validate(self) -> None:
         if self.pattern_phase_beats is not None and self.pattern_phase_beats < 0:
@@ -169,3 +171,9 @@ class DrummerRuntimeContext:
             self.harmony.validate()
         if self.groove is not None:
             self.groove.validate()
+        if self.metric_form_position is not None:
+            self.metric_form_position.validate()
+            p=self.metric_form_position
+            if p.resolved_metric and p.beat_in_measure is not None:
+                if abs(p.beat_in_measure-self.position_in_bar_beats) > .125:
+                    raise ValueError("drummer bar position conflicts with canonical metric_form_position")
