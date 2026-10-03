@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from music_intelligence.audio_evidence.adapters.source import AudioSource
 from music_intelligence.audio_evidence.detectors.demucs_adapter import (
     DemucsCLISeparator,
@@ -73,3 +75,22 @@ def test_demucs_adapter_does_not_require_demucs_at_import_time(tmp_path: Path):
 
     assert called["value"] is True
     assert results[0].source.metadata["stem_label"] == "bass"
+
+
+def test_demucs_adapter_rejects_unmaterialized_time_range(tmp_path: Path):
+    source_file = tmp_path / "playlist.mp3"
+    source_file.write_bytes(b"x")
+    separator = DemucsCLISeparator(
+        output_root=str(tmp_path / "out"),
+        runner=lambda command: None,
+    )
+
+    with pytest.raises(ValueError, match="materialized source segment"):
+        separator.separate(
+            AudioSource(
+                source_id="BE-003",
+                uri=str(source_file),
+                start_seconds=708.0,
+                end_seconds=1069.0,
+            )
+        )
