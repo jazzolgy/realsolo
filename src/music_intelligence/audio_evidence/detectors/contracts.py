@@ -64,6 +64,7 @@ class InstrumentDetection:
     probabilities: Mapping[str, float]
     confidence: float | None = None
     detector_id: str = "instrument-detector"
+    target_id: str | None = None
 
     def validate(self) -> None:
         if not self.onset_id:
