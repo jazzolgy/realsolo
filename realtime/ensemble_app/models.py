@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 
+from music_intelligence.learning.form_position import MetricFormPosition
+
 
 class ObservationKind(str, Enum):
     NOTE_ON = "note_on"
@@ -99,6 +101,7 @@ class EnsembleState:
     audio_onset_strength: float = 0.0
     audio_pitch_hz: float | None = None
     audio_pitch_confidence: float = 0.0
+    metric_form_position: MetricFormPosition | None = None
 
 
 @dataclass(frozen=True, slots=True)
