@@ -17,7 +17,7 @@ from music_intelligence.transcribe import (
 from music_intelligence.transcribe.allocation import StaffProfile
 
 
-def event(event_id, beat, midi, dynamic, phrase):
+def event(event_id, beat, midi, dynamic, phrase, duration=.9):
     return CommittedPerformanceEvent(
         event_id=event_id,
         player_id="flute",
@@ -27,7 +27,7 @@ def event(event_id, beat, midi, dynamic, phrase):
             onset_seconds=beat * .5,
             offset_seconds=beat * .5 + .46,
             transport_beat=beat,
-            transport_offset_beat=beat + .9,
+            transport_offset_beat=beat + duration,
         ),
         pitch=PerformedPitch(nominal_midi=float(midi)),
         dynamic=dynamic,
@@ -48,7 +48,7 @@ def main() -> Path:
             event("a3", 2, 76, .43, "A"),
             event("a4", 3, 77, .52, "A"),
             event("a5", 4, 79, .54, "A"),
-            event("a6", 6, 81, .56, "A"),
+            event("a6", 6.5, 81, .56, "A", duration=1.5),
             event("b1", 16, 81, .72, "B"),
             event("b2", 17, 79, .66, "B"),
             event("b3", 18, 77, .59, "B"),
