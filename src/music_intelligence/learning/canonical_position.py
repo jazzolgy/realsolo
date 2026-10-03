@@ -45,8 +45,9 @@ def position_from_legacy_beats(
     parsed=parse_meter(data.meter)
     if parsed is not None:
         numerator,denominator=parsed
-        measure=int(event.onset_beats//numerator)
-        beat=event.onset_beats-measure*numerator
+        denominator_units=event.onset_beats*(denominator/4.0)
+        measure=int(denominator_units//numerator)
+        beat=denominator_units-measure*numerator
         out=MetricFormPosition(
             measure_index=measure,
             beat_in_measure=beat,
