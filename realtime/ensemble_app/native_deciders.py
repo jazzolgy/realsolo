@@ -482,6 +482,8 @@ class SaxNativeDecider:
             previous_score_snapshot=context.get("previous_sax_score_snapshot")
             if isinstance(context.get("previous_sax_score_snapshot"), ScoreContextSnapshot)
             else None,
+            legend=context.get("sax_legend_context"),
+            legend_candidate_context=context.get("sax_legend_candidate_context"),
             interaction_directive=directive,
             external_allow_improvisation=bool(context.get("sax_allow_improvisation", True)),
         )
@@ -532,7 +534,7 @@ class SaxNativeDecider:
             motif_memory=self.motif_memory,
         )
         policy_projection=project_musical_policy(
-            priors=context.get("hierarchical_priors"),
+            priors=context.get("sax_hierarchical_priors"),
             gating_context=improvisation_gating_context(
                 ensemble_complexity=max(0.0,min(1.0,snapshot.ensemble_density)),
                 live_context_confidence=.78,
@@ -697,6 +699,10 @@ class SaxNativeDecider:
                     if shared_plan.motif_decision is not None else ""
                 ),
                 "policy_projection_confidence": f"{policy_projection.confidence:.3f}",
+                "legend_id": (
+                    context.get("sax_legend_context").profile_view.legend_id
+                    if context.get("sax_legend_context") is not None else ""
+                ),
             },
         )
         return NativeImmediateResult(

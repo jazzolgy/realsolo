@@ -126,3 +126,26 @@ promoted Learning / Genre / Style / Legend / Vocabulary
 
 Research files existing in the repository is not sufficient. A feature counts
 as "connected" only when the audible runtime consumes it through this path.
+
+
+## Contextual Legend / promoted-prior integration
+
+A later integration slice now adds a shared runtime selector:
+
+- Charlie Parker can contribute a small soft prior to a bebop Sax context.
+- Scott LaFaro is not a generic walking-bass default; it activates only for an
+  interactive-modern-trio context or explicit session override.
+- Bill Evans remains inactive because the current runtime profile is deliberately
+  evidence-gated and contains no promoted tendencies.
+
+This is intentional. A named Legend must not be activated from reputation alone.
+
+The three current VocabularyIndex objects are also structurally connected, but
+their `items` tuples are currently empty. Therefore the audible runtime can
+consume vocabulary when source-grounded items are later admitted, but it cannot
+pretend that vocabulary evidence exists today.
+
+Promoted SharedLearningEngine priors can now be attached through
+`Stage1QuartetRuntime.attach_learning_engine()`. The runtime-prior builder calls
+`engine.prior()` only. It never substitutes `evidence_prior()`, so
+research-only observations remain excluded from audible policy until promotion.

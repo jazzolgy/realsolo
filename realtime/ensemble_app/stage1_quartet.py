@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Mapping
 
 from music_intelligence.reasoning.ensemble_state import (
     EnsembleState,
@@ -16,6 +17,17 @@ from music_intelligence.harmony.orchestrator import (
 from music_intelligence.reasoning.performance_convention import (
     default_performance_convention,
 )
+from music_intelligence.reasoning.hierarchical_priors import HierarchicalPriorSet
+from music_intelligence.reasoning.runtime_prior_bundle import (
+    hierarchical_priors_from_learning_engine,
+)
+from music_intelligence.reasoning.runtime_legend_selector import (
+    legend_choice_for,
+    legend_blend_for,
+    select_runtime_legends,
+)
+from music_intelligence.legends.interfaces import LegendDomain
+from players.sax import SaxLegendContext, SaxLegendCandidateContext
 from music_intelligence.reasoning.groove_context import (
     GrooveCoordinationMode,
     GrooveFeel,
@@ -41,6 +53,8 @@ class Stage1QuartetRuntime:
 
     loop: object
     state: EnsembleState
+    hierarchical_priors: HierarchicalPriorSet | None = None
+    legend_overrides: Mapping[str,str] = field(default_factory=dict)
 
     @classmethod
     def create(
@@ -93,10 +107,18 @@ class Stage1QuartetRuntime:
         )
         return cls(build_native_quartet_runtime(), state)
 
+    def attach_learning_engine(self, engine) -> None:
+        """Attach only promoted rights-gated learning priors to audible runtime."""
+        self.hierarchical_priors=hierarchical_priors_from_learning_engine(engine)
+
     def reset(self, tempo_bpm: float = 172.0) -> None:
+        priors=self.hierarchical_priors
+        overrides=dict(self.legend_overrides)
         fresh = self.create(tempo_bpm)
         self.loop = fresh.loop
         self.state = fresh.state
+        self.hierarchical_priors=priors
+        self.legend_overrides=overrides
 
     def decide(
         self,
@@ -217,6 +239,60 @@ class Stage1QuartetRuntime:
             provenance=("canonical_repertoire:autumn_leaves_harmony_form",),
         )
 
+        style_tags=("jazz","bebop","swing")
+        legend_choices=select_runtime_legends(
+            style_tags=style_tags,
+            overrides=self.legend_overrides,
+        )
+        sax_legend_choice=legend_choice_for(legend_choices,"sax")
+        bass_legend_choice=legend_choice_for(legend_choices,"bass")
+
+        sax_legend_context=(
+            SaxLegendContext(
+                profile_view=sax_legend_choice.profile_view,
+                vocabulary_provider=sax_legend_choice.vocabulary_provider,
+            )
+            if sax_legend_choice is not None else None
+        )
+        sax_legend_candidate_context=(
+            SaxLegendCandidateContext(
+                domain=LegendDomain.LINEAR_CONNECTION,
+                harmony_context=chord_symbol,
+                local_key="G minor / Bb major",
+                phrase_position=(
+                    "opening" if phrase_position < .25
+                    else "development" if phrase_position < .75
+                    else "ending"
+                ),
+                active_tags=tuple(sorted({
+                    *style_tags,
+                    "solo",
+                    "develop" if .25 <= phrase_position < .75 else "phrase_edge",
+                    "anticipation" if next_chord else "",
+                } - {""})),
+            )
+            if sax_legend_context is not None else None
+        )
+
+        sax_legend_blend=legend_blend_for(legend_choices,"sax")
+        if self.hierarchical_priors is None:
+            sax_priors=(
+                HierarchicalPriorSet(legend_blend=sax_legend_blend)
+                if sax_legend_blend is not None else None
+            )
+        else:
+            sax_priors=HierarchicalPriorSet(
+                domain_prior=self.hierarchical_priors.domain_prior,
+                genre_prior=self.hierarchical_priors.genre_prior,
+                style_prior=self.hierarchical_priors.style_prior,
+                legend_blend=(
+                    sax_legend_blend
+                    if sax_legend_blend is not None
+                    else self.hierarchical_priors.legend_blend
+                ),
+                weights=self.hierarchical_priors.weights,
+            )
+
         musical_context = MusicalContextVector(
             chord_symbol=chord_symbol,
             metric_position=(beat_in_bar % 4.0) / 4.0,
@@ -246,7 +322,15 @@ class Stage1QuartetRuntime:
                 "bass_mode": "walking",
                 "groove_context": groove,
                 "time_feel": groove.feel.value,
-                "style_tags": ("jazz","bebop","swing"),
+                "style_tags": style_tags,
+                "sax_legend_context": sax_legend_context,
+                "sax_legend_candidate_context": sax_legend_candidate_context,
+                "sax_hierarchical_priors": sax_priors,
+                "bass_legend": (
+                    bass_legend_choice.profile_view
+                    if bass_legend_choice is not None else None
+                ),
+                "runtime_legend_choices": legend_choices,
                 "sax_allow_improvisation": True,
                 "sax_score_snapshot": sax_score_snapshot,
                 "sax_target_pitch_classes": sax_targets,
