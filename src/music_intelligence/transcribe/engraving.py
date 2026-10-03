@@ -158,6 +158,17 @@ class EngravingPlan:
         return None
 
 
+def _voice_stem_order_key(voice_id: str) -> tuple[int, str]:
+    label = voice_id.lower()
+    upper_hints = ("voice1", "upper", "top", "soprano", "melody", "lead")
+    lower_hints = ("voice2", "lower", "bottom", "bass")
+    if any(hint in label for hint in upper_hints):
+        return (0, label)
+    if any(hint in label for hint in lower_hints):
+        return (2, label)
+    return (1, label)
+
+
 def voice_stem_directions(events: tuple[ScoreEvent, ...]) -> dict[str, StemDirection]:
     """Assign opposing stems when independent logical voices overlap in time.
 
@@ -202,7 +213,7 @@ def voice_stem_directions(events: tuple[ScoreEvent, ...]) -> dict[str, StemDirec
         if len(overlapping_voices) <= 1:
             continue
 
-        ordered = sorted(overlapping_voices)
+        ordered = sorted(overlapping_voices, key=_voice_stem_order_key)
         voice_direction = {
             voice: (StemDirection.UP if index % 2 == 0 else StemDirection.DOWN)
             for index, voice in enumerate(ordered)
