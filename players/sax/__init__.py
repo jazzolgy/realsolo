@@ -71,3 +71,10 @@ __all__ = [
     "SaxPhraseDecision",
     "SaxPhraseMemory",
 ]
+
+
+from .phrase_intention import (
+    SaxPhraseIntention,
+    SaxPhraseIntentionMemory,
+    choose_sax_phrase_intention,
+)
