@@ -245,3 +245,45 @@ def test_batch_take_infers_dynamic_hairpin_and_exports_wedge():
     root = ET.fromstring(xml)
     wedges = root.findall(".//part[@id='fl']/measure/direction/direction-type/wedge")
     assert [w.get("type") for w in wedges] == ["crescendo", "stop"]
+
+
+
+def test_dynamic_hairpins_are_segmented_across_large_gaps():
+    engine = NotationEngine()
+
+    def dyn(event_id, beat, dynamic):
+        event = _event(event_id, "flute", 72, beat)
+        return CommittedPerformanceEvent(
+            event_id=event.event_id,
+            player_id=event.player_id,
+            instrument=event.instrument,
+            commitment=event.commitment,
+            time=event.time,
+            pitch=event.pitch,
+            dynamic=dynamic,
+            provenance=event.provenance,
+        )
+
+    request = PartTranscriptionRequest(
+        part_id="fl",
+        name="Flute",
+        instrument="flute",
+        events=(
+            dyn("a1", 0, .30),
+            dyn("a2", 1, .38),
+            dyn("a3", 2, .50),
+            dyn("b1", 10, .70),
+            dyn("b2", 11, .60),
+            dyn("b3", 12, .48),
+        ),
+        staffs=(StaffProfile("fl:staff", "fl"),),
+    )
+
+    result = engine.transcribe_take(
+        (request,),
+        score_id="take:segmented-dynamics",
+        title="Segmented Dynamics",
+    )
+
+    assert len(result.parts[0].dynamic_trajectories) == 2
+    assert len(result.score.spanners) == 2
