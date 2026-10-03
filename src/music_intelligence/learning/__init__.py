@@ -10,6 +10,10 @@ from .score_alignment import (
     same_form_relative_position,
     same_musical_position,
 )
+from .listener_position_adapter import (
+    ListenerFormEstimate,
+    coordinate_from_listener_estimate,
+)
 from .note_evidence import (
     NoteEvidenceStatus,
     NoteLevelEvidence,
@@ -50,6 +54,8 @@ __all__ = [
     "research_learning_status",
     "same_form_relative_position",
     "same_musical_position",
+    "ListenerFormEstimate",
+    "coordinate_from_listener_estimate",
     "NoteEvidenceStatus",
     "NoteLevelEvidence",
     "may_promote_as_legend_note",
