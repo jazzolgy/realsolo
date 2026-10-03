@@ -54,7 +54,9 @@ def test_one_audio_analysis_fans_out_to_many_learning_domains():
     assert LearningDomain.EXPRESSION in domains
     assert LearningDomain.FORM_TENSION in domains
     assert result.disposition is LearningDisposition.TRAINING_ELIGIBLE
-    assert result.training_artifacts
+    assert not result.structure_eligible
+    assert result.training_artifacts==()
+    assert result.derived_artifacts
 
 
 def test_unknown_training_rights_still_convert_but_do_not_enter_training_pool():
@@ -68,3 +70,33 @@ def test_learning_artifacts_do_not_store_absolute_audio_payload():
     result=convert_audio_to_learning_data(item(),Path("x.mp3"),FakeAnalyzer())
     assert result.artifacts
     assert all(not hasattr(x,"audio_bytes") for x in result.artifacts)
+
+
+
+class AlignedAnalyzer(FakeAnalyzer):
+    def analyze(self,audio_path,*,source_item):
+        raw=super().analyze(audio_path,source_item=source_item)
+        from dataclasses import replace
+        from music_intelligence.learning import MusicalScoreCoordinate, PerformancePhase
+        pos=MusicalScoreCoordinate(
+            song_id="test_tune",
+            section="A",
+            form_length_bars=32,
+            form_bar=1,
+            chorus_index=0,
+            performance_phase=PerformancePhase.SOLO,
+            arrangement_segment="core_form",
+            within_core_form=True,
+        )
+        return replace(
+            raw,
+            events=tuple(replace(e,musical_position=pos) for e in raw.events),
+            require_musical_coordinates=True,
+        )
+
+
+def test_training_pool_requires_rights_and_structural_coordinates():
+    result=convert_audio_to_learning_data(item(),Path("x.mp3"),AlignedAnalyzer())
+    assert result.disposition is LearningDisposition.TRAINING_ELIGIBLE
+    assert result.structure_eligible
+    assert result.training_artifacts
