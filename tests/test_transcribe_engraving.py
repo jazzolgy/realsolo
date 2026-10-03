@@ -383,3 +383,37 @@ def test_short_rest_is_never_assigned_a_beam_state():
     assert result["rest:eighth"] == (BeamState.NONE, None)
     assert result["before"] == (BeamState.NONE, None)
     assert result["after"] == (BeamState.NONE, None)
+
+
+
+def test_temporally_overlapping_voices_receive_opposing_stems_even_without_same_onset():
+    upper = event("upper:sustain", "voice1", Fraction(0), Fraction(2))
+    lower = event("lower:entry", "voice2", Fraction(1), Fraction(1))
+
+    score = score_with((upper, lower))
+    plan = build_default_engraving_plan(score)
+    by_id = {intent.event_id: intent for intent in plan.intents}
+
+    assert by_id["upper:sustain"].stem_direction is StemDirection.UP
+    assert by_id["lower:entry"].stem_direction is StemDirection.DOWN
+
+
+def test_rest_in_polyphonic_staff_keeps_automatic_stem():
+    upper = event("upper:note", "voice1", Fraction(0), Fraction(2))
+    rest = ScoreEvent(
+        event_id="lower:rest",
+        part_id="piano",
+        staff_id="piano:upper",
+        voice_id="voice2",
+        kind=NotatedAtomKind.REST,
+        span=ScoreSpan(Fraction(0), Fraction(1)),
+    )
+    lower = event("lower:note", "voice2", Fraction(1), Fraction(1))
+
+    score = score_with((upper, rest, lower))
+    plan = build_default_engraving_plan(score)
+    by_id = {intent.event_id: intent for intent in plan.intents}
+
+    assert by_id["lower:rest"].stem_direction is StemDirection.AUTO
+    assert by_id["upper:note"].stem_direction is StemDirection.UP
+    assert by_id["lower:note"].stem_direction is StemDirection.DOWN
