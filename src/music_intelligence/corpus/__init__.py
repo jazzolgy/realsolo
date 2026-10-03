@@ -113,3 +113,32 @@ __all__ += [
     "ALONG_CAME_BETTY_LOCATOR",
     "along_came_betty_evidence",
 ]
+
+
+from .realchord import (
+    ExpectedHarmonyReference,
+    REALCHORD_1350_DATASET_ID,
+    REALCHORD_1350_DEFAULT_RELPATH,
+    RealChordChord,
+    RealChordMeasure,
+    RealChordSong,
+    coordinate_from_realchord,
+    expected_harmony_at,
+    realchord_1350_corpus_item,
+    register_realchord_1350,
+    song_from_normalized_record,
+)
+
+__all__ += [
+    "ExpectedHarmonyReference",
+    "REALCHORD_1350_DATASET_ID",
+    "REALCHORD_1350_DEFAULT_RELPATH",
+    "RealChordChord",
+    "RealChordMeasure",
+    "RealChordSong",
+    "coordinate_from_realchord",
+    "expected_harmony_at",
+    "realchord_1350_corpus_item",
+    "register_realchord_1350",
+    "song_from_normalized_record",
+]
