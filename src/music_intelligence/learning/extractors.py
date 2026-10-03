@@ -88,6 +88,7 @@ def _artifact_metric_form_context(data,artifact):
             "section_id":start.section_id,
             "section_measure_index":start.section_measure_index,
             "form_iteration":start.form_iteration,
+            "form_path":start.form_path,
         },
         "end":{
             "measure_index":end.measure_index,
@@ -97,6 +98,7 @@ def _artifact_metric_form_context(data,artifact):
             "section_id":end.section_id,
             "section_measure_index":end.section_measure_index,
             "form_iteration":end.form_iteration,
+            "form_path":end.form_path,
         },
     }
 
