@@ -149,6 +149,8 @@ def project_pitched_event(
             tie_to_next=atom.tie_to_next,
             tuplet=atom.tuplet,
             dynamic_marking=dynamic_marking_from_level(event.dynamics.dynamic_absolute_ordinal if event.dynamics is not None and event.dynamics.dynamic_absolute_ordinal is not None else event.dynamic),
+            musical_coordinate=event.musical_coordinate,
+            dynamics=event.dynamics,
             articulations=articulations,
             markings=markings,
             confidence=preferred_rhythm.confidence,
