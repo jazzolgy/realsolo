@@ -23,21 +23,37 @@ class LearningFeedback:
 class DomainLearningState:
     numeric_means:dict[str,float]=field(default_factory=dict)
     numeric_counts:dict[str,int]=field(default_factory=dict)
+    numeric_weights:dict[str,float]=field(default_factory=dict)
     categorical_counts:dict[str,dict[str,int]]=field(default_factory=dict)
+    categorical_weights:dict[str,dict[str,float]]=field(default_factory=dict)
     feedback_bias:dict[str,float]=field(default_factory=dict)
     observations:int=0
+    weighted_observations:float=0.0
 
     def observe(self,a:LearningArtifact)->None:
-        a.validate();self.observations+=1
+        """Backward-compatible full-weight observation."""
+        self.observe_weighted(a,1.0)
+
+    def observe_weighted(self,a:LearningArtifact,weight:float)->None:
+        """Update priors without letting weak evidence count as a full observation."""
+        a.validate()
+        if not 0.0<weight<=1.0:
+            raise ValueError("learning weight must be within (0,1]")
+        self.observations+=1
+        self.weighted_observations+=weight
         for k,v in a.features.items():
             if isinstance(v,(int,float)):
-                n=self.numeric_counts.get(k,0)+1
+                old_weight=self.numeric_weights.get(k,0.0)
+                new_weight=old_weight+weight
                 old=self.numeric_means.get(k,0.0)
-                self.numeric_means[k]=old+(float(v)-old)/n
-                self.numeric_counts[k]=n
+                self.numeric_means[k]=old+(float(v)-old)*(weight/new_weight)
+                self.numeric_weights[k]=new_weight
+                self.numeric_counts[k]=self.numeric_counts.get(k,0)+1
             elif isinstance(v,str) and v:
                 bucket=self.categorical_counts.setdefault(k,{})
                 bucket[v]=bucket.get(v,0)+1
+                weighted_bucket=self.categorical_weights.setdefault(k,{})
+                weighted_bucket[v]=weighted_bucket.get(v,0.0)+weight
 
     def feedback(self,f:LearningFeedback,lr:float=.15)->None:
         f.validate()
@@ -53,6 +69,9 @@ class LearningPriorView:
     categorical_counts:Mapping[str,Mapping[str,int]]
     feedback_bias:Mapping[str,float]
     observations:int
+    numeric_weights:Mapping[str,float]=field(default_factory=dict)
+    categorical_weights:Mapping[str,Mapping[str,float]]=field(default_factory=dict)
+    weighted_observations:float=0.0
 
     def feature_bias(self,feature:str,*,center:float=0.5,scale:float=1.0)->float:
         learned=self.numeric_features.get(feature)
@@ -60,6 +79,10 @@ class LearningPriorView:
         return value+self.feedback_bias.get(feature,0.0)
 
     def category_weight(self,feature:str,value:str)->float:
+        weighted=self.categorical_weights.get(feature,{})
+        weighted_total=sum(weighted.values())
+        if weighted_total:
+            return weighted.get(value,0.0)/weighted_total
         bucket=self.categorical_counts.get(feature,{})
         total=sum(bucket.values())
         return bucket.get(value,0)/total if total else 0.0
@@ -122,9 +145,15 @@ class SharedLearningEngine:
                 added+=1
                 self.admission_log[a.artifact_id]=decision
                 if decision.admit_to_evidence_prior:
-                    self._evidence_state(a.domain).observe(a)
+                    base_weight=1.0 if decision.evidence_weight is None else decision.evidence_weight
+                    evidence_weight=base_weight*a.confidence
+                    if evidence_weight>0:
+                        self._evidence_state(a.domain).observe_weighted(a,evidence_weight)
                 if decision.admit_to_training_prior:
-                    self._state(a.domain).observe(a)
+                    base_weight=1.0 if decision.training_weight is None else decision.training_weight
+                    training_weight=base_weight*a.confidence
+                    if training_weight>0:
+                        self._state(a.domain).observe_weighted(a,training_weight)
         return added
 
     def review_required_artifacts(self)->tuple[LearningArtifact,...]:
@@ -153,11 +182,14 @@ class SharedLearningEngine:
     @staticmethod
     def _view(domain:LearningDomain,s:DomainLearningState)->LearningPriorView:
         return LearningPriorView(
-            domain,
-            dict(s.numeric_means),
-            {k:dict(v) for k,v in s.categorical_counts.items()},
-            dict(s.feedback_bias),
-            s.observations,
+            domain=domain,
+            numeric_features=dict(s.numeric_means),
+            categorical_counts={k:dict(v) for k,v in s.categorical_counts.items()},
+            feedback_bias=dict(s.feedback_bias),
+            observations=s.observations,
+            numeric_weights=dict(s.numeric_weights),
+            categorical_weights={k:dict(v) for k,v in s.categorical_weights.items()},
+            weighted_observations=s.weighted_observations,
         )
 
     def prior(self,domain:LearningDomain)->LearningPriorView:
