@@ -216,6 +216,11 @@ __all__ = [
     "DynamicTrajectoryKind",
     "infer_dynamic_trajectory",
     "score_spanner_from_dynamic_trajectory",
+    "PartTranscriptionRequest",
+    "PartTranscriptionResult",
+    "TakeTranscriptionResult",
+    "transcribe_part",
+    "transcribe_take",
     "CommittedPerformanceEvent",
     "ConfidenceBundle",
     "EventAlternative",
@@ -337,4 +342,13 @@ from .scorebook_ingestion import (
     ScorebookPageObservation,
     compile_scorebook_observation,
     evidence_summary,
+)
+
+
+from .take import (
+    PartTranscriptionRequest,
+    PartTranscriptionResult,
+    TakeTranscriptionResult,
+    transcribe_part,
+    transcribe_take,
 )
