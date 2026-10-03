@@ -25,6 +25,7 @@ from music_intelligence.reasoning.runtime_legend_selector import (
     legend_choice_for,
     legend_blend_for,
     select_runtime_legends,
+    select_showcase_legends,
 )
 from music_intelligence.legends.interfaces import LegendDomain
 from players.sax import SaxLegendContext, SaxLegendCandidateContext
@@ -55,6 +56,7 @@ class Stage1QuartetRuntime:
     state: EnsembleState
     hierarchical_priors: HierarchicalPriorSet | None = None
     legend_overrides: Mapping[str,str] = field(default_factory=dict)
+    legend_showcase: bool = False
 
     @classmethod
     def create(
@@ -114,11 +116,13 @@ class Stage1QuartetRuntime:
     def reset(self, tempo_bpm: float = 172.0) -> None:
         priors=self.hierarchical_priors
         overrides=dict(self.legend_overrides)
+        showcase=self.legend_showcase
         fresh = self.create(tempo_bpm)
         self.loop = fresh.loop
         self.state = fresh.state
         self.hierarchical_priors=priors
         self.legend_overrides=overrides
+        self.legend_showcase=showcase
 
     def decide(
         self,
@@ -240,9 +244,13 @@ class Stage1QuartetRuntime:
         )
 
         style_tags=("jazz","bebop","swing")
-        legend_choices=select_runtime_legends(
-            style_tags=style_tags,
-            overrides=self.legend_overrides,
+        legend_choices=(
+            select_showcase_legends(style_tags=style_tags)
+            if self.legend_showcase
+            else select_runtime_legends(
+                style_tags=style_tags,
+                overrides=self.legend_overrides,
+            )
         )
         sax_legend_choice=legend_choice_for(legend_choices,"sax")
         bass_legend_choice=legend_choice_for(legend_choices,"bass")
@@ -327,9 +335,10 @@ class Stage1QuartetRuntime:
                 "sax_legend_candidate_context": sax_legend_candidate_context,
                 "sax_hierarchical_priors": sax_priors,
                 "bass_legend": (
-                    bass_legend_choice.profile_view
-                    if bass_legend_choice is not None else None
+                    bass_legend_choice.legend_id
+                    if bass_legend_choice is not None else ""
                 ),
+                "legend_showcase": self.legend_showcase,
                 "runtime_legend_choices": legend_choices,
                 "sax_allow_improvisation": True,
                 "sax_score_snapshot": sax_score_snapshot,
