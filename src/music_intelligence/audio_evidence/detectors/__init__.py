@@ -13,6 +13,13 @@ from .contracts import (
     UnpitchedDetection,
     UnpitchedDetector,
 )
+from .librosa_baseline import (
+    LibrosaOnsetDetector,
+    LibrosaPercussiveTokenDetector,
+    LibrosaSourceLoader,
+    LibrosaSpectralPeakPitchDetector,
+    LibrosaTimbreDetector,
+)
 from .separation import SeparatedSource, SourceSeparator
 
 __all__ = [
@@ -20,6 +27,11 @@ __all__ = [
     "CompositeObservationDetector",
     "InstrumentDetection",
     "InstrumentDetector",
+    "LibrosaOnsetDetector",
+    "LibrosaPercussiveTokenDetector",
+    "LibrosaSourceLoader",
+    "LibrosaSpectralPeakPitchDetector",
+    "LibrosaTimbreDetector",
     "OnsetDetection",
     "OnsetDetector",
     "PitchDetection",
