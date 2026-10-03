@@ -92,3 +92,8 @@ Do not merge the old branches by reintroducing:
 
 Port their remaining UI, playback, scheduling, and audible quartet code as
 consumers of the adapters above.
+
+
+## Integration work branch
+
+`integration/canonical-listening-runtime-20261004` is the fixed selective-port branch. At the initial 2026-10-04 preflight it was identical to main `762fa05c243867ec9afbc1a5fe3cbcfed7b7d41e`. Runtime work must re-check main before each write and avoid parallel Shared-Core owners.
