@@ -295,3 +295,91 @@ def test_cross_staff_primary_beam_can_follow_first_note_side_rule():
 
     assert side.value == "first_note"
     assert legacy.value == "auto"
+
+
+
+def test_four_four_eighths_form_two_groups_of_four_across_full_bar():
+    events = tuple(
+        event(f"e{i}", "voice1", Fraction(i, 2))
+        for i in range(8)
+    )
+    score = score_with(events)
+    plan = build_default_engraving_plan(score)
+    by_id = {intent.event_id: intent for intent in plan.intents}
+
+    first = [by_id[f"e{i}"].beam_state for i in range(4)]
+    second = [by_id[f"e{i}"].beam_state for i in range(4, 8)]
+    assert first == [
+        BeamState.BEGIN,
+        BeamState.CONTINUE,
+        BeamState.CONTINUE,
+        BeamState.END,
+    ]
+    assert second == [
+        BeamState.BEGIN,
+        BeamState.CONTINUE,
+        BeamState.CONTINUE,
+        BeamState.END,
+    ]
+    assert by_id["e0"].beam_group_id != by_id["e4"].beam_group_id
+
+
+def test_twelve_eight_repeats_three_eighth_compound_beam_groups():
+    events = tuple(
+        event(f"c{i}", "voice1", Fraction(i, 2))
+        for i in range(12)
+    )
+    part = ScorePart(
+        "piano",
+        "Piano",
+        "piano",
+        ("piano:upper", "piano:lower"),
+        events,
+    )
+    score = assemble_score(
+        score_id="engrave:128",
+        title="Twelve Eight",
+        parts=(part,),
+        meter_numerator=12,
+        meter_denominator=8,
+    )
+    plan = build_default_engraving_plan(score)
+    by_id = {intent.event_id: intent for intent in plan.intents}
+
+    for start in (0, 3, 6, 9):
+        ids = [f"c{i}" for i in range(start, start + 3)]
+        assert [by_id[eid].beam_state for eid in ids] == [
+            BeamState.BEGIN,
+            BeamState.CONTINUE,
+            BeamState.END,
+        ]
+        assert len({by_id[eid].beam_group_id for eid in ids}) == 1
+
+    assert len({
+        by_id["c0"].beam_group_id,
+        by_id["c3"].beam_group_id,
+        by_id["c6"].beam_group_id,
+        by_id["c9"].beam_group_id,
+    }) == 4
+
+
+def test_short_rest_is_never_assigned_a_beam_state():
+    rest = ScoreEvent(
+        event_id="rest:eighth",
+        part_id="piano",
+        staff_id="piano:upper",
+        voice_id="voice1",
+        kind=NotatedAtomKind.REST,
+        span=ScoreSpan(Fraction(1, 2), Fraction(1, 2)),
+    )
+    events = (
+        event("before", "voice1", Fraction(0)),
+        rest,
+        event("after", "voice1", Fraction(1)),
+    )
+
+    result = beam_group_intents(events, beat_group=Fraction(2))
+
+    assert result["rest:eighth"] == (BeamState.NONE, None)
+    assert result["before"] == (BeamState.NONE, None)
+    assert result["after"] == (BeamState.NONE, None)
