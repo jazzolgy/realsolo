@@ -225,6 +225,12 @@ class Stage1QuartetRuntime:
             context={
                 "harmonic_frame": frame,
                 "harmonic_affordance": affordance,
+                "chord_symbol": chord_symbol,
+                "next_chord": next_chord,
+                "beat_in_bar": beat_in_bar,
+                "bar_index": bar_index,
+                "tempo_bpm": tempo_bpm,
+                "beats_per_bar": 4,
                 "piano_voicing_request": piano_request,
                 "musical_context": musical_context,
                 "ensemble_tension": frame.tension,
