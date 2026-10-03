@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Mapping
+from fractions import Fraction
 
 
 PERFORMANCE_EVIDENCE_CONTRACT_VERSION = "performance-evidence.v1"
@@ -68,6 +69,64 @@ class PerformanceTimeSpan:
         if self.offset_seconds is None:
             return None
         return self.offset_seconds - self.onset_seconds
+
+
+@dataclass(frozen=True)
+class MusicalCoordinate:
+    """Canonical musical location; physical time remains provenance only."""
+
+    form: str = ""
+    section: str = ""
+    chorus: int | None = None
+    bar_in_section: int | None = None
+    beat: Fraction | None = None
+    subdivision: Fraction | None = None
+    confidence: float = 1.0
+    uncertainty: tuple[str, ...] = ()
+
+    def validate(self) -> None:
+        if self.chorus is not None and self.chorus < 0:
+            raise ValueError("chorus may not be negative")
+        if self.bar_in_section is not None and self.bar_in_section < 0:
+            raise ValueError("bar_in_section may not be negative")
+        if self.beat is not None and self.beat < 0:
+            raise ValueError("beat may not be negative")
+        if self.subdivision is not None and not 0 <= self.subdivision < 1:
+            raise ValueError("subdivision must be within [0, 1)")
+        if not 0.0 <= self.confidence <= 1.0:
+            raise ValueError("musical-coordinate confidence must be within 0..1")
+
+
+class DynamicChange(str, Enum):
+    CRESCENDO = "crescendo"
+    DECRESCENDO = "decrescendo"
+    STABLE = "stable"
+    ACCENT = "accent"
+
+
+@dataclass(frozen=True)
+class PerceptualDynamics:
+    """Factorized musical dynamics, independent of source mastering level."""
+
+    dynamic_absolute_ordinal: float | None = None
+    dynamic_relative_to_track: float | None = None
+    dynamic_relative_to_section: float | None = None
+    dynamic_relative_to_phrase: float | None = None
+    dynamic_change: DynamicChange | None = None
+    dynamic_confidence: float | None = None
+    dynamic_evidence: tuple[str, ...] = ()
+
+    def validate(self) -> None:
+        for name in (
+            "dynamic_absolute_ordinal",
+            "dynamic_relative_to_track",
+            "dynamic_relative_to_section",
+            "dynamic_relative_to_phrase",
+            "dynamic_confidence",
+        ):
+            value = getattr(self, name)
+            if value is not None and not 0.0 <= value <= 1.0:
+                raise ValueError(f"{name} must be within 0..1")
 
 
 @dataclass(frozen=True)
@@ -171,6 +230,8 @@ class CommittedPerformanceEvent:
     voice_role: str | None = None
     layer_role: str | None = None
     dynamic: float | None = None
+    musical_coordinate: MusicalCoordinate | None = None
+    dynamics: PerceptualDynamics | None = None
     articulation: tuple[str, ...] = ()
     ornament: tuple[str, ...] = ()
     technique: tuple[str, ...] = ()
@@ -201,6 +262,10 @@ class CommittedPerformanceEvent:
 
         self.time.validate()
         self.confidence.validate()
+        if self.musical_coordinate is not None:
+            self.musical_coordinate.validate()
+        if self.dynamics is not None:
+            self.dynamics.validate()
 
         if self.pitch is not None and self.unpitched is not None:
             raise ValueError("event may be pitched or unpitched, not both")
