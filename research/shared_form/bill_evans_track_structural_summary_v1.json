@@ -1,0 +1,925 @@
+{
+  "schema_version": "1.0",
+  "source_id": "be_playlist_project_audio",
+  "canonical_rule": "audio metrics are provenance/context; musical structure is the learning coordinate",
+  "track_count": 24,
+  "tracks": [
+    {
+      "track_id": "BE-001",
+      "song_id": "waltz_for_debby",
+      "title": "Waltz For Debby",
+      "performers": [
+        "bill_evans",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": 80,
+        "form_label": "A1-B-A2",
+        "section_lengths": [
+          32,
+          16,
+          32
+        ],
+        "form_confidence": 0.9,
+        "status": "core_form_known_solo_bar_mapping_needs_verification",
+        "exceptions": [
+          "solo sections commonly shift meter/feel",
+          "turnaround tag",
+          "coda"
+        ]
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 413,
+        "tempo_median_estimate": 86.133,
+        "onset_rate_per_s": 3.906,
+        "rms_mean": 0.099,
+        "rms_std": 0.043,
+        "chroma_entropy_mean": 0.927
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-002",
+      "song_id": "my_foolish_heart",
+      "title": "My Foolish Heart",
+      "performers": [
+        "bill_evans",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": 32,
+        "form_label": "ABAC",
+        "section_lengths": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "form_confidence": 0.95,
+        "status": "core_form_known",
+        "exceptions": []
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 295,
+        "tempo_median_estimate": 117.454,
+        "onset_rate_per_s": 2.078,
+        "rms_mean": 0.074,
+        "rms_std": 0.046,
+        "chroma_entropy_mean": 0.926
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-003",
+      "song_id": "autumn_leaves",
+      "title": "Autumn Leaves",
+      "performers": [
+        "bill_evans",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": 32,
+        "form_label": "AABC",
+        "section_lengths": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "form_confidence": 0.99,
+        "status": "partial_score_alignment_exists",
+        "exceptions": [
+          "arranged intro"
+        ]
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [
+          "chart.standard100.autumn_leaves"
+        ],
+        "scorebook_anchors": [
+          {
+            "kind": "scorebook",
+            "book_id": "scorebook.newreal.1",
+            "page": 12,
+            "status": "vision_reviewed"
+          },
+          {
+            "kind": "scorebook",
+            "book_id": "scorebook.real.1",
+            "page": 36,
+            "status": "known_score_anchor"
+          }
+        ]
+      },
+      "audio_provenance": {
+        "duration_s": 361,
+        "tempo_median_estimate": 99.384,
+        "onset_rate_per_s": 3.856,
+        "rms_mean": 0.07,
+        "rms_std": 0.033,
+        "chroma_entropy_mean": 0.914
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-004",
+      "song_id": "blue_in_green",
+      "title": "Blue In Green",
+      "performers": [
+        "bill_evans",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": 10,
+        "form_label": "circular",
+        "section_lengths": [],
+        "form_confidence": 0.99,
+        "status": "core_form_known",
+        "exceptions": [
+          "intro",
+          "head may repeat multiple passes",
+          "weak/noncadential form seam"
+        ]
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [
+          "chart.standard100.blue_in_green"
+        ],
+        "scorebook_anchors": [
+          {
+            "kind": "scorebook",
+            "book_id": "scorebook.real.1",
+            "page": 53,
+            "status": "indexed_score_anchor"
+          }
+        ]
+      },
+      "audio_provenance": {
+        "duration_s": 324,
+        "tempo_median_estimate": 129.199,
+        "onset_rate_per_s": 2.654,
+        "rms_mean": 0.035,
+        "rms_std": 0.028,
+        "chroma_entropy_mean": 0.885
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-005",
+      "song_id": "peace_piece",
+      "title": "Peace Piece",
+      "performers": [
+        "bill_evans"
+      ],
+      "musical_structure": {
+        "core_form_bars": null,
+        "form_label": "ostinato_continuous_variation",
+        "section_lengths": [],
+        "form_confidence": 0.95,
+        "status": "non_drum_noncyclic_reference",
+        "exceptions": [
+          "no recurring jazz chorus assumed"
+        ]
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 404,
+        "tempo_median_estimate": 129.199,
+        "onset_rate_per_s": 1.431,
+        "rms_mean": 0.024,
+        "rms_std": 0.028,
+        "chroma_entropy_mean": 0.894
+      },
+      "canonical_learning_status": "noncyclic_or_reference",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-006",
+      "song_id": "someday_my_prince_will_come",
+      "title": "Someday My Prince Will Come",
+      "performers": [
+        "bill_evans",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": 32,
+        "form_label": "ABAC",
+        "section_lengths": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "form_confidence": 0.99,
+        "status": "core_form_known",
+        "exceptions": [
+          "jazz waltz",
+          "possible intro/pedal vamp"
+        ]
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 296,
+        "tempo_median_estimate": 92.285,
+        "onset_rate_per_s": 3.25,
+        "rms_mean": 0.041,
+        "rms_std": 0.026,
+        "chroma_entropy_mean": 0.919
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-007",
+      "song_id": "the_peacocks",
+      "title": "The Peacocks",
+      "performers": [
+        "bill_evans",
+        "eliot_zigmund"
+      ],
+      "musical_structure": {
+        "core_form_bars": 32,
+        "form_label": "AABA",
+        "section_lengths": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "form_confidence": 0.85,
+        "status": "core_form_known",
+        "exceptions": []
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 366,
+        "tempo_median_estimate": 117.454,
+        "onset_rate_per_s": 3.954,
+        "rms_mean": 0.05,
+        "rms_std": 0.03,
+        "chroma_entropy_mean": 0.856
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-008",
+      "song_id": "spring_is_here",
+      "title": "Spring Is Here",
+      "performers": [
+        "bill_evans",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": 32,
+        "form_label": "AABA",
+        "section_lengths": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "form_confidence": 0.9,
+        "status": "core_form_known",
+        "exceptions": []
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 305,
+        "tempo_median_estimate": 117.454,
+        "onset_rate_per_s": 2.528,
+        "rms_mean": 0.036,
+        "rms_std": 0.028,
+        "chroma_entropy_mean": 0.885
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-009",
+      "song_id": "if_you_could_see_me_now",
+      "title": "If You Could See Me Now",
+      "performers": [
+        "bill_evans",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": 32,
+        "form_label": "A1-A2-B-A",
+        "section_lengths": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "form_confidence": 0.9,
+        "status": "core_form_known",
+        "exceptions": []
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 270,
+        "tempo_median_estimate": 129.199,
+        "onset_rate_per_s": 3.296,
+        "rms_mean": 0.056,
+        "rms_std": 0.041,
+        "chroma_entropy_mean": 0.856
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-010",
+      "song_id": "nardis",
+      "title": "Nardis",
+      "performers": [
+        "bill_evans",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": 32,
+        "form_label": "AABA",
+        "section_lengths": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "form_confidence": 0.99,
+        "status": "core_form_known",
+        "exceptions": []
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [
+          "chart.standard100.nardis"
+        ],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 354,
+        "tempo_median_estimate": 161.499,
+        "onset_rate_per_s": 2.96,
+        "rms_mean": 0.042,
+        "rms_std": 0.03,
+        "chroma_entropy_mean": 0.877
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-011",
+      "song_id": "alice_in_wonderland",
+      "title": "Alice In Wonderland",
+      "performers": [
+        "bill_evans",
+        "scott_lafaro",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": 64,
+        "form_label": "AA'BA'",
+        "section_lengths": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "form_confidence": 0.9,
+        "status": "notated_bar_grid_known",
+        "exceptions": [
+          "jazz waltz",
+          "often described as 32-bar song-form at a larger grouping level"
+        ]
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": [
+          {
+            "kind": "scorebook",
+            "book_id": "scorebook.real.1",
+            "page": 12,
+            "status": "visual_verified"
+          }
+        ]
+      },
+      "audio_provenance": {
+        "duration_s": 421,
+        "tempo_median_estimate": 117.454,
+        "onset_rate_per_s": 3.988,
+        "rms_mean": 0.095,
+        "rms_std": 0.043,
+        "chroma_entropy_mean": 0.917
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-012",
+      "song_id": "how_deep_is_the_ocean",
+      "title": "How Deep Is The Ocean",
+      "performers": [
+        "bill_evans",
+        "scott_lafaro",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": 32,
+        "form_label": "ABAC",
+        "section_lengths": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "form_confidence": 0.95,
+        "status": "core_form_known",
+        "exceptions": [
+          "last four bars commonly tagged"
+        ]
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": [
+          {
+            "kind": "scorebook",
+            "book_id": "scorebook.real.3",
+            "page": 115,
+            "status": "indexed_not_yet_visual_verified"
+          }
+        ]
+      },
+      "audio_provenance": {
+        "duration_s": 214,
+        "tempo_median_estimate": 117.454,
+        "onset_rate_per_s": 3.542,
+        "rms_mean": 0.06,
+        "rms_std": 0.033,
+        "chroma_entropy_mean": 0.839
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-013",
+      "song_id": "when_i_fall_in_love",
+      "title": "When I Fall In Love",
+      "performers": [
+        "bill_evans",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": 32,
+        "form_label": "ABAC",
+        "section_lengths": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "form_confidence": 0.95,
+        "status": "core_form_known",
+        "exceptions": []
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 298,
+        "tempo_median_estimate": 184.57,
+        "onset_rate_per_s": 1.896,
+        "rms_mean": 0.025,
+        "rms_std": 0.025,
+        "chroma_entropy_mean": 0.838
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-014",
+      "song_id": "isn_t_it_romantic",
+      "title": "Isn't It Romantic",
+      "performers": [
+        "bill_evans",
+        "larry_bunker"
+      ],
+      "musical_structure": {
+        "core_form_bars": 32,
+        "form_label": "ABAC",
+        "section_lengths": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "form_confidence": 0.95,
+        "status": "core_form_known",
+        "exceptions": []
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 282,
+        "tempo_median_estimate": 117.454,
+        "onset_rate_per_s": 3.66,
+        "rms_mean": 0.04,
+        "rms_std": 0.024,
+        "chroma_entropy_mean": 0.902
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-015",
+      "song_id": "israel",
+      "title": "Israel",
+      "performers": [
+        "bill_evans",
+        "scott_lafaro",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": 12,
+        "form_label": "minor_blues",
+        "section_lengths": [
+          4,
+          4,
+          4
+        ],
+        "form_confidence": 0.95,
+        "status": "core_form_known",
+        "exceptions": []
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": [
+          {
+            "kind": "scorebook",
+            "book_id": "scorebook.real.1",
+            "page": 240,
+            "status": "visual_verified"
+          }
+        ]
+      },
+      "audio_provenance": {
+        "duration_s": 373,
+        "tempo_median_estimate": 92.285,
+        "onset_rate_per_s": 3.145,
+        "rms_mean": 0.06,
+        "rms_std": 0.033,
+        "chroma_entropy_mean": 0.913
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-016",
+      "song_id": "peri_s_scope",
+      "title": "Peri's Scope",
+      "performers": [
+        "bill_evans",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": null,
+        "form_label": "ABA",
+        "section_lengths": [],
+        "form_confidence": 0.75,
+        "status": "section_chain_known_exact_bar_map_pending",
+        "exceptions": [
+          "solo break",
+          "open solos",
+          "D.C. al Coda",
+          "form-specific cross-rhythm near end of B"
+        ]
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 196,
+        "tempo_median_estimate": 92.285,
+        "onset_rate_per_s": 3.668,
+        "rms_mean": 0.054,
+        "rms_std": 0.025,
+        "chroma_entropy_mean": 0.908
+      },
+      "canonical_learning_status": "section_or_form_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-017",
+      "song_id": "b_minor_waltz",
+      "title": "B Minor Waltz",
+      "performers": [
+        "bill_evans",
+        "eliot_zigmund"
+      ],
+      "musical_structure": {
+        "core_form_bars": null,
+        "form_label": "long_form_waltz",
+        "section_lengths": [],
+        "form_confidence": 0.65,
+        "status": "exact_core_form_pending",
+        "exceptions": [
+          "score evidence reaches at least measure 68"
+        ]
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 196,
+        "tempo_median_estimate": 92.285,
+        "onset_rate_per_s": 2.485,
+        "rms_mean": 0.073,
+        "rms_std": 0.049,
+        "chroma_entropy_mean": 0.804
+      },
+      "canonical_learning_status": "section_or_form_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-018",
+      "song_id": "without_a_song",
+      "title": "Without A Song",
+      "performers": [
+        "bill_evans",
+        "eliot_zigmund"
+      ],
+      "musical_structure": {
+        "core_form_bars": 56,
+        "form_label": "AABA",
+        "section_lengths": [
+          16,
+          16,
+          8,
+          16
+        ],
+        "form_confidence": 0.95,
+        "status": "core_form_known",
+        "exceptions": [
+          "late drum foreground/solo"
+        ]
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 491,
+        "tempo_median_estimate": 92.285,
+        "onset_rate_per_s": 3.177,
+        "rms_mean": 0.063,
+        "rms_std": 0.03,
+        "chroma_entropy_mean": 0.911
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-019",
+      "song_id": "come_rain_or_come_shine",
+      "title": "Come Rain or Come Shine",
+      "performers": [
+        "bill_evans",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": 32,
+        "form_label": "ABAC_family",
+        "section_lengths": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "form_confidence": 0.95,
+        "status": "core_form_known",
+        "exceptions": [
+          "possible short intro"
+        ]
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 204,
+        "tempo_median_estimate": 86.133,
+        "onset_rate_per_s": 2.603,
+        "rms_mean": 0.045,
+        "rms_std": 0.028,
+        "chroma_entropy_mean": 0.871
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-020",
+      "song_id": "you_must_believe_in_spring",
+      "title": "You Must Believe In Spring",
+      "performers": [
+        "bill_evans",
+        "eliot_zigmund"
+      ],
+      "musical_structure": {
+        "core_form_bars": 26,
+        "form_label": "AA'B",
+        "section_lengths": [
+          8,
+          8,
+          10
+        ],
+        "form_confidence": 0.95,
+        "status": "core_form_known_asymmetric",
+        "exceptions": []
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 344,
+        "tempo_median_estimate": 99.384,
+        "onset_rate_per_s": 3.483,
+        "rms_mean": 0.093,
+        "rms_std": 0.056,
+        "chroma_entropy_mean": 0.869
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-021",
+      "song_id": "garys_theme",
+      "title": "Garys Theme",
+      "performers": [
+        "bill_evans",
+        "eliot_zigmund"
+      ],
+      "musical_structure": {
+        "core_form_bars": null,
+        "form_label": "sectional_ballad",
+        "section_lengths": [],
+        "form_confidence": 0.55,
+        "status": "chart_exists_exact_form_pending",
+        "exceptions": []
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 262,
+        "tempo_median_estimate": 117.454,
+        "onset_rate_per_s": 2.878,
+        "rms_mean": 0.032,
+        "rms_std": 0.023,
+        "chroma_entropy_mean": 0.84
+      },
+      "canonical_learning_status": "section_or_form_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-022",
+      "song_id": "some_other_time",
+      "title": "Some Other Time",
+      "performers": [
+        "bill_evans"
+      ],
+      "musical_structure": {
+        "core_form_bars": 32,
+        "form_label": "ABA",
+        "section_lengths": [],
+        "form_confidence": 0.8,
+        "status": "non_drum_reference",
+        "exceptions": [
+          "vocal/piano duo in compilation",
+          "verse may exist outside main refrain"
+        ]
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 286,
+        "tempo_median_estimate": 129.199,
+        "onset_rate_per_s": 2.098,
+        "rms_mean": 0.057,
+        "rms_std": 0.057,
+        "chroma_entropy_mean": 0.861
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-023",
+      "song_id": "in_your_own_sweet_way",
+      "title": "In Your Own Sweet Way [Take 1]",
+      "performers": [
+        "bill_evans",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": 40,
+        "form_label": "AABAC",
+        "section_lengths": [
+          8,
+          8,
+          8,
+          8,
+          8
+        ],
+        "form_confidence": 0.95,
+        "status": "core_form_known",
+        "exceptions": [
+          "head may be in 2 or 4",
+          "solos in 4",
+          "separate coda"
+        ]
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 419,
+        "tempo_median_estimate": 161.499,
+        "onset_rate_per_s": 3.611,
+        "rms_mean": 0.091,
+        "rms_std": 0.053,
+        "chroma_entropy_mean": 0.914
+      },
+      "canonical_learning_status": "form_metadata_available_bar_alignment_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    },
+    {
+      "track_id": "BE-024",
+      "song_id": "re_the_person_i_knew",
+      "title": "Re: The Person I Knew",
+      "performers": [
+        "bill_evans",
+        "paul_motian"
+      ],
+      "musical_structure": {
+        "core_form_bars": null,
+        "form_label": "asymmetric_with_navigation",
+        "section_lengths": [],
+        "form_confidence": 0.6,
+        "status": "exact_core_form_pending",
+        "exceptions": [
+          "rubato intro",
+          "D.S./coda evidence",
+          "published/transcribed bar counts disagree"
+        ]
+      },
+      "expected_harmony_sources": {
+        "shared_chord_chart_ids": [],
+        "scorebook_anchors": []
+      },
+      "audio_provenance": {
+        "duration_s": 350.602,
+        "tempo_median_estimate": 86.133,
+        "onset_rate_per_s": 3.497,
+        "rms_mean": 0.066,
+        "rms_std": 0.049,
+        "chroma_entropy_mean": 0.908
+      },
+      "canonical_learning_status": "section_or_form_pending",
+      "note": "track-level MIR remains navigation/context summary; bar/chorus learning requires structural window alignment"
+    }
+  ]
+}
