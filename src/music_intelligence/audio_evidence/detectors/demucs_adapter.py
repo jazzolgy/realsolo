@@ -27,9 +27,17 @@ def _default_runner(command: Sequence[str]) -> None:
 class DemucsCLISeparator:
     output_root: str
     model_name: str = "htdemucs"
-    expected_stems: tuple[str, ...] = ("drums", "bass", "other", "vocals")
+    expected_stems: tuple[str, ...] | None = None
     runner: CommandRunner = _default_runner
-    separator_id: str = "demucs-cli:v0.1"
+    separator_id: str = "demucs-cli:v0.2"
+
+    def __post_init__(self) -> None:
+        if self.expected_stems is None:
+            self.expected_stems = (
+                ("drums", "bass", "other", "vocals", "guitar", "piano")
+                if self.model_name == "htdemucs_6s"
+                else ("drums", "bass", "other", "vocals")
+            )
 
     def separate(self, source: AudioSource) -> Sequence[SeparatedSource]:
         source.validate()
@@ -62,7 +70,7 @@ class DemucsCLISeparator:
 
         stem_dir = output_root / self.model_name / input_path.stem
         separated: list[SeparatedSource] = []
-        for stem_label in self.expected_stems:
+        for stem_label in self.expected_stems or ():
             stem_path = stem_dir / f"{stem_label}.wav"
             if not stem_path.exists():
                 continue
