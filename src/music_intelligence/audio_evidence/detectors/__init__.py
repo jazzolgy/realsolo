@@ -14,6 +14,7 @@ from .contracts import (
     UnpitchedDetection,
     UnpitchedDetector,
 )
+from .hpss_separator import LibrosaHPSSSeparator
 from .librosa_baseline import (
     LibrosaOnsetDetector,
     LibrosaPercussiveTokenDetector,
@@ -30,6 +31,7 @@ __all__ = [
     "DemucsCLISeparator",
     "InstrumentDetection",
     "InstrumentDetector",
+    "LibrosaHPSSSeparator",
     "LibrosaOnsetDetector",
     "LibrosaPercussiveTokenDetector",
     "LibrosaSourceLoader",
