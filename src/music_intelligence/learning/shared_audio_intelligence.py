@@ -128,17 +128,26 @@ def identity_context_correction(raw: DetectorEvidence) -> ContextCorrection:
     )
 
 
-def musical_moment_from_evidence(evidence: PerformanceEvidence) -> MusicalMoment:
+def musical_moment_from_evidence(
+    evidence: PerformanceEvidence,
+    *,
+    density: float | None = None,
+    tension: float | None = None,
+    register_center: float | None = None,
+    tempo_bpm: float | None = None,
+    beat_position: float | None = None,
+    harmony_label: str | None = None,
+) -> MusicalMoment:
     evidence.validate()
     return MusicalMoment(
         source_id=evidence.source_id,
         timestamp_s=evidence.timestamp_s,
-        density=None,
-        tension=None,
-        register_center=None,
-        tempo_bpm=None,
-        beat_position=None,
-        harmony_label=None,
+        density=density,
+        tension=tension,
+        register_center=register_center,
+        tempo_bpm=tempo_bpm,
+        beat_position=beat_position,
+        harmony_label=harmony_label,
         instrument_probabilities=dict(evidence.posterior.instrument_probabilities),
         role_probabilities=dict(evidence.posterior.role_probabilities),
         confidence_fields=dict(evidence.posterior.confidence_fields),
