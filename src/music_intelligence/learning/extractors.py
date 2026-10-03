@@ -169,6 +169,7 @@ class VocabularyExtractor:
                 _id(data.source_id,self.domain,str(sig)),data.source_id,self.domain,
                 "vocabulary.recurring_cell.v1",features,m.source_event_ids,m.confidence,
                 ("shared_learning:vocabulary","recurrence_detected"),
+                musical_position=m.musical_position,
             ))
         return tuple(out)
 
