@@ -1,0 +1,164 @@
+"""Canonical metric/form coordinates for RealSolo learning.
+
+Learning and retrieval should reason in musical location (form -> section ->
+measure -> beat), not wall-clock seconds. Source seconds remain provenance/evidence
+for alignment and re-analysis, but are not the canonical learning address.
+
+Unknown structure is represented explicitly with None. It must not be fabricated.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Mapping
+
+
+@dataclass(frozen=True)
+class MetricFormPosition:
+    """Musical address of an event.
+
+    measure_index is zero-based internally; display_measure is one-based.
+    beat_in_measure is zero-based so beat 1 is 0.0, beat 2 is 1.0, etc.
+    form_iteration identifies repeated traversals/choruses when known.
+    """
+
+    measure_index: int | None = None
+    beat_in_measure: float | None = None
+    meter_numerator: int | None = None
+    meter_denominator: int | None = None
+    form_id: str | None = None
+    section_id: str | None = None
+    section_measure_index: int | None = None
+    form_iteration: int | None = None
+    phrase_id: str | None = None
+    absolute_beat: float | None = None
+    confidence: float = 0.0
+    provenance: tuple[str,...] = ()
+
+    def validate(self) -> None:
+        if self.measure_index is not None and self.measure_index < 0:
+            raise ValueError("measure_index may not be negative")
+        if self.section_measure_index is not None and self.section_measure_index < 0:
+            raise ValueError("section_measure_index may not be negative")
+        if self.form_iteration is not None and self.form_iteration < 0:
+            raise ValueError("form_iteration may not be negative")
+        if self.meter_numerator is not None and self.meter_numerator <= 0:
+            raise ValueError("meter_numerator must be positive")
+        if self.meter_denominator is not None and self.meter_denominator <= 0:
+            raise ValueError("meter_denominator must be positive")
+        if self.beat_in_measure is not None:
+            if self.beat_in_measure < 0:
+                raise ValueError("beat_in_measure may not be negative")
+            if self.meter_numerator is not None and self.beat_in_measure >= self.meter_numerator:
+                raise ValueError("beat_in_measure must fall inside the measure")
+        if self.absolute_beat is not None and self.absolute_beat < 0:
+            raise ValueError("absolute_beat may not be negative")
+        if not 0.0 <= self.confidence <= 1.0:
+            raise ValueError("confidence must be within 0..1")
+
+    @property
+    def display_measure(self) -> int | None:
+        return None if self.measure_index is None else self.measure_index + 1
+
+    @property
+    def display_beat(self) -> float | None:
+        return None if self.beat_in_measure is None else self.beat_in_measure + 1.0
+
+    @property
+    def resolved_metric(self) -> bool:
+        return self.measure_index is not None and self.beat_in_measure is not None
+
+    @property
+    def resolved_form(self) -> bool:
+        return self.resolved_metric and self.form_id is not None and self.section_id is not None
+
+
+@dataclass(frozen=True)
+class FormSection:
+    section_id: str
+    start_measure: int
+    length_measures: int
+    label: str = ""
+
+    def validate(self) -> None:
+        if not self.section_id:
+            raise ValueError("section_id is required")
+        if self.start_measure < 0:
+            raise ValueError("start_measure may not be negative")
+        if self.length_measures <= 0:
+            raise ValueError("length_measures must be positive")
+
+    def contains(self,measure_index:int) -> bool:
+        return self.start_measure <= measure_index < self.start_measure+self.length_measures
+
+
+@dataclass(frozen=True)
+class FormMap:
+    form_id: str
+    meter_numerator: int
+    meter_denominator: int
+    sections: tuple[FormSection,...]
+    cycle_measures: int | None = None
+    style_family: str = ""
+    confidence: float = 1.0
+    provenance: tuple[str,...] = ()
+
+    def validate(self) -> None:
+        if not self.form_id:
+            raise ValueError("form_id is required")
+        if self.meter_numerator <= 0 or self.meter_denominator <= 0:
+            raise ValueError("meter must be positive")
+        if not 0.0 <= self.confidence <= 1.0:
+            raise ValueError("confidence must be within 0..1")
+        for section in self.sections:
+            section.validate()
+        if self.cycle_measures is not None and self.cycle_measures <= 0:
+            raise ValueError("cycle_measures must be positive")
+
+    def position_from_absolute_beat(
+        self,
+        absolute_beat: float,
+        *,
+        phrase_id: str | None = None,
+        provenance: tuple[str,...] = (),
+    ) -> MetricFormPosition:
+        self.validate()
+        if absolute_beat < 0:
+            raise ValueError("absolute_beat may not be negative")
+        beats_per_measure=float(self.meter_numerator)
+        global_measure=int(absolute_beat // beats_per_measure)
+        beat=absolute_beat-global_measure*beats_per_measure
+        if self.cycle_measures:
+            iteration=global_measure // self.cycle_measures
+            measure=global_measure % self.cycle_measures
+        else:
+            iteration=None
+            measure=global_measure
+        section=next((s for s in self.sections if s.contains(measure)),None)
+        return MetricFormPosition(
+            measure_index=measure,
+            beat_in_measure=beat,
+            meter_numerator=self.meter_numerator,
+            meter_denominator=self.meter_denominator,
+            form_id=self.form_id,
+            section_id=section.section_id if section else None,
+            section_measure_index=(measure-section.start_measure if section else None),
+            form_iteration=iteration,
+            phrase_id=phrase_id,
+            absolute_beat=absolute_beat,
+            confidence=self.confidence,
+            provenance=self.provenance+provenance+("form_map_projection",),
+        )
+
+
+@dataclass(frozen=True)
+class MetricGridEstimate:
+    """Metric position before a full form has been identified."""
+
+    position: MetricFormPosition
+    source_time_s: float | None = None
+    metadata: Mapping[str,object] = field(default_factory=dict)
+
+    def validate(self) -> None:
+        self.position.validate()
+        if self.source_time_s is not None and self.source_time_s < 0:
+            raise ValueError("source_time_s may not be negative")
