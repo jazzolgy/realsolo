@@ -42,7 +42,9 @@ class ResearchRuntime:
             )
             self.instrument_model_backend="local_service"
         elif model_name=="yamnet":
-            model_backend=YAMNetInstrumentBackend()
+            model_backend=YAMNetInstrumentBackend(
+                adaptation_path=self.state_root/"yamnet_jazz_instrument_prototypes.json"
+            )
             self.instrument_model_backend="yamnet"
         elif model_name in {"baseline","none","off"}:
             model_backend=None
