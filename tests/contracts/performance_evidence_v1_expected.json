@@ -1,0 +1,61 @@
+{
+  "contract_version": "performance-evidence.v1",
+  "CommittedPerformanceEvent": [
+    "event_id",
+    "player_id",
+    "instrument",
+    "commitment",
+    "time",
+    "pitch",
+    "unpitched",
+    "voice_role",
+    "layer_role",
+    "dynamic",
+    "articulation",
+    "ornament",
+    "technique",
+    "gesture_id",
+    "harmonic_context_id",
+    "phrase_context_id",
+    "ensemble_state_id",
+    "confidence",
+    "alternatives",
+    "evidence",
+    "provenance",
+    "metadata"
+  ],
+  "ConfidenceBundle": [
+    "pitch",
+    "rhythm",
+    "instrument",
+    "voice",
+    "articulation",
+    "ornament",
+    "notation_relevance",
+    "overall_source"
+  ],
+  "PerformanceTimeSpan": [
+    "onset_seconds",
+    "offset_seconds",
+    "transport_beat",
+    "transport_offset_beat"
+  ],
+  "PerformedPitch": [
+    "nominal_midi",
+    "frequency_hz",
+    "cents_offset",
+    "continuous_pitch_ref"
+  ],
+  "EvidenceRef": [
+    "kind",
+    "source_id",
+    "detail",
+    "confidence"
+  ],
+  "EventAlternative": [
+    "attribute",
+    "value",
+    "confidence",
+    "evidence_ids"
+  ]
+}
