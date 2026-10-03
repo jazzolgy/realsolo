@@ -6,7 +6,7 @@ must not be promoted directly to note ownership.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Mapping, Protocol, Sequence
 
 from ..adapters.source import AudioSource
@@ -77,7 +77,9 @@ def _normalize(values: Mapping[str, float]) -> dict[str, float]:
 @dataclass
 class AudioSetInstrumentPriorDetector:
     backend: AudioSetTagBackend
-    instrument_tag_map: Mapping[str, tuple[str, ...]] = DEFAULT_INSTRUMENT_TAG_MAP
+    instrument_tag_map: Mapping[str, tuple[str, ...]] = field(
+        default_factory=lambda: dict(DEFAULT_INSTRUMENT_TAG_MAP)
+    )
     prior_strength: float = 0.35
     detector_id: str = "audioset-instrument-prior:v0.1"
 
