@@ -35,6 +35,11 @@ class DemucsCLISeparator:
         source.validate()
         if not source.uri:
             raise ValueError("Demucs separator requires AudioSource.uri")
+        if source.start_seconds is not None or source.end_seconds is not None:
+            raise ValueError(
+                "Demucs separator requires a materialized source segment; "
+                "use FFmpegSegmentMaterializer before separation"
+            )
 
         input_path = Path(source.uri)
         if not input_path.exists():
