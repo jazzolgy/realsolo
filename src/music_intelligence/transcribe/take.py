@@ -18,7 +18,7 @@ from .dynamics import (
 from .events import CommittedPerformanceEvent
 from .instrument_profiles import TranspositionSpec, resolve_instrument_profile
 from .instrument_rules import InstrumentNotationDirective
-from .notation import NotatedAtomKind, ScoreSpan
+from .notation import NotatedAtomKind, RhythmNotationContext, ScoreSpan
 from .piano import (
     PianoGestureCandidate,
     apply_piano_gesture_candidate,
@@ -48,6 +48,7 @@ class PartTranscriptionRequest:
     materialize_rests: bool = True
     infer_piano_gestures: bool = True
     infer_dynamic_hairpins: bool = True
+    rhythm_context: RhythmNotationContext = RhythmNotationContext()
     end_beat: float | None = None
 
     def validate(self) -> None:
@@ -325,6 +326,7 @@ def transcribe_part(
             transposition=transposition,
             meter_numerator=meter_numerator,
             meter_denominator=meter_denominator,
+            rhythm_context=request.rhythm_context,
         )
         for event in sorted(request.events, key=_event_sort_key)
     )
