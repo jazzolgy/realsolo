@@ -1,10 +1,10 @@
 from music_intelligence.learning import (
-    LearningArtifact,LearningDomain,SharedLearningEngine,
+    LearningDomain,SharedLearningEngine,
     artifacts_from_audio_aggregate,
 )
 
 
-def test_derived_evidence_can_be_studied_without_entering_training_prior():
+def test_unaligned_audio_aggregate_remains_navigation_only():
     payload={
         "sources":[{
             "source_id":"private.bill_evans.test",
@@ -21,7 +21,8 @@ def test_derived_evidence_can_be_studied_without_entering_training_prior():
     artifacts=artifacts_from_audio_aggregate(payload)
     engine=SharedLearningEngine()
     assert engine.ingest_artifacts(artifacts,learn=False,study_as_evidence=True)==3
+    assert len(engine.store)==3
     assert engine.prior(LearningDomain.VOCABULARY).observations==0
-    evidence=engine.evidence_prior(LearningDomain.VOCABULARY)
-    assert evidence.observations==1
-    assert evidence.numeric_features["step_motion_fraction"]==.3
+    # Timestamp/global acoustic evidence may help navigation, but it does not
+    # become a musical prior until form/section/bar/beat alignment exists.
+    assert engine.evidence_prior(LearningDomain.VOCABULARY).observations==0

@@ -68,10 +68,10 @@ class LearningPriorView:
 class SharedLearningEngine:
     """Keep rights-gated training priors separate from research evidence priors.
 
-    states remains the model-training/adaptation view. evidence_states may
-    learn from derived research artifacts even when training permission is
-    absent. This lets RealSolo study private/reference recordings without
-    silently treating them as training-authorized material.
+    states remains the model-training/adaptation view. evidence_states learns
+    only from research artifacts that have a musical form/score coordinate.
+    Timestamp-only or otherwise unaligned observations remain stored for
+    navigation but do not update musical evidence priors.
     """
     store:LearningStore=field(default_factory=LearningStore)
     states:dict[LearningDomain,DomainLearningState]=field(default_factory=dict)
@@ -94,19 +94,22 @@ class SharedLearningEngine:
         for a in artifacts:
             if self.store.add(a):
                 added+=1
-                if study_as_evidence:self._evidence_state(a.domain).observe(a)
+                if study_as_evidence and a.musical_position is not None:
+                    self._evidence_state(a.domain).observe(a)
                 if learn:self._state(a.domain).observe(a)
         return added
 
     def ingest_conversion(self,conversion:LearningConversion)->int:
-        # Every derived artifact may inform the research/evidence view.
-        # Only rights-gated training artifacts update trainable priors.
+        # Derived artifacts always remain visible in the store. Only aligned
+        # form/score evidence updates the research prior, while only rights-
+        # gated training artifacts update trainable priors.
         training_ids={a.artifact_id for a in conversion.training_artifacts}
         added=0
         for a in conversion.derived_artifacts:
             if self.store.add(a):
                 added+=1
-                self._evidence_state(a.domain).observe(a)
+                if a.musical_position is not None:
+                    self._evidence_state(a.domain).observe(a)
                 if a.artifact_id in training_ids:self._state(a.domain).observe(a)
         return added
 
@@ -128,9 +131,10 @@ class SharedLearningEngine:
         return self._view(domain,self._state(domain))
 
     def evidence_prior(self,domain:LearningDomain)->LearningPriorView:
-        """Research prior from all admitted derived evidence.
+        """Research prior from form/score-aligned derived evidence only.
 
-        Runtime code must still apply legend/provenance promotion rules before
-        converting this view into a musical policy.
+        Unaligned acoustic observations remain navigation evidence. Runtime code
+        must still apply legend/provenance promotion rules before converting
+        this view into a musical policy.
         """
         return self._view(domain,self._evidence_state(domain))

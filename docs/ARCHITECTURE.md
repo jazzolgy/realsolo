@@ -28,6 +28,48 @@ The system may anticipate and prepare, but it must not precompose an exact futur
 - `core/legend_profiles/` — multi-legend contextual tendencies
 - `core/online_evaluator/` — evaluates only unperformed immediate candidates
 
+## Canonical Musical Coordinate
+
+RealSolo learns musical behavior primarily in **musical structure coordinates**,
+not elapsed recording time.
+
+Canonical event/evidence address:
+
+```text
+song
+-> arrangement segment
+-> core form / section
+-> form bar / score bar
+-> beat / subdivision
+-> chorus or recurrence index
+-> performance phase
+-> phrase / harmony / ensemble role
+```
+
+Elapsed seconds remain source provenance and a locator back into the recording.
+They must not be the primary comparison coordinate for musical learning.
+
+This rule applies across Jazz, Pop and Classical music. Jazz may use chorus/form
+recurrence; Pop often uses section instance + bar-within-section; Classical may
+use nested formal-function coordinates such as movement/section/phrase/bar.
+One-off intros, vamps, interludes, tags, cadenzas, codas and outros remain
+first-class arrangement segments rather than being forced into a recurring
+form grid.
+
+Promotion path:
+
+```text
+audio timestamp / feature
+-> beat and bar alignment
+-> section / form / recurrence alignment
+-> instrument and ensemble attribution
+-> same-position comparison
+-> vocabulary / tendency / shared grammar
+```
+
+Unaligned timestamp-only acoustic data may be stored for navigation and anomaly
+detection, but it must not directly update musical research priors.
+
 ## Instrument layers
 
 - `players/sax/`
