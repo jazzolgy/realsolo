@@ -1,0 +1,65 @@
+{
+  "schema": "realsolo.public_analysis_manifest.v1",
+  "source_id": "BE-003",
+  "title": "Autumn Leaves",
+  "source_family": "owner_supplied_playlist_audio",
+  "track_window_seconds": {
+    "start": 708.0,
+    "end": 1069.0,
+    "duration": 361.0
+  },
+  "training_rights_disposition": "DERIVED_ONLY",
+  "publication_class": "PUBLIC_DERIVED",
+  "analysis_status": {
+    "canonical_score_alignment": "unresolved",
+    "head_solo_out_head_labels": "unresolved",
+    "instrument_ownership": "probabilistic",
+    "interaction_claims": "navigation_evidence_only"
+  },
+  "event_layer": {
+    "harmonic_onsets": 2000,
+    "pitch_hypotheses": 9742,
+    "percussive_events": 1311,
+    "register_source_hypotheses": {
+      "low_register_bass_or_piano_low": 3698,
+      "piano_lh_or_bass_high_overlap": 1946,
+      "piano_mid_candidate": 1997,
+      "piano_rh_candidate": 2101
+    },
+    "percussive_class_hypotheses": {
+      "snare_or_mid_percussion": 1143,
+      "kick_or_low_percussion": 85,
+      "cymbal_or_hi_hat": 22,
+      "unresolved": 61
+    }
+  },
+  "timing": {
+    "pulse_bpm_estimate": 103.36,
+    "beat_positions_detected": 608,
+    "rough_4_4_bar_equivalent_count": 152
+  },
+  "interaction_navigation": {
+    "low_register_vs_rh_activity_correlation": -0.03,
+    "rh_vs_same_bar_drums_correlation": 0.52,
+    "low_register_vs_same_bar_drums_correlation": 0.16,
+    "rh_vs_next_bar_drums_correlation": 0.28
+  },
+  "priority_windows": {
+    "bass_vs_piano_lh_bars": [22, 46, 91, 93],
+    "rh_drum_interaction_bars": [70, 71, 139, 142, 143, 144, 145],
+    "sparse_control_bars": [128, 133, 147],
+    "transition_windows_relative_seconds": [
+      [45, 60],
+      [150, 160],
+      [245, 260],
+      [295, 305],
+      [335, 355]
+    ]
+  },
+  "publication_notes": [
+    "Derived analysis is retained publicly by default.",
+    "DERIVED_ONLY controls training admission, not repository visibility.",
+    "Raw audio and full source-derived stems are not committed.",
+    "Current manifest records only results already produced by the Autumn Leaves analysis pass; it does not invent unavailable event rows."
+  ]
+}
