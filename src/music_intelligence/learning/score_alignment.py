@@ -13,6 +13,7 @@ from typing import Mapping
 
 class AlignmentStatus(str, Enum):
     UNALIGNED = "unaligned"
+    FORM_ALIGNED = "form_aligned"
     SECTION_ALIGNED = "section_aligned"
     BAR_ALIGNED = "bar_aligned"
     BEAT_ALIGNED = "beat_aligned"
@@ -40,6 +41,8 @@ class MusicalScoreCoordinate:
     section: str = ""
     bar: int | None = None
     beat: float | None = None
+    form_length_bars: int | None = None
+    form_bar: int | None = None
     chorus_index: int | None = None
     performance_phase: PerformancePhase = PerformancePhase.UNKNOWN
     chord_label: str = ""
@@ -62,6 +65,13 @@ class MusicalScoreCoordinate:
                 raise ValueError("beat requires bar")
             if self.beat < 0:
                 raise ValueError("beat may not be negative")
+        if self.form_length_bars is not None and self.form_length_bars < 1:
+            raise ValueError("form_length_bars must be positive")
+        if self.form_bar is not None:
+            if self.form_length_bars is None:
+                raise ValueError("form_bar requires form_length_bars")
+            if not 1 <= self.form_bar <= self.form_length_bars:
+                raise ValueError("form_bar must lie within form_length_bars")
         if self.chorus_index is not None and self.chorus_index < 0:
             raise ValueError("chorus_index may not be negative")
         if not 0.0 <= self.confidence <= 1.0:
@@ -75,7 +85,23 @@ class MusicalScoreCoordinate:
             return AlignmentStatus.BAR_ALIGNED
         if self.section:
             return AlignmentStatus.SECTION_ALIGNED
+        if self.form_length_bars is not None and self.form_bar is not None:
+            return AlignmentStatus.FORM_ALIGNED
         return AlignmentStatus.UNALIGNED
+
+    @property
+    def distance_to_form_end(self) -> int | None:
+        if self.form_length_bars is None or self.form_bar is None:
+            return None
+        return self.form_length_bars - self.form_bar
+
+    @property
+    def normalized_form_position(self) -> float | None:
+        if self.form_length_bars is None or self.form_bar is None:
+            return None
+        if self.form_length_bars == 1:
+            return 0.0
+        return (self.form_bar - 1) / (self.form_length_bars - 1)
 
 
 @dataclass(frozen=True)
@@ -148,11 +174,52 @@ def same_musical_position(
         return False
     if a.beat is not None and b.beat is not None and a.beat != b.beat:
         return False
+    if (
+        a.form_length_bars is not None
+        and b.form_length_bars is not None
+        and a.form_bar is not None
+        and b.form_bar is not None
+        and (
+            a.form_length_bars != b.form_length_bars
+            or a.form_bar != b.form_bar
+        )
+    ):
+        return False
     if not ignore_chorus and a.chorus_index != b.chorus_index:
         return False
     return (
         a.alignment_status is not AlignmentStatus.UNALIGNED
         and b.alignment_status is not AlignmentStatus.UNALIGNED
+    )
+
+
+def same_form_relative_position(
+    left: ScoreAlignedEvidence,
+    right: ScoreAlignedEvidence,
+    *,
+    require_same_song: bool = False,
+) -> bool:
+    """Compare form-relative location even when no exact score is available.
+
+    This supports cross-recording and, when requested, cross-tune research such
+    as comparing bar 31 of different 32-bar forms for setup/release behavior.
+    """
+    left.validate()
+    right.validate()
+    a = left.alignment.coordinate
+    b = right.alignment.coordinate
+    if require_same_song and a.song_id != b.song_id:
+        return False
+    if (
+        a.form_length_bars is None
+        or b.form_length_bars is None
+        or a.form_bar is None
+        or b.form_bar is None
+    ):
+        return False
+    return (
+        a.form_length_bars == b.form_length_bars
+        and a.form_bar == b.form_bar
     )
 
 
@@ -162,6 +229,8 @@ def research_learning_status(evidence: ScoreAlignedEvidence) -> str:
     status = evidence.alignment.coordinate.alignment_status
     if status is AlignmentStatus.UNALIGNED:
         return "navigation_only"
+    if status is AlignmentStatus.FORM_ALIGNED:
+        return "form_relative_comparison"
     if status is AlignmentStatus.SECTION_ALIGNED:
         return "section_comparison"
     if status is AlignmentStatus.BAR_ALIGNED:
