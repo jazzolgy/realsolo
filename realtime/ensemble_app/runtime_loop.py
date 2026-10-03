@@ -17,7 +17,7 @@ from music_intelligence.reasoning.interaction_scheduler import (
     schedule_ensemble,
 )
 
-from .player_contract import RenderGesture
+from .player_contract import RenderGesture, apply_shared_expression_to_render_gesture
 from .portable_protocol import PortableRenderPacket
 
 
@@ -163,13 +163,23 @@ class EnsembleRuntimeLoop:
             decisions.append(decision)
 
         # Atomic publication phase: later providers did not see these updates.
+        # Shared Expression is deliberately projected only after every provider
+        # has committed its immediate WHAT. It may shape audible HOW but cannot
+        # feed back into candidate selection or change the number of events.
+        expressive_intent = shared_context.get("expressive_intent")
         next_state = snapshot
         gestures: list[RenderGesture] = []
         for decision in decisions:
             next_state = update_player_intent(next_state, decision.intent)
             for event in decision.interaction_events:
                 next_state = append_interaction(next_state, event)
-            gestures.extend(decision.gestures)
+            gestures.extend(
+                apply_shared_expression_to_render_gesture(
+                    gesture,
+                    intent=expressive_intent,
+                )
+                for gesture in decision.gestures
+            )
 
         return RuntimeTickResult(
             snapshot_generation=snapshot.generation,
