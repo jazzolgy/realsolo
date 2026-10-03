@@ -124,3 +124,59 @@ def test_demucs_6s_profile_includes_pretrained_piano_and_guitar_stems(tmp_path: 
         "guitar",
         "piano",
     }
+
+
+def test_demucs_adapter_supports_local_six_stem_checkpoint_repository(tmp_path: Path):
+    source_file = tmp_path / "mix.wav"
+    source_file.write_bytes(b"x")
+    model_repo = tmp_path / "models"
+    model_repo.mkdir()
+    (model_repo / "5c90dfd2-34c22ccb.th").write_bytes(b"checkpoint")
+    output_root = tmp_path / "out"
+
+    captured = {}
+
+    def fake_runner(command):
+        captured["command"] = tuple(command)
+        stem_dir = output_root / "5c90dfd2" / source_file.stem
+        stem_dir.mkdir(parents=True)
+        for name in ("drums", "bass", "other", "vocals", "guitar", "piano"):
+            (stem_dir / f"{name}.wav").write_bytes(b"stem")
+
+    separator = DemucsCLISeparator(
+        output_root=str(output_root),
+        model_name="htdemucs_6s",
+        model_repository=str(model_repo),
+        model_signature="5c90dfd2",
+        runner=fake_runner,
+    )
+    results = separator.separate(
+        AudioSource(source_id="mix", uri=str(source_file))
+    )
+
+    assert "--repo" in captured["command"]
+    assert str(model_repo) in captured["command"]
+    assert "5c90dfd2" in captured["command"]
+    assert {item.metadata.stem_label for item in results} == {
+        "drums",
+        "bass",
+        "other",
+        "vocals",
+        "guitar",
+        "piano",
+    }
+    assert all(
+        item.source.metadata["separator_model_repository"] == str(model_repo)
+        for item in results
+    )
+
+
+def test_demucs_local_repository_requires_signature(tmp_path: Path):
+    model_repo = tmp_path / "models"
+    model_repo.mkdir()
+
+    with pytest.raises(ValueError, match="model_signature"):
+        DemucsCLISeparator(
+            output_root=str(tmp_path / "out"),
+            model_repository=str(model_repo),
+        )
