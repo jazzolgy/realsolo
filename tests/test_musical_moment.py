@@ -161,3 +161,62 @@ def test_moment_does_not_encode_causal_or_quality_judgment():
         "causal_attribution","caused_by","good_bad",
     }
     assert not fields & forbidden
+
+
+def test_research_moment_can_preserve_unknown_quantities_as_none():
+    moment=MusicalMoment(
+        moment_id="alice:unknowns",
+        position=__import__(
+            "music_intelligence.reasoning.musical_moment",
+            fromlist=["MomentPosition"],
+        ).MomentPosition(beat=0.0,bar=13,section="A"),
+        harmony=MomentHarmony(tension=None,confidence=.8),
+        phrase=MomentPhraseState(
+            phrase_id="study:phrase",
+            phrase_position=None,
+            maturity=None,
+            boundary_pressure=None,
+            space=None,
+            tension=None,
+            confidence=.8,
+        ),
+        player_actions=(
+            MomentPlayerAction(
+                "bass","bass",
+                role="support",
+                density=None,
+                energy=None,
+                tension=None,
+                space=None,
+                register_center=None,
+                confidence=.8,
+            ),
+        ),
+        ensemble_density=None,
+        ensemble_energy=None,
+        ensemble_tension=None,
+        space_available=None,
+        confidence=.8,
+    )
+    moment.validate()
+    assert moment.ensemble_density is None
+    assert moment.player_actions[0].density is None
+
+
+def test_runtime_snapshot_still_preserves_known_numeric_ensemble_values():
+    state=EnsembleState(
+        transport=TransportState(beat=1.0,bar=2),
+        ensemble_density=.61,
+        ensemble_energy=.57,
+        ensemble_tension=.44,
+        space_available=.36,
+    )
+    moment=musical_moment_from_ensemble_state(
+        state,
+        moment_id="runtime:known",
+        confidence=.9,
+    )
+    assert moment.ensemble_density == pytest.approx(.61)
+    assert moment.ensemble_energy == pytest.approx(.57)
+    assert moment.ensemble_tension == pytest.approx(.44)
+    assert moment.space_available == pytest.approx(.36)
