@@ -107,6 +107,53 @@ class ConfidenceBundle:
 
 
 @dataclass(frozen=True)
+class ProbabilityEstimate:
+    """Named categorical probability preserved at one inference stage."""
+
+    label: str
+    probability: float
+
+    def validate(self) -> None:
+        if not self.label:
+            raise ValueError("probability label is required")
+        if not 0.0 <= self.probability <= 1.0:
+            raise ValueError("probability must be within 0..1")
+
+
+@dataclass(frozen=True)
+class ContextCorrection:
+    """One auditable reason why context changed an observation."""
+
+    reason: str
+    source_ref: str | None = None
+    weight: float | None = None
+
+    def validate(self) -> None:
+        if not self.reason:
+            raise ValueError("context correction reason is required")
+        if self.weight is not None and not 0.0 <= self.weight <= 1.0:
+            raise ValueError("context correction weight must be within 0..1")
+
+
+@dataclass(frozen=True)
+class EvidenceRevision:
+    """Immutable audit record for a changed interpretation."""
+
+    revision_id: str
+    attribute: str
+    prior_value: str | None = None
+    revised_value: str | None = None
+    reason: str | None = None
+    source_ref: str | None = None
+
+    def validate(self) -> None:
+        if not self.revision_id:
+            raise ValueError("revision_id is required")
+        if not self.attribute:
+            raise ValueError("revision attribute is required")
+
+
+@dataclass(frozen=True)
 class EvidenceRef:
     kind: EvidenceKind
     source_id: str
@@ -158,6 +205,18 @@ class CommittedPerformanceEvent:
     ensemble_state_id: str | None = None
 
     confidence: ConfidenceBundle = field(default_factory=ConfidenceBundle)
+
+    # Observation and interpretation are deliberately separate. Raw detector
+    # output is never overwritten by contextual inference.
+    raw_instrument_probabilities: tuple[ProbabilityEstimate, ...] = ()
+    context_instrument_probabilities: tuple[ProbabilityEstimate, ...] = ()
+    raw_role_probabilities: tuple[ProbabilityEstimate, ...] = ()
+    context_role_probabilities: tuple[ProbabilityEstimate, ...] = ()
+    raw_confidence: ConfidenceBundle | None = None
+    contextual_confidence: ConfidenceBundle | None = None
+    context_corrections: tuple[ContextCorrection, ...] = ()
+    revision_history: tuple[EvidenceRevision, ...] = ()
+
     alternatives: tuple[EventAlternative, ...] = ()
     evidence: tuple[EvidenceRef, ...] = ()
     provenance: tuple[str, ...] = ()
@@ -178,6 +237,27 @@ class CommittedPerformanceEvent:
 
         self.time.validate()
         self.confidence.validate()
+        if self.raw_confidence is not None:
+            self.raw_confidence.validate()
+        if self.contextual_confidence is not None:
+            self.contextual_confidence.validate()
+
+        for distribution_name, distribution in (
+            ("raw_instrument_probabilities", self.raw_instrument_probabilities),
+            ("context_instrument_probabilities", self.context_instrument_probabilities),
+            ("raw_role_probabilities", self.raw_role_probabilities),
+            ("context_role_probabilities", self.context_role_probabilities),
+        ):
+            for item in distribution:
+                item.validate()
+            total = sum(item.probability for item in distribution)
+            if distribution and total > 1.000001:
+                raise ValueError(f"{distribution_name} probabilities may not sum above 1")
+
+        for correction in self.context_corrections:
+            correction.validate()
+        for revision in self.revision_history:
+            revision.validate()
 
         if self.pitch is not None and self.unpitched is not None:
             raise ValueError("event may be pitched or unpitched, not both")
@@ -217,6 +297,20 @@ def event_to_payload(event: CommittedPerformanceEvent) -> dict[str, Any]:
             }
             for ref in event.evidence
         ]
+    payload["raw_instrument_probabilities"] = [
+        asdict(item) for item in event.raw_instrument_probabilities
+    ]
+    payload["context_instrument_probabilities"] = [
+        asdict(item) for item in event.context_instrument_probabilities
+    ]
+    payload["raw_role_probabilities"] = [
+        asdict(item) for item in event.raw_role_probabilities
+    ]
+    payload["context_role_probabilities"] = [
+        asdict(item) for item in event.context_role_probabilities
+    ]
+    payload["context_corrections"] = [asdict(item) for item in event.context_corrections]
+    payload["revision_history"] = [asdict(item) for item in event.revision_history]
     payload["articulation"] = list(event.articulation)
     payload["ornament"] = list(event.ornament)
     payload["technique"] = list(event.technique)
@@ -267,6 +361,40 @@ def event_from_payload(payload: Mapping[str, Any]) -> CommittedPerformanceEvent:
         phrase_context_id=payload.get("phrase_context_id"),
         ensemble_state_id=payload.get("ensemble_state_id"),
         confidence=ConfidenceBundle(**dict(confidence_raw)),
+        raw_instrument_probabilities=tuple(
+            ProbabilityEstimate(**dict(item))
+            for item in payload.get("raw_instrument_probabilities") or ()
+        ),
+        context_instrument_probabilities=tuple(
+            ProbabilityEstimate(**dict(item))
+            for item in payload.get("context_instrument_probabilities") or ()
+        ),
+        raw_role_probabilities=tuple(
+            ProbabilityEstimate(**dict(item))
+            for item in payload.get("raw_role_probabilities") or ()
+        ),
+        context_role_probabilities=tuple(
+            ProbabilityEstimate(**dict(item))
+            for item in payload.get("context_role_probabilities") or ()
+        ),
+        raw_confidence=(
+            ConfidenceBundle(**dict(payload["raw_confidence"]))
+            if payload.get("raw_confidence")
+            else None
+        ),
+        contextual_confidence=(
+            ConfidenceBundle(**dict(payload["contextual_confidence"]))
+            if payload.get("contextual_confidence")
+            else None
+        ),
+        context_corrections=tuple(
+            ContextCorrection(**dict(item))
+            for item in payload.get("context_corrections") or ()
+        ),
+        revision_history=tuple(
+            EvidenceRevision(**dict(item))
+            for item in payload.get("revision_history") or ()
+        ),
         alternatives=tuple(
             EventAlternative(
                 attribute=str(item["attribute"]),
