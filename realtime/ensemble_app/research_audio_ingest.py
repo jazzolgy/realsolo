@@ -24,6 +24,7 @@ from .learned_instrument_adapter import (
     LearnedInstrumentRoleAdapter,
 )
 from .musical_context_corrector import MusicalContextCorrector, MusicalContextFrame
+from music_intelligence.learning.form_position import MetricFormPosition
 from music_intelligence.learning.shared_audio_intelligence import (
     DetectorEvidence,
     PerformanceEvidence,
@@ -104,6 +105,11 @@ class ResearchAudioIngestor:
         posterior=self._musical_context_correctors.setdefault(
             source_id,MusicalContextCorrector()
         ).correct(raw,temporal,musical_context)
+        metric_form_position=MetricFormPosition(
+            absolute_beat=None,
+            confidence=0.0,
+            provenance=("research_listener:awaiting_meter_form_alignment",),
+        )
         evidence=PerformanceEvidence(
             source_id=source_id,
             timestamp_s=max(0.0,ts),
@@ -115,13 +121,16 @@ class ResearchAudioIngestor:
                 "hybrid_instrument_role_detector",
                 "temporal_context_corrector",
                 "beat_phrase_context_corrector",
+                "canonical_metric_form_address_pending",
             ),
+            metric_form_position=metric_form_position,
         )
         moment=musical_moment_from_evidence(
             evidence,
             tempo_bpm=beat.tempo_bpm if beat.confidence >= .35 else None,
             beat_position=beat.phase if beat.confidence >= .35 else None,
             register_center=(obs.note if obs.pitch_confidence >= .45 else None),
+            metric_form_position=metric_form_position,
         )
         observation_payload=asdict(obs)
         kind=observation_payload.get("kind")
