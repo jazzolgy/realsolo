@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from typing import Mapping, Sequence
 
 from .ensemble_state import EnsembleState
+from .musical_policy_projection import MusicalPolicyProjection, MusicalPolicyAxis
 
 
 @dataclass(frozen=True)
@@ -142,9 +143,27 @@ def extract_prior_components(components: Mapping[str, float]) -> dict[str, float
         "learned:",
         "learned_comping:",
         "legend:",
+        "policy:",
     )
     return {
         key:value
         for key,value in components.items()
         if key.startswith(prefixes)
     }
+
+
+
+def projection_prior_components(
+    projection: MusicalPolicyProjection,
+) -> dict[str, float]:
+    """Serialize non-zero player-neutral policy axes for decision audit logs.
+
+    This is observational only. It never feeds the log back into learning.
+    """
+    projection.validate()
+    out: dict[str, float] = {}
+    for axis in MusicalPolicyAxis:
+        value = projection.axis_value(axis)
+        if value:
+            out[f"policy:{axis.value}"] = value
+    return out
