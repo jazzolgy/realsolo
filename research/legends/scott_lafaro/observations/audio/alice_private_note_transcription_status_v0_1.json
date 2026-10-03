@@ -1,0 +1,54 @@
+{
+  "schema_version": "0.1",
+  "legend_id": "scott_lafaro",
+  "recording_id": "bill_evans_trio.alice_in_wonderland.village_vanguard_1961",
+  "track_id": "BE-011",
+  "private_store_id": "private.legend.scott_lafaro.alice.v1",
+  "storage_rule": "research/legends/README.md",
+  "transcription_status": "NOTE_HYPOTHESIS_ONLY",
+  "exact_note_transcription_complete": false,
+  "source_window": {
+    "track_relative_s": [
+      0,
+      30
+    ],
+    "project_audio_global_s": [
+      3388,
+      3418
+    ]
+  },
+  "private_pipeline": {
+    "raw_segment_created": true,
+    "candidate_note_list_created": true,
+    "candidate_event_count": 60,
+    "instrument_attributed_count": 0,
+    "expert_verified_count": 0,
+    "ground_truth_count": 0
+  },
+  "method_summary": [
+    "owner-supplied mixed trio audio",
+    "mono 22.05 kHz research copy",
+    "harmonic/percussive separation",
+    "low-band onset candidate detection",
+    "pYIN/CQT pitch hypotheses"
+  ],
+  "score_anchor": {
+    "source": "Realbk1.pdf",
+    "page": 12,
+    "title": "Alice In Wonderland",
+    "status": "visually_verified"
+  },
+  "limitations": [
+    "mixed trio audio may produce piano-left-hand/resonance candidates",
+    "no candidate is treated as Scott LaFaro ground truth before attribution and verification",
+    "exact candidate note list remains private/local",
+    "public repository stores non-reconstructive status only"
+  ],
+  "promotion_path": [
+    "NOTE_HYPOTHESIS",
+    "SCORE_ALIGNED_HYPOTHESIS",
+    "INSTRUMENT_ATTRIBUTED",
+    "EXPERT_VERIFIED",
+    "GROUND_TRUTH_TRANSCRIPTION"
+  ]
+}
