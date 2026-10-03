@@ -115,5 +115,6 @@ def test_autumn_leaves_case_is_validation_metadata_not_ground_truth():
     case = AutumnLeavesValidationCase()
     assert case.source_id == "BE-003"
     assert case.rights_disposition == "DERIVED_ONLY"
+    assert case.publication_class == "PUBLIC_DERIVED"
     assert case.pitch_hypotheses == 9742
     assert case.canonical_alignment_status == "unresolved"
