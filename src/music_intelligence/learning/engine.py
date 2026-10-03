@@ -66,36 +66,55 @@ class LearningPriorView:
 
 @dataclass
 class SharedLearningEngine:
+    """Keep rights-gated training priors separate from research evidence priors.
+
+    states remains the model-training/adaptation view. evidence_states may
+    learn from derived research artifacts even when training permission is
+    absent. This lets RealSolo study private/reference recordings without
+    silently treating them as training-authorized material.
+    """
     store:LearningStore=field(default_factory=LearningStore)
     states:dict[LearningDomain,DomainLearningState]=field(default_factory=dict)
+    evidence_states:dict[LearningDomain,DomainLearningState]=field(default_factory=dict)
 
     def _state(self,domain:LearningDomain)->DomainLearningState:
         return self.states.setdefault(domain,DomainLearningState())
 
-    def ingest_artifacts(self,artifacts:tuple[LearningArtifact,...],*,learn:bool=True)->int:
+    def _evidence_state(self,domain:LearningDomain)->DomainLearningState:
+        return self.evidence_states.setdefault(domain,DomainLearningState())
+
+    def ingest_artifacts(
+        self,
+        artifacts:tuple[LearningArtifact,...],
+        *,
+        learn:bool=True,
+        study_as_evidence:bool=True,
+    )->int:
         added=0
         for a in artifacts:
             if self.store.add(a):
                 added+=1
+                if study_as_evidence:self._evidence_state(a.domain).observe(a)
                 if learn:self._state(a.domain).observe(a)
         return added
 
     def ingest_conversion(self,conversion:LearningConversion)->int:
-        # Keep all derived artifacts visible in the store, but only rights-gated
-        # training artifacts update learned priors.
+        # Every derived artifact may inform the research/evidence view.
+        # Only rights-gated training artifacts update trainable priors.
         training_ids={a.artifact_id for a in conversion.training_artifacts}
         added=0
         for a in conversion.derived_artifacts:
             if self.store.add(a):
                 added+=1
+                self._evidence_state(a.domain).observe(a)
                 if a.artifact_id in training_ids:self._state(a.domain).observe(a)
         return added
 
     def record_feedback(self,feedback:LearningFeedback)->None:
         self._state(feedback.domain).feedback(feedback)
 
-    def prior(self,domain:LearningDomain)->LearningPriorView:
-        s=self._state(domain)
+    @staticmethod
+    def _view(domain:LearningDomain,s:DomainLearningState)->LearningPriorView:
         return LearningPriorView(
             domain,
             dict(s.numeric_means),
@@ -103,3 +122,15 @@ class SharedLearningEngine:
             dict(s.feedback_bias),
             s.observations,
         )
+
+    def prior(self,domain:LearningDomain)->LearningPriorView:
+        """Rights-gated trainable/adaptive prior."""
+        return self._view(domain,self._state(domain))
+
+    def evidence_prior(self,domain:LearningDomain)->LearningPriorView:
+        """Research prior from all admitted derived evidence.
+
+        Runtime code must still apply legend/provenance promotion rules before
+        converting this view into a musical policy.
+        """
+        return self._view(domain,self._evidence_state(domain))
