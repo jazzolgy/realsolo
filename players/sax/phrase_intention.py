@@ -103,7 +103,7 @@ def choose_sax_phrase_intention(
     else:
         phase="release"
         duration=1.5 if beat <= 2.0 else 1.0
-        rest=.26
+        rest=.72
         biases={
             LinearRouteKind.CHORDAL:.07,
             LinearRouteKind.COMMON_TONE:.10,
