@@ -1,0 +1,442 @@
+{
+  "schema_version": "1.0",
+  "study_id": "study.lafaro.alice.musical_moment.v0_1",
+  "title": "Alice In Wonderland — Scott LaFaro MusicalMoment study",
+  "source_identity": {
+    "track_id": "BE-011",
+    "recording_id": "bill_evans_trio.alice_in_wonderland.village_vanguard_1961",
+    "source_title": "The Complete Village Vanguard Recordings, 1961",
+    "project_audio_window_s": [
+      3388,
+      3809
+    ],
+    "personnel": [
+      "Bill Evans — piano",
+      "Scott LaFaro — bass",
+      "Paul Motian — drums"
+    ],
+    "score_anchor": "Realbk1.pdf p.12",
+    "personnel_status": "verified",
+    "score_status": "visual_verified"
+  },
+  "policy": [
+    "moments are descriptive observations, not causal explanations",
+    "unknown piano/drums behavior is not invented",
+    "bar references follow the literature analysis and are not converted to guessed absolute audio timestamps",
+    "no literal note sequence is stored"
+  ],
+  "moments": [
+    {
+      "moment_id": "alice.lafaro.B.2.rhythmic_identity_entry",
+      "position": {
+        "beat": 0,
+        "bar": 2,
+        "section": "B",
+        "chorus": 0,
+        "form_position": 0
+      },
+      "harmony": {
+        "expected_ref": null,
+        "observed_ref": null,
+        "inferred_ref": null,
+        "local_key_ref": null,
+        "cadence_state": "",
+        "tension": 0,
+        "confidence": 0,
+        "provenance": []
+      },
+      "phrase": {
+        "phrase_id": "lafaro.alice.long_3_4_rhythmic_cell",
+        "phrase_position": 0,
+        "maturity": 0.2,
+        "boundary_pressure": 0,
+        "space": 0,
+        "tension": 0.35,
+        "motif_id": "vocabulary:lafaro.alice.long_3_4_rhythmic_cell.v1",
+        "confidence": 0.86,
+        "provenance": [
+          "literature:clark_2014",
+          "analysis:alice_chorus_b_bars_2_26"
+        ]
+      },
+      "groove": {
+        "grammar_id": "jazz_waltz",
+        "feel": "3_4",
+        "strength": 0,
+        "confidence": 0.72,
+        "provenance": [
+          "literature:clark_2014"
+        ]
+      },
+      "player_actions": [
+        {
+          "player_id": "bass",
+          "instrument": "bass",
+          "role": "support_or_counterline",
+          "action_type": "maintain_rhythmic_identity",
+          "interaction": "",
+          "commitment": "observed",
+          "density": 0.55,
+          "energy": 0.5,
+          "tension": 0.35,
+          "space": 0.15,
+          "register_center": null,
+          "phrase_role": "develop",
+          "motif_id": "vocabulary:lafaro.alice.long_3_4_rhythmic_cell.v1",
+          "semantic_tags": [
+            "productive_repetition",
+            "3_4",
+            "rhythmic_identity"
+          ],
+          "confidence": 0.86,
+          "provenance": [
+            "literature:clark_2014",
+            "derived_abstract_no_literal_notes"
+          ],
+          "metadata": {
+            "bar_range": "2-26",
+            "evidence_scope": "bass-focused literature analysis"
+          }
+        }
+      ],
+      "interactions": [],
+      "ensemble_density": 0,
+      "ensemble_energy": 0,
+      "ensemble_tension": 0,
+      "space_available": 0,
+      "leader_player_id": null,
+      "confidence": 0.72,
+      "provenance": [
+        "literature:clark_2014",
+        "derived_abstract_no_literal_notes"
+      ],
+      "source_refs": [
+        "BE-011",
+        "Realbk1.pdf:p12",
+        "alice_abstract_vocabulary:lafaro.alice.long_3_4_rhythmic_cell.v1"
+      ]
+    },
+    {
+      "moment_id": "alice.lafaro.A.4.offbeat_phrase_entry",
+      "position": {
+        "beat": 0,
+        "bar": 4,
+        "section": "A",
+        "chorus": 0,
+        "form_position": 0
+      },
+      "harmony": {
+        "expected_ref": null,
+        "observed_ref": null,
+        "inferred_ref": null,
+        "local_key_ref": null,
+        "cadence_state": "",
+        "tension": 0,
+        "confidence": 0,
+        "provenance": []
+      },
+      "phrase": {
+        "phrase_id": "lafaro.alice.offbeat_downbeat_avoidance",
+        "phrase_position": 0.15,
+        "maturity": 0.35,
+        "boundary_pressure": 0,
+        "space": 0,
+        "tension": 0.58,
+        "motif_id": "vocabulary:lafaro.alice.offbeat_downbeat_avoidance.v1",
+        "confidence": 0.82,
+        "provenance": [
+          "literature:clark_2014",
+          "analysis:alice_chorus_a_bars_4_9"
+        ]
+      },
+      "groove": {
+        "grammar_id": "jazz_waltz",
+        "feel": "3_4",
+        "strength": 0,
+        "confidence": 0.72,
+        "provenance": [
+          "literature:clark_2014"
+        ]
+      },
+      "player_actions": [
+        {
+          "player_id": "bass",
+          "instrument": "bass",
+          "role": "foreground_or_independent_line",
+          "action_type": "offbeat_phrase_entry",
+          "interaction": "",
+          "commitment": "observed",
+          "density": 0.62,
+          "energy": 0.58,
+          "tension": 0.62,
+          "space": 0.1,
+          "register_center": null,
+          "phrase_role": "develop",
+          "motif_id": "vocabulary:lafaro.alice.offbeat_downbeat_avoidance.v1",
+          "semantic_tags": [
+            "syncopated_entry",
+            "beat_one_avoidance",
+            "independent_linear_motion"
+          ],
+          "confidence": 0.82,
+          "provenance": [
+            "literature:clark_2014",
+            "derived_abstract_no_literal_notes"
+          ],
+          "metadata": {
+            "bar_range": "4-9",
+            "evidence_scope": "bass-focused literature analysis"
+          }
+        }
+      ],
+      "interactions": [],
+      "ensemble_density": 0,
+      "ensemble_energy": 0,
+      "ensemble_tension": 0,
+      "space_available": 0,
+      "leader_player_id": null,
+      "confidence": 0.69,
+      "provenance": [
+        "literature:clark_2014",
+        "derived_abstract_no_literal_notes"
+      ],
+      "source_refs": [
+        "BE-011",
+        "Realbk1.pdf:p12",
+        "alice_abstract_vocabulary:lafaro.alice.offbeat_downbeat_avoidance.v1"
+      ]
+    },
+    {
+      "moment_id": "alice.lafaro.B.43.polyrhythm_retarget",
+      "position": {
+        "beat": 0,
+        "bar": 43,
+        "section": "B",
+        "chorus": 0,
+        "form_position": 0
+      },
+      "harmony": {
+        "expected_ref": null,
+        "observed_ref": null,
+        "inferred_ref": "literature:local_chord_retarget",
+        "local_key_ref": null,
+        "cadence_state": "",
+        "tension": 0,
+        "confidence": 0.64,
+        "provenance": [
+          "literature:clark_2014",
+          "analysis:alice_chorus_b_bars_43_44"
+        ]
+      },
+      "phrase": {
+        "phrase_id": "lafaro.alice.eighth_polyrhythm_retarget",
+        "phrase_position": 0.55,
+        "maturity": 0.62,
+        "boundary_pressure": 0.15,
+        "space": 0,
+        "tension": 0.66,
+        "motif_id": "vocabulary:lafaro.alice.eighth_polyrhythm_retarget.v1",
+        "confidence": 0.84,
+        "provenance": [
+          "literature:clark_2014",
+          "analysis:alice_chorus_b_bars_43_44"
+        ]
+      },
+      "groove": {
+        "grammar_id": "jazz_waltz",
+        "feel": "3_4",
+        "strength": 0,
+        "confidence": 0.74,
+        "provenance": [
+          "literature:clark_2014"
+        ]
+      },
+      "player_actions": [
+        {
+          "player_id": "bass",
+          "instrument": "bass",
+          "role": "counterline",
+          "action_type": "polyrhythmic_cell_retarget",
+          "interaction": "",
+          "commitment": "observed",
+          "density": 0.72,
+          "energy": 0.62,
+          "tension": 0.68,
+          "space": 0.05,
+          "register_center": null,
+          "phrase_role": "develop",
+          "motif_id": "vocabulary:lafaro.alice.eighth_polyrhythm_retarget.v1",
+          "semantic_tags": [
+            "eighth_note_cell",
+            "polyrhythm",
+            "harmonic_retarget"
+          ],
+          "confidence": 0.84,
+          "provenance": [
+            "literature:clark_2014",
+            "derived_abstract_no_literal_notes"
+          ],
+          "metadata": {
+            "bar_range": "43-44",
+            "evidence_scope": "bass-focused literature analysis"
+          }
+        }
+      ],
+      "interactions": [],
+      "ensemble_density": 0,
+      "ensemble_energy": 0,
+      "ensemble_tension": 0,
+      "space_available": 0,
+      "leader_player_id": null,
+      "confidence": 0.7,
+      "provenance": [
+        "literature:clark_2014",
+        "derived_abstract_no_literal_notes"
+      ],
+      "source_refs": [
+        "BE-011",
+        "Realbk1.pdf:p12",
+        "alice_abstract_vocabulary:lafaro.alice.eighth_polyrhythm_retarget.v1"
+      ]
+    },
+    {
+      "moment_id": "alice.lafaro.space.foreground_handoff",
+      "position": {
+        "beat": 0,
+        "bar": 0,
+        "section": "",
+        "chorus": 0,
+        "form_position": 0
+      },
+      "harmony": {
+        "expected_ref": null,
+        "observed_ref": null,
+        "inferred_ref": null,
+        "local_key_ref": null,
+        "cadence_state": "",
+        "tension": 0,
+        "confidence": 0,
+        "provenance": []
+      },
+      "phrase": {
+        "phrase_id": "lafaro.alice.space_triggered_foreground_answer",
+        "phrase_position": 0,
+        "maturity": 0.5,
+        "boundary_pressure": 0.35,
+        "space": 0.75,
+        "tension": 0.5,
+        "motif_id": "vocabulary:lafaro.alice.space_triggered_foreground_answer.v1",
+        "confidence": 0.78,
+        "provenance": [
+          "literature:clark_2014",
+          "analysis:alice_conversational_counterpoint"
+        ]
+      },
+      "groove": {
+        "grammar_id": "jazz_waltz",
+        "feel": "3_4",
+        "strength": 0,
+        "confidence": 0.68,
+        "provenance": [
+          "literature:clark_2014"
+        ]
+      },
+      "player_actions": [
+        {
+          "player_id": "piano",
+          "instrument": "piano",
+          "role": "foreground",
+          "action_type": "leave_space",
+          "interaction": "",
+          "commitment": "observed",
+          "density": 0.2,
+          "energy": 0.4,
+          "tension": 0.4,
+          "space": 0.8,
+          "register_center": null,
+          "phrase_role": "phrase_gap",
+          "motif_id": null,
+          "semantic_tags": [
+            "space_opening"
+          ],
+          "confidence": 0.72,
+          "provenance": [
+            "literature:clark_2014",
+            "analysis:alice_conversational_counterpoint"
+          ],
+          "metadata": {
+            "evidence_scope": "interaction example"
+          }
+        },
+        {
+          "player_id": "bass",
+          "instrument": "bass",
+          "role": "foreground",
+          "action_type": "foreground_entry",
+          "interaction": "answer",
+          "commitment": "observed",
+          "density": 0.7,
+          "energy": 0.68,
+          "tension": 0.58,
+          "space": 0.1,
+          "register_center": 0.72,
+          "phrase_role": "answer",
+          "motif_id": "vocabulary:lafaro.alice.space_triggered_foreground_answer.v1",
+          "semantic_tags": [
+            "answer",
+            "ascending_response",
+            "foreground_handoff"
+          ],
+          "confidence": 0.78,
+          "provenance": [
+            "literature:clark_2014",
+            "derived_abstract_no_literal_notes"
+          ],
+          "metadata": {
+            "evidence_scope": "interaction example"
+          }
+        }
+      ],
+      "interactions": [
+        {
+          "source_player_id": "bass",
+          "kind": "answer",
+          "target_player_ids": [
+            "piano"
+          ],
+          "confidence": 0.72,
+          "tags": [
+            "observed_relation",
+            "foreground_handoff"
+          ],
+          "provenance": [
+            "literature:clark_2014",
+            "analysis:alice_conversational_counterpoint"
+          ]
+        }
+      ],
+      "ensemble_density": 0,
+      "ensemble_energy": 0,
+      "ensemble_tension": 0,
+      "space_available": 0.75,
+      "leader_player_id": null,
+      "confidence": 0.68,
+      "provenance": [
+        "literature:clark_2014",
+        "derived_abstract_no_literal_notes"
+      ],
+      "source_refs": [
+        "BE-011",
+        "Realbk1.pdf:p12",
+        "alice_abstract_vocabulary:lafaro.alice.space_triggered_foreground_answer.v1"
+      ]
+    }
+  ],
+  "open_questions": [
+    "absolute audio timestamps for the literature bar references remain unverified",
+    "piano and drums actions are intentionally absent from bass-only evidence windows",
+    "harmony refs should be filled only after score/audio alignment",
+    "ensemble density/energy/tension are left neutral where the source does not support values",
+    "register_center is only supplied where the source explicitly supports an upper-register trajectory"
+  ]
+}
