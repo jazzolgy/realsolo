@@ -246,6 +246,7 @@ class Stage1QuartetRuntime:
                 "bass_mode": "walking",
                 "groove_context": groove,
                 "time_feel": groove.feel.value,
+                "style_tags": ("jazz","bebop","swing"),
                 "sax_allow_improvisation": True,
                 "sax_score_snapshot": sax_score_snapshot,
                 "sax_target_pitch_classes": sax_targets,
