@@ -205,7 +205,11 @@ def song_from_normalized_record(record: Mapping[str, object]) -> RealChordSong:
     for whichever importer parses the user's RealChord source into normalized
     measure/chord records.
     """
-    raw_measures = record.get("measures", ())
+    canonical = record.get("canonical")
+    if isinstance(canonical, Mapping):
+        raw_measures = canonical.get("measures", ())
+    else:
+        raw_measures = record.get("measures", ())
     if not isinstance(raw_measures, Sequence):
         raise TypeError("measures must be a sequence")
 
@@ -213,9 +217,11 @@ def song_from_normalized_record(record: Mapping[str, object]) -> RealChordSong:
     for raw in raw_measures:
         if not isinstance(raw, Mapping):
             raise TypeError("each measure must be a mapping")
-        raw_chords = raw.get("chords", ())
+        raw_chords = raw.get("chords")
+        if raw_chords is None:
+            raw_chords = raw.get("expected_harmony", ())
         if not isinstance(raw_chords, Sequence):
-            raise TypeError("chords must be a sequence")
+            raise TypeError("chords/expected_harmony must be a sequence")
 
         chords: list[RealChordChord] = []
         for item in raw_chords:
@@ -236,7 +242,7 @@ def song_from_normalized_record(record: Mapping[str, object]) -> RealChordSong:
             chords=tuple(chords),
             repeat_start=bool(raw.get("repeat_start", False)),
             repeat_end=bool(raw.get("repeat_end", False)),
-            ending=str(raw.get("ending", "")),
+            ending="" if raw.get("ending") is None else str(raw.get("ending", "")),
             form_role=str(raw.get("form_role", "")),
             navigation=_tuple_strings(raw.get("navigation")),
         ))

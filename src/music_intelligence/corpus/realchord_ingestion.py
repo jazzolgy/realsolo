@@ -48,11 +48,16 @@ def parse_realchord_playlist_html(text: str) -> tuple[RealChordRawSong, ...]:
     payload = unquote(unescape(match.group(1)))
 
     records: list[RealChordRawSong] = []
-    for source_index, token in enumerate(payload.split("==="), 1):
+    tokens = payload.split("===")
+    for source_index, token in enumerate(tokens, 1):
         if not token.strip():
             continue
         fields = token.split("=")
         if len(fields) < 7:
+            # Modern playlist exports append the playlist display name after
+            # the final === delimiter. It is not a song record.
+            if source_index == len(tokens):
+                continue
             raise ValueError(
                 f"malformed RealChord item at source index {source_index}"
             )
