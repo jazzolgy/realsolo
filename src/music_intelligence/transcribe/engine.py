@@ -29,7 +29,11 @@ from .dynamics import (
 )
 from .engraving import EngravingPlan, EngravingProfile, build_default_engraving_plan
 from .events import CommittedPerformanceEvent
-from .instrument_profiles import InstrumentProfile, resolve_instrument_profile
+from .instrument_profiles import (
+    InstrumentProfile,
+    TranspositionSpec,
+    resolve_instrument_profile,
+)
 from .instrument_rules import InstrumentNotationDirective
 from .musicxml import score_to_musicxml
 from .projection import EventProjectionResult, project_pitched_event
@@ -74,12 +78,18 @@ class NotationEngine:
         spelling_context: PitchSpellingContext = PitchSpellingContext(),
         directive: InstrumentNotationDirective | None = None,
     ) -> EventProjectionResult:
+        profile = self.resolve_instrument(event.instrument)
         return project_pitched_event(
             event,
             part_id=part_id,
             staffs=staffs,
             spelling_context=spelling_context,
             directive=directive,
+            transposition=(
+                profile.transposition
+                if profile is not None
+                else TranspositionSpec()
+            ),
             meter_numerator=self.config.meter_numerator,
             meter_denominator=self.config.meter_denominator,
         )
