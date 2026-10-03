@@ -35,6 +35,7 @@ class ResearchRuntime:
         self.checkpoint.restore_session(self.session)
         model_endpoint=os.environ.get("REALSOLO_INSTRUMENT_MODEL_URL","").strip()
         model_name=os.environ.get("REALSOLO_INSTRUMENT_MODEL","yamnet").strip().lower()
+        self.yamnet_backend=None
         if model_endpoint:
             model_backend=LocalInstrumentModelServiceBackend(
                 endpoint=model_endpoint,
@@ -42,9 +43,10 @@ class ResearchRuntime:
             )
             self.instrument_model_backend="local_service"
         elif model_name=="yamnet":
-            model_backend=YAMNetInstrumentBackend(
+            self.yamnet_backend=YAMNetInstrumentBackend(
                 adaptation_path=self.state_root/"yamnet_jazz_instrument_prototypes.json"
             )
+            model_backend=self.yamnet_backend
             self.instrument_model_backend="yamnet"
         elif model_name in {"baseline","none","off"}:
             model_backend=None
@@ -152,6 +154,7 @@ class ResearchHandler(SimpleHTTPRequestHandler):
                 "last_artist":self.runtime.last_artist,
                 "instrument_model_backend":self.runtime.instrument_model_backend,
                 "source_separator_backend":("local_service" if os.environ.get("REALSOLO_SOURCE_SEPARATOR_URL","").strip() else "none"),
+                "yamnet_adaptation_counts":(self.runtime.yamnet_backend.adaptation_counts() if self.runtime.yamnet_backend is not None else {}),
             })
             return
         if parsed.path=="/api/research/search":
@@ -207,11 +210,31 @@ class ResearchHandler(SimpleHTTPRequestHandler):
             except (ValueError,RuntimeError,json.JSONDecodeError) as exc:
                 self._json({"ok":False,"error":str(exc)},400)
             return
+        if parsed.path=="/api/research/instrument-label":
+            try:
+                payload=json.loads(body.decode("utf-8") or "{}")
+                label=str(payload.get("label","")).strip()
+                if self.runtime.yamnet_backend is None:
+                    raise ValueError("YAMNet adaptation is not active")
+                if not self.runtime.yamnet_backend.admit_explicit_label(label):
+                    raise ValueError("no current YAMNet embedding is ready to label")
+                self._json({
+                    "ok":True,
+                    "label":label,
+                    "counts":self.runtime.yamnet_backend.adaptation_counts(),
+                })
+            except (ValueError,RuntimeError,json.JSONDecodeError) as exc:
+                self._json({"ok":False,"error":str(exc)},400)
+            return
         if parsed.path=="/api/research/audio":
             source_id=self.headers.get("X-RealSolo-Source-Id","").strip()
             try:
                 sample_rate=int(self.headers.get("X-RealSolo-Sample-Rate","48000"))
-                row=self.runtime.ingestor.ingest_float32(source_id,body,sample_rate=sample_rate)
+                media_time_header=self.headers.get("X-RealSolo-Media-Time","").strip()
+                media_time=float(media_time_header) if media_time_header else None
+                row=self.runtime.ingestor.ingest_float32(
+                    source_id,body,sample_rate=sample_rate,timestamp=media_time
+                )
                 if self.runtime.session.current is not None:
                     self.runtime.session.mark_analyzing()
                 self.runtime.save()
