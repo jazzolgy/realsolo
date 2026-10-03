@@ -5,10 +5,11 @@ musical address used for learning/comparison.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Iterable
 
 from .score_alignment import MusicalScoreCoordinate
+from .representation import StructuralPerformanceData, StructuralPerformanceEvent
 
 
 @dataclass(frozen=True)
@@ -97,3 +98,42 @@ class StructuralAlignmentIndex:
             reverse=True,
         )
         return matches[0].locate(time_s)
+
+
+
+def align_structural_performance_data(
+    data: StructuralPerformanceData,
+    index: StructuralAlignmentIndex,
+) -> StructuralPerformanceData:
+    """Attach canonical musical coordinates to timestamped events.
+
+    Existing coordinates are preserved. Events without onset_seconds remain
+    unchanged rather than guessed.
+    """
+    data.validate()
+    aligned_events: list[StructuralPerformanceEvent] = []
+    aligned_count = 0
+    for event in data.events:
+        if event.musical_coordinate is not None:
+            aligned_events.append(event)
+            aligned_count += 1
+            continue
+        if event.onset_seconds is None:
+            aligned_events.append(event)
+            continue
+        coordinate = index.locate(source_id=data.source_id, time_s=event.onset_seconds)
+        if coordinate is None:
+            aligned_events.append(event)
+            continue
+        aligned_events.append(replace(event, musical_coordinate=coordinate))
+        aligned_count += 1
+
+    metadata = dict(data.metadata)
+    metadata["structural_alignment_event_count"] = str(aligned_count)
+    metadata["structural_alignment_total_event_count"] = str(len(data.events))
+    metadata["structural_alignment_status"] = (
+        "structure_aligned" if aligned_count else "navigation_only"
+    )
+    out = replace(data, events=tuple(aligned_events), metadata=metadata)
+    out.validate()
+    return out
