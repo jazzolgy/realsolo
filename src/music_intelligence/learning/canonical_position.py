@@ -106,6 +106,7 @@ def position_feature_map(event: StructuralPerformanceEvent) -> dict[str,object]:
         "section_id":p.section_id,
         "section_measure_index":p.section_measure_index,
         "form_iteration":p.form_iteration,
+        "form_path":p.form_path,
         "phrase_id":p.phrase_id,
         "absolute_beat":p.absolute_beat,
         "position_confidence":p.confidence,
