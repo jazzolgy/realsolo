@@ -150,7 +150,11 @@ class CompositeObservationDetector:
                             observation_id=source.source_id + ":" + pitch.pitch_id,
                             source_id=source.source_id,
                             onset_seconds=onset.onset_seconds,
-                            offset_seconds=pitch.offset_seconds or onset.offset_seconds,
+                            offset_seconds=(
+                                pitch.offset_seconds
+                                if pitch.offset_seconds is not None
+                                else onset.offset_seconds
+                            ),
                             nominal_midi=pitch.nominal_midi,
                             frequency_hz=pitch.frequency_hz,
                             instrument_probabilities=instrument_probs,
@@ -166,8 +170,6 @@ class CompositeObservationDetector:
                             ),
                         )
                     )
-                continue
-
             for index, token in enumerate(onset_unpitched, start=1):
                 local_evidence = list(detector_evidence)
                 local_evidence.append(
