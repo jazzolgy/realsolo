@@ -125,6 +125,8 @@ class InstrumentDetector(Protocol):
         self,
         source: AudioSource,
         onsets: Sequence[OnsetDetection],
+        pitches: Sequence[PitchDetection] = (),
+        unpitched: Sequence[UnpitchedDetection] = (),
     ) -> Sequence[InstrumentDetection]:
         ...
 
