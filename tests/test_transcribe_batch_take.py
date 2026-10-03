@@ -125,3 +125,120 @@ def test_engine_can_emit_musicxml_in_one_call_from_performance_evidence():
     assert result.score.title == "One Call"
     assert "<score-partwise" in xml
     assert "<part-name>Flute</part-name>" in xml
+
+
+
+def test_batch_take_materializes_readable_rests_in_voice_gaps():
+    engine = NotationEngine()
+    request = PartTranscriptionRequest(
+        part_id="fl",
+        name="Flute",
+        instrument="flute",
+        events=(
+            _event("fl:late1", "flute", 72, 1),
+            _event("fl:late2", "flute", 74, 3),
+        ),
+        staffs=(StaffProfile("fl:staff", "fl"),),
+    )
+
+    result, xml = engine.transcribe_take_musicxml(
+        (request,),
+        score_id="take:rests",
+        title="Readable Rests",
+    )
+
+    rests = [
+        event
+        for event in result.score.parts[0].events
+        if event.kind.value == "rest"
+    ]
+    assert len(rests) >= 2
+
+    root = ET.fromstring(xml)
+    assert root.findall(".//part[@id='fl']/measure/note/rest")
+
+
+def test_batch_piano_gesture_becomes_true_musicxml_chord():
+    engine = NotationEngine()
+
+    def piano_event(event_id, midi, seconds):
+        return CommittedPerformanceEvent(
+            event_id=event_id,
+            player_id="piano",
+            instrument="piano",
+            commitment=CommitmentState.PLAYED,
+            time=PerformanceTimeSpan(
+                onset_seconds=seconds,
+                offset_seconds=seconds + .45,
+                transport_beat=0.0,
+                transport_offset_beat=1.0,
+            ),
+            pitch=PerformedPitch(nominal_midi=float(midi)),
+            dynamic=.5,
+            gesture_id="gesture:triad",
+            provenance=("test:performance-evidence",),
+        )
+
+    request = PartTranscriptionRequest(
+        part_id="pn",
+        name="Piano",
+        instrument="piano",
+        events=(
+            piano_event("pn:c", 60, 0.000),
+            piano_event("pn:e", 64, 0.014),
+            piano_event("pn:g", 67, 0.026),
+        ),
+        staffs=(StaffProfile("pn:upper", "upper"),),
+    )
+
+    result, xml = engine.transcribe_take_musicxml(
+        (request,),
+        score_id="take:piano-chord",
+        title="Piano Chord",
+    )
+
+    assert result.parts[0].piano_gestures
+    assert result.parts[0].piano_gestures[0].kind == "simultaneous_chord"
+    root = ET.fromstring(xml)
+    assert len(root.findall(".//part[@id='pn']/measure/note/chord")) == 2
+
+
+def test_batch_take_infers_dynamic_hairpin_and_exports_wedge():
+    engine = NotationEngine()
+
+    def dyn_event(event_id, beat, dynamic):
+        event = _event(event_id, "flute", 72 + int(beat), beat)
+        return CommittedPerformanceEvent(
+            event_id=event.event_id,
+            player_id=event.player_id,
+            instrument=event.instrument,
+            commitment=event.commitment,
+            time=event.time,
+            pitch=event.pitch,
+            dynamic=dynamic,
+            provenance=event.provenance,
+        )
+
+    request = PartTranscriptionRequest(
+        part_id="fl",
+        name="Flute",
+        instrument="flute",
+        events=(
+            dyn_event("fl:d1", 0, .30),
+            dyn_event("fl:d2", 1, .37),
+            dyn_event("fl:d3", 2, .45),
+            dyn_event("fl:d4", 3, .54),
+        ),
+        staffs=(StaffProfile("fl:staff", "fl"),),
+    )
+
+    result, xml = engine.transcribe_take_musicxml(
+        (request,),
+        score_id="take:hairpin",
+        title="Hairpin Take",
+    )
+
+    assert len(result.score.spanners) == 1
+    root = ET.fromstring(xml)
+    wedges = root.findall(".//part[@id='fl']/measure/direction/direction-type/wedge")
+    assert [w.get("type") for w in wedges] == ["crescendo", "stop"]
