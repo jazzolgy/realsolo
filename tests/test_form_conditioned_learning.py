@@ -1,6 +1,6 @@
 from music_intelligence.learning.engine import SharedLearningEngine
 from music_intelligence.learning.extractors import extract_learning_artifacts
-from music_intelligence.learning.form_position import FormMap, FormSection
+from music_intelligence.learning.form_position import FormMap, FormSection, MeterSegment
 from music_intelligence.learning.representation import (
     LearningDomain,
     StructuralPerformanceData,
@@ -139,3 +139,19 @@ def test_hierarchical_form_path_supports_classical_or_nested_pop_forms():
     p=fmap.position_from_absolute_beat(2.0)
     assert p.section_id == "primary_theme"
     assert p.form_path == ("exposition","primary_theme")
+
+
+def test_form_map_supports_meter_changes():
+    fmap=FormMap(
+        form_id="mixed_meter",
+        meter_numerator=4,
+        meter_denominator=4,
+        sections=(FormSection("A",0,8),),
+        meter_segments=(MeterSegment(2,3,4),),
+    )
+    # m1 4 qn + m2 4 qn + m3 3 qn; 8 qn is the first beat of measure 3.
+    p=fmap.position_from_absolute_beat(8.0)
+    assert p.measure_index == 2
+    assert p.beat_in_measure == 0.0
+    assert p.meter_numerator == 3
+    assert p.meter_denominator == 4
