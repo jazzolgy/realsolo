@@ -58,8 +58,10 @@ def _position_features(event):
         "position_status":p.alignment_status.value,
         "song_id":p.song_id,
         "section":p.section,
+        "section_bar":p.section_bar,
         "bar":p.bar,
         "beat":p.beat,
+        "subdivision":p.subdivision,
         "form_length_bars":p.form_length_bars,
         "form_bar":p.form_bar,
         "chorus_index":p.chorus_index,
@@ -67,6 +69,8 @@ def _position_features(event):
         "arrangement_segment":p.arrangement_segment,
         "phrase_position":p.phrase_position,
         "harmonic_function":p.harmonic_function,
+        "harmonic_position":p.harmonic_position,
+        "cadence_position":p.cadence_position,
     }
 
 
