@@ -30,7 +30,7 @@ h1{margin:0;font-size:clamp(25px,4vw,38px);letter-spacing:-.03em}.sub{color:#9ba
 <header class="top">
 <div><h1 id="title">RealSolo</h1><div class="sub">Stage 1 · chart + playback transport</div></div>
 <div class="controls">
-<label class="control">Mode<select id="role"><option value="soloist">Soloist — AI accompanies</option><option value="comper">Comper — AI solos</option><option value="quartet">Jam Quartet — AI quartet</option></select></label>
+<label class="control">Mode<select id="role"><option value="soloist">Soloist — AI accompanies</option><option value="comper">Comper — AI solos</option><option value="quartet">Jam Quartet — AI quartet</option><option value="legend_showcase">Legend Showcase — full promoted legends</option></select></label>
 <label class="control">Tempo<input id="tempo" class="tempo" type="number" min="40" max="320" value="120"></label>
 <label class="control">Transpose<select id="transpose" class="small"></select></label>
 <label class="control">Choruses<input id="choruses" class="small" type="number" min="1" max="20" value="3"></label>
@@ -121,10 +121,11 @@ if(ev.gesture)renderGesture(ev.gesture,when,beatDur);
 function queueQuartet(chord,nextChord,beatInBar,barIndex,chorusIndex,when,beatDur){
 quartetRequestChain=quartetRequestChain.then(async function(){
 try{
-var url="/api/quartet-event?chord="+encodeURIComponent(chord)+"&next_chord="+encodeURIComponent(nextChord)+"&beat="+beatInBar+"&bar_index="+barIndex+"&chorus="+chorusIndex+"&tempo="+encodeURIComponent(els.tempo.value);
+var showcase=els.role.value==="legend_showcase"?"1":"0";
+var url="/api/quartet-event?chord="+encodeURIComponent(chord)+"&next_chord="+encodeURIComponent(nextChord)+"&beat="+beatInBar+"&bar_index="+barIndex+"&chorus="+chorusIndex+"&tempo="+encodeURIComponent(els.tempo.value)+"&legend_showcase="+showcase;
 var r=await fetch(url);var payload=await r.json();
 (payload.gestures||[]).forEach(function(g){renderGesture(g,Math.max(when,audioCtx.currentTime+.01),beatDur);});
-els.providerText.textContent="Canonical quartet · "+(payload.players||[]).join(" · ")+" · "+payload.performance_convention+" · "+payload.groove;
+els.providerText.textContent=(payload.legend_showcase?"Legend Showcase":"Canonical quartet")+" · "+(payload.players||[]).join(" · ")+" · "+payload.performance_convention+" · "+payload.groove;
 }catch(e){els.audioText.textContent="Quartet error: "+e.message;}
 });
 }
@@ -173,7 +174,7 @@ function scheduleSound(nowMs){
 if(!playing||!audioCtx||!chart)return;
 var tempo=clamp(Number(els.tempo.value)||120,40,320),beatDur=60/tempo,beatNow=currentBeat(nowMs);
 
-if(els.role.value==="quartet"){
+if(els.role.value==="quartet"||els.role.value==="legend_showcase"){
 var subdivisions=2,step=1/subdivisions,tickNow=beatNow*subdivisions,targetTick=Math.floor(tickNow)+3;
 while(lastScheduledQuartetTick<targetTick){
 lastScheduledQuartetTick++;
@@ -207,7 +208,7 @@ els.providerText.textContent="Players · "+rows.map(function(x){return x.role+":
 }catch(e){els.providerText.textContent="Player status unavailable";}
 }
 async function loadChart(){
-var tr=Number(els.transpose.value||0);var repertoire=els.role.value==="quartet"?"autumn_leaves":"demo";
+var tr=Number(els.transpose.value||0);var repertoire=(els.role.value==="quartet"||els.role.value==="legend_showcase")?"autumn_leaves":"demo";
 var res=await fetch("/api/chart?transpose="+encodeURIComponent(tr)+"&repertoire="+encodeURIComponent(repertoire));chart=await res.json();els.title.textContent=chart.title;
 if(!playing)els.tempo.value=Math.round(chart.tempo_bpm);renderChart();render(0);
 }
@@ -229,13 +230,13 @@ if(!chart)return;var beats=currentBeat(now);var beatsPerChorus=chart.bars.length
 var displayBeats=Math.min(beats,Math.max(0,totalBeats-.0001));var chorus=Math.floor(displayBeats/beatsPerChorus);var inChorus=displayBeats%beatsPerChorus;var barIndex=Math.floor(inChorus/chart.beats_per_bar);
 var beatInBar=inChorus%chart.beats_per_bar;var beatNumber=Math.floor(beatInBar)+1;var chord=chordAt(barIndex,beatInBar);
 document.querySelectorAll(".bar").forEach(function(node,i){node.classList.toggle("active",i===barIndex);node.querySelectorAll(".beat-dot").forEach(function(dot,j){dot.classList.toggle("on",i===barIndex&&j===beatNumber-1);});});
-els.position.textContent="Bar "+(barIndex+1)+" · Beat "+beatNumber;els.currentChord.textContent=chord||"—";els.chorus.textContent=(chorus+1)+" / "+totalChoruses;els.aiRole.textContent=els.role.value==="quartet"?"Jam Quartet":(els.role.value==="comper"?"Soloist":"Accompaniment");
+els.position.textContent="Bar "+(barIndex+1)+" · Beat "+beatNumber;els.currentChord.textContent=chord||"—";els.chorus.textContent=(chorus+1)+" / "+totalChoruses;els.aiRole.textContent=els.role.value==="legend_showcase"?"Legend Showcase":(els.role.value==="quartet"?"Jam Quartet":(els.role.value==="comper"?"Soloist":"Accompaniment"));
 if(playing&&beats>=totalBeats){playing=false;offsetBeats=0;els.play.textContent="Play";els.stateText.textContent="Finished";}
 scheduleSound(now);if(playing)raf=requestAnimationFrame(render);
 }
 els.play.addEventListener("click",function(){
 if(!chart)return;if(playing){offsetBeats=currentBeat(performance.now());playing=false;cancelAnimationFrame(raf);els.play.textContent="Resume";els.stateText.textContent="Paused";}
-else{ensureAudio();startedAt=performance.now();lastScheduledBeat=Math.floor(offsetBeats)-1;lastScheduledQuartetTick=Math.floor(offsetBeats*2)-1;quartetRequestChain=Promise.resolve();playing=true;els.play.textContent="Pause";els.stateText.textContent=els.role.value==="quartet"?"Playing · canonical jam quartet":(els.role.value==="comper"?"Playing · AI soloist":"Playing · AI accompaniment");raf=requestAnimationFrame(render);}
+else{ensureAudio();startedAt=performance.now();lastScheduledBeat=Math.floor(offsetBeats)-1;lastScheduledQuartetTick=Math.floor(offsetBeats*2)-1;quartetRequestChain=Promise.resolve();playing=true;els.play.textContent="Pause";els.stateText.textContent=els.role.value==="legend_showcase"?"Playing · full promoted Legend showcase":(els.role.value==="quartet"?"Playing · canonical jam quartet":(els.role.value==="comper"?"Playing · AI soloist":"Playing · AI accompaniment"));raf=requestAnimationFrame(render);}
 });
 els.stop.addEventListener("click",function(){playing=false;cancelAnimationFrame(raf);offsetBeats=0;lastScheduledBeat=-1;lastScheduledQuartetTick=-1;quartetRequestChain=Promise.resolve();soloStep=0;if(sampler&&sampler.ready)sampler.panic();fetch("/api/reset-solo");els.play.textContent="Play";els.stateText.textContent="Stopped";render(0);});
 els.role.addEventListener("change",function(){playing=false;cancelAnimationFrame(raf);offsetBeats=0;lastScheduledBeat=-1;lastScheduledQuartetTick=-1;quartetRequestChain=Promise.resolve();soloStep=0;fetch("/api/reset-solo");loadChart();});els.choruses.addEventListener("change",function(){render(performance.now());});
