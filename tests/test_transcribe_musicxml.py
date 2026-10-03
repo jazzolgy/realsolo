@@ -136,3 +136,48 @@ def test_musicxml_emits_concert_key_for_non_transposing_part():
     root = ET.fromstring(score_to_musicxml(score))
 
     assert root.findtext(".//attributes/key/fifths") == "-1"
+
+
+
+def test_musicxml_emits_explicit_dotted_note_type():
+    event = ScoreEvent(
+        event_id="dot:1",
+        part_id="flute",
+        staff_id="flute:staff",
+        voice_id="v1",
+        kind=NotatedAtomKind.NOTE,
+        span=ScoreSpan(Fraction(0), Fraction(3, 2)),
+        source_event_ids=("src:dot:1",),
+        written_pitch=WrittenPitch("C", 0, 5),
+    )
+    part = ScorePart("flute", "Flute", "flute", ("flute:staff",), (event,))
+    score = assemble_score(score_id="dot:score", title="Dotted", parts=(part,))
+
+    root = ET.fromstring(score_to_musicxml(score))
+    note = root.find(".//part[@id='flute']/measure/note")
+
+    assert note.findtext("type") == "quarter"
+    assert note.find("dot") is not None
+
+
+def test_musicxml_triplet_duration_keeps_written_eighth_type():
+    event = ScoreEvent(
+        event_id="triplet:1",
+        part_id="flute",
+        staff_id="flute:staff",
+        voice_id="v1",
+        kind=NotatedAtomKind.NOTE,
+        span=ScoreSpan(Fraction(0), Fraction(1, 3)),
+        source_event_ids=("src:triplet:1",),
+        written_pitch=WrittenPitch("D", 0, 5),
+        tuplet=TupletRatio(3, 2),
+    )
+    part = ScorePart("flute", "Flute", "flute", ("flute:staff",), (event,))
+    score = assemble_score(score_id="triplet:score", title="Triplet", parts=(part,))
+
+    root = ET.fromstring(score_to_musicxml(score))
+    note = root.find(".//part[@id='flute']/measure/note")
+
+    assert note.findtext("type") == "eighth"
+    assert note.findtext("time-modification/actual-notes") == "3"
+    assert note.findtext("time-modification/normal-notes") == "2"
