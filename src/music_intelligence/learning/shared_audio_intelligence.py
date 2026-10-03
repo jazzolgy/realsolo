@@ -177,8 +177,18 @@ def structural_event_from_evidence(
     In that case this returns None rather than inventing beat positions.
     """
     evidence.validate()
-    if onset_beats is None or duration_beats is None or duration_beats <= 0:
+    position=evidence.metric_form_position
+    if position is None or not position.resolved_metric:
         return None
+    if duration_beats is None or duration_beats <= 0:
+        return None
+    if onset_beats is None:
+        if position.absolute_beat is not None:
+            onset_beats=position.absolute_beat
+        elif position.measure_index is not None and position.beat_in_measure is not None and position.meter_numerator is not None:
+            onset_beats=position.measure_index*position.meter_numerator+position.beat_in_measure
+        else:
+            return None
     raw=evidence.raw
     posterior=evidence.posterior
     pitch_midi=None
@@ -207,5 +217,5 @@ def structural_event_from_evidence(
         role_probabilities=dict(posterior.role_probabilities),
         confidence_fields=dict(posterior.confidence_fields),
         provenance=evidence.provenance+("shared_audio_intelligence:structural_promotion",),
-        metric_form_position=evidence.metric_form_position,
+        metric_form_position=position,
     )
