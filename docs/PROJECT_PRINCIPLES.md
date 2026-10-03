@@ -60,3 +60,19 @@ The three active workstreams are:
 3. Live Ensemble App
 
 Each uses one shared repository and avoids silently forking the shared musical architecture.
+
+
+## Canonical musical coordinate
+
+RealSolo treats form/section/form-iteration/bar/beat/subdivision as the
+canonical semantic coordinate for learning and reasoning. Absolute audio time
+is retained as provenance and alignment evidence, not as the primary musical
+address.
+
+Temporary estimates such as `bar_est` must be promoted through beat/bar/form
+alignment before becoming final shared-learning keys. Structural
+interpretations such as phrase position, harmonic function, cadence position,
+motif state, role, and ensemble state remain separate from the coordinate so
+their confidence and provenance can be tracked independently.
+
+See `docs/CANONICAL_MUSICAL_COORDINATE_POLICY.md`.
