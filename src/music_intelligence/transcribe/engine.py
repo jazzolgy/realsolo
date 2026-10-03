@@ -40,6 +40,13 @@ from .projection import EventProjectionResult, project_pitched_event
 from .quality import ScoreQualityReport, audit_score_for_performance
 from .score import ReadableScore, ScoreEvent, ScoreSpanner
 from .spelling import PitchSpellingContext
+from .take import (
+    PartTranscriptionRequest,
+    PartTranscriptionResult,
+    TakeTranscriptionResult,
+    transcribe_part as transcribe_part_batch,
+    transcribe_take as transcribe_take_batch,
+)
 
 
 @dataclass(frozen=True)
@@ -138,6 +145,39 @@ class NotationEngine:
             part_id=part_id,
             score_events=score_events,
             spanner_id=spanner_id,
+        )
+
+    def transcribe_part(
+        self,
+        request: PartTranscriptionRequest,
+    ) -> PartTranscriptionResult:
+        return transcribe_part_batch(
+            request,
+            meter_numerator=self.config.meter_numerator,
+            meter_denominator=self.config.meter_denominator,
+        )
+
+    def transcribe_take(
+        self,
+        requests: tuple[PartTranscriptionRequest, ...],
+        *,
+        score_id: str,
+        title: str,
+        key_signature=None,
+    ) -> TakeTranscriptionResult:
+        from .score import ScoreKeySignature
+
+        return transcribe_take_batch(
+            requests,
+            score_id=score_id,
+            title=title,
+            meter_numerator=self.config.meter_numerator,
+            meter_denominator=self.config.meter_denominator,
+            key_signature=(
+                key_signature
+                if key_signature is not None
+                else ScoreKeySignature()
+            ),
         )
 
     def engraving_plan(self, score: ReadableScore) -> EngravingPlan:
