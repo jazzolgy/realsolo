@@ -12,7 +12,6 @@ on:
       - transcribe
       - realtime/ensemble-app
   pull_request:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -25,4 +24,7 @@ jobs:
           python-version: "3.11"
       - run: python -m pip install --upgrade pip
       - run: pip install -e ".[dev]"
-      - run: pytest -q
+      - name: Architecture boundary guard
+        run: pytest -q tests/architecture
+      - name: Full test suite
+        run: pytest -q

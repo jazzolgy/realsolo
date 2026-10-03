@@ -1,0 +1,91 @@
+{
+  "schema_version": "architecture-ownership.v1",
+  "areas": {
+    "audio_evidence": {
+      "owns": [
+        "src/music_intelligence/audio_evidence/**"
+      ],
+      "may_read": [
+        "src/music_intelligence/transcribe/events.py",
+        "docs/PERFORMANCE_EVIDENCE_*.md",
+        "docs/AUDIO_EVIDENCE_ENGINE_BOUNDARY.md"
+      ],
+      "must_not_modify": [
+        "src/music_intelligence/transcribe/**",
+        "src/music_intelligence/learning/**",
+        "src/music_intelligence/reasoning/**",
+        "players/**"
+      ],
+      "must_not_depend_on": [
+        "music_intelligence.transcribe.notation",
+        "music_intelligence.transcribe.score",
+        "music_intelligence.transcribe.engraving",
+        "music_intelligence.transcribe.layout",
+        "music_intelligence.transcribe.musicxml",
+        "music_intelligence.learning",
+        "players"
+      ]
+    },
+    "transcription_notation": {
+      "owns": [
+        "src/music_intelligence/transcribe/**"
+      ],
+      "consumes": [
+        "PerformanceEvidence"
+      ],
+      "must_not_depend_on": [
+        "music_intelligence.audio_evidence.observation",
+        "music_intelligence.audio_evidence.posterior",
+        "music_intelligence.audio_evidence.detectors",
+        "music_intelligence.audio_evidence.calibration",
+        "players",
+        "realtime"
+      ]
+    },
+    "shared_core": {
+      "owns": [
+        "src/music_intelligence/reasoning/**",
+        "src/music_intelligence/harmony/**"
+      ],
+      "responsibilities": [
+        "harmony",
+        "form",
+        "phrase",
+        "ensemble_state",
+        "interaction",
+        "musical_meaning",
+        "instrument_neutral_reasoning"
+      ],
+      "must_not_depend_on": [
+        "players",
+        "realtime",
+        "music_intelligence.audio_evidence.detectors",
+        "music_intelligence.audio_evidence.posterior"
+      ]
+    },
+    "shared_learning": {
+      "owns": [
+        "src/music_intelligence/learning/**"
+      ],
+      "must_not_depend_on": [
+        "players",
+        "realtime"
+      ]
+    }
+  },
+  "contracts": {
+    "performance_evidence": {
+      "owner": "transcription_notation",
+      "path": "src/music_intelligence/transcribe/events.py",
+      "version_constant": "CONTRACT_VERSION",
+      "current_version": "performance-evidence.v1"
+    }
+  },
+  "workflow": [
+    "Architecture Preflight",
+    "Development",
+    "Boundary Audit",
+    "Tests",
+    "Pull Request"
+  ]
+}
