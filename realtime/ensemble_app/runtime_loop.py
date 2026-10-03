@@ -132,9 +132,12 @@ class EnsembleRuntimeLoop:
     ) -> RuntimeTickResult:
         state.validate()
         snapshot = state
-        directives = schedule_ensemble(snapshot)
-        by_player = {d.player_id: d for d in directives}
         shared_context = dict(context or {})
+        directives = schedule_ensemble(
+            snapshot,
+            convention=shared_context.get("performance_convention"),
+        )
+        by_player = {d.player_id: d for d in directives}
 
         decisions: list[PlayerRuntimeDecision] = []
         skipped: list[str] = []
