@@ -54,8 +54,20 @@ class CompositeObservationDetector:
             if self.pitch_detector is not None
             else ()
         )
+        unpitched = (
+            tuple(self.unpitched_detector.detect_unpitched(source, onsets))
+            if self.unpitched_detector is not None
+            else ()
+        )
         instruments = (
-            tuple(self.instrument_detector.detect_instruments(source, onsets))
+            tuple(
+                self.instrument_detector.detect_instruments(
+                    source,
+                    onsets,
+                    pitches,
+                    unpitched,
+                )
+            )
             if self.instrument_detector is not None
             else ()
         )
@@ -64,12 +76,6 @@ class CompositeObservationDetector:
             if self.timbre_detector is not None
             else ()
         )
-        unpitched = (
-            tuple(self.unpitched_detector.detect_unpitched(source, onsets))
-            if self.unpitched_detector is not None
-            else ()
-        )
-
         for item in (*pitches, *instruments, *timbres, *unpitched):
             item.validate()
 
