@@ -82,3 +82,7 @@ def test_triplet_candidate_is_available_without_forcing_it_as_preferred():
     assert len(triplets) == 1
     assert triplets[0].atoms[0].tuplet is not None
     assert triplets[0].atoms[0].tuplet.actual == 3
+
+
+# Contract note: score-facing dynamics should prefer the source-normalized
+# perceptual ordinal over legacy amplitude-like dynamic values.
