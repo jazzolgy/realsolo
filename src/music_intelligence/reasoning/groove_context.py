@@ -14,6 +14,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
+from music_intelligence.learning.engine import LearningPriorView
+from .learning_prior_runtime import categorical_prior_bias, strongest_category
+
 
 class GrooveCoordinationMode(str, Enum):
     LOCKED = "locked"
@@ -122,9 +125,32 @@ def build_groove_context(
     swing_elasticity: float = 0.35,
     tempo_elasticity: float = 0.0,
     provenance: tuple[str, ...] = ("performance_initialization",),
+    groove_prior: LearningPriorView | None = None,
 ) -> GrooveTemporalContext:
     if not isinstance(feel, GrooveFeel):
         feel=GrooveFeel(str(feel).lower())
+
+    learned_grammar = strongest_category(groove_prior, "best_groove_grammar")
+    learned_reason = ""
+    if not grammar_id and learned_grammar is not None:
+        grammar_id = learned_grammar[0]
+        learned_reason = f"learned_groove_grammar:{grammar_id}"
+
+    learned_match = categorical_prior_bias(
+        groove_prior,
+        "best_groove_grammar",
+        grammar_id,
+        max_bonus=.10,
+    )
+    if learned_match.active:
+        confidence = min(1.0, confidence + learned_match.confidence_delta)
+
+    effective_provenance = provenance
+    if learned_reason:
+        effective_provenance = provenance + (learned_reason,)
+    if learned_match.active:
+        effective_provenance = effective_provenance + ("weighted_groove_prior",)
+
     out=GrooveTemporalContext(
         feel=feel,
         tempo_bpm=tempo_bpm,
@@ -139,7 +165,7 @@ def build_groove_context(
         phase_elasticity=phase_elasticity,
         swing_elasticity=swing_elasticity,
         tempo_elasticity=tempo_elasticity,
-        provenance=provenance,
+        provenance=effective_provenance,
     )
     out.validate()
     return out
