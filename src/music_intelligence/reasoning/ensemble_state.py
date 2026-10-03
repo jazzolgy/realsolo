@@ -306,3 +306,109 @@ def advance_transport(state: EnsembleState, transport: TransportState) -> Ensemb
     state.validate()
     transport.validate()
     return replace(state, transport=transport, generation=state.generation + 1)
+
+
+
+@dataclass(frozen=True)
+class EnsembleObservation:
+    """Newly perceived shared ensemble facts after an immediate commitment.
+
+    This is a state update, not an evaluation of whether the previous action was
+    good or bad.
+    """
+
+    ensemble_density: float | None = None
+    ensemble_energy: float | None = None
+    ensemble_tension: float | None = None
+    space_available: float | None = None
+    leader_player_id: str | None = None
+    harmonic_state_id: str | None = None
+    observed_intents: tuple[PlayerActionIntent, ...] = ()
+    observed_interactions: tuple[InteractionEvent, ...] = ()
+
+    def validate(self, state: EnsembleState) -> None:
+        known={p.player_id for p in state.players}
+        for value,name in (
+            (self.ensemble_density,"ensemble_density"),
+            (self.ensemble_energy,"ensemble_energy"),
+            (self.ensemble_tension,"ensemble_tension"),
+            (self.space_available,"space_available"),
+        ):
+            if value is not None and not 0.0<=value<=1.0:
+                raise ValueError(f"{name} must be within 0..1")
+        if self.leader_player_id is not None and self.leader_player_id not in known:
+            raise ValueError("leader_player_id references unknown player")
+        for intent in self.observed_intents:
+            intent.validate()
+            if intent.player_id not in known:
+                raise ValueError("observed intent references unknown player")
+        for event in self.observed_interactions:
+            event.validate()
+            if event.source_player_id not in known:
+                raise ValueError("observed interaction references unknown player")
+
+
+def reperceive_ensemble_state(
+    state: EnsembleState,
+    observation: EnsembleObservation,
+    *,
+    interaction_history_limit: int = 32,
+) -> EnsembleState:
+    """Refresh shared state from newly observed ensemble behavior.
+
+    This function does not infer success/failure and does not feed learning.
+    It simply makes the next decision operate on newly perceived facts.
+    """
+
+    state.validate()
+    observation.validate(state)
+
+    next_state=state
+
+    for intent in observation.observed_intents:
+        next_state=update_player_intent(next_state,intent)
+
+    if observation.observed_interactions:
+        history=(
+            next_state.recent_interactions + observation.observed_interactions
+        )[-interaction_history_limit:]
+        next_state=replace(
+            next_state,
+            recent_interactions=history,
+            generation=next_state.generation+1,
+        )
+
+    return replace(
+        next_state,
+        ensemble_density=(
+            observation.ensemble_density
+            if observation.ensemble_density is not None
+            else next_state.ensemble_density
+        ),
+        ensemble_energy=(
+            observation.ensemble_energy
+            if observation.ensemble_energy is not None
+            else next_state.ensemble_energy
+        ),
+        ensemble_tension=(
+            observation.ensemble_tension
+            if observation.ensemble_tension is not None
+            else next_state.ensemble_tension
+        ),
+        space_available=(
+            observation.space_available
+            if observation.space_available is not None
+            else next_state.space_available
+        ),
+        leader_player_id=(
+            observation.leader_player_id
+            if observation.leader_player_id is not None
+            else next_state.leader_player_id
+        ),
+        harmonic_state_id=(
+            observation.harmonic_state_id
+            if observation.harmonic_state_id is not None
+            else next_state.harmonic_state_id
+        ),
+        generation=next_state.generation+1,
+    )
