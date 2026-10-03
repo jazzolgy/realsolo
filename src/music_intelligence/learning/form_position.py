@@ -34,6 +34,7 @@ class MetricFormPosition:
     absolute_beat: float | None = None
     confidence: float = 0.0
     provenance: tuple[str,...] = ()
+    meter_segments: tuple[MeterSegment,...] = ()
 
     def validate(self) -> None:
         if self.measure_index is not None and self.measure_index < 0:
@@ -95,6 +96,19 @@ class FormSection:
 
 
 @dataclass(frozen=True)
+class MeterSegment:
+    start_measure: int
+    numerator: int
+    denominator: int
+
+    def validate(self) -> None:
+        if self.start_measure < 0:
+            raise ValueError("meter segment start_measure may not be negative")
+        if self.numerator <= 0 or self.denominator <= 0:
+            raise ValueError("meter segment values must be positive")
+
+
+@dataclass(frozen=True)
 class FormMap:
     form_id: str
     meter_numerator: int
@@ -131,6 +145,67 @@ class FormMap:
                 cursor=by_id[cursor.parent_section_id]
         if self.cycle_measures is not None and self.cycle_measures <= 0:
             raise ValueError("cycle_measures must be positive")
+        starts=set()
+        for seg in self.meter_segments:
+            seg.validate()
+            if seg.start_measure in starts:
+                raise ValueError("meter segment start measures must be unique")
+            starts.add(seg.start_measure)
+            if self.cycle_measures is not None and seg.start_measure >= self.cycle_measures:
+                raise ValueError("cyclic form meter segment must start inside the cycle")
+
+    def meter_at_measure(self, measure_index:int) -> tuple[int,int]:
+        if measure_index < 0:
+            raise ValueError("measure_index may not be negative")
+        active=(self.meter_numerator,self.meter_denominator)
+        for seg in sorted(self.meter_segments,key=lambda x:x.start_measure):
+            if seg.start_measure <= measure_index:
+                active=(seg.numerator,seg.denominator)
+            else:
+                break
+        return active
+
+    def _measure_length_quarter_beats(self, measure_index:int) -> float:
+        numerator,denominator=self.meter_at_measure(measure_index)
+        return numerator*(4.0/denominator)
+
+    def _locate_absolute_beat(self, absolute_beat:float) -> tuple[int,int|None,float,int,int]:
+        """Return local measure, iteration, beat-in-measure, numerator, denominator."""
+        if self.cycle_measures is not None:
+            cycle_qn=sum(
+                self._measure_length_quarter_beats(m)
+                for m in range(self.cycle_measures)
+            )
+            if cycle_qn <= 0:
+                raise ValueError("cycle duration must be positive")
+            iteration=int(absolute_beat//cycle_qn)
+            remaining=absolute_beat-iteration*cycle_qn
+            measure=0
+            while measure < self.cycle_measures:
+                length=self._measure_length_quarter_beats(measure)
+                if remaining < length-1e-9:
+                    break
+                remaining-=length
+                measure+=1
+            if measure >= self.cycle_measures:
+                measure=0
+                iteration+=1
+                remaining=0.0
+        else:
+            iteration=None
+            remaining=absolute_beat
+            measure=0
+            # Non-cyclic classical/pop forms may be long; this remains exact and
+            # intentionally simple because form maps are normally finite.
+            while True:
+                length=self._measure_length_quarter_beats(measure)
+                if remaining < length-1e-9:
+                    break
+                remaining-=length
+                measure+=1
+        numerator,denominator=self.meter_at_measure(measure)
+        beat_in_measure=remaining*(denominator/4.0)
+        return measure,iteration,beat_in_measure,numerator,denominator
 
     def position_from_absolute_beat(
         self,
@@ -142,18 +217,9 @@ class FormMap:
         self.validate()
         if absolute_beat < 0:
             raise ValueError("absolute_beat may not be negative")
-        # Structural onset_beats are quarter-note units. Convert to the current
-        # meter denominator before deriving bar/beat coordinates.
-        denominator_units=absolute_beat*(self.meter_denominator/4.0)
-        units_per_measure=float(self.meter_numerator)
-        global_measure=int(denominator_units // units_per_measure)
-        beat=denominator_units-global_measure*units_per_measure
-        if self.cycle_measures:
-            iteration=global_measure // self.cycle_measures
-            measure=global_measure % self.cycle_measures
-        else:
-            iteration=None
-            measure=global_measure
+        # Structural onset_beats are quarter-note units. FormMap converts them
+        # into the active meter's denominator units, including meter changes.
+        measure,iteration,beat,numerator,denominator=self._locate_absolute_beat(absolute_beat)
         containing=[s for s in self.sections if s.contains(measure)]
         section=min(containing,key=lambda s:s.length_measures) if containing else None
         form_path=()
@@ -170,8 +236,8 @@ class FormMap:
         return MetricFormPosition(
             measure_index=measure,
             beat_in_measure=beat,
-            meter_numerator=self.meter_numerator,
-            meter_denominator=self.meter_denominator,
+            meter_numerator=numerator,
+            meter_denominator=denominator,
             form_id=self.form_id,
             section_id=section.section_id if section else None,
             section_measure_index=(measure-section.start_measure if section else None),
