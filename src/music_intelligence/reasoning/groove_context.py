@@ -16,6 +16,10 @@ from enum import Enum
 
 from music_intelligence.learning.engine import LearningPriorView
 from .learning_prior_runtime import categorical_prior_bias, strongest_category
+from .contextual_prior_gating import (
+    PriorGatingContext,
+    domain_prior_gate_scale,
+)
 
 
 class GrooveCoordinationMode(str, Enum):
@@ -126,13 +130,19 @@ def build_groove_context(
     tempo_elasticity: float = 0.0,
     provenance: tuple[str, ...] = ("performance_initialization",),
     groove_prior: LearningPriorView | None = None,
+    prior_gating_context: PriorGatingContext | None = None,
 ) -> GrooveTemporalContext:
     if not isinstance(feel, GrooveFeel):
         feel=GrooveFeel(str(feel).lower())
 
+    prior_scale = (
+        domain_prior_gate_scale(prior_gating_context)
+        if prior_gating_context is not None
+        else 1.0
+    )
     learned_grammar = strongest_category(groove_prior, "best_groove_grammar")
     learned_reason = ""
-    if not grammar_id and learned_grammar is not None:
+    if not grammar_id and learned_grammar is not None and prior_scale > 0.0:
         grammar_id = learned_grammar[0]
         learned_reason = f"learned_groove_grammar:{grammar_id}"
 
@@ -143,13 +153,19 @@ def build_groove_context(
         max_bonus=.10,
     )
     if learned_match.active:
-        confidence = min(1.0, confidence + learned_match.confidence_delta)
+        confidence = min(
+            1.0,
+            confidence + learned_match.confidence_delta * prior_scale,
+        )
 
     effective_provenance = provenance
     if learned_reason:
         effective_provenance = provenance + (learned_reason,)
     if learned_match.active:
-        effective_provenance = effective_provenance + ("weighted_groove_prior",)
+        effective_provenance = effective_provenance + (
+            "weighted_groove_prior",
+            f"contextual_prior_gate:{prior_scale:.3f}",
+        )
 
     out=GrooveTemporalContext(
         feel=feel,
