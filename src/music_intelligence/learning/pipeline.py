@@ -8,6 +8,7 @@ from typing import Protocol
 
 from music_intelligence.corpus.registry import CorpusItem, CorpusUse
 from .representation import LearningArtifact, StructuralPerformanceData
+from .canonical_position import canonicalize_structural_positions
 from .extractors import DEFAULT_EXTRACTORS, LearningExtractor, extract_learning_artifacts
 from .style import build_style_artifact
 from .genre import build_genre_artifact
@@ -68,6 +69,7 @@ def convert_audio_to_learning_data(
     if not item.media_type.lower().startswith("audio"):
         raise ValueError("learning conversion requires an audio corpus item")
     structural=analyzer.analyze(audio_path,source_item=item)
+    structural=canonicalize_structural_positions(structural)
     structural.validate()
     if structural.source_id != item.item_id:
         raise ValueError("structural source_id must match CorpusItem.item_id")
