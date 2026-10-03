@@ -17,6 +17,7 @@ from .research_audio_ingest import ResearchAudioIngestor
 from .model_service_backend import LocalInstrumentModelServiceBackend
 from .separation_service_backend import LocalSourceSeparationServiceBackend
 from .stem_aware_instrument_backend import StemAwareInstrumentBackend
+from .yamnet_instrument_backend import YAMNetInstrumentBackend
 from .research_checkpoint import ResearchCheckpoint, default_research_state_root
 from .youtube_data_api import YouTubeDataAPIError, YouTubeDataAPIProvider
 from .youtube_research_provider import YouTubeSearchQuery, youtube_embed_url
@@ -33,13 +34,23 @@ class ResearchRuntime:
         self.checkpoint=ResearchCheckpoint.load(self.checkpoint_path)
         self.checkpoint.restore_session(self.session)
         model_endpoint=os.environ.get("REALSOLO_INSTRUMENT_MODEL_URL","").strip()
-        model_backend=(
-            LocalInstrumentModelServiceBackend(
+        model_name=os.environ.get("REALSOLO_INSTRUMENT_MODEL","yamnet").strip().lower()
+        if model_endpoint:
+            model_backend=LocalInstrumentModelServiceBackend(
                 endpoint=model_endpoint,
                 allow_remote=os.environ.get("REALSOLO_ALLOW_REMOTE_AUDIO_MODEL","").strip().lower() in {"1","true","yes"},
             )
-            if model_endpoint else None
-        )
+            self.instrument_model_backend="local_service"
+        elif model_name=="yamnet":
+            model_backend=YAMNetInstrumentBackend()
+            self.instrument_model_backend="yamnet"
+        elif model_name in {"baseline","none","off"}:
+            model_backend=None
+            self.instrument_model_backend="baseline"
+        else:
+            raise ValueError(
+                "REALSOLO_INSTRUMENT_MODEL must be yamnet, baseline, none, or off"
+            )
         separator_endpoint=os.environ.get("REALSOLO_SOURCE_SEPARATOR_URL","").strip()
         if model_backend is not None and separator_endpoint:
             separator=LocalSourceSeparationServiceBackend(
@@ -137,7 +148,7 @@ class ResearchHandler(SimpleHTTPRequestHandler):
                 "queued":len(self.runtime.session.queue),
                 "last_query":self.runtime.last_query,
                 "last_artist":self.runtime.last_artist,
-                "instrument_model_backend":("local_service" if os.environ.get("REALSOLO_INSTRUMENT_MODEL_URL","").strip() else "baseline"),
+                "instrument_model_backend":self.runtime.instrument_model_backend,
                 "source_separator_backend":("local_service" if os.environ.get("REALSOLO_SOURCE_SEPARATOR_URL","").strip() else "none"),
             })
             return
