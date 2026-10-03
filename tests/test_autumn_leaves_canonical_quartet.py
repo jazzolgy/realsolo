@@ -80,3 +80,20 @@ def test_first_canonical_pass_is_elastic_with_human_drift_off():
     quartet=Stage1QuartetRuntime.create(chart.tempo_bpm)
     assert quartet.state.groove.coordination_mode.value=="elastic"
     assert quartet.state.groove.tempo_elasticity==0.0
+
+
+
+def test_canonical_listening_grid_can_run_at_eighth_note_decision_cadence():
+    chart=AUTUMN_LEAVES_G_MINOR_JAM
+    quartet=Stage1QuartetRuntime.create(chart.tempo_bpm)
+    log=run_quartet_song_chart(quartet,chart,subdivisions_per_beat=2)
+
+    assert len(log.ticks)==32*4*2
+    first_bar=[x.beat_in_bar for x in log.ticks if x.bar_index==0]
+    assert first_bar==[0.0,.5,1.0,1.5,2.0,2.5,3.0,3.5]
+
+    # The Gm -> C7 split in bar 27 is still a harmonic/form fact, while the
+    # groove layer is free to move the performed offbeat around the shared pulse.
+    bar26=[x for x in log.ticks if x.bar_index==26]
+    assert [x.chord_symbol for x in bar26[:4]]==["Gm","Gm","Gm","Gm"]
+    assert [x.chord_symbol for x in bar26[4:]]==["C7","C7","C7","C7"]

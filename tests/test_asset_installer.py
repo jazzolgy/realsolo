@@ -27,3 +27,17 @@ def test_approved_sample_engine_is_present():
     assert "Karoryfer" not in text  # renderer consumes manifest, not library-specific policy
     assert "decodeAudioData" in text
     assert "playbackRate" in text
+
+
+def test_browser_transport_guards_chart_bounds_and_defaults_transpose_zero():
+    text = Path("realtime/ensemble_app/web/index.html").read_text(encoding="utf-8")
+    assert 'els.transpose.value="0"' in text
+    assert "normalized=((Number(barIndex)%n)+n)%n" in text
+    assert "absoluteBeat>=beatsPerChorus*totalChoruses" in text
+
+
+def test_browser_sample_engine_recovers_legacy_freepats_paths():
+    text = Path("realtime/ensemble_app/web/approved_sample_engine.js").read_text(encoding="utf-8")
+    assert '"freepats tenor sax"' in text
+    assert '"freepats_tenor_sax"' in text
+    assert "_legacySampleAlias" in text

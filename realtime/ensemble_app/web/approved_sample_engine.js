@@ -16,14 +16,33 @@ export class RealSoloApprovedSampleEngine {
     return this;
   }
 
+  _sampleUrl(sample) {
+    return this.baseUrl + sample.split("/").map(encodeURIComponent).join("/");
+  }
+
+  _legacySampleAlias(sample) {
+    const parts = String(sample).split("/");
+    const dirIndex = parts.findIndex(x => x === "freepats tenor sax");
+    if (dirIndex >= 0) parts[dirIndex] = "freepats_tenor_sax";
+    if (dirIndex >= 0 && parts.length) {
+      parts[parts.length - 1] = parts[parts.length - 1].replace(/^(\\d{3})\\s+/, "$1_");
+    }
+    const normalized = parts.join("/");
+    return normalized === sample ? null : normalized;
+  }
+
   async _buffer(sample) {
     if (this.buffers.has(sample)) return this.buffers.get(sample);
-    const promise = fetch(this.baseUrl + sample.split("/").map(encodeURIComponent).join("/"))
-      .then(r => {
-        if (!r.ok) throw new Error("sample fetch failed: " + sample);
-        return r.arrayBuffer();
-      })
-      .then(b => this.context.decodeAudioData(b));
+    const promise = (async () => {
+      let r = await fetch(this._sampleUrl(sample));
+      if (!r.ok) {
+        const alias = this._legacySampleAlias(sample);
+        if (alias) r = await fetch(this._sampleUrl(alias));
+      }
+      if (!r.ok) throw new Error("sample fetch failed: " + sample);
+      const b = await r.arrayBuffer();
+      return this.context.decodeAudioData(b);
+    })();
     this.buffers.set(sample, promise);
     return promise;
   }

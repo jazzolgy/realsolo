@@ -65,8 +65,8 @@ transpose:document.querySelector("#transpose"),choruses:document.querySelector("
 aiRole:document.querySelector("#aiRole"),position:document.querySelector("#position"),currentChord:document.querySelector("#currentChord"),chorus:document.querySelector("#chorus"),stateText:document.querySelector("#stateText"),audioText:document.querySelector("#audioText"),
 soundMode:document.querySelector("#soundMode"),soundfont:document.querySelector("#soundfont"),bankText:document.querySelector("#bankText"),providerText:document.querySelector("#providerText")
 };
-var audioCtx=null,master=null,sampler=null,approvedSamples=null,lastScheduledBeat=-1,soloStep=0;
-for(var i=-12;i<=12;i++){var opt=document.createElement("option");opt.value=String(i);opt.textContent=i===0?"0":(i>0?"+"+i:String(i));els.transpose.appendChild(opt);}
+var audioCtx=null,master=null,sampler=null,approvedSamples=null,lastScheduledBeat=-1,lastScheduledQuartetTick=-1,quartetRequestChain=Promise.resolve(),soloStep=0;
+for(var i=-12;i<=12;i++){var opt=document.createElement("option");opt.value=String(i);opt.textContent=i===0?"0":(i>0?"+"+i:String(i));els.transpose.appendChild(opt);}els.transpose.value="0";
 var chart=null,playing=false,startedAt=0,offsetBeats=0,raf=0;
 function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
 function ensureAudio(){
@@ -118,15 +118,15 @@ if(rhythmPayload.swing_subbeat&&rhythmPayload.swing_subbeat.gesture){renderGestu
 if(ev.gesture)renderGesture(ev.gesture,when,beatDur);
 }catch(e){els.audioText.textContent="Solo error: "+e.message;}
 }
-async function playQuartet(chord,nextChord,beatInBar,when,beatDur){
+function queueQuartet(chord,nextChord,beatInBar,barIndex,chorusIndex,when,beatDur){
+quartetRequestChain=quartetRequestChain.then(async function(){
 try{
-var currentBar=Math.floor(currentBeat(performance.now())/chart.beats_per_bar)%chart.bars.length;
-var currentChorus=Math.floor(currentBeat(performance.now())/(chart.beats_per_bar*chart.bars.length));
-var url="/api/quartet-event?chord="+encodeURIComponent(chord)+"&next_chord="+encodeURIComponent(nextChord)+"&beat="+beatInBar+"&bar_index="+currentBar+"&chorus="+currentChorus+"&tempo="+encodeURIComponent(els.tempo.value);
+var url="/api/quartet-event?chord="+encodeURIComponent(chord)+"&next_chord="+encodeURIComponent(nextChord)+"&beat="+beatInBar+"&bar_index="+barIndex+"&chorus="+chorusIndex+"&tempo="+encodeURIComponent(els.tempo.value);
 var r=await fetch(url);var payload=await r.json();
-(payload.gestures||[]).forEach(function(g){renderGesture(g,when,beatDur);});
+(payload.gestures||[]).forEach(function(g){renderGesture(g,Math.max(when,audioCtx.currentTime+.01),beatDur);});
 els.providerText.textContent="Canonical quartet · "+(payload.players||[]).join(" · ")+" · "+payload.performance_convention+" · "+payload.groove;
 }catch(e){els.audioText.textContent="Quartet error: "+e.message;}
+});
 }
 function renderGesture(gesture,when,beatDur){
 if(!gesture)return;
@@ -154,18 +154,49 @@ else if(sampleReady())sampler.drum(v.pitch_midi,v.velocity||70,t,d);
 else noiseHit(t,Math.min(.08,d),.025);
 });
 }
+function chordAtAbsoluteBeat(absoluteBeat){
+var beatsPerChorus=chart.bars.length*chart.beats_per_bar;
+var inChorus=((absoluteBeat%beatsPerChorus)+beatsPerChorus)%beatsPerChorus;
+var barIndex=Math.floor(inChorus/chart.beats_per_bar);
+var beatInBar=inChorus%chart.beats_per_bar;
+return chordAt(barIndex,beatInBar);
+}
 function nextChordAt(barIndex,beatInBar){
-var chords=chart.bars[barIndex].chords;if(chords.length>1&&beatInBar<chart.beats_per_bar/2)return chords[1];
-var next=(barIndex+1)%chart.bars.length;return chart.bars[next].chords[0]||"";
+var here=barIndex*chart.beats_per_bar+beatInBar;
+return chordAtAbsoluteBeat(here+1.0);
+}
+function nextChordAtStep(barIndex,beatInBar,step){
+var here=barIndex*chart.beats_per_bar+beatInBar;
+return chordAtAbsoluteBeat(here+step);
 }
 function scheduleSound(nowMs){
-if(!playing||!audioCtx||!chart)return;var tempo=clamp(Number(els.tempo.value)||120,40,320),beatDur=60/tempo,beatNow=currentBeat(nowMs),target=Math.floor(beatNow)+1;
+if(!playing||!audioCtx||!chart)return;
+var tempo=clamp(Number(els.tempo.value)||120,40,320),beatDur=60/tempo,beatNow=currentBeat(nowMs);
+
+if(els.role.value==="quartet"){
+var subdivisions=2,step=1/subdivisions,tickNow=beatNow*subdivisions,targetTick=Math.floor(tickNow)+3;
+while(lastScheduledQuartetTick<targetTick){
+lastScheduledQuartetTick++;
+if(lastScheduledQuartetTick<Math.floor(tickNow))continue;
+var absoluteBeat=lastScheduledQuartetTick*step;
+var beatsPerChorus=chart.bars.length*chart.beats_per_bar,totalChoruses=clamp(Number(els.choruses.value)||1,1,20);
+if(absoluteBeat>=beatsPerChorus*totalChoruses)break;
+var inChorus=((absoluteBeat%beatsPerChorus)+beatsPerChorus)%beatsPerChorus;
+var barIndex=Math.floor(inChorus/chart.beats_per_bar),beatInBar=inChorus%chart.beats_per_bar;
+var chorusIndex=Math.floor(absoluteBeat/beatsPerChorus);
+var chord=chordAt(barIndex,beatInBar),nextChord=nextChordAtStep(barIndex,beatInBar,step);
+var when=audioCtx.currentTime+Math.max(.04,(absoluteBeat-beatNow)*beatDur);
+queueQuartet(chord,nextChord,beatInBar,barIndex,chorusIndex,when,beatDur);
+}
+return;
+}
+
+var target=Math.floor(beatNow)+1;
 while(lastScheduledBeat<target){
 lastScheduledBeat++;if(lastScheduledBeat<Math.floor(beatNow))continue;
 var beatsPerChorus=chart.bars.length*chart.beats_per_bar,inChorus=lastScheduledBeat%beatsPerChorus,barIndex=Math.floor(inChorus/chart.beats_per_bar),beatInBar=inChorus%chart.beats_per_bar;
 var chord=chordAt(barIndex,beatInBar),when=audioCtx.currentTime+Math.max(.025,(lastScheduledBeat-beatNow)*beatDur);
-if(els.role.value==="quartet")playQuartet(chord,nextChordAt(barIndex,beatInBar),beatInBar,when,beatDur);
-else if(els.role.value==="comper")playSolo(chord,nextChordAt(barIndex,beatInBar),beatInBar,when,beatDur);
+if(els.role.value==="comper")playSolo(chord,nextChordAt(barIndex,beatInBar),beatInBar,when,beatDur);
 else playAccompaniment(chord,Math.floor(beatInBar),when,beatDur);
 }
 }
@@ -192,7 +223,7 @@ els.chart.appendChild(node);
 });
 }
 function currentBeat(now){var tempo=clamp(Number(els.tempo.value)||120,40,320);if(!playing)return offsetBeats;return offsetBeats+((now-startedAt)/1000)*(tempo/60);}
-function chordAt(barIndex,beatInBar){var chords=chart.bars[barIndex].chords;if(!chords.length)return "";var idx=Math.min(chords.length-1,Math.floor((beatInBar/chart.beats_per_bar)*chords.length));return chords[idx];}
+function chordAt(barIndex,beatInBar){if(!chart||!Array.isArray(chart.bars)||!chart.bars.length)return "";var n=chart.bars.length,normalized=((Number(barIndex)%n)+n)%n;var bar=chart.bars[normalized];var chords=bar&&Array.isArray(bar.chords)?bar.chords:[];if(!chords.length)return "";var idx=Math.min(chords.length-1,Math.max(0,Math.floor((beatInBar/chart.beats_per_bar)*chords.length)));return chords[idx];}
 function render(now){
 if(!chart)return;var beats=currentBeat(now);var beatsPerChorus=chart.bars.length*chart.beats_per_bar;var totalChoruses=clamp(Number(els.choruses.value)||1,1,20);var totalBeats=beatsPerChorus*totalChoruses;
 var displayBeats=Math.min(beats,Math.max(0,totalBeats-.0001));var chorus=Math.floor(displayBeats/beatsPerChorus);var inChorus=displayBeats%beatsPerChorus;var barIndex=Math.floor(inChorus/chart.beats_per_bar);
@@ -204,10 +235,10 @@ scheduleSound(now);if(playing)raf=requestAnimationFrame(render);
 }
 els.play.addEventListener("click",function(){
 if(!chart)return;if(playing){offsetBeats=currentBeat(performance.now());playing=false;cancelAnimationFrame(raf);els.play.textContent="Resume";els.stateText.textContent="Paused";}
-else{ensureAudio();startedAt=performance.now();lastScheduledBeat=Math.floor(offsetBeats)-1;playing=true;els.play.textContent="Pause";els.stateText.textContent=els.role.value==="quartet"?"Playing · canonical jam quartet":(els.role.value==="comper"?"Playing · AI soloist":"Playing · AI accompaniment");raf=requestAnimationFrame(render);}
+else{ensureAudio();startedAt=performance.now();lastScheduledBeat=Math.floor(offsetBeats)-1;lastScheduledQuartetTick=Math.floor(offsetBeats*2)-1;quartetRequestChain=Promise.resolve();playing=true;els.play.textContent="Pause";els.stateText.textContent=els.role.value==="quartet"?"Playing · canonical jam quartet":(els.role.value==="comper"?"Playing · AI soloist":"Playing · AI accompaniment");raf=requestAnimationFrame(render);}
 });
-els.stop.addEventListener("click",function(){playing=false;cancelAnimationFrame(raf);offsetBeats=0;lastScheduledBeat=-1;soloStep=0;if(sampler&&sampler.ready)sampler.panic();fetch("/api/reset-solo");els.play.textContent="Play";els.stateText.textContent="Stopped";render(0);});
-els.role.addEventListener("change",function(){playing=false;cancelAnimationFrame(raf);offsetBeats=0;lastScheduledBeat=-1;soloStep=0;fetch("/api/reset-solo");loadChart();});els.choruses.addEventListener("change",function(){render(performance.now());});
+els.stop.addEventListener("click",function(){playing=false;cancelAnimationFrame(raf);offsetBeats=0;lastScheduledBeat=-1;lastScheduledQuartetTick=-1;quartetRequestChain=Promise.resolve();soloStep=0;if(sampler&&sampler.ready)sampler.panic();fetch("/api/reset-solo");els.play.textContent="Play";els.stateText.textContent="Stopped";render(0);});
+els.role.addEventListener("change",function(){playing=false;cancelAnimationFrame(raf);offsetBeats=0;lastScheduledBeat=-1;lastScheduledQuartetTick=-1;quartetRequestChain=Promise.resolve();soloStep=0;fetch("/api/reset-solo");loadChart();});els.choruses.addEventListener("change",function(){render(performance.now());});
 els.transpose.addEventListener("change",loadChart);
 els.soundfont.addEventListener("change",function(){var f=els.soundfont.files&&els.soundfont.files[0];if(f)loadSoundFont(f).catch(function(err){els.bankText.textContent="SoundFont error: "+err.message;els.soundMode.value="oscillator";});});
 els.soundMode.addEventListener("change",function(){if(els.soundMode.value==="sampler"&&!sampleReady()){els.bankText.textContent="Choose an SF2/SF3/DLS file first.";els.soundMode.value="oscillator";}});
