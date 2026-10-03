@@ -53,6 +53,10 @@ __all__ = [
     "ScoreAlignedEvidence",
     "research_learning_status",
     "same_musical_position",
+    "comparable_core_form_position",
+    "same_form_relative_position",
+    "StructuralAlignmentSpan",
+    "StructuralAlignmentIndex",
 ]
 
 
@@ -64,4 +68,10 @@ from .score_alignment import (
     ScoreAlignedEvidence,
     research_learning_status,
     same_musical_position,
+    comparable_core_form_position,
+    same_form_relative_position,
+)
+from .structural_join import (
+    StructuralAlignmentSpan,
+    StructuralAlignmentIndex,
 )
