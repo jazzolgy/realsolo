@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Mapping, Protocol, Sequence
 
-from music_intelligence.learning.shared_audio_intelligence import DetectorEvidence
+from music_intelligence.audio_evidence import DetectorEvidence
 from .instrument_catalog import normalize_instrument_label
 from .instrument_role_detector import AcousticDescriptorFrame, BaselineInstrumentRoleDetector
 
