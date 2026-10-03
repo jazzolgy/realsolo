@@ -24,7 +24,8 @@ from .learned_instrument_adapter import (
     LearnedInstrumentRoleAdapter,
 )
 from .musical_context_corrector import MusicalContextCorrector, MusicalContextFrame
-from music_intelligence.learning.form_position import MetricFormPosition
+from music_intelligence.learning.form_position import FormMap, MetricFormPosition
+from music_intelligence.form_intelligence import FormObservation, SharedFormIntelligence
 from music_intelligence.learning.shared_audio_intelligence import (
     DetectorEvidence,
     PerformanceEvidence,
@@ -49,6 +50,7 @@ class ResearchAudioIngestor:
         self._beat_trackers: dict[str,AdaptiveBeatTracker]={}
         self._phrase_trackers: dict[str,PhraseTracker]={}
         self._source_origins: dict[str,float]={}
+        self._form_intelligence: dict[str,SharedFormIntelligence]={}
 
     def ingest_float32(
         self,
@@ -107,11 +109,20 @@ class ResearchAudioIngestor:
             source_id,MusicalContextCorrector()
         ).correct(raw,temporal,musical_context)
         if metric_form_position is None:
-            metric_form_position=MetricFormPosition(
-                absolute_beat=None,
-                confidence=0.0,
-                provenance=("research_listener:awaiting_meter_form_alignment",),
+            form_engine=self._form_intelligence.setdefault(
+                source_id,
+                SharedFormIntelligence(song_id=source_id),
             )
+            form_state=form_engine.update(FormObservation(
+                source_time_s=max(0.0,ts),
+                absolute_beat=None,
+                beat_confidence=float(beat.confidence),
+                provenance=(
+                    "research_listener",
+                    "awaiting_shared_beat_meter_alignment",
+                ),
+            ))
+            metric_form_position=form_state.position
         metric_form_position.validate()
         evidence=PerformanceEvidence(
             source_id=source_id,
@@ -156,6 +167,26 @@ class ResearchAudioIngestor:
         }
         self._append_jsonl(source_id,row)
         return row
+
+    def set_expected_form(
+        self,
+        source_id: str,
+        form_map: FormMap,
+        *,
+        form_source_id: str,
+        song_id: str | None = None,
+    ) -> None:
+        if not source_id:
+            raise ValueError("source_id is required")
+        engine=self._form_intelligence.get(source_id)
+        if engine is None:
+            engine=SharedFormIntelligence(song_id=song_id or source_id)
+            self._form_intelligence[source_id]=engine
+        engine.set_expected_form(form_map,source_id=form_source_id)
+
+    def form_state(self,source_id: str):
+        engine=self._form_intelligence.get(source_id)
+        return engine.state if engine is not None else None
 
     def _append_jsonl(self,source_id: str,row: dict) -> None:
         safe="".join(ch if ch.isalnum() or ch in "-_." else "_" for ch in source_id)
