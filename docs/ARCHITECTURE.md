@@ -179,3 +179,67 @@ right-hand comping, hand allocation, pedal/touch and physical keyboard feasibili
 General solo phrasing, rhythm, interaction, variation, narrative, turn-taking,
 space and candidate meaning belong in Shared Core when they do not depend on the
 physical piano.
+
+
+## Platform-level architecture
+
+RealSolo is one application family inside a broader **Music Intelligence Platform**.
+
+```text
+Music Intelligence Platform
+├─ AI Player
+├─ AI Transcriber / Notation
+├─ Composition Assistant
+├─ Practice & Education
+└─ Research & Analysis
+        │
+        └─ shared Music Intelligence Core
+```
+
+The Core is the common musical-intelligence substrate. Product applications must not duplicate harmony, phrase, rhythm, learning, memory, style/legend or UMR semantics.
+
+The AI Player path and Notation path are siblings that share musical meaning, not parent/child implementations.
+
+### Performance path
+
+```text
+Shared Core
+→ Shared Ensemble State
+→ Candidate Generation
+→ Candidate Evaluation
+→ ONE EVENT COMMIT
+→ instrument Player realization
+→ Realtime execution
+→ Audio
+→ Listen again
+```
+
+### Notation path
+
+```text
+Audio / MIDI / committed performance
+→ Performance Evidence
+→ Notation Intelligence
+→ Logical Score
+→ Practical Engraving / Layout
+→ MusicXML / Renderer
+→ Score / Part
+```
+
+Notation must never rewrite a performed event and feed that rewritten notation back into the live player as if it had been the original improvisational decision.
+
+## Notation product independence
+
+The notation engine is a shared platform capability, but its internal API must be product-independent because it may later ship as a separate commercial application.
+
+Therefore:
+
+- the notation engine may depend on stable shared semantic contracts such as UMR references and Performance Evidence;
+- it must not depend directly on RealSolo realtime scheduling, Player generation policy, ensemble state machines or RealSolo UI code;
+- RealSolo-specific code must live in adapters at the boundary;
+- audio, MIDI and RealSolo committed-event sources should enter through replaceable source adapters;
+- outputs should use stable notation-domain models such as Logical Score and renderer/export adapters;
+- MusicXML is an interoperability format, not the internal musical representation;
+- repository extraction is postponed until the API is stable; architectural separability is required now.
+
+See `docs/NOTATION_ENGINE_BOUNDARY.md`.
