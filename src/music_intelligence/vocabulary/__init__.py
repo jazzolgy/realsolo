@@ -25,6 +25,8 @@ __all__ = [
     "SHARED_VOCABULARY_ITEMS",
     "SHARED_VOCABULARY_INDEX",
     "SharedVocabularyIndex",
+    "DIRECT_USE_SHARE",
+    "choose_runtime_vocabulary_use",
 ]
 
 
@@ -32,4 +34,10 @@ from .shared_catalog import (
     SHARED_VOCABULARY_ITEMS,
     SHARED_VOCABULARY_INDEX,
     SharedVocabularyIndex,
+)
+
+
+from .runtime_use_policy import (
+    DIRECT_USE_SHARE,
+    choose_runtime_vocabulary_use,
 )
