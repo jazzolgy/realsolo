@@ -1,0 +1,46 @@
+{
+  "schema_version": "0.1",
+  "scope": "private_candidate_alignment_record",
+  "track_id": "BE-011",
+  "fields": {
+    "candidate_id": "stable private id",
+    "onset_s": "track-relative physical time",
+    "offset_s": "track-relative physical time or null",
+    "duration_s": "measured duration or null",
+    "pitch_hypothesis": "private exact hypothesis or null",
+    "pitch_confidence": "0..1 or null",
+    "score_bar": "aligned score bar or null",
+    "beat_position": "beat/sub-beat position or null",
+    "form_section": "form label or null",
+    "expected_harmony": "score-derived expected harmony or null",
+    "previous_interval": "private exact/relative interval or null",
+    "register": "register descriptor or null",
+    "phrase_id": "private phrase id or null",
+    "motif_id": "private motif id or null",
+    "instrument_attribution": [
+      "bass",
+      "piano_left_hand",
+      "piano_resonance",
+      "percussive_leakage",
+      "overlap",
+      "unknown"
+    ],
+    "instrument_attribution_confidence": "0..1 or null",
+    "verification_status": [
+      "NOTE_HYPOTHESIS",
+      "SCORE_ALIGNED_HYPOTHESIS",
+      "INSTRUMENT_ATTRIBUTED",
+      "EXPERT_VERIFIED",
+      "GROUND_TRUTH_TRANSCRIPTION"
+    ],
+    "provenance": "source/pipeline/reviewer provenance",
+    "reviewer_note": "private free text or null"
+  },
+  "rules": [
+    "unknown is null, never fabricated zero",
+    "score alignment precedes bass attribution",
+    "mixed-audio candidates are not bass facts by default",
+    "exact event records remain outside the public repository",
+    "public summaries must be non-reconstructive"
+  ]
+}
