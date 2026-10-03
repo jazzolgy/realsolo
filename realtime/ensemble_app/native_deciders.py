@@ -256,14 +256,58 @@ class DrumsNativeDecider:
             )
         else:
             chosen = perform_one_gesture(plan, dctx, self.memory)
+
+        drum_role=(
+            ExpressiveRole.RESPONSE
+            if chosen.gesture.role.value in {"setup","accent","comp"}
+            else ExpressiveRole.SUPPORT
+        )
+        drum_expression=realize_expression(ExpressiveContext(
+            phrase_position=max(0.0,min(1.0,phrase_position)),
+            form_position=max(0.0,min(1.0,snapshot.transport.form_position)),
+            tension=max(0.0,min(1.0,snapshot.ensemble_tension)),
+            ensemble_density=max(0.0,min(1.0,snapshot.ensemble_density)),
+            register_position=.5,
+            repetition_index=self.bebop_phrase_memory.recent_response_count,
+            motif_operation=(
+                SoloDevelopmentOperation.ANSWER
+                if chosen.gesture.role.value in {"comp","accent"}
+                else SoloDevelopmentOperation.ADD_SPACE
+                if chosen.gesture.role.value=="space"
+                else SoloDevelopmentOperation.STATE
+            ),
+            role=drum_role,
+            climax_pressure=max(0.0,min(1.0,snapshot.ensemble_tension*phrase_position)),
+            release_pressure=max(0.0,min(1.0,phrase_position-.82)/.18),
+            available_space=max(0.0,min(1.0,snapshot.space_available)),
+        ))
         hits = tuple(
             RenderVoice(
                 _DRUM_MIDI[h.voice],
-                h.velocity,
+                max(
+                    1,
+                    min(
+                        127,
+                        int(round(
+                            h.velocity*.76
+                            + 40*drum_expression.dynamic_level
+                            + 12*(drum_expression.accent_strength-.5)
+                        )),
+                    ),
+                ),
                 .10,
                 _ms_to_beats(h.microtiming_ms, snapshot.transport.tempo_bpm) + getattr(h, "onset_offset_beats", 0.0),
                 articulation=(h.articulation,),
                 instrument_role="drums",
+                expression_controls={
+                    "perceptual_intensity": drum_expression.perceptual_intensity,
+                    "dynamic_level": drum_expression.dynamic_level,
+                    "accent_strength": drum_expression.accent_strength,
+                    "foreground_weight": drum_expression.foreground_weight,
+                    "articulation_pressure": drum_expression.articulation_pressure,
+                    "brightness_pressure": drum_expression.brightness_pressure,
+                    "phrase_contour": drum_expression.phrase_contour.value,
+                },
             )
             for h in chosen.gesture.hits
         )
@@ -272,7 +316,12 @@ class DrumsNativeDecider:
             drum_hits=hits,
             source="player/drums:online_drummer",
             tags=tuple(sorted(chosen.gesture.tags | {chosen.gesture.role.value})),
-            annotations={"drum_score": f"{chosen.score:.4f}"},
+            annotations={
+                "drum_score": f"{chosen.score:.4f}",
+                "expressive_dynamic": f"{drum_expression.dynamic_level:.3f}",
+                "expressive_accent": f"{drum_expression.accent_strength:.3f}",
+                "expressive_foreground": f"{drum_expression.foreground_weight:.3f}",
+            },
         )
 
         density = min(1.0, len(hits) / 4.0)
@@ -284,7 +333,10 @@ class DrumsNativeDecider:
             leadership=.12 if chosen.gesture.role.value in {"setup", "accent"} else .03,
             phrase_maturity=0.0,
             tags=frozenset(set(chosen.gesture.tags) | {chosen.gesture.role.value}),
-            provenance=(("drummer_bebop_runtime" if "bebop" in style_tags else "drummer_online_policy"),),
+            provenance=(
+                ("drummer_bebop_runtime" if "bebop" in style_tags else "drummer_online_policy"),
+                "shared_expressive_realization",
+            ),
         )
 
 
@@ -378,18 +430,62 @@ class PianoNativeDecider:
                 tension=snapshot.ensemble_tension,
                 leadership=.02,
                 tags=frozenset({"piano_silence", candidate.role.value}),
-                provenance=("piano_comping_policy",),
+                provenance=("piano_comping_policy","shared_expressive_realization"),
             )
 
         event = candidate.realization.event
+        piano_role=(
+            ExpressiveRole.RESPONSE
+            if candidate.role.value in {"answer","fill"}
+            else ExpressiveRole.SUPPORT
+        )
+        piano_expression=realize_expression(ExpressiveContext(
+            phrase_position=max(0.0,min(1.0,phrase)),
+            form_position=max(0.0,min(1.0,snapshot.transport.form_position)),
+            tension=max(0.0,min(1.0,snapshot.ensemble_tension)),
+            ensemble_density=max(0.0,min(1.0,snapshot.ensemble_density)),
+            register_position=.5,
+            repetition_index=max(0,self.state.recent_density.voice_count-1),
+            motif_operation=(
+                SoloDevelopmentOperation.ANSWER
+                if candidate.role.value=="answer"
+                else SoloDevelopmentOperation.ADD_SPACE
+                if candidate.role.value=="lay_out"
+                else SoloDevelopmentOperation.STATE
+            ),
+            role=piano_role,
+            climax_pressure=max(0.0,min(1.0,snapshot.ensemble_tension*phrase)),
+            release_pressure=max(0.0,min(1.0,phrase-.8)/.2),
+            available_space=max(0.0,min(1.0,snapshot.space_available)),
+        ))
         voices = tuple(
             RenderVoice(
                 v.pitch_midi,
-                event.velocity,
+                max(
+                    1,
+                    min(
+                        127,
+                        int(round(
+                            event.velocity*.72
+                            + 46*piano_expression.dynamic_level
+                            + 10*(piano_expression.accent_strength-.5)
+                        )),
+                    ),
+                ),
                 event.duration_beats,
                 event.onset_offset_beats + v.onset_offset_beats,
                 articulation=event.articulation,
                 instrument_role="piano",
+                expression_controls={
+                    "perceptual_intensity": piano_expression.perceptual_intensity,
+                    "dynamic_level": piano_expression.dynamic_level,
+                    "accent_strength": piano_expression.accent_strength,
+                    "note_body": piano_expression.note_body,
+                    "foreground_weight": piano_expression.foreground_weight,
+                    "articulation_pressure": piano_expression.articulation_pressure,
+                    "brightness_pressure": piano_expression.brightness_pressure,
+                    "phrase_contour": piano_expression.phrase_contour.value,
+                },
             )
             for v in event.voices_by_onset
         )
@@ -398,7 +494,12 @@ class PianoNativeDecider:
             voices=voices,
             source="player/piano:comping_policy",
             tags=tuple(sorted(set(event.tags) | set(candidate.tags) | {candidate.role.value})),
-            annotations={"piano_score": f"{chosen.total:.4f}"},
+            annotations={
+                "piano_score": f"{chosen.total:.4f}",
+                "expressive_dynamic": f"{piano_expression.dynamic_level:.3f}",
+                "expressive_accent": f"{piano_expression.accent_strength:.3f}",
+                "expressive_foreground": f"{piano_expression.foreground_weight:.3f}",
+            },
         )
         density = min(1.0, len(voices) / 6.0)
         return NativeImmediateResult(
