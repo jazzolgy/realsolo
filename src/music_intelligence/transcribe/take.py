@@ -5,7 +5,7 @@ performance contract.  It has no dependency on Audio Evidence Engine internals.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass
 from fractions import Fraction
 
 from .allocation import StaffProfile
@@ -48,6 +48,7 @@ class PartTranscriptionRequest:
     materialize_rests: bool = True
     infer_piano_gestures: bool = True
     infer_dynamic_hairpins: bool = True
+    end_beat: float | None = None
 
     def validate(self) -> None:
         if not self.part_id or not self.name or not self.instrument:
@@ -56,6 +57,8 @@ class PartTranscriptionRequest:
             raise ValueError("part transcription requires events")
         if not self.staffs:
             raise ValueError("part transcription requires staff profiles")
+        if self.end_beat is not None and self.end_beat <= 0:
+            raise ValueError("end_beat must be positive")
         for event in self.events:
             event.validate()
 
@@ -89,13 +92,45 @@ def _event_sort_key(event: CommittedPerformanceEvent) -> tuple[float, float, str
     )
 
 
+def _rest_events_for_gap(
+    *,
+    part_id: str,
+    staff_id: str,
+    voice_id: str,
+    start: Fraction,
+    end: Fraction,
+    bar_length: Fraction,
+    rest_counter: int,
+) -> tuple[tuple[ScoreEvent, ...], int]:
+    rests: list[ScoreEvent] = []
+    cursor = start
+    while cursor < end:
+        bar_end = (cursor // bar_length + 1) * bar_length
+        segment_end = min(end, bar_end)
+        rest_counter += 1
+        rests.append(
+            ScoreEvent(
+                event_id=f"rest:{part_id}:{staff_id}:{voice_id}:{rest_counter}",
+                part_id=part_id,
+                staff_id=staff_id,
+                voice_id=voice_id,
+                kind=NotatedAtomKind.REST,
+                span=ScoreSpan(cursor, segment_end - cursor),
+                provenance=("transcribe:voice-gap-rest",),
+            )
+        )
+        cursor = segment_end
+    return tuple(rests), rest_counter
+
 
 def _materialize_voice_rests(
     events: tuple[ScoreEvent, ...],
     *,
     start: Fraction = Fraction(0),
+    end: Fraction | None = None,
+    bar_length: Fraction = Fraction(4),
 ) -> tuple[ScoreEvent, ...]:
-    """Insert readable rests in gaps without changing sounding-note evidence."""
+    """Insert readable rests in gaps, split cleanly at measure boundaries."""
 
     groups: dict[tuple[str, str, str], list[ScoreEvent]] = {}
     for event in events:
@@ -116,23 +151,33 @@ def _materialize_voice_rests(
                 and event.simultaneity_group_id in seen_groups
             )
             if not chord_member and event.span.onset > cursor:
-                rest_counter += 1
-                out.append(
-                    ScoreEvent(
-                        event_id=f"rest:{part_id}:{staff_id}:{voice_id}:{rest_counter}",
-                        part_id=part_id,
-                        staff_id=staff_id,
-                        voice_id=voice_id,
-                        kind=NotatedAtomKind.REST,
-                        span=ScoreSpan(cursor, event.span.onset - cursor),
-                        provenance=("transcribe:voice-gap-rest",),
-                    )
+                rests, rest_counter = _rest_events_for_gap(
+                    part_id=part_id,
+                    staff_id=staff_id,
+                    voice_id=voice_id,
+                    start=cursor,
+                    end=event.span.onset,
+                    bar_length=bar_length,
+                    rest_counter=rest_counter,
                 )
+                out.extend(rests)
             out.append(event)
             if event.simultaneity_group_id is not None:
                 seen_groups.add(event.simultaneity_group_id)
             if not chord_member:
                 cursor = max(cursor, event.span.offset)
+
+        if end is not None and end > cursor:
+            rests, rest_counter = _rest_events_for_gap(
+                part_id=part_id,
+                staff_id=staff_id,
+                voice_id=voice_id,
+                start=cursor,
+                end=end,
+                bar_length=bar_length,
+                rest_counter=rest_counter,
+            )
+            out.extend(rests)
 
     return tuple(
         sorted(
@@ -309,7 +354,18 @@ def transcribe_part(
         score_events,
     )
     if request.materialize_rests:
-        score_events = _materialize_voice_rests(score_events)
+        score_events = _materialize_voice_rests(
+            score_events,
+            end=(
+                Fraction(request.end_beat).limit_denominator(4096)
+                if request.end_beat is not None
+                else None
+            ),
+            bar_length=Fraction(
+                meter_numerator * 4,
+                meter_denominator,
+            ),
+        )
 
     part = ScorePart(
         part_id=request.part_id,
