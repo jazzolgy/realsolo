@@ -11,6 +11,14 @@ from .interfaces import (
     VocabularyDimension,
 )
 from .mixture import ContextualLegendMixture, LegendViewWeight
+from .data_policy import (
+    LegendDataLayer,
+    LegendMaterialKind,
+    PrivateLegendStoreDescriptor,
+    PrivateLegendVocabularyProvider,
+    default_legend_data_layer,
+    may_publish_material,
+)
 
 __all__ = [
     "LegendDomain",
@@ -23,4 +31,10 @@ __all__ = [
     "VocabularyDimension",
     "ContextualLegendMixture",
     "LegendViewWeight",
+    "LegendDataLayer",
+    "LegendMaterialKind",
+    "PrivateLegendStoreDescriptor",
+    "PrivateLegendVocabularyProvider",
+    "default_legend_data_layer",
+    "may_publish_material",
 ]
