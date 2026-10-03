@@ -38,3 +38,14 @@ def test_transcribe_package_does_not_import_realsolo_reasoning_package():
         if "music_intelligence.reasoning" in text:
             offenders.append(path.name)
     assert offenders == []
+
+
+
+def test_transcribe_package_does_not_import_audio_evidence_internals():
+    root = Path("src/music_intelligence/transcribe")
+    offenders = []
+    for path in root.glob("*.py"):
+        text = path.read_text(encoding="utf-8")
+        if "music_intelligence.audio_evidence" in text:
+            offenders.append(path.name)
+    assert offenders == []
