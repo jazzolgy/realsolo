@@ -8,6 +8,7 @@ from hashlib import sha256
 from statistics import mean
 
 from .representation import LearningArtifact, LearningDomain, StructuralPerformanceData
+from .canonical_position import canonicalize_structural_positions, position_feature_map
 from .groove_grammar import best_matching_grammars
 
 
@@ -22,6 +23,7 @@ def build_groove_artifact(
     *,
     subdivisions_per_beat: int = 4,
 ) -> LearningArtifact | None:
+    data=canonicalize_structural_positions(data)
     if not data.events:
         return None
     if subdivisions_per_beat <= 0:
@@ -54,11 +56,13 @@ def build_groove_artifact(
         beat_phase=e.onset_beats%1.0
         if abs(beat_phase)>.08:
             offbeat+=1
-        bar_phase=e.onset_beats%4.0
-        if abs(bar_phase-1.0)<=.13 or abs(bar_phase-3.0)<=.13:
-            backbeat_accents.append(e.accent)
-        if abs(bar_phase)<=.13:
-            downbeat_accents.append(e.accent)
+        p=e.metric_form_position
+        bar_phase=p.beat_in_measure if p is not None and p.resolved_metric else None
+        if bar_phase is not None and p.meter_numerator==4 and p.meter_denominator==4:
+            if abs(bar_phase-1.0)<=.13 or abs(bar_phase-3.0)<=.13:
+                backbeat_accents.append(e.accent)
+            if abs(bar_phase)<=.13:
+                downbeat_accents.append(e.accent)
 
     accent_profile=tuple(
         round(accent_sums[i]/onset_counts[i],3) if onset_counts[i] else 0.0
@@ -96,6 +100,18 @@ def build_groove_artifact(
         "groove_matches":tuple((g.grammar_id,round(score,4)) for g,score in matches),
         "best_groove_grammar":matches[0][0].grammar_id if matches else "",
         "best_groove_score":round(matches[0][1],4) if matches else 0.0,
+        "metric_form_context":{
+            "resolved_metric":all(e.metric_form_position is not None and e.metric_form_position.resolved_metric for e in ordered),
+            "resolved_form":all(e.metric_form_position is not None and e.metric_form_position.resolved_form for e in ordered),
+            "form_id":data.form_map.form_id if data.form_map is not None else (data.form_label or None),
+            "sections":tuple(dict.fromkeys(
+                e.metric_form_position.section_id
+                for e in ordered
+                if e.metric_form_position is not None and e.metric_form_position.section_id
+            )),
+            "start":position_feature_map(ordered[0]),
+            "end":position_feature_map(ordered[-1]),
+        },
     }
     payload=str(features)
     digest=sha256(payload.encode()).hexdigest()[:16]
@@ -107,5 +123,5 @@ def build_groove_artifact(
         features=features,
         source_event_ids=tuple(e.event_id for e in ordered),
         confidence=mean(e.confidence for e in ordered),
-        provenance=("shared_learning:rhythm_groove","cyclic_structure"),
+        provenance=("shared_learning:rhythm_groove","cyclic_structure","metric_form_learning_address"),
     )
