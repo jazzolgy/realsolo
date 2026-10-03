@@ -432,3 +432,44 @@ def test_polyphonic_piano_overlapping_voices_get_opposing_stems_and_musicxml_bac
     ]
     assert "up" in stems
     assert "down" in stems
+
+
+
+def test_batch_voice_staff_continuity_avoids_unnecessary_piano_staff_hop():
+    engine = NotationEngine()
+    upper = StaffProfile(
+        "pn:upper",
+        "upper",
+        nominal_low_midi=60,
+        nominal_high_midi=108,
+    )
+    lower = StaffProfile(
+        "pn:lower",
+        "lower",
+        nominal_low_midi=21,
+        nominal_high_midi=72,
+    )
+    request = PartTranscriptionRequest(
+        part_id="pn",
+        name="Piano",
+        instrument="piano",
+        events=(
+            _polyphonic_piano_event("cont:high", 0, 1, 84, None),
+            _polyphonic_piano_event("cont:middle", 1, 1, 60, None),
+        ),
+        staffs=(upper, lower),
+        materialize_rests=False,
+        infer_piano_gestures=False,
+        infer_dynamic_hairpins=False,
+    )
+
+    result = engine.transcribe_part(request)
+
+    first_staff = result.projections[0].score_events[0].staff_id
+    second_staff = result.projections[1].score_events[0].staff_id
+    assert first_staff == "pn:upper"
+    assert second_staff == "pn:upper"
+    assert any(
+        "staff continuity" in reason
+        for reason in result.projections[1].allocation_candidates[0].reasons
+    )
