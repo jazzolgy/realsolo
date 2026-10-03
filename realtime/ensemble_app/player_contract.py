@@ -237,7 +237,7 @@ def apply_shared_expression_to_render_gesture(
         attack=max(.05,v.attack_scale*accent_gain)
         duration_scale=.75+.50*intent.note_body
         duration=max(.02,v.duration_beats*duration_scale)
-        onset=max(-.5,min(.5,v.onset_offset_beats+intent.timing_emphasis_beats))
+        onset=v.onset_offset_beats+intent.timing_emphasis_beats
 
         articulation=tuple(dict.fromkeys((*v.articulation,*sorted(intent.articulation_tags))))
         controls=dict(v.expression_controls)
