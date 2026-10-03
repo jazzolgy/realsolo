@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.1",
+  "campaign_id": "evans_parker_12h_2026-10-04",
+  "status": "RUNNING",
+  "started_local": "2026-10-04T07:48:00+09:00",
+  "planned_passes": 12,
+  "completed_passes": 0,
+  "last_verified_main_head": "762fa05c243867ec9afbc1a5fe3cbcfed7b7d41e",
+  "bill_evans": {
+    "sources": {
+      "be_playlist_project_audio": {
+        "duration_s": 7717.956,
+        "known_private_note_coverage": [[0.0,120.0]],
+        "known_special_regions": [[708.0,1069.0]],
+        "next_priority": [120.0,708.0]
+      },
+      "be_best_full_album_project_audio": {
+        "duration_s": 3760.091,
+        "known_private_note_coverage": [],
+        "next_priority": [0.0,3760.091]
+      }
+    }
+  },
+  "charlie_parker": {
+    "sources": {
+      "cp_audio_greatest_hits_project": {
+        "duration_s": 6448.056,
+        "known_private_note_coverage": [[0.0,178.352]],
+        "next_priority": [181.421,359.277]
+      }
+    }
+  },
+  "rules": {
+    "exact_events_public": false,
+    "mixed_audio_is_ground_truth": false,
+    "canonical_learning_address": "MusicalScoreCoordinate",
+    "seconds_are_provenance_only": true,
+    "runtime_exact_future_phrase_replay": false
+  }
+}
