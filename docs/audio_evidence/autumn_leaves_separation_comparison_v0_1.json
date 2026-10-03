@@ -1,0 +1,58 @@
+{
+  "schema": "realsolo.audio_evidence.separation_comparison.v0.1",
+  "validation_case": {
+    "source_id": "BE-003",
+    "title": "Autumn Leaves",
+    "segment_start_seconds": 708.0,
+    "segment_end_seconds": 1069.0,
+    "segment_duration_seconds": 361.0
+  },
+  "direct_mixture_baseline": {
+    "onset_hypotheses": 1421,
+    "spectral_pitch_hypotheses": 7240,
+    "mean_pitch_hypotheses_per_onset": 5.095003518648839,
+    "unpitched_hypotheses": 1398,
+    "token_counts": {
+      "kick": 11,
+      "snare": 1237,
+      "cymbal_or_hihat": 150
+    }
+  },
+  "hpss_validation": {
+    "separator": "librosa:hpss:v0.1",
+    "harmonic_stream": {
+      "onset_hypotheses": 1796,
+      "spectral_pitch_hypotheses": 8478,
+      "mean_pitch_hypotheses_per_onset": 4.720489977728285,
+      "rms": 0.06317276507616043
+    },
+    "percussive_stream": {
+      "onset_hypotheses": 1691,
+      "token_counts": {
+        "kick": 13,
+        "snare": 1466,
+        "cymbal_or_hihat": 212
+      },
+      "rms": 0.0265946201980114
+    }
+  },
+  "demucs_validation": {
+    "adapter": "demucs-cli:v0.1",
+    "model": "htdemucs",
+    "status": "not_executed_to_completion",
+    "reason": "model weights were not present in the execution environment and outbound model-weight download was unavailable",
+    "interpretation": "adapter behavior is unit-tested; no source-separation quality claim is made for BE-003"
+  },
+  "findings": [
+    "HPSS validates the separated-source transport and metadata path but is not an instrument separator.",
+    "The harmonic stream increased onset count and spectral pitch hypotheses relative to the mixture, demonstrating that detector counts are separator-dependent.",
+    "The percussive stream increased detected percussive onsets and high-frequency token counts, so raw event counts must remain provenance-bound.",
+    "HPSS cannot resolve Bass versus Piano-LH ownership; a learned multi-stem separator or instrument-specific attribution model is still required."
+  ],
+  "boundary": {
+    "musical_meaning_inferred": false,
+    "harmony_inferred": false,
+    "form_inferred": false,
+    "notation_inferred": false
+  }
+}
