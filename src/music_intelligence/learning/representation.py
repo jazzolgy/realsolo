@@ -9,6 +9,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Mapping
 
+from .form_position import FormMap, MetricFormPosition
+
 
 class LearningDomain(str, Enum):
     MOTIF = "motif"
@@ -47,6 +49,7 @@ class StructuralPerformanceEvent:
     confidence_fields: Mapping[str, float] = field(default_factory=dict)
     tags: frozenset[str] = frozenset()
     provenance: tuple[str, ...] = ()
+    metric_form_position: MetricFormPosition | None = None
 
     def validate(self) -> None:
         if not self.event_id:
@@ -78,6 +81,8 @@ class StructuralPerformanceEvent:
         for key, value in self.confidence_fields.items():
             if not key or not 0.0 <= float(value) <= 1.0:
                 raise ValueError("confidence_fields values must be named confidences within 0..1")
+        if self.metric_form_position is not None:
+            self.metric_form_position.validate()
 
 
 @dataclass(frozen=True)
@@ -90,12 +95,15 @@ class StructuralPerformanceData:
     form_label: str = ""
     metadata: Mapping[str, str] = field(default_factory=dict)
     provenance: tuple[str, ...] = ()
+    form_map: FormMap | None = None
 
     def validate(self) -> None:
         if not self.source_id:
             raise ValueError("source_id is required")
         if self.tempo_bpm is not None and self.tempo_bpm <= 0:
             raise ValueError("tempo_bpm must be positive")
+        if self.form_map is not None:
+            self.form_map.validate()
         for event in self.events:
             event.validate()
 
