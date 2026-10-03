@@ -3,7 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from typing import Mapping, Sequence
 
-from music_intelligence.reasoning.groove_context import GrooveTemporalContext, groove_timing_offset_beats
+from music_intelligence.reasoning.groove_context import (
+    GrooveTemporalContext,
+    player_phase_offset_beats,
+    player_swing_offbeat_fraction,
+)
 
 ExpressionValue = float | int | str | bool
 
@@ -152,30 +156,48 @@ def apply_shared_groove_to_render_gesture(
     *,
     anchor_beat: float,
     groove: GrooveTemporalContext | None,
+    phrase_maturity: float = 0.5,
 ) -> RenderGesture:
-    """Project one committed gesture onto the shared ensemble pulse.
+    """Project one committed gesture onto shared groove exactly once.
 
-    This is not musical selection and does not force every subdivision to swing.
-    It only moves swing-eligible nominal eighth offbeats to the shared temporal
-    reference, identically for piano, bass, drums, and solo voices.
+    The adapter boundary owns ensemble groove projection. Player realizers own
+    instrument-specific expression timing only. Swing and phase placement are
+    role-aware in ELASTIC/HUMAN_DRIFT and collapse to the shared reference in
+    LOCKED mode. No random timing jitter is introduced here.
     """
     gesture.validate()
     if groove is None:
         return gesture
     groove.validate()
+    maturity=max(0.0,min(1.0,phrase_maturity))
 
     def warped(v: RenderVoice) -> RenderVoice:
-        shift=groove_timing_offset_beats(
-            anchor_beat+v.onset_offset_beats,
+        absolute=anchor_beat+v.onset_offset_beats
+        nominal=absolute%1.0
+        swing_shift=0.0
+        if (
+            groove.eligible_for_swing_warp()
+            and groove.groove_strength>0
+            and abs(nominal-0.5)<=0.08
+        ):
+            target=player_swing_offbeat_fraction(v.instrument_role,groove)
+            swing_shift=groove.groove_strength*(target-nominal)
+        phase_shift=player_phase_offset_beats(
+            v.instrument_role,
             groove,
-            swing_eligible=True,
+            phrase_maturity=maturity,
         )
-        return replace(v,onset_offset_beats=v.onset_offset_beats+shift)
+        return replace(
+            v,
+            onset_offset_beats=v.onset_offset_beats+swing_shift+phase_shift,
+        )
 
     annotations=dict(gesture.annotations)
     annotations["groove_feel"]=groove.feel.value
     annotations["groove_grammar"]=groove.grammar_id
     annotations["swing_ratio"]=f"{groove.effective_swing_ratio:.4f}"
+    annotations["groove_coordination"]=groove.coordination_mode.value
+    annotations["phrase_maturity"]=f"{maturity:.4f}"
     tags=tuple(dict.fromkeys((*gesture.tags,f"groove:{groove.feel.value}")))
     out=replace(
         gesture,
