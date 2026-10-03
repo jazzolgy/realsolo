@@ -13,6 +13,8 @@ from .player_contract import monophonic_solo_gesture, apply_shared_groove_to_ren
 from music_intelligence.reasoning.groove_context import GrooveFeel, build_groove_context
 from .player_provider import current_stage1_provider_status
 from .stage1_trio import Stage1TrioRuntime
+from .stage1_quartet import Stage1QuartetRuntime
+from .canonical_repertoire import AUTUMN_LEAVES_G_MINOR_JAM
 
 WEB_ROOT = Path(__file__).with_name("web")
 
@@ -73,8 +75,10 @@ def groove_payload(tempo_bpm: float) -> dict:
 
 class Stage1Handler(SimpleHTTPRequestHandler):
     chart = demo_chart()
+    quartet_chart = AUTUMN_LEAVES_G_MINOR_JAM
     soloist = Stage1Soloist()
     trio = Stage1TrioRuntime.create()
+    quartet = Stage1QuartetRuntime.create(AUTUMN_LEAVES_G_MINOR_JAM.tempo_bpm)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(WEB_ROOT), **kwargs)
@@ -128,6 +132,7 @@ class Stage1Handler(SimpleHTTPRequestHandler):
         if parsed.path == "/api/reset-solo":
             self.soloist.reset()
             self.trio.reset(self.chart.tempo_bpm)
+            self.quartet.reset(self.quartet_chart.tempo_bpm)
             body = b'{"ok": true}'
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
@@ -243,6 +248,49 @@ class Stage1Handler(SimpleHTTPRequestHandler):
             self.wfile.write(body)
             return
 
+        if parsed.path == "/api/quartet-event":
+            query = parse_qs(parsed.query)
+            chord = query.get("chord", ["Cm7"])[0]
+            next_chord = query.get("next_chord", [""])[0]
+            try:
+                beat = float(query.get("beat", ["0"])[0]) % self.quartet_chart.beats_per_bar
+                bar_index = int(query.get("bar_index", ["0"])[0]) % len(self.quartet_chart.bars)
+                tempo_bpm = float(query.get("tempo", [str(self.quartet_chart.tempo_bpm)])[0])
+                chorus = max(0, int(query.get("chorus", ["0"])[0]))
+            except ValueError:
+                beat, bar_index, tempo_bpm, chorus = 0.0, 0, self.quartet_chart.tempo_bpm, 0
+
+            bar = self.quartet_chart.bars[bar_index]
+            result = self.quartet.decide(
+                chord,
+                next_chord,
+                beat_in_bar=beat,
+                bar_index=bar_index,
+                total_bars=len(self.quartet_chart.bars),
+                tempo_bpm=tempo_bpm,
+                section=bar.section or "",
+                chorus=chorus,
+            )
+
+            body = json.dumps({
+                "gestures": [gesture.to_dict() for gesture in result.gestures],
+                "players": [decision.player_id for decision in result.decisions],
+                "skipped": list(result.skipped_player_ids),
+                "snapshot_generation": result.snapshot_generation,
+                "published_generation": result.state.generation,
+                "performance_convention": "jazz_jam_session",
+                "groove": (
+                    result.state.groove.coordination_mode.value
+                    if result.state.groove is not None else ""
+                ),
+            }).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
         if parsed.path == "/api/solo-event":
             query = parse_qs(parsed.query)
             chord = query.get("chord", ["Cmaj7"])[0]
@@ -295,7 +343,9 @@ class Stage1Handler(SimpleHTTPRequestHandler):
                 transpose = max(-12, min(12, int(query.get("transpose", ["0"])[0])))
             except ValueError:
                 transpose = 0
-            body = json.dumps(chart_payload(self.chart, transpose=transpose)).encode("utf-8")
+            repertoire = query.get("repertoire", ["demo"])[0]
+            selected = self.quartet_chart if repertoire == "autumn_leaves" else self.chart
+            body = json.dumps(chart_payload(selected, transpose=transpose)).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
