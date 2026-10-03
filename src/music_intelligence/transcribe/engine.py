@@ -180,6 +180,22 @@ class NotationEngine:
             ),
         )
 
+    def transcribe_take_musicxml(
+        self,
+        requests: tuple[PartTranscriptionRequest, ...],
+        *,
+        score_id: str,
+        title: str,
+        key_signature=None,
+    ) -> tuple[TakeTranscriptionResult, str]:
+        result = self.transcribe_take(
+            requests,
+            score_id=score_id,
+            title=title,
+            key_signature=key_signature,
+        )
+        return result, self.musicxml(result.score)
+
     def engraving_plan(self, score: ReadableScore) -> EngravingPlan:
         return build_default_engraving_plan(
             score,
