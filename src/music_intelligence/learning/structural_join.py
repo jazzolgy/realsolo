@@ -6,10 +6,17 @@ address used for learning/comparison. Missing alignment is never guessed.
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from enum import Enum
 from typing import Iterable
 
 from .representation import StructuralPerformanceData, StructuralPerformanceEvent
 from .score_alignment import MusicalScoreCoordinate
+
+
+class StructuralAlignmentStatus(str, Enum):
+    CANDIDATE = "candidate"
+    VERIFIED = "verified"
+    CANONICAL = "canonical"
 
 
 @dataclass(frozen=True)
@@ -21,6 +28,7 @@ class StructuralAlignmentSpan:
     start_form_bar: int | None = None
     end_form_bar: int | None = None
     alignment_confidence: float = 1.0
+    status: StructuralAlignmentStatus = StructuralAlignmentStatus.CANONICAL
     provenance: tuple[str, ...] = ()
 
     def validate(self) -> None:
@@ -70,10 +78,26 @@ class StructuralAlignmentIndex:
         for span in self._spans:
             span.validate()
 
-    def locate(self, *, source_id: str, time_s: float) -> MusicalScoreCoordinate | None:
+    def locate(
+        self,
+        *,
+        source_id: str,
+        time_s: float,
+        minimum_status: StructuralAlignmentStatus = StructuralAlignmentStatus.CANONICAL,
+    ) -> MusicalScoreCoordinate | None:
+        rank = {
+            StructuralAlignmentStatus.CANDIDATE: 0,
+            StructuralAlignmentStatus.VERIFIED: 1,
+            StructuralAlignmentStatus.CANONICAL: 2,
+        }
+        minimum_rank = rank[minimum_status]
         matches = [
             span for span in self._spans
-            if span.source_id == source_id and span.contains(time_s)
+            if (
+                span.source_id == source_id
+                and span.contains(time_s)
+                and rank[span.status] >= minimum_rank
+            )
         ]
         if not matches:
             return None
@@ -92,6 +116,7 @@ def align_structural_performance_data(
     index: StructuralAlignmentIndex,
     *,
     require_all: bool = False,
+    minimum_status: StructuralAlignmentStatus = StructuralAlignmentStatus.CANONICAL,
 ) -> StructuralPerformanceData:
     """Attach musical coordinates to timestamped events.
 
@@ -110,7 +135,11 @@ def align_structural_performance_data(
         if event.audio_onset_s is None:
             out_events.append(event)
             continue
-        position = index.locate(source_id=data.source_id, time_s=event.audio_onset_s)
+        position = index.locate(
+            source_id=data.source_id,
+            time_s=event.audio_onset_s,
+            minimum_status=minimum_status,
+        )
         if position is None:
             out_events.append(event)
             continue
