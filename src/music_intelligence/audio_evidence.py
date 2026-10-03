@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from math import log2
-from typing import Mapping
+from typing import Mapping, Protocol
 
 from music_intelligence.learning.audio_evidence import artifacts_from_audio_aggregate
 from music_intelligence.learning.representation import StructuralPerformanceEvent
@@ -229,4 +229,104 @@ __all__=[
     "identity_context_correction",
     "musical_moment_from_evidence",
     "structural_event_from_evidence",
+    "StreamingAudioDetector",
+    "StreamingContextCorrector",
+    "StreamingAudioEvidenceEngine",
 ]
+
+
+
+class StreamingAudioDetector(Protocol):
+    """Model/detector adapter consumed by the canonical streaming engine."""
+
+    def detect_float32(
+        self,
+        source_id: str,
+        payload: bytes,
+        *,
+        sample_rate: int,
+        timestamp_s: float,
+    ) -> DetectorEvidence:
+        ...
+
+
+class StreamingContextCorrector(Protocol):
+    """Optional contextual posterior adapter.
+
+    Implementations may use beat/phrase/history/model context, but the canonical
+    engine owns the raw-vs-posterior evidence contract.
+    """
+
+    def correct(
+        self,
+        source_id: str,
+        raw: DetectorEvidence,
+        *,
+        timestamp_s: float,
+    ) -> ContextCorrection:
+        ...
+
+
+@dataclass
+class StreamingAudioEvidenceEngine:
+    """Canonical orchestration for browser/realtime PCM evidence.
+
+    Detector implementations are replaceable adapters. This engine is the one
+    place that constructs PerformanceEvidence and preserves raw detector output
+    separately from context-corrected posterior evidence.
+    """
+
+    detector: StreamingAudioDetector
+    context_corrector: StreamingContextCorrector | None = None
+
+    def ingest_float32(
+        self,
+        source_id: str,
+        payload: bytes,
+        *,
+        sample_rate: int,
+        timestamp_s: float,
+        musical_position: MusicalScoreCoordinate | None = None,
+        provenance: tuple[str,...] = (),
+    ) -> PerformanceEvidence:
+        if not source_id:
+            raise ValueError("source_id is required")
+        if sample_rate < 8000 or sample_rate > 192000:
+            raise ValueError("unsupported sample rate")
+        if len(payload)%4:
+            raise ValueError("Float32 PCM payload length must be divisible by 4")
+        if timestamp_s < 0:
+            raise ValueError("timestamp_s may not be negative")
+        if musical_position is not None:
+            musical_position.validate()
+
+        raw=self.detector.detect_float32(
+            source_id,
+            payload,
+            sample_rate=sample_rate,
+            timestamp_s=timestamp_s,
+        )
+        raw.validate()
+        posterior=(
+            self.context_corrector.correct(
+                source_id,
+                raw,
+                timestamp_s=timestamp_s,
+            )
+            if self.context_corrector is not None
+            else identity_context_correction(raw)
+        )
+        posterior.validate()
+
+        evidence=PerformanceEvidence(
+            source_id=source_id,
+            timestamp_s=timestamp_s,
+            raw=raw,
+            posterior=posterior,
+            musical_position=musical_position,
+            provenance=provenance+(
+                "music_intelligence.audio_evidence:streaming_engine",
+            ),
+        )
+        evidence.validate()
+        return evidence
