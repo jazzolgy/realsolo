@@ -25,6 +25,25 @@ class DomainLearningState:
     categorical_counts:dict[str,dict[str,int]]=field(default_factory=dict)
     feedback_bias:dict[str,float]=field(default_factory=dict)
     observations:int=0
+    form_context_observations:dict[str,int]=field(default_factory=dict)
+    form_context_numeric_means:dict[str,dict[str,float]]=field(default_factory=dict)
+    form_context_numeric_counts:dict[str,dict[str,int]]=field(default_factory=dict)
+
+    @staticmethod
+    def _form_context_key(a:LearningArtifact)->str|None:
+        ctx=a.features.get("metric_form_context")
+        if not isinstance(ctx,Mapping) or not ctx.get("resolved_metric"):
+            return None
+        start=ctx.get("start")
+        if not isinstance(start,Mapping):
+            return None
+        form_id=str(ctx.get("form_id") or "*")
+        section=str(start.get("section_id") or "*")
+        measure=start.get("measure_index")
+        beat=start.get("beat_in_measure")
+        iteration=start.get("form_iteration")
+        beat_text="*" if beat is None else f"{float(beat):.3f}"
+        return f"form={form_id}|section={section}|iteration={iteration}|measure={measure}|beat={beat_text}"
 
     def observe(self,a:LearningArtifact)->None:
         a.validate();self.observations+=1
@@ -37,6 +56,18 @@ class DomainLearningState:
             elif isinstance(v,str) and v:
                 bucket=self.categorical_counts.setdefault(k,{})
                 bucket[v]=bucket.get(v,0)+1
+
+        context_key=self._form_context_key(a)
+        if context_key is not None:
+            self.form_context_observations[context_key]=self.form_context_observations.get(context_key,0)+1
+            means=self.form_context_numeric_means.setdefault(context_key,{})
+            counts=self.form_context_numeric_counts.setdefault(context_key,{})
+            for k,v in a.features.items():
+                if isinstance(v,(int,float)) and not isinstance(v,bool):
+                    n=counts.get(k,0)+1
+                    old=means.get(k,0.0)
+                    means[k]=old+(float(v)-old)/n
+                    counts[k]=n
 
     def feedback(self,f:LearningFeedback,lr:float=.15)->None:
         f.validate()
@@ -52,6 +83,8 @@ class LearningPriorView:
     categorical_counts:Mapping[str,Mapping[str,int]]
     feedback_bias:Mapping[str,float]
     observations:int
+    form_context_observations:Mapping[str,int]=field(default_factory=dict)
+    form_context_numeric_features:Mapping[str,Mapping[str,float]]=field(default_factory=dict)
 
     def feature_bias(self,feature:str,*,center:float=0.5,scale:float=1.0)->float:
         learned=self.numeric_features.get(feature)
@@ -62,6 +95,12 @@ class LearningPriorView:
         bucket=self.categorical_counts.get(feature,{})
         total=sum(bucket.values())
         return bucket.get(value,0)/total if total else 0.0
+
+    def contextual_numeric(self,context_key:str,feature:str)->float|None:
+        return self.form_context_numeric_features.get(context_key,{}).get(feature)
+
+    def context_observations(self,context_key:str)->int:
+        return int(self.form_context_observations.get(context_key,0))
 
 
 @dataclass
@@ -121,6 +160,8 @@ class SharedLearningEngine:
             {k:dict(v) for k,v in s.categorical_counts.items()},
             dict(s.feedback_bias),
             s.observations,
+            dict(s.form_context_observations),
+            {k:dict(v) for k,v in s.form_context_numeric_means.items()},
         )
 
     def prior(self,domain:LearningDomain)->LearningPriorView:
