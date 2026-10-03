@@ -16,7 +16,11 @@ from .notation import (
     NotationRelevance,
     TupletRatio,
 )
-from .rhythm import QuantizationGrid, quantize_score_span, split_note_across_bars
+from .rhythm import (
+    QuantizationGrid,
+    quantize_score_span,
+    split_note_for_readability,
+)
 
 
 def notation_intent_from_event(
@@ -93,7 +97,7 @@ def rhythm_candidate_from_event(
     performed_offset = Fraction(event.time.transport_offset_beat).limit_denominator(4096)
     span = quantize_score_span(performed_onset, performed_offset, grid=grid)
 
-    atoms = split_note_across_bars(
+    atoms = split_note_for_readability(
         span,
         intent.source_event_ids,
         grid=grid,
@@ -117,7 +121,7 @@ def rhythm_candidate_from_event(
         confidence=intent.confidence,
         reasons=(
             f"quantized to step={grid.step}",
-            "barline crossings represented with ties",
+            "barline crossings and readable syncopation represented with ties",
         ),
         alternatives=intent.alternatives,
         evidence_ids=intent.evidence_ids,
