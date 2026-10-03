@@ -153,3 +153,27 @@ built-in YAMNet backend for local custom/production model services.
 The model loads lazily on first usable analysis window. If the package/model is
 unavailable, the hybrid detector falls back to the conservative baseline rather
 than stopping the long-running research session.
+
+
+## Curated jazz instrument teaching
+
+The research UI can attach the current YAMNet embedding to an explicit baseline
+instrument label. This is intentionally a human/curated correction path, not an
+automatic truth claim.
+
+The browser sends the current YouTube media time with each PCM batch. Research
+evidence timestamps therefore use source-relative playback time when available.
+If media time is unavailable, the local ingestor falls back to a per-source
+monotonic origin rather than storing machine uptime as a musical timestamp.
+
+Current teaching flow:
+
+    current YAMNet analysis window
+    -> user selects piano / acoustic_bass / drums / saxophone / trumpet /
+       guitar / electric_bass / vocal / flute
+    -> explicit exemplar admission
+    -> persistent embedding prototype update
+
+The API endpoint is POST /api/research/instrument-label with JSON {"label": "..."}.
+It rejects labels outside the current baseline instrument catalog and rejects
+teaching before a YAMNet embedding is ready.
