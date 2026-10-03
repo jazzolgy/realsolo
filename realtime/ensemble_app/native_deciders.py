@@ -294,6 +294,17 @@ class PianoNativeDecider:
         snapshot = context["ensemble_snapshot"]
         directive = context["interaction_directive"]
         phrase = _latest_other_phrase_maturity(snapshot, "piano")
+        sax_intent=snapshot.intent_for("sax")
+        shared_piano_moment=derive_shared_solo_moment(
+            snapshot,
+            context.get("harmonic_frame"),
+            foreground_player_id="sax",
+        ) if context.get("harmonic_frame") is not None else None
+        sax_has_motif=bool(
+            sax_intent is not None
+            and any(str(tag).startswith("motif:") for tag in sax_intent.tags)
+        )
+
         comping_context = PianoCompingContext(
             soloist_activity=_soloist_activity(snapshot),
             phrase_boundary_probability=phrase,
@@ -307,6 +318,13 @@ class PianoNativeDecider:
             ensemble_density=snapshot.ensemble_density,
             recent_piano_density=min(1.0, self.state.recent_density.voice_count / 6.0),
             section_energy=snapshot.ensemble_energy,
+            motif_continuity_strength=.72 if sax_has_motif else .18,
+            pattern_consistency_strength=.58 if sax_has_motif else .25,
+            harmonic_turn=(
+                shared_piano_moment.harmonic_turn
+                if shared_piano_moment is not None
+                else PianoCompingContext().harmonic_turn
+            ),
             time_feel=(snapshot.groove.feel.value if snapshot.groove is not None else "swing"),
         )
         interaction_state = self.state.interaction_state_from_context(comping_context)
