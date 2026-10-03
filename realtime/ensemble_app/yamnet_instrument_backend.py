@@ -13,7 +13,10 @@ from __future__ import annotations
 from collections import deque
 import csv
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Mapping
+
+from .jazz_instrument_embedding_head import JazzInstrumentEmbeddingHead
 
 
 YAMNET_HANDLE="https://tfhub.dev/google/yamnet/1"
@@ -68,10 +71,17 @@ class YAMNetInstrumentBackend:
     model_handle: str=YAMNET_HANDLE
     analysis_window_s: float=1.92
     min_window_s: float=.96
+    _buffers: dict[int,deque]=field(default_factory=dict,init=False,repr=False)
+    adaptation_path: Path | None=None
+    adaptation_weight: float=.24
     _model: object | None=field(default=None,init=False,repr=False)
     _class_names: tuple[str,...]=field(default=(),init=False,repr=False)
     _buffers: dict[int,deque]=field(default_factory=dict,init=False,repr=False)
     _buffer_counts: dict[int,int]=field(default_factory=dict,init=False,repr=False)
+    _head: JazzInstrumentEmbeddingHead | None=field(default=None,init=False,repr=False)
+
+    def __post_init__(self) -> None:
+        self._head=JazzInstrumentEmbeddingHead(self.adaptation_path) if self.adaptation_path is not None else None
 
     def _load(self) -> None:
         if self._model is not None:
@@ -128,6 +138,7 @@ class YAMNetInstrumentBackend:
         waveform=np.clip(waveform,-1.0,1.0).astype(np.float32,copy=False)
         scores,embeddings,_spectrogram=self._model(waveform)
         frame_scores=np.asarray(scores.numpy(),dtype=np.float32)
+        embedding_frames=np.asarray(embeddings.numpy(),dtype=np.float32)
         if frame_scores.ndim!=2 or frame_scores.shape[1]!=len(self._class_names):
             raise YAMNetUnavailable("unexpected YAMNet score shape")
         mean_scores=frame_scores.mean(axis=0)
@@ -143,10 +154,47 @@ class YAMNetInstrumentBackend:
             old=merged.get(target,0.0)
             merged[target]=1.0-(1.0-old)*(1.0-p)
 
+        # Optional jazz-domain adaptation over the 1024-D YAMNet embedding.
+        # The head learns only from very high-confidence YAMNet windows (or later
+        # explicit labels), so it is a conservative stabilizer rather than a new
+        # source of truth.
+        embedding=(
+            embedding_frames.mean(axis=0)
+            if embedding_frames.ndim==2 and embedding_frames.size
+            else None
+        )
+        head_probs={}
+        if self._head is not None and embedding is not None:
+            ordered=sorted(merged.items(),key=lambda kv:kv[1],reverse=True)
+            if ordered:
+                top_label,top_score=ordered[0]
+                second=ordered[1][1] if len(ordered)>1 else 0.0
+                self._head.observe(
+                    top_label,
+                    embedding,
+                    confidence=float(top_score),
+                    margin=float(top_score-second),
+                )
+            head_probs=dict(self._head.predict(embedding))
+
+        if head_probs:
+            labels=set(merged)|set(head_probs)
+            w=max(0.0,min(.5,self.adaptation_weight))
+            merged={
+                label:(1.0-w)*float(merged.get(label,0.0))+w*float(head_probs.get(label,0.0))
+                for label in labels
+            }
+            total=sum(merged.values())
+            if total>0.97:
+                scale=.97/total
+                merged={k:v*scale for k,v in merged.items()}
+
         top=max(merged.values(),default=0.0)
         confidence={
             "yamnet_window_ready":1.0,
             "yamnet_instrument":top,
+            "jazz_embedding_head_active":1.0 if head_probs else 0.0,
+            "jazz_embedding_head_classes":min(1.0,(len(self._head.counts())/9.0)) if self._head is not None else 0.0,
             "model":top,
         }
         # YAMNet is an event/instrument classifier, not a jazz-role classifier.
