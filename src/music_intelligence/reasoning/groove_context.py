@@ -15,6 +15,12 @@ from dataclasses import dataclass
 from enum import Enum
 
 
+class GrooveCoordinationMode(str, Enum):
+    LOCKED = "locked"
+    ELASTIC = "elastic"
+    HUMAN_DRIFT = "human_drift"
+
+
 class GrooveFeel(str, Enum):
     SWING = "swing"
     STRAIGHT = "straight"
@@ -58,6 +64,10 @@ class GrooveTemporalContext:
     grammar_id: str = ""
     subdivision_hint: str = ""
     confidence: float = 1.0
+    coordination_mode: GrooveCoordinationMode = GrooveCoordinationMode.ELASTIC
+    phase_elasticity: float = 0.55
+    swing_elasticity: float = 0.35
+    tempo_elasticity: float = 0.0
     provenance: tuple[str, ...] = ("shared_groove_context",)
 
     def validate(self) -> None:
@@ -71,6 +81,13 @@ class GrooveTemporalContext:
             raise ValueError("confidence must be within 0..1")
         if self.swing_ratio is not None and self.swing_ratio <= 0:
             raise ValueError("swing_ratio must be positive")
+        for name, value in (
+            ("phase_elasticity", self.phase_elasticity),
+            ("swing_elasticity", self.swing_elasticity),
+            ("tempo_elasticity", self.tempo_elasticity),
+        ):
+            if not 0.0 <= value <= 1.0:
+                raise ValueError(f"{name} must be within 0..1")
 
     @property
     def effective_swing_ratio(self) -> float:
@@ -100,6 +117,10 @@ def build_groove_context(
     grammar_id: str = "",
     subdivision_hint: str = "",
     confidence: float = 1.0,
+    coordination_mode: GrooveCoordinationMode = GrooveCoordinationMode.ELASTIC,
+    phase_elasticity: float = 0.55,
+    swing_elasticity: float = 0.35,
+    tempo_elasticity: float = 0.0,
     provenance: tuple[str, ...] = ("performance_initialization",),
 ) -> GrooveTemporalContext:
     if not isinstance(feel, GrooveFeel):
@@ -114,6 +135,10 @@ def build_groove_context(
         grammar_id=grammar_id,
         subdivision_hint=subdivision_hint,
         confidence=confidence,
+        coordination_mode=coordination_mode,
+        phase_elasticity=phase_elasticity,
+        swing_elasticity=swing_elasticity,
+        tempo_elasticity=tempo_elasticity,
         provenance=provenance,
     )
     out.validate()
@@ -171,3 +196,127 @@ def groove_timing_offset_ms(
         swing_eligible=swing_eligible,
     )
     return beats*(60000.0/groove.tempo_bpm)
+
+
+@dataclass(frozen=True)
+class PlayerTimingProfile:
+    role: str
+    base_phase_ms: float = 0.0
+    phrase_push_ms: float = 0.0
+    phrase_release_ms: float = 0.0
+    swing_ratio_bias: float = 0.0
+    lock_strength: float = 0.7
+
+    def validate(self) -> None:
+        if not -40.0 <= self.base_phase_ms <= 40.0:
+            raise ValueError("base_phase_ms outside supported range")
+        if not -40.0 <= self.phrase_push_ms <= 40.0:
+            raise ValueError("phrase_push_ms outside supported range")
+        if not -40.0 <= self.phrase_release_ms <= 40.0:
+            raise ValueError("phrase_release_ms outside supported range")
+        if not -0.5 <= self.swing_ratio_bias <= 0.5:
+            raise ValueError("swing_ratio_bias outside supported range")
+        if not 0.0 <= self.lock_strength <= 1.0:
+            raise ValueError("lock_strength must be within 0..1")
+
+
+_DEFAULT_PLAYER_TIMING: dict[str, PlayerTimingProfile] = {
+    "drums": PlayerTimingProfile("drums", base_phase_ms=-1.5, phrase_push_ms=-2.5, phrase_release_ms=1.5, swing_ratio_bias=-.03, lock_strength=.90),
+    "bass": PlayerTimingProfile("bass", base_phase_ms=4.0, phrase_push_ms=-1.0, phrase_release_ms=2.5, swing_ratio_bias=.02, lock_strength=.86),
+    "piano": PlayerTimingProfile("piano", base_phase_ms=8.0, phrase_push_ms=-3.0, phrase_release_ms=5.0, swing_ratio_bias=-.05, lock_strength=.66),
+    "tenor_sax": PlayerTimingProfile("tenor_sax", base_phase_ms=-5.0, phrase_push_ms=-6.0, phrase_release_ms=7.0, swing_ratio_bias=.05, lock_strength=.52),
+    "solo_sax": PlayerTimingProfile("solo_sax", base_phase_ms=-5.0, phrase_push_ms=-6.0, phrase_release_ms=7.0, swing_ratio_bias=.05, lock_strength=.52),
+    "solo": PlayerTimingProfile("solo", base_phase_ms=-4.0, phrase_push_ms=-5.0, phrase_release_ms=6.0, swing_ratio_bias=.04, lock_strength=.50),
+}
+
+
+def player_timing_profile(role: str) -> PlayerTimingProfile:
+    return _DEFAULT_PLAYER_TIMING.get(role, PlayerTimingProfile(role))
+    
+
+def player_phase_offset_beats(
+    role: str,
+    groove: GrooveTemporalContext | None,
+    *,
+    phrase_maturity: float = 0.5,
+) -> float:
+    """Return bounded role/phrase placement relative to the shared pulse.
+
+    LOCKED collapses every player onto the reference. ELASTIC/HUMAN_DRIFT keep
+    the reference but allow role-specific placement. This is deterministic and
+    phrase-shaped rather than per-note random jitter.
+    """
+    if groove is None:
+        return 0.0
+    groove.validate()
+    if groove.coordination_mode is GrooveCoordinationMode.LOCKED:
+        return 0.0
+    profile=player_timing_profile(role)
+    profile.validate()
+    maturity=max(0.0,min(1.0,phrase_maturity))
+    # Early phrase can lean forward; phrase ending can relax behind.
+    push=(1.0-maturity)*profile.phrase_push_ms
+    release=maturity*profile.phrase_release_ms
+    raw_ms=profile.base_phase_ms+push+release
+    elasticity=groove.phase_elasticity*(1.0-profile.lock_strength*.45)
+    ms=raw_ms*elasticity
+    return ms/(60000.0/groove.tempo_bpm)
+
+
+def player_swing_offbeat_fraction(
+    role: str,
+    groove: GrooveTemporalContext | None,
+) -> float:
+    if groove is None:
+        return .5
+    groove.validate()
+    if not groove.eligible_for_swing_warp():
+        return .5
+    base=groove.swing_offbeat_fraction
+    if groove.coordination_mode is GrooveCoordinationMode.LOCKED:
+        return base
+    profile=player_timing_profile(role)
+    biased_ratio=max(1.0,groove.effective_swing_ratio+profile.swing_ratio_bias*groove.swing_elasticity)
+    return biased_ratio/(biased_ratio+1.0)
+
+
+@dataclass(frozen=True)
+class EnsembleTempoState:
+    reference_tempo_bpm: float
+    current_tempo_bpm: float
+    target_tempo_bpm: float
+
+    def validate(self) -> None:
+        if min(self.reference_tempo_bpm,self.current_tempo_bpm,self.target_tempo_bpm) <= 0:
+            raise ValueError("tempo values must be positive")
+
+
+def evolve_ensemble_tempo(
+    state: EnsembleTempoState,
+    groove: GrooveTemporalContext,
+    *,
+    collective_push: float = 0.0,
+    phrase_release: float = 0.0,
+) -> EnsembleTempoState:
+    """Move the shared reference tempo slowly in HUMAN_DRIFT mode.
+
+    collective_push and phrase_release are semantic -1..1 / 0..1 signals from
+    ensemble reasoning, not random noise. ELASTIC and LOCKED keep the reference
+    tempo fixed.
+    """
+    state.validate()
+    groove.validate()
+    if groove.coordination_mode is not GrooveCoordinationMode.HUMAN_DRIFT:
+        return EnsembleTempoState(
+            state.reference_tempo_bpm,
+            state.reference_tempo_bpm,
+            state.reference_tempo_bpm,
+        )
+    push=max(-1.0,min(1.0,collective_push))
+    release=max(0.0,min(1.0,phrase_release))
+    max_span=max(.6,min(4.0,state.reference_tempo_bpm*.025))*groove.tempo_elasticity
+    desired=state.reference_tempo_bpm + max_span*(.72*push-.35*release)
+    # Inertia: tempo center moves gradually instead of twitching every event.
+    target=state.target_tempo_bpm + .18*(desired-state.target_tempo_bpm)
+    current=state.current_tempo_bpm + .12*(target-state.current_tempo_bpm)
+    return EnsembleTempoState(state.reference_tempo_bpm,current,target)
