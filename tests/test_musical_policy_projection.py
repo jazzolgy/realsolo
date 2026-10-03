@@ -147,3 +147,16 @@ def test_motif_decision_is_exposed_not_redecided():
     assert out.motif_repeat_bias > 0
     assert out.motif_variation_bias == 0
     assert any("selected repeat" in x.reason for x in out.contributions)
+
+
+def test_projection_can_be_logged_without_becoming_learning_feedback():
+    from music_intelligence.reasoning.decision_context_log import (
+        extract_prior_components,
+        projection_prior_components,
+    )
+    out=project_musical_policy(
+        motif_decision=motif_decision(SoloDevelopmentOperation.DISPLACE),
+    )
+    serialized=projection_prior_components(out)
+    assert serialized["policy:rhythmic_displacement"] > 0
+    assert extract_prior_components(serialized) == serialized
