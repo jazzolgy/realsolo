@@ -274,3 +274,80 @@ def test_musicxml_does_not_emit_beam_on_short_rest():
     )
 
     assert rest_note.find("beam") is None
+
+
+
+def test_musicxml_polyphonic_voices_keep_ties_and_beams_independent():
+    voice1 = (
+        ScoreEvent(
+            event_id="v1:a",
+            part_id="p",
+            staff_id="s",
+            voice_id="voice1",
+            kind=NotatedAtomKind.NOTE,
+            span=ScoreSpan(Fraction(0), Fraction(1, 2)),
+            source_event_ids=("src:v1:a",),
+            written_pitch=WrittenPitch("C", 0, 5),
+        ),
+        ScoreEvent(
+            event_id="v1:b",
+            part_id="p",
+            staff_id="s",
+            voice_id="voice1",
+            kind=NotatedAtomKind.NOTE,
+            span=ScoreSpan(Fraction(1, 2), Fraction(1, 2)),
+            source_event_ids=("src:v1:b",),
+            written_pitch=WrittenPitch("D", 0, 5),
+        ),
+    )
+    voice2 = (
+        ScoreEvent(
+            event_id="v2:a",
+            part_id="p",
+            staff_id="s",
+            voice_id="voice2",
+            kind=NotatedAtomKind.NOTE,
+            span=ScoreSpan(Fraction(0), Fraction(1)),
+            source_event_ids=("src:v2",),
+            written_pitch=WrittenPitch("G", 0, 4),
+            tie_to_next=True,
+        ),
+        ScoreEvent(
+            event_id="v2:b",
+            part_id="p",
+            staff_id="s",
+            voice_id="voice2",
+            kind=NotatedAtomKind.NOTE,
+            span=ScoreSpan(Fraction(1), Fraction(1)),
+            source_event_ids=("src:v2",),
+            written_pitch=WrittenPitch("G", 0, 4),
+            tie_from_previous=True,
+        ),
+    )
+    part = ScorePart(
+        "p",
+        "Piano Upper",
+        "future_instrument",
+        ("s",),
+        voice1 + voice2,
+    )
+    score = assemble_score(score_id="poly:voice-safe", title="Voice Safe", parts=(part,))
+    plan = build_default_engraving_plan(score)
+
+    root = ET.fromstring(score_to_musicxml(score, plan))
+    measure = root.find(".//part[@id='p']/measure")
+    assert measure is not None
+    assert measure.find("backup") is not None
+
+    notes = measure.findall("note")
+    voice1_notes = [n for n in notes if n.findtext("voice") == "voice1"]
+    voice2_notes = [n for n in notes if n.findtext("voice") == "voice2"]
+
+    assert [n.findtext("beam[@number='1']") for n in voice1_notes] == [
+        "begin",
+        "end",
+    ]
+    assert all(n.find("tie") is None for n in voice1_notes)
+    assert voice2_notes[0].find("tie[@type='start']") is not None
+    assert voice2_notes[1].find("tie[@type='stop']") is not None
+    assert all(n.find("beam") is None for n in voice2_notes)
