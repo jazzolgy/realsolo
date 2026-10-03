@@ -164,3 +164,33 @@ def test_runtime_tick_projects_committed_gestures_to_portable_packets():
     assert all(p.generation == result.snapshot_generation for p in packets)
     assert all(p.anchor_beat == result.state.transport.beat for p in packets)
     assert [p.gesture.role for p in packets] == ["piano", "bass", "drums"]
+
+
+
+def test_quartet_players_all_read_same_immutable_snapshot():
+    state=EnsembleState(
+        transport=TransportState(beat=1.0,bar=0,section="A"),
+        players=(
+            PlayerPresence("piano","piano",PlayerRole.COMPER),
+            PlayerPresence("bass","bass",PlayerRole.BASS),
+            PlayerPresence("drums","drums",PlayerRole.DRUMS),
+            PlayerPresence("sax","tenor_sax",PlayerRole.SOLOIST),
+        ),
+    )
+    seen={name:[] for name in ("piano","bass","drums","sax")}
+    loop=EnsembleRuntimeLoop(tuple(
+        FakeProvider(
+            name,
+            {"piano":60,"bass":36,"drums":0,"sax":67}[name],
+            seen[name],
+        )
+        for name in ("piano","bass","drums","sax")
+    ))
+    result=loop.step(state)
+    assert seen == {
+        "piano":[0],
+        "bass":[0],
+        "drums":[0],
+        "sax":[0],
+    }
+    assert {d.player_id for d in result.decisions} == {"piano","bass","drums","sax"}
