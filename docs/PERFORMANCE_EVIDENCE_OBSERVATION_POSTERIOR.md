@@ -76,8 +76,40 @@ valid for backward compatibility.
 
 ## Ownership boundary
 
-Shared Audio Intelligence may produce and revise these evidence distributions.
+The Audio Evidence Engine may produce and revise these evidence distributions.
 It must not decide enharmonic spelling, voice/staff assignment, ties, beams,
 tuplets, cross-staff notation, engraving, or MusicXML structure.
 
 Those decisions remain downstream in AI Transcription + Notation.
+
+
+## Naming boundary
+
+The former architectural label **Shared Audio Intelligence** is deprecated in
+favor of **Audio Evidence Engine**.
+
+The distinction is intentional:
+
+- **Audio Evidence Engine** owns probabilistic observation, detector evidence,
+  context-adjusted posterior hypotheses, calibration, revision history, and
+  provenance.
+- **Music Intelligence Core** owns musical meaning and instrument-neutral
+  reasoning such as harmony, form, phrase, ensemble state, and interaction.
+- **Performance Evidence** is the contract between them.
+
+```text
+Audio / MIDI
+   ↓
+Audio Evidence Engine
+   ↓
+Performance Evidence
+   ↓
+Music Intelligence Core
+   ↓
+Transcription / Ensemble / Learning / Player
+```
+
+The package name for new audio-side implementation should be
+`music_intelligence.audio_evidence`. Existing historical references to
+"Shared Audio Intelligence" should be treated as deprecated terminology rather
+than a separate subsystem.

@@ -16,6 +16,10 @@ from music_intelligence.reasoning.hierarchical_priors import (
     HierarchicalPriorSet,
     numeric_hierarchy_bias,
 )
+from music_intelligence.reasoning.contextual_prior_gating import (
+    gated_prior_set,
+    improvisation_gating_context,
+)
 from enum import Enum
 from typing import Mapping, Sequence
 
@@ -421,8 +425,29 @@ class PianoCompingEvaluator:
 
         observed_density = float(state._estimate_density(candidate).onset_rate)
         if self.prior_hierarchy is not None:
-            hierarchical_density = numeric_hierarchy_bias(
+            live_confidence = max(
+                comping_context.phrase_boundary_probability,
+                comping_context.piano_foreground_rhythm_match_confidence,
+                0.5 if interaction_state is not None else 0.0,
+            )
+            gating_context = improvisation_gating_context(
+                ensemble_complexity=max(
+                    comping_context.ensemble_density,
+                    comping_context.soloist_activity,
+                    comping_context.drummer_activity,
+                ),
+                live_context_confidence=live_confidence,
+                structural_constraint=max(
+                    comping_context.phrase_boundary_probability,
+                    comping_context.harmonic_turn.confidence,
+                ),
+            )
+            effective_hierarchy = gated_prior_set(
                 self.prior_hierarchy,
+                gating_context,
+            )
+            hierarchical_density = numeric_hierarchy_bias(
+                effective_hierarchy,
                 observed=observed_density,
                 domain_feature="density",
                 genre_feature="comping_density_mean",

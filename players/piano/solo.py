@@ -24,6 +24,10 @@ from music_intelligence.reasoning.online_improviser import (
 from music_intelligence.learning.engine import LearningPriorView
 from music_intelligence.reasoning.learning_prior_runtime import circular_phase_bias
 from music_intelligence.reasoning.hierarchical_priors import HierarchicalPriorSet
+from music_intelligence.reasoning.contextual_prior_gating import (
+    gated_prior_set,
+    improvisation_gating_context,
+)
 
 from .bebop_phrase_space import BebopPhraseSpaceEvidence, PhraseSpaceType
 from .bebop_complementarity import (
@@ -151,7 +155,34 @@ class PianoSoloEvaluator:
         context: PianoSoloContext,
     ) -> CandidateScore:
         context.validate()
-        base = self.shared.evaluate(candidate, context.musical)
+
+        live_confidence = max(
+            context.phrase_space.confidence,
+            context.ensemble_complementarity.confidence,
+            context.turn_taking.confidence,
+        )
+        gating_context = improvisation_gating_context(
+            ensemble_complexity=max(
+                context.ensemble_density,
+                context.left_hand_comping_activity,
+            ),
+            live_context_confidence=live_confidence,
+            structural_constraint=max(
+                context.musical.phrase_maturity,
+                context.musical.tension,
+            ),
+        )
+        gated_hierarchy = gated_prior_set(self.prior_hierarchy, gating_context)
+        legend_scale = (
+            gated_hierarchy.weights.legend
+            if gated_hierarchy is not None
+            else 1.0
+        )
+        base = self.shared.evaluate(
+            candidate,
+            context.musical,
+            legend_weight_scale=legend_scale,
+        )
 
         score = base.total
         components = dict(base.components)
@@ -175,8 +206,8 @@ class PianoSoloEvaluator:
         tags = set(candidate.tags)
 
         effective_solo_prior = (
-            self.prior_hierarchy.domain_prior
-            if self.prior_hierarchy is not None
+            gated_hierarchy.domain_prior
+            if gated_hierarchy is not None
             else self.solo_phrase_prior
         )
         learned_entry = circular_phase_bias(
@@ -187,9 +218,17 @@ class PianoSoloEvaluator:
             tolerance=1.0,
         )
         if learned_entry.active:
-            components["learned_solo_entry_phase"] = learned_entry.score_delta
-            score += learned_entry.score_delta
-            reasons.append(learned_entry.reason)
+            domain_scale = (
+                gated_hierarchy.weights.domain
+                if gated_hierarchy is not None
+                else 1.0
+            )
+            contribution = learned_entry.score_delta * domain_scale
+            components["learned_solo_entry_phase"] = contribution
+            score += contribution
+            reasons.append(
+                f"{learned_entry.reason}; contextual prior gate={domain_scale:.3f}"
+            )
 
         # Parker-informed lines should sound directed and singable, not merely
         # harmonically complicated. Prefer small/medium motion; allow larger leaps

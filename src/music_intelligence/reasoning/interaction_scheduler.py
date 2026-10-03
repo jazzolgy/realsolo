@@ -16,6 +16,10 @@ from typing import Sequence
 
 from music_intelligence.learning.engine import LearningPriorView
 from .learning_prior_runtime import categorical_prior_bias
+from .contextual_prior_gating import (
+    domain_prior_gate_scale,
+    improvisation_gating_context,
+)
 
 from .ensemble_state import (
     EnsembleState,
@@ -251,11 +255,24 @@ def schedule_player(
             max_bonus=.08,
         )
         if learned_response_role.active:
+            recent_confidence = max(
+                (event.confidence for event in state.recent_interactions),
+                default=0.0,
+            )
+            prior_scale = domain_prior_gate_scale(
+                improvisation_gating_context(
+                    ensemble_complexity=state.ensemble_density,
+                    live_context_confidence=recent_confidence,
+                    structural_constraint=1.0 if state.transport.form_position >= .96 else 0.0,
+                )
+            )
             confidence = min(
                 1.0,
-                confidence + learned_response_role.confidence_delta,
+                confidence + learned_response_role.confidence_delta * prior_scale,
             )
-            reasons.append(learned_response_role.reason)
+            reasons.append(
+                f"{learned_response_role.reason}; contextual prior gate={prior_scale:.3f}"
+            )
             tags.add("learned_interaction_prior")
 
     directive = InteractionDirective(
