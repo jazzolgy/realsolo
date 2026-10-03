@@ -41,17 +41,17 @@
         "inferred_ref": null,
         "local_key_ref": null,
         "cadence_state": "",
-        "tension": 0,
+        "tension": null,
         "confidence": 0,
         "provenance": []
       },
       "phrase": {
         "phrase_id": "lafaro.alice.long_3_4_rhythmic_cell",
-        "phrase_position": 0,
-        "maturity": 0.2,
-        "boundary_pressure": 0,
-        "space": 0,
-        "tension": 0.35,
+        "phrase_position": null,
+        "maturity": null,
+        "boundary_pressure": null,
+        "space": null,
+        "tension": null,
         "motif_id": "vocabulary:lafaro.alice.long_3_4_rhythmic_cell.v1",
         "confidence": 0.86,
         "provenance": [
@@ -62,7 +62,7 @@
       "groove": {
         "grammar_id": "jazz_waltz",
         "feel": "3_4",
-        "strength": 0,
+        "strength": null,
         "confidence": 0.72,
         "provenance": [
           "literature:clark_2014"
@@ -76,10 +76,10 @@
           "action_type": "maintain_rhythmic_identity",
           "interaction": "",
           "commitment": "observed",
-          "density": 0.55,
-          "energy": 0.5,
-          "tension": 0.35,
-          "space": 0.15,
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
           "register_center": null,
           "phrase_role": "develop",
           "motif_id": "vocabulary:lafaro.alice.long_3_4_rhythmic_cell.v1",
@@ -100,10 +100,10 @@
         }
       ],
       "interactions": [],
-      "ensemble_density": 0,
-      "ensemble_energy": 0,
-      "ensemble_tension": 0,
-      "space_available": 0,
+      "ensemble_density": null,
+      "ensemble_energy": null,
+      "ensemble_tension": null,
+      "space_available": null,
       "leader_player_id": null,
       "confidence": 0.72,
       "provenance": [
@@ -131,17 +131,17 @@
         "inferred_ref": null,
         "local_key_ref": null,
         "cadence_state": "",
-        "tension": 0,
+        "tension": null,
         "confidence": 0,
         "provenance": []
       },
       "phrase": {
         "phrase_id": "lafaro.alice.offbeat_downbeat_avoidance",
-        "phrase_position": 0.15,
-        "maturity": 0.35,
-        "boundary_pressure": 0,
-        "space": 0,
-        "tension": 0.58,
+        "phrase_position": null,
+        "maturity": null,
+        "boundary_pressure": null,
+        "space": null,
+        "tension": null,
         "motif_id": "vocabulary:lafaro.alice.offbeat_downbeat_avoidance.v1",
         "confidence": 0.82,
         "provenance": [
@@ -152,7 +152,7 @@
       "groove": {
         "grammar_id": "jazz_waltz",
         "feel": "3_4",
-        "strength": 0,
+        "strength": null,
         "confidence": 0.72,
         "provenance": [
           "literature:clark_2014"
@@ -166,10 +166,10 @@
           "action_type": "offbeat_phrase_entry",
           "interaction": "",
           "commitment": "observed",
-          "density": 0.62,
-          "energy": 0.58,
-          "tension": 0.62,
-          "space": 0.1,
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
           "register_center": null,
           "phrase_role": "develop",
           "motif_id": "vocabulary:lafaro.alice.offbeat_downbeat_avoidance.v1",
@@ -190,10 +190,10 @@
         }
       ],
       "interactions": [],
-      "ensemble_density": 0,
-      "ensemble_energy": 0,
-      "ensemble_tension": 0,
-      "space_available": 0,
+      "ensemble_density": null,
+      "ensemble_energy": null,
+      "ensemble_tension": null,
+      "space_available": null,
       "leader_player_id": null,
       "confidence": 0.69,
       "provenance": [
@@ -221,7 +221,7 @@
         "inferred_ref": "literature:local_chord_retarget",
         "local_key_ref": null,
         "cadence_state": "",
-        "tension": 0,
+        "tension": null,
         "confidence": 0.64,
         "provenance": [
           "literature:clark_2014",
@@ -230,11 +230,11 @@
       },
       "phrase": {
         "phrase_id": "lafaro.alice.eighth_polyrhythm_retarget",
-        "phrase_position": 0.55,
-        "maturity": 0.62,
-        "boundary_pressure": 0.15,
-        "space": 0,
-        "tension": 0.66,
+        "phrase_position": null,
+        "maturity": null,
+        "boundary_pressure": null,
+        "space": null,
+        "tension": null,
         "motif_id": "vocabulary:lafaro.alice.eighth_polyrhythm_retarget.v1",
         "confidence": 0.84,
         "provenance": [
@@ -245,7 +245,7 @@
       "groove": {
         "grammar_id": "jazz_waltz",
         "feel": "3_4",
-        "strength": 0,
+        "strength": null,
         "confidence": 0.74,
         "provenance": [
           "literature:clark_2014"
@@ -259,10 +259,10 @@
           "action_type": "polyrhythmic_cell_retarget",
           "interaction": "",
           "commitment": "observed",
-          "density": 0.72,
-          "energy": 0.62,
-          "tension": 0.68,
-          "space": 0.05,
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
           "register_center": null,
           "phrase_role": "develop",
           "motif_id": "vocabulary:lafaro.alice.eighth_polyrhythm_retarget.v1",
@@ -283,10 +283,10 @@
         }
       ],
       "interactions": [],
-      "ensemble_density": 0,
-      "ensemble_energy": 0,
-      "ensemble_tension": 0,
-      "space_available": 0,
+      "ensemble_density": null,
+      "ensemble_energy": null,
+      "ensemble_tension": null,
+      "space_available": null,
       "leader_player_id": null,
       "confidence": 0.7,
       "provenance": [
@@ -314,17 +314,17 @@
         "inferred_ref": null,
         "local_key_ref": null,
         "cadence_state": "",
-        "tension": 0,
+        "tension": null,
         "confidence": 0,
         "provenance": []
       },
       "phrase": {
         "phrase_id": "lafaro.alice.space_triggered_foreground_answer",
-        "phrase_position": 0,
-        "maturity": 0.5,
-        "boundary_pressure": 0.35,
-        "space": 0.75,
-        "tension": 0.5,
+        "phrase_position": null,
+        "maturity": null,
+        "boundary_pressure": null,
+        "space": null,
+        "tension": null,
         "motif_id": "vocabulary:lafaro.alice.space_triggered_foreground_answer.v1",
         "confidence": 0.78,
         "provenance": [
@@ -335,7 +335,7 @@
       "groove": {
         "grammar_id": "jazz_waltz",
         "feel": "3_4",
-        "strength": 0,
+        "strength": null,
         "confidence": 0.68,
         "provenance": [
           "literature:clark_2014"
@@ -349,10 +349,10 @@
           "action_type": "leave_space",
           "interaction": "",
           "commitment": "observed",
-          "density": 0.2,
-          "energy": 0.4,
-          "tension": 0.4,
-          "space": 0.8,
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
           "register_center": null,
           "phrase_role": "phrase_gap",
           "motif_id": null,
@@ -375,11 +375,11 @@
           "action_type": "foreground_entry",
           "interaction": "answer",
           "commitment": "observed",
-          "density": 0.7,
-          "energy": 0.68,
-          "tension": 0.58,
-          "space": 0.1,
-          "register_center": 0.72,
+          "density": null,
+          "energy": null,
+          "tension": null,
+          "space": null,
+          "register_center": null,
           "phrase_role": "answer",
           "motif_id": "vocabulary:lafaro.alice.space_triggered_foreground_answer.v1",
           "semantic_tags": [
@@ -415,10 +415,10 @@
           ]
         }
       ],
-      "ensemble_density": 0,
-      "ensemble_energy": 0,
-      "ensemble_tension": 0,
-      "space_available": 0.75,
+      "ensemble_density": null,
+      "ensemble_energy": null,
+      "ensemble_tension": null,
+      "space_available": null,
       "leader_player_id": null,
       "confidence": 0.68,
       "provenance": [
@@ -437,6 +437,7 @@
     "piano and drums actions are intentionally absent from bass-only evidence windows",
     "harmony refs should be filled only after score/audio alignment",
     "ensemble density/energy/tension are left neutral where the source does not support values",
-    "register_center is only supplied where the source explicitly supports an upper-register trajectory"
+    "register_center is only supplied where the source explicitly supports an upper-register trajectory",
+    "quantitative density/energy/tension/register values require direct measurement rather than literature prose"
   ]
 }
