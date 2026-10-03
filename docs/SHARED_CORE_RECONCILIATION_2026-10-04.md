@@ -113,3 +113,37 @@ When two workstreams implement the same musical concept, prefer:
 
 Do not merge two competing canonical representations and try to reconcile them
 at runtime.
+
+
+## Additional concurrent-branch collision matrix
+
+Repository-wide review found several older/open branches that should not be
+merged independently without reconciliation.
+
+| Area | Branches / PRs | Coordination decision |
+| --- | --- | --- |
+| Audio evidence | #27 Shared Audio Intelligence, #39 Audio Evidence Engine | #39 is the canonical engine direction. Preserve unique public-safe research artifacts/bridge ideas from #27, but do not keep a second `audio_intelligence` engine namespace. |
+| Transcription / notation | #7 versus #29–#32 | They edit the same `transcribe` contracts and implementation files. #29–#32 define the newer Performance Evidence / Notation boundary; #7's richer product features should be ported onto those contracts rather than merged as an alternative engine. |
+| Groove/realtime | #26 and #45+ | Current `main` already contains Shared `GrooveTemporalContext`, role timing profiles, and coordination modes. Realtime branches must consume that module and must not replace it with branch-local variants. |
+| Decision observability | #40/#43/#44 | These are complementary when stacked in order: DecisionContextLog → Player audit hooks → MusicalMoment. Keep observability descriptive; no reward/causal attribution. |
+| Autonomous research form state | #51 versus #57/#62 on main | Listener-local form estimates may remain, but persistent/cross-source identity must adapt to `MusicalScoreCoordinate` and RealChord expected structure. |
+| Legend/vocabulary/runtime | #54–#56 | Recheck assumptions against current main: Bill Evans profile remains empty, but Bill Evans/LaFaro vocabulary stores now contain source-grounded items. |
+
+### Transcription integration rule
+
+Do not maintain two parallel event/notation models. Use the newer standalone
+boundary as the contract, then port mature #7 capabilities (dynamics, chord
+chart, instrument rules, piano handling, engraving, product views) behind that
+contract.
+
+### Audio integration rule
+
+`music_intelligence.audio_evidence` is the canonical detector/posterior engine
+namespace. Any useful #27 artifacts should enter as:
+- research/validation artifacts,
+- adapters,
+- schemas compatible with Audio Evidence,
+- or test fixtures.
+
+They should not preserve a second top-level Shared Audio engine with overlapping
+posterior/revision ownership.
