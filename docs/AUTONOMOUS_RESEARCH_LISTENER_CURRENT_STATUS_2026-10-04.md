@@ -115,6 +115,11 @@ zero.
 
 ## 6. Canonical learning coordinate: musical form, not elapsed time
 
+**Reconciled ownership:** `MetricFormPosition` remains a causal/runtime form estimate.
+Persistent learning, cross-recording comparison and RealChord alignment use
+`music_intelligence.learning.MusicalScoreCoordinate`. The listener now adapts
+its metric estimate through `canonical_score_bridge.py` before that boundary.
+
 RealSolo now treats musical position as the canonical learning coordinate.
 
 Source time answers:
@@ -258,10 +263,10 @@ what the performed audio actually did.
 A concrete adapter must convert a visible registered corpus item into a FormMap,
 score alignment, expected harmony, or other structured evidence.
 
-At the time of this integration pass, no corpus item/file named `RealChord` was
-visible in the public repository tree or connected Library search results, so no
-file format was invented. The discovery boundary is ready to consume it once it
-is registered/visible.
+RealChord is now available through the Shared Core `music_intelligence.corpus.realchord`
+contract. The listener must consume that adapter as Expected form/harmony structure
+and must not create a second RealChord parser identity or overwrite Observed/Inferred
+performance evidence.
 
 ## 12. Current UI / research observability
 
