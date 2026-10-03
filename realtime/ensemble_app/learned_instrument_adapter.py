@@ -6,7 +6,7 @@ does not bundle model weights or claim a specific classifier is present.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Mapping, Protocol, Sequence
 
 from music_intelligence.learning.shared_audio_intelligence import DetectorEvidence
@@ -94,7 +94,7 @@ class HybridInstrumentRoleDetector:
     """
 
     learned: LearnedInstrumentRoleAdapter | None = None
-    baseline: BaselineInstrumentRoleDetector = BaselineInstrumentRoleDetector()
+    baseline: BaselineInstrumentRoleDetector = field(default_factory=BaselineInstrumentRoleDetector)
 
     def detect(self,samples,*,sample_rate:int,frame:AcousticDescriptorFrame)->DetectorEvidence:
         base=self.baseline.detect(frame)
