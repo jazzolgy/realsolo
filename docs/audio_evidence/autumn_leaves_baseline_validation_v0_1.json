@@ -1,0 +1,58 @@
+{
+  "schema": "realsolo.audio_evidence.validation.v0.1",
+  "engine": "Audio Evidence Engine",
+  "validation_case": {
+    "source_id": "BE-003",
+    "title": "Autumn Leaves",
+    "segment_start_seconds": 708.0,
+    "segment_end_seconds": 1069.0,
+    "segment_duration_seconds": 361.0,
+    "source_sha256": "f38f3142ceafb3c83d79fbf1383cadd258fda1555fc2cc3ec2a7978b417eefa4"
+  },
+  "publication_class": "PUBLIC_DERIVED",
+  "runtime": {
+    "sample_rate_hz": 22050,
+    "hop_length": 512,
+    "segment_materialization": "ffmpeg pcm_s16le wav"
+  },
+  "baseline_detectors": {
+    "onset": {
+      "adapter": "librosa:onset-detect:v0.1",
+      "delta": 0.07,
+      "observed_onsets": 1421
+    },
+    "pitch": {
+      "adapter": "librosa:spectral-peak-pitch:v0.1",
+      "n_fft": 4096,
+      "relative_peak_threshold": 0.18,
+      "max_pitches_per_onset": 6,
+      "min_frequency_hz": 35.0,
+      "max_frequency_hz": 4200.0,
+      "pitch_hypotheses": 7240,
+      "mean_hypotheses_per_onset": 5.095003518648839,
+      "maximum_hypotheses_per_onset": 6
+    },
+    "percussive": {
+      "adapter": "librosa:percussive-token:v0.1",
+      "n_fft": 2048,
+      "minimum_percussive_ratio": 0.18,
+      "unpitched_hypotheses": 1398,
+      "token_counts": {
+        "kick": 11,
+        "snare": 1237,
+        "cymbal_or_hihat": 150
+      }
+    }
+  },
+  "navigation_reference": {
+    "tempo_bpm": 103.359375,
+    "beat_positions": 601
+  },
+  "interpretation_limits": [
+    "These are detector hypotheses, not confirmed notes.",
+    "Percussive token labels are weak spectral classes, not ground truth drum identities.",
+    "No harmony, form, phrase, ensemble meaning, or notation was inferred in this pass.",
+    "The baseline counts intentionally differ from the earlier v0.2 extraction because the detector configuration is versioned and different.",
+    "Demucs adapter code is present, but this validation pass reports the direct acoustic baseline rather than claiming a completed Demucs separation run."
+  ]
+}
