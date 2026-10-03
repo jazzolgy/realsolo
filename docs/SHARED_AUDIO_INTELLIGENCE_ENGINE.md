@@ -34,7 +34,7 @@ Missing before this slice:
 - a bounded Acoustic Evidence + Musical Context -> posterior revision step;
 - revision history and hard-example collection;
 - an uncertainty-preserving bridge into the existing Shared Learning contract;
-- a public-safe Autumn Leaves validation contract.
+- a public Autumn Leaves validation contract.
 
 Not implemented yet:
 - separator inference (Demucs or jazz-specific);
@@ -80,21 +80,39 @@ The first test intentionally uses an ambiguous low-register F3 diagnostic with
 Bass vs Piano-LH competition. It is synthetic validation data, not a claimed
 note from the Bill Evans recording.
 
+## Publication boundary
+
+Analysis visibility and training rights are separate concerns.
+
+`DERIVED_ONLY` means that evidence may not update model-training priors without
+explicit permission. It does **not** mean that derived analysis must remain
+private.
+
+The default is now **PUBLIC_DERIVED**: preserve detailed analysis artifacts in
+the repository whenever they do not embed raw copyrighted audio, full source
+stems, score facsimiles, or another source-equivalent payload. See
+`docs/PUBLIC_ANALYSIS_ARTIFACT_POLICY.md`.
+
 ## Autumn Leaves validation boundary
 
 Case: `BE-003`, owner-supplied playlist audio, 708-1069 s.
 
-Public-safe v0.1 metadata:
+Current analysis evidence:
 - 2,000 harmonic onsets;
 - 9,742 pitch hypotheses;
 - 1,311 percussive events;
 - pulse estimate about 103.36 BPM;
 - canonical score/form alignment unresolved;
-- rights disposition DERIVED_ONLY.
+- training-rights disposition DERIVED_ONLY;
+- publication default PUBLIC_DERIVED.
 
-Exact note streams remain private/local. No Head/Solo/Out-Head label is promoted
-until score/harmony alignment supports it. No evidence updates trainable priors
-without explicit training permission.
+Event-level analysis, confidence, attribution revisions, score/form hypotheses,
+interaction evidence, and validation failures should be committed as research
+artifacts when available. Raw audio and full source-derived stems remain outside
+the repository.
+
+No Head/Solo/Out-Head label is promoted until score/harmony alignment supports
+it. Public visibility does not convert evidence into a trainable prior.
 
 ## Next implementation slice
 
