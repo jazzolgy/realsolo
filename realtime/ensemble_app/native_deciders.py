@@ -331,7 +331,7 @@ class SaxNativeDecider:
         if self.intention_memory.consume_hold():
             return NativeImmediateResult(
                 gesture=None,
-                density=0.0,
+                density=.18,
                 energy=max(.1, snapshot.ensemble_energy * .72),
                 tension=snapshot.ensemble_tension,
                 leadership=max(0.0,min(1.0,.42+directive.leadership_delta)),
