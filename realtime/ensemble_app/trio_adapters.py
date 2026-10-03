@@ -183,6 +183,14 @@ class DrumsRuntimeAdapter(_BaseRuntimeAdapter):
         super().__init__(decider, source="adapter:player/drums")
 
 
+class SaxRuntimeAdapter(_BaseRuntimeAdapter):
+    player_id = "sax"
+    role_name = "solo_sax"
+
+    def __init__(self, decider: NativeImmediateDecider | None = None) -> None:
+        super().__init__(decider, source="adapter:player/sax")
+
+
 @dataclass(frozen=True, slots=True)
 class TrioAdapterStatus:
     player_id: str
