@@ -1,0 +1,42 @@
+{
+  "schema_version": "0.1",
+  "legend_id": "bill_evans",
+  "recording_id": "portrait_in_jazz_autumn_leaves_take1_stereo",
+  "source_id": "BE-003",
+  "status": "OBSERVATION_ONLY",
+  "method": {
+    "source": "owner-supplied mixed audio",
+    "alignment": "existing 8-bar score/form windows for head and first piano-solo chorus",
+    "audio_processing": "22.05 kHz mono STFT + HPSS; harmonic-component RMS/centroid plus mixed-audio onset strength",
+    "warning": "harmonic component is not isolated piano; bass, room and mix remain. Treat as form-relative expressive proxy, not direct piano velocity measurement."
+  },
+  "section_summaries": [
+    {"performance_phase":"head","section":"A1","mean_harmonic_rms_db":-24.260,"within_section_dynamic_range_db":6.209,"dynamic_peak_form_bar":1,"softest_form_bar":6,"attack_peak_form_bar":1,"mean_attack_strength_p90":1.958,"mean_harmonic_centroid_hz":1011.6},
+    {"performance_phase":"head","section":"A2","mean_harmonic_rms_db":-24.662,"within_section_dynamic_range_db":6.699,"dynamic_peak_form_bar":15,"softest_form_bar":10,"attack_peak_form_bar":12,"mean_attack_strength_p90":1.788,"mean_harmonic_centroid_hz":1195.6},
+    {"performance_phase":"head","section":"B","mean_harmonic_rms_db":-24.667,"within_section_dynamic_range_db":8.914,"dynamic_peak_form_bar":24,"softest_form_bar":19,"attack_peak_form_bar":23,"mean_attack_strength_p90":1.675,"mean_harmonic_centroid_hz":1056.4},
+    {"performance_phase":"head","section":"C","mean_harmonic_rms_db":-21.259,"within_section_dynamic_range_db":4.534,"dynamic_peak_form_bar":25,"softest_form_bar":30,"attack_peak_form_bar":26,"mean_attack_strength_p90":1.595,"mean_harmonic_centroid_hz":1028.7},
+    {"performance_phase":"solo","section":"A1","mean_harmonic_rms_db":-22.732,"within_section_dynamic_range_db":4.451,"dynamic_peak_form_bar":4,"softest_form_bar":2,"attack_peak_form_bar":1,"mean_attack_strength_p90":1.718,"mean_harmonic_centroid_hz":1392.8},
+    {"performance_phase":"solo","section":"A2","mean_harmonic_rms_db":-22.290,"within_section_dynamic_range_db":5.530,"dynamic_peak_form_bar":13,"softest_form_bar":14,"attack_peak_form_bar":10,"mean_attack_strength_p90":1.837,"mean_harmonic_centroid_hz":1784.4},
+    {"performance_phase":"solo","section":"B","mean_harmonic_rms_db":-22.324,"within_section_dynamic_range_db":6.635,"dynamic_peak_form_bar":20,"softest_form_bar":19,"attack_peak_form_bar":21,"mean_attack_strength_p90":1.696,"mean_harmonic_centroid_hz":1761.7},
+    {"performance_phase":"solo","section":"C","mean_harmonic_rms_db":-20.860,"within_section_dynamic_range_db":4.458,"dynamic_peak_form_bar":30,"softest_form_bar":26,"attack_peak_form_bar":29,"mean_attack_strength_p90":1.721,"mean_harmonic_centroid_hz":1641.5}
+  ],
+  "beat_peak_distribution": {
+    "head_dynamic_peak_beat":{"1":5,"2":13,"3":7,"4":7},
+    "solo_dynamic_peak_beat":{"1":12,"2":6,"3":7,"4":7},
+    "head_attack_peak_beat":{"1":7,"2":14,"3":7,"4":4},
+    "solo_attack_peak_beat":{"1":7,"2":10,"3":10,"4":5}
+  },
+  "same_form_bar_head_vs_solo": {
+    "mean_solo_minus_head_harmonic_db": 1.661,
+    "median_solo_minus_head_harmonic_db": 1.062,
+    "solo_higher_bars": 22,
+    "head_higher_bars": 10
+  },
+  "research_interpretations": [
+    "dynamic level and attack/accent strength are separable dimensions",
+    "performance phase changes expressive realization at the same form position",
+    "accent placement is not captured by one fixed metric-strength table",
+    "register/brightness, foreground role and dynamic level should be modeled separately",
+    "phrase development need not imply monotonic crescendo"
+  ]
+}
