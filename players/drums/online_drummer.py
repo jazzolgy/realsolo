@@ -8,6 +8,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from music_intelligence.reasoning.decision_context_log import (
+    CandidateAudit,
+    DecisionContextLog,
+    append_ranked_decision,
+)
+from music_intelligence.reasoning.ensemble_state import EnsembleState
+
 from .comping import comping_propensity
 from .model import (
     DrumGesture,
@@ -258,11 +265,41 @@ def perform_one_gesture(
     plan: DrummerSoftPlan,
     context: DrummerRuntimeContext,
     memory: DrummerPerformanceMemory,
+    *,
+    decision_log: DecisionContextLog | None = None,
+    ensemble_state: EnsembleState | None = None,
+    player_id: str = "drums",
 ) -> ScoredDrumGesture:
     """Commit one immediate gesture. Caller must listen/re-plan after return."""
     plan.validate()
     context.validate()
     candidates = build_immediate_candidates(plan, context)
-    chosen = max((score_gesture(g, plan, context) for g in candidates), key=lambda x: x.score)
+    scored = tuple(score_gesture(g, plan, context) for g in candidates)
+    chosen = max(scored, key=lambda x: x.score)
     memory.commit(chosen.gesture)
+
+    audits = tuple(
+        CandidateAudit(
+            candidate_id=f"drums:{index}",
+            total_score=item.score,
+            components=dict(item.components),
+            tags=tuple(sorted(item.gesture.tags)),
+            descriptor={
+                "role": item.gesture.role.value,
+                "hit_count": len(item.gesture.hits),
+            },
+        )
+        for index, item in enumerate(scored)
+    )
+    selected_index = scored.index(chosen)
+    append_ranked_decision(
+        decision_log,
+        player_id=player_id,
+        decision_kind="drum_gesture",
+        ensemble_state=ensemble_state,
+        candidates=audits,
+        selected_candidate_id=f"drums:{selected_index}",
+        selected_score=chosen.score,
+        provenance=("players.drums.online_drummer",),
+    )
     return chosen
