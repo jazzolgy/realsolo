@@ -93,14 +93,23 @@ class CompositeObservationDetector:
                 unpitched_map.get(onset.onset_id, ())
             )
 
-            instrument_probs = (
-                dict(onset_instruments[0].probabilities)
-                if onset_instruments
-                else {}
+            onset_level_instruments = tuple(
+                item for item in onset_instruments if item.target_id is None
             )
-            instrument_confidence = (
-                onset_instruments[0].confidence if onset_instruments else None
-            )
+
+            def instrument_evidence_for(target_id: str):
+                targeted = tuple(
+                    item for item in onset_instruments if item.target_id == target_id
+                )
+                chosen = targeted or onset_level_instruments
+                if not chosen:
+                    return {}, None, ()
+                primary = chosen[0]
+                return (
+                    dict(primary.probabilities),
+                    primary.confidence,
+                    chosen,
+                )
             centroid = (
                 onset_timbres[0].spectral_centroid_hz
                 if onset_timbres
@@ -118,15 +127,6 @@ class CompositeObservationDetector:
             detector_evidence.extend(
                 DetectorEvidence(
                     detector_id=item.detector_id,
-                    evidence_kind="instrument",
-                    confidence=item.confidence,
-                    detail=item.onset_id,
-                )
-                for item in onset_instruments
-            )
-            detector_evidence.extend(
-                DetectorEvidence(
-                    detector_id=item.detector_id,
                     evidence_kind="timbre",
                     detail=item.onset_id,
                 )
@@ -136,7 +136,21 @@ class CompositeObservationDetector:
             if onset_pitches:
                 polyphony = len(onset_pitches)
                 for pitch in onset_pitches:
+                    (
+                        instrument_probs,
+                        instrument_confidence,
+                        chosen_instrument_evidence,
+                    ) = instrument_evidence_for(pitch.pitch_id)
                     local_evidence = list(detector_evidence)
+                    local_evidence.extend(
+                        DetectorEvidence(
+                            detector_id=item.detector_id,
+                            evidence_kind="instrument",
+                            confidence=item.confidence,
+                            detail=item.target_id or item.onset_id,
+                        )
+                        for item in chosen_instrument_evidence
+                    )
                     local_evidence.append(
                         DetectorEvidence(
                             detector_id=self.pitch_detector.detector_id,
@@ -171,7 +185,22 @@ class CompositeObservationDetector:
                         )
                     )
             for index, token in enumerate(onset_unpitched, start=1):
+                target_id = onset.onset_id + ":unpitched:" + str(index)
+                (
+                    instrument_probs,
+                    instrument_confidence,
+                    chosen_instrument_evidence,
+                ) = instrument_evidence_for(target_id)
                 local_evidence = list(detector_evidence)
+                local_evidence.extend(
+                    DetectorEvidence(
+                        detector_id=item.detector_id,
+                        evidence_kind="instrument",
+                        confidence=item.confidence,
+                        detail=item.target_id or item.onset_id,
+                    )
+                    for item in chosen_instrument_evidence
+                )
                 local_evidence.append(
                     DetectorEvidence(
                         detector_id=self.unpitched_detector.detector_id,
