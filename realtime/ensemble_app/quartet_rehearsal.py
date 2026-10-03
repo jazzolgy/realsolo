@@ -133,6 +133,7 @@ def run_quartet_song_chart(
                 tempo_bpm=chart.tempo_bpm,
                 section=bar.section or "",
                 chorus=0,
+                song_id=chart.title,
             )
             packets=result.to_portable_packets(sequence_start=sequence)
             sequence += len(packets)
