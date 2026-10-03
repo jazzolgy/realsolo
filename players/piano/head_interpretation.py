@@ -14,6 +14,11 @@ from music_intelligence.reasoning.head_fidelity import (
     enforce_head_fidelity,
     generate_head_candidate_variants,
 )
+from music_intelligence.reasoning.hierarchical_priors import HierarchicalPriorSet
+from music_intelligence.reasoning.contextual_prior_gating import (
+    gated_prior_set,
+    head_gating_context,
+)
 
 from .rh_swing import RHSwingContext, SwingRole, apply_rh_swing
 
@@ -145,3 +150,23 @@ def head_event_candidates(
         ),
     )
     return variants
+
+
+def gated_head_prior_hierarchy(
+    priors: HierarchicalPriorSet | None,
+    context: HeadInterpretationContext,
+) -> HierarchicalPriorSet | None:
+    """Attenuate improvisation priors behind written-head fidelity."""
+
+    context.validate()
+    return gated_prior_set(
+        priors,
+        head_gating_context(
+            mode=context.fidelity_mode.value,
+            ensemble_complexity=context.ensemble_density,
+            live_context_confidence=max(
+                context.phrase_end_pressure,
+                .8 if context.strong_beat or context.phrase_anchor else .5,
+            ),
+        ),
+    )
