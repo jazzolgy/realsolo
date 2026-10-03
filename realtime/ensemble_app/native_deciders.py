@@ -48,6 +48,11 @@ from music_intelligence.reasoning.contextual_prior_gating import (
 from music_intelligence.reasoning.musical_policy_projection import (
     project_musical_policy,
 )
+from music_intelligence.reasoning.expressive_realization import (
+    ExpressiveContext,
+    ExpressiveRole,
+    realize_expression,
+)
 from players.sax import (
     SaxArcContext,
     SaxExpressionContext,
@@ -665,6 +670,34 @@ class SaxNativeDecider:
         )
         phrase_decision = self.phrase_memory.decide(phrase_context)
 
+        motif_usage=0
+        if shared_plan.motif_decision is not None:
+            active_match=next(
+                (
+                    x for x in self.motif_memory.active()
+                    if x.identity.motif_id==shared_plan.motif_decision.candidate.identity.motif_id
+                ),
+                None,
+            )
+            motif_usage=0 if active_match is None else active_match.usage_count
+
+        shared_expression=realize_expression(ExpressiveContext(
+            phrase_position=phrase_maturity,
+            form_position=(
+                float(snapshot.transport.bar_index % max(1,int(context.get("total_bars",32))))
+                / max(1.0,float(context.get("total_bars",32)-1))
+            ),
+            tension=max(0.0,min(1.0,snapshot.ensemble_tension)),
+            ensemble_density=max(0.0,min(1.0,snapshot.ensemble_density)),
+            register_position=max(0.0,min(1.0,(event.pitch_midi-48)/48.0)),
+            repetition_index=motif_usage,
+            motif_operation=shared_plan.intent.solo_method,
+            role=ExpressiveRole.FOREGROUND,
+            climax_pressure=max(0.0,min(1.0,snapshot.ensemble_tension*phrase_maturity)),
+            release_pressure=max(0.0,min(1.0,phrase_maturity-.78)/.22),
+            available_space=max(0.0,min(1.0,snapshot.space_available)),
+        ))
+
         expression = choose_sax_expression(SaxExpressionContext(
             pitch_midi=event.pitch_midi,
             previous_pitch_midi=previous_pitch,
@@ -672,7 +705,17 @@ class SaxNativeDecider:
             beat_in_bar=phrase_context.beat_in_bar,
             phrase_maturity=phrase_maturity,
             tension=snapshot.ensemble_tension,
-            velocity=int(context.get("sax_velocity", 82)),
+            velocity=max(
+                42,
+                min(
+                    118,
+                    int(round(
+                        48
+                        + 58*shared_expression.dynamic_level
+                        + 14*(shared_expression.accent_strength-.5)
+                    )),
+                ),
+            ),
         ))
         articulations=list(expression.tags)
         if phrase_decision.connect_legato and "legato" not in articulations:
@@ -721,6 +764,17 @@ class SaxNativeDecider:
                 breath_before_beats=.125 if phrase_decision.breath_before else 0.0,
                 attack_scale=attack_scale,
                 release_shape=release_shape,
+                expression_controls={
+                    "perceptual_intensity": shared_expression.perceptual_intensity,
+                    "dynamic_level": shared_expression.dynamic_level,
+                    "accent_strength": shared_expression.accent_strength,
+                    "note_body": shared_expression.note_body,
+                    "timing_emphasis_beats": shared_expression.timing_emphasis_beats,
+                    "foreground_weight": shared_expression.foreground_weight,
+                    "articulation_pressure": shared_expression.articulation_pressure,
+                    "brightness_pressure": shared_expression.brightness_pressure,
+                    "phrase_contour": shared_expression.phrase_contour.value,
+                },
             ),),
             source="player/sax:canonical_immediate",
             tags=tuple(sorted(set(event.tags) | set(policy.interaction.tags) | {f"arc:{arc.phase}"})),
@@ -746,6 +800,11 @@ class SaxNativeDecider:
                 "shared_vocabulary_count": str(
                     len(shared_vocab.items) if shared_vocab is not None else 0
                 ),
+                "expressive_dynamic": f"{shared_expression.dynamic_level:.3f}",
+                "expressive_accent": f"{shared_expression.accent_strength:.3f}",
+                "expressive_body": f"{shared_expression.note_body:.3f}",
+                "expressive_foreground": f"{shared_expression.foreground_weight:.3f}",
+                "expressive_contour": shared_expression.phrase_contour.value,
             },
         )
         return NativeImmediateResult(
@@ -761,6 +820,7 @@ class SaxNativeDecider:
                 "shared_solo_runtime",
                 "shared_motif_policy",
                 "shared_vocabulary_runtime",
+                "shared_expressive_realization",
                 "sax_immediate_candidate",
                 "sax_phrase_intention",
                 "sax_phrase_expression",
