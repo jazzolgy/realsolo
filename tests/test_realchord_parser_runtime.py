@@ -2,6 +2,7 @@ from music_intelligence.corpus import (
     expand_playback_timeline,
     expected_harmony_for_state,
     future_harmony,
+    library_from_normalized_corpus,
     parse_progression,
     session_state_at,
     song_from_normalized_record,
@@ -98,3 +99,26 @@ def test_shared_session_and_future_harmony_use_playback_timeline():
         (2, 2, "A", ("D-7",)),
         (3, 3, "B", ("G7",)),
     )
+
+
+def test_shared_library_gives_all_consumers_one_realchord_id_namespace():
+    library = library_from_normalized_corpus({
+        "songs": [
+            {
+                "realchord_id": "rc_shared",
+                "title": "Shared Tune",
+                "canonical": {
+                    "measures": [
+                        {
+                            "measure": 1,
+                            "section": "A",
+                            "expected_harmony": [{"beat": 1.0, "symbol": "F^7"}],
+                        }
+                    ]
+                },
+            }
+        ]
+    })
+    assert len(library) == 1
+    assert library.get("rc_shared").measure_at(1).chords[0].symbol == "F^7"
+    assert library.find_title("shared tune")[0].realchord_id == "rc_shared"
