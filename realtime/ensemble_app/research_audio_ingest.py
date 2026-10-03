@@ -11,16 +11,18 @@ from pathlib import Path
 import time
 
 from .audio_features import AudioFeatureExtractor
+from .beat_tracker import AdaptiveBeatTracker
+from .phrase_tracker import PhraseTracker
 from .research_checkpoint import default_research_state_root
 from .instrument_role_detector import (
     AcousticDescriptorFrame,
-    BaselineInstrumentRoleDetector,
     TemporalContextCorrector,
 )
+from .learned_instrument_adapter import HybridInstrumentRoleDetector
+from .musical_context_corrector import MusicalContextCorrector, MusicalContextFrame
 from music_intelligence.learning.shared_audio_intelligence import (
     DetectorEvidence,
     PerformanceEvidence,
-    identity_context_correction,
     musical_moment_from_evidence,
 )
 
@@ -29,8 +31,11 @@ class ResearchAudioIngestor:
     def __init__(self, *, evidence_root: Path | None = None) -> None:
         self.evidence_root=evidence_root or (default_research_state_root()/"evidence")
         self._extractors: dict[tuple[str,int],AudioFeatureExtractor]={}
-        self._detector=BaselineInstrumentRoleDetector()
+        self._detector=HybridInstrumentRoleDetector()
         self._context_correctors: dict[str,TemporalContextCorrector]={}
+        self._musical_context_correctors: dict[str,MusicalContextCorrector]={}
+        self._beat_trackers: dict[str,AdaptiveBeatTracker]={}
+        self._phrase_trackers: dict[str,PhraseTracker]={}
 
     def ingest_float32(
         self,
@@ -67,9 +72,21 @@ class ResearchAudioIngestor:
             mid_energy_ratio=obs.mid_energy_ratio,
             high_energy_ratio=obs.high_energy_ratio,
         )
-        raw=self._detector.detect(frame)
-        corrector=self._context_correctors.setdefault(source_id,TemporalContextCorrector())
-        posterior=corrector.correct(raw)
+        raw=self._detector.detect(samples,sample_rate=sample_rate,frame=frame)
+        beat_tracker=self._beat_trackers.setdefault(source_id,AdaptiveBeatTracker())
+        beat=beat_tracker.update(obs)
+        phrase_tracker=self._phrase_trackers.setdefault(source_id,PhraseTracker())
+        phrase=phrase_tracker.update(obs,beat)
+        temporal=self._context_correctors.setdefault(source_id,TemporalContextCorrector()).correct(raw)
+        musical_context=MusicalContextFrame(
+            beat=beat,
+            phrase=phrase,
+            pitch_hz=obs.pitch_hz,
+            onset=bool(obs.onset),
+        )
+        posterior=self._musical_context_correctors.setdefault(
+            source_id,MusicalContextCorrector()
+        ).correct(raw,temporal,musical_context)
         evidence=PerformanceEvidence(
             source_id=source_id,
             timestamp_s=max(0.0,ts),
@@ -80,9 +97,15 @@ class ResearchAudioIngestor:
                 "realtime_audio_feature_extractor",
                 "baseline_instrument_role_detector",
                 "temporal_context_corrector",
+                "beat_phrase_context_corrector",
             ),
         )
-        moment=musical_moment_from_evidence(evidence)
+        moment=musical_moment_from_evidence(
+            evidence,
+            tempo_bpm=beat.tempo_bpm if beat.confidence >= .35 else None,
+            beat_position=beat.phase if beat.confidence >= .35 else None,
+            register_center=(obs.note if obs.pitch_confidence >= .45 else None),
+        )
         observation_payload=asdict(obs)
         kind=observation_payload.get("kind")
         if hasattr(kind,"value"):
