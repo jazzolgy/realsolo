@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass,field
 from typing import Mapping
 
+from .admission import LearningAdmissionDecision
 from .pipeline import LearningConversion
 from .representation import LearningArtifact,LearningDomain
 from .store import LearningStore
@@ -76,6 +77,7 @@ class SharedLearningEngine:
     store:LearningStore=field(default_factory=LearningStore)
     states:dict[LearningDomain,DomainLearningState]=field(default_factory=dict)
     evidence_states:dict[LearningDomain,DomainLearningState]=field(default_factory=dict)
+    admission_log:dict[str,LearningAdmissionDecision]=field(default_factory=dict)
 
     def _state(self,domain:LearningDomain)->DomainLearningState:
         return self.states.setdefault(domain,DomainLearningState())
@@ -97,6 +99,41 @@ class SharedLearningEngine:
                 if study_as_evidence:self._evidence_state(a.domain).observe(a)
                 if learn:self._state(a.domain).observe(a)
         return added
+
+    def ingest_artifacts_with_admission(
+        self,
+        artifacts:tuple[LearningArtifact,...],
+        decisions:Mapping[str,LearningAdmissionDecision],
+    )->int:
+        """Store all artifacts while gating automatic prior updates by evidence quality.
+
+        Missing decisions are rejected so callers cannot silently bypass the
+        evidence-quality gate once this admission path is chosen.
+        """
+        added=0
+        for a in artifacts:
+            decision=decisions.get(a.artifact_id)
+            if decision is None:
+                raise ValueError(f"missing admission decision for {a.artifact_id}")
+            decision.validate()
+            if decision.artifact_id != a.artifact_id:
+                raise ValueError("admission decision belongs to another artifact")
+            if self.store.add(a):
+                added+=1
+                self.admission_log[a.artifact_id]=decision
+                if decision.admit_to_evidence_prior:
+                    self._evidence_state(a.domain).observe(a)
+                if decision.admit_to_training_prior:
+                    self._state(a.domain).observe(a)
+        return added
+
+    def review_required_artifacts(self)->tuple[LearningArtifact,...]:
+        """Return stored artifacts held out of priors pending review."""
+        ids={
+            artifact_id for artifact_id,decision in self.admission_log.items()
+            if decision.requires_review
+        }
+        return tuple(a for a in self.store.all() if a.artifact_id in ids)
 
     def ingest_conversion(self,conversion:LearningConversion)->int:
         # Every derived artifact may inform the research/evidence view.

@@ -16,6 +16,13 @@ from .groove import build_groove_artifact
 from .groove_grammar import GrooveGrammar, DEFAULT_GROOVE_GRAMMARS, best_matching_grammars, groove_similarity
 from .store import LearningStore
 from .audio_evidence import artifacts_from_audio_aggregate
+from .admission import (
+    EvidenceTrustClass,
+    LearningAdmissionDecision,
+    LearningAdmissionPolicy,
+    admission_for_artifact,
+    classify_reports,
+)
 from .engine import LearningFeedback,LearningPriorView,SharedLearningEngine
 from .pipeline import (
     AudioAnalysisAdapter,
@@ -45,6 +52,11 @@ __all__ = [
     "groove_similarity",
     "LearningStore",
     "artifacts_from_audio_aggregate",
+    "EvidenceTrustClass",
+    "LearningAdmissionDecision",
+    "LearningAdmissionPolicy",
+    "admission_for_artifact",
+    "classify_reports",
     "LearningFeedback",
     "LearningPriorView",
     "SharedLearningEngine",
