@@ -11,13 +11,17 @@ from dataclasses import asdict, dataclass
 from hashlib import sha256
 import json
 from pathlib import Path
-from typing import Iterable
+from typing import Protocol
 
 from music_intelligence.learning.engine import SharedLearningEngine
 from music_intelligence.learning.representation import LearningArtifact,LearningDomain
 from music_intelligence.learning.score_alignment import MusicalScoreCoordinate,PerformancePhase
 
 from .audio import AudioWindowFeatures,stream_audio_windows
+
+
+class CoordinateClock(Protocol):
+    def coordinate_at(self,source_time_s:float)->MusicalScoreCoordinate|None: ...
 
 
 @dataclass(frozen=True)
@@ -202,7 +206,7 @@ def _coordinate_json(c:MusicalScoreCoordinate|None):
 class StudySession:
     source_id:str
     output_path:Path
-    form_clock:ManualFormClock|None=None
+    form_clock:CoordinateClock|None=None
     engine:SharedLearningEngine|None=None
 
     def run(
