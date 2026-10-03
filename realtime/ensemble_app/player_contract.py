@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from typing import Mapping, Sequence
 
+from music_intelligence.expression import ExpressiveIntent
 from music_intelligence.reasoning.groove_context import (
     GrooveTemporalContext,
     player_phase_offset_beats,
@@ -203,6 +204,69 @@ def apply_shared_groove_to_render_gesture(
         gesture,
         voices=tuple(warped(v) for v in gesture.voices),
         drum_hits=tuple(warped(v) for v in gesture.drum_hits),
+        tags=tags,
+        annotations=annotations,
+    )
+    out.validate()
+    return out
+
+
+
+def apply_shared_expression_to_render_gesture(
+    gesture: RenderGesture,
+    *,
+    intent: ExpressiveIntent | None,
+) -> RenderGesture:
+    """Project canonical Shared Expression HOW onto one committed gesture.
+
+    This adapter is deliberately downstream-only: it cannot select/change
+    pitches or create future notes. Player-specific expression already present
+    on a RenderVoice is preserved and gently biased by Shared perceptual intent.
+    """
+    gesture.validate()
+    if intent is None:
+        return gesture
+    intent.validate()
+
+    def expressed(v: RenderVoice) -> RenderVoice:
+        # Preserve player dynamics while moving toward the shared perceptual
+        # target. This avoids a second instrument-expression engine.
+        target_velocity=1+int(round(intent.dynamic_level*126.0))
+        velocity=max(1,min(127,int(round(.65*v.velocity+.35*target_velocity))))
+        accent_gain=.85+.30*intent.accent_strength
+        attack=max(.05,v.attack_scale*accent_gain)
+        duration_scale=.75+.50*intent.note_body
+        duration=max(.02,v.duration_beats*duration_scale)
+        onset=max(-.5,min(.5,v.onset_offset_beats+intent.timing_emphasis_beats))
+
+        articulation=tuple(dict.fromkeys((*v.articulation,*sorted(intent.articulation_tags))))
+        controls=dict(v.expression_controls)
+        controls.update({
+            "shared_perceptual_intensity": intent.perceptual_intensity,
+            "shared_dynamic_level": intent.dynamic_level,
+            "shared_accent_strength": intent.accent_strength,
+            "shared_note_body": intent.note_body,
+            "shared_foreground_weight": intent.foreground_weight,
+            "shared_expression_confidence": intent.confidence,
+        })
+        return replace(
+            v,
+            velocity=velocity,
+            duration_beats=duration,
+            onset_offset_beats=onset,
+            articulation=articulation,
+            attack_scale=attack,
+            expression_controls=controls,
+        )
+
+    annotations=dict(gesture.annotations)
+    annotations["shared_expression"]="canonical"
+    annotations["expression_contour"]=intent.contour.value
+    tags=tuple(dict.fromkeys((*gesture.tags,"shared_expression")))
+    out=replace(
+        gesture,
+        voices=tuple(expressed(v) for v in gesture.voices),
+        drum_hits=tuple(expressed(v) for v in gesture.drum_hits),
         tags=tags,
         annotations=annotations,
     )
