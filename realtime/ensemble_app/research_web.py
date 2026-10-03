@@ -177,12 +177,21 @@ class ResearchHandler(SimpleHTTPRequestHandler):
                     self.runtime.session.mark_analyzing()
                 self.runtime.save()
                 obs=row["observation"]
+                pe=row["performance_evidence"]
+                posterior=pe["posterior"]
+                instruments=posterior.get("instrument_probabilities",{})
+                roles=posterior.get("role_probabilities",{})
                 self._json({
                     "ok":True,
                     "rms":obs["rms"],
                     "onset":obs["onset"],
                     "pitch_hz":obs["pitch_hz"],
                     "pitch_confidence":obs["pitch_confidence"],
+                    "instrument_probabilities":instruments,
+                    "role_probabilities":roles,
+                    "top_instrument":max(instruments,key=instruments.get) if instruments else None,
+                    "top_role":max(roles,key=roles.get) if roles else None,
+                    "context_reasons":posterior.get("reasons",[]),
                 })
             except (ValueError,RuntimeError) as exc:
                 self._json({"ok":False,"error":str(exc)},400)
