@@ -11,6 +11,7 @@ from .engine import EnsembleEngine
 from .midi_io import MidoSink, list_ports, live_poll
 from .models import TransportEvent
 from .stage1_web import run_stage1_web
+from .research_web import run_research_web
 from .asset_installer import PROFILES, activate_profile, install_assets
 
 
@@ -111,6 +112,9 @@ def main() -> None:
     stage1.add_argument("--host", default="127.0.0.1")
     stage1.add_argument("--port", type=int, default=8765)
     stage1.add_argument("--asset-profile", choices=PROFILES, default=None)
+    research = sub.add_parser("research-listener")
+    research.add_argument("--host", default="127.0.0.1")
+    research.add_argument("--port", type=int, default=8771)
 
     mm = sub.add_parser("monitor-midi")
     mm.add_argument("--input", required=True)
@@ -133,6 +137,8 @@ def main() -> None:
         if args.asset_profile:
             activate_profile(args.asset_profile)
         run_stage1_web(args.host, args.port)
+    elif args.command == "research-listener":
+        run_research_web(args.host, args.port)
     elif args.command == "monitor-midi":
         command_monitor_midi(args.input)
     elif args.command == "monitor-audio":
