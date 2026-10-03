@@ -32,7 +32,6 @@ class StructuralPerformanceEvent:
     event_id: str
     onset_beats: float
     duration_beats: float
-    onset_seconds: float | None = None
     pitch_midi: float | None = None
     unpitched_token: str = ""
     instrument: str = ""
@@ -47,6 +46,7 @@ class StructuralPerformanceEvent:
     confidence: float = 1.0
     tags: frozenset[str] = frozenset()
     provenance: tuple[str, ...] = ()
+    onset_seconds: float | None = None
     musical_coordinate: MusicalScoreCoordinate | None = None
 
     def validate(self) -> None:
