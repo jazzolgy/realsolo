@@ -172,13 +172,15 @@ def _materialize_voice_rests(
                 start,
                 (first_onset // bar_length) * bar_length,
             )
-            voice_end = (
-                min(
-                    end,
-                    (last_offset // bar_length + 1) * bar_length,
-                )
-                if end is not None
+            active_bar_end = (
+                last_offset
+                if last_offset % bar_length == 0
                 else (last_offset // bar_length + 1) * bar_length
+            )
+            voice_end = (
+                min(end, active_bar_end)
+                if end is not None
+                else active_bar_end
             )
         else:
             voice_start = start
