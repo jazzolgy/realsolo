@@ -29,11 +29,28 @@ class EvidenceTrustClass(str, Enum):
 
 @dataclass(frozen=True)
 class LearningAdmissionPolicy:
-    """Policy thresholds for deciding how evidence may update learning state."""
+    """Policy thresholds and weights for learning admission.
+
+    Weights are influence strengths, not probabilities and not truth labels.
+    """
 
     allow_context_supported_training: bool = True
     allow_unassessed_evidence_prior: bool = True
     allow_unassessed_training_prior: bool = False
+
+    direct_acoustic_weight: float = 1.0
+    context_supported_weight: float = 0.65
+    unassessed_evidence_weight: float = 0.50
+
+    def validate(self) -> None:
+        for name in (
+            "direct_acoustic_weight",
+            "context_supported_weight",
+            "unassessed_evidence_weight",
+        ):
+            value = getattr(self, name)
+            if not 0.0 <= value <= 1.0:
+                raise ValueError(f"{name} must be within 0..1")
 
 
 @dataclass(frozen=True)
@@ -43,6 +60,8 @@ class LearningAdmissionDecision:
     admit_to_evidence_prior: bool
     admit_to_training_prior: bool
     requires_review: bool
+    evidence_weight: float = 0.0
+    training_weight: float = 0.0
     reasons: tuple[str, ...] = ()
 
     def validate(self) -> None:
@@ -50,6 +69,14 @@ class LearningAdmissionDecision:
             raise ValueError("artifact_id is required")
         if self.requires_review and self.admit_to_training_prior:
             raise ValueError("review-required evidence may not update training prior")
+        if not 0.0 <= self.evidence_weight <= 1.0:
+            raise ValueError("evidence_weight must be within 0..1")
+        if not 0.0 <= self.training_weight <= 1.0:
+            raise ValueError("training_weight must be within 0..1")
+        if not self.admit_to_evidence_prior and self.evidence_weight != 0.0:
+            raise ValueError("non-admitted evidence prior must have zero weight")
+        if not self.admit_to_training_prior and self.training_weight != 0.0:
+            raise ValueError("non-admitted training prior must have zero weight")
 
 
 def _risk_rank(level: CorrectionRiskLevel) -> int:
@@ -102,6 +129,7 @@ def admission_for_artifact(
     """
 
     artifact.validate()
+    policy.validate()
     reports = tuple(
         reports_by_event_id[event_id]
         for event_id in artifact.source_event_ids
@@ -116,6 +144,8 @@ def admission_for_artifact(
             admit_to_evidence_prior=False,
             admit_to_training_prior=False,
             requires_review=True,
+            evidence_weight=0.0,
+            training_weight=0.0,
             reasons=reasons + ("stored-for-audit-not-prior-update",),
         )
     elif trust is EvidenceTrustClass.CONTEXT_SUPPORTED:
@@ -127,6 +157,12 @@ def admission_for_artifact(
                 rights_training_eligible and policy.allow_context_supported_training
             ),
             requires_review=False,
+            evidence_weight=policy.context_supported_weight,
+            training_weight=(
+                policy.context_supported_weight
+                if rights_training_eligible and policy.allow_context_supported_training
+                else 0.0
+            ),
             reasons=reasons,
         )
     elif trust is EvidenceTrustClass.DIRECT_ACOUSTIC:
@@ -136,6 +172,10 @@ def admission_for_artifact(
             admit_to_evidence_prior=True,
             admit_to_training_prior=rights_training_eligible,
             requires_review=False,
+            evidence_weight=policy.direct_acoustic_weight,
+            training_weight=(
+                policy.direct_acoustic_weight if rights_training_eligible else 0.0
+            ),
             reasons=reasons,
         )
     else:
@@ -147,6 +187,16 @@ def admission_for_artifact(
                 rights_training_eligible and policy.allow_unassessed_training_prior
             ),
             requires_review=False,
+            evidence_weight=(
+                policy.unassessed_evidence_weight
+                if policy.allow_unassessed_evidence_prior
+                else 0.0
+            ),
+            training_weight=(
+                policy.unassessed_evidence_weight
+                if rights_training_eligible and policy.allow_unassessed_training_prior
+                else 0.0
+            ),
             reasons=reasons,
         )
 
