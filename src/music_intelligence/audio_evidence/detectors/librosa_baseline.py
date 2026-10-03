@@ -262,6 +262,25 @@ class LibrosaTimbreDetector:
             sr=decoded.sample_rate,
             hop_length=self.hop_length,
         )[0]
+        flatness = librosa.feature.spectral_flatness(
+            y=decoded.samples,
+            hop_length=self.hop_length,
+        )[0]
+        rolloff = librosa.feature.spectral_rolloff(
+            y=decoded.samples,
+            sr=decoded.sample_rate,
+            hop_length=self.hop_length,
+            roll_percent=0.85,
+        )[0]
+        rms = librosa.feature.rms(
+            y=decoded.samples,
+            hop_length=self.hop_length,
+        )[0]
+        zero_crossing = librosa.feature.zero_crossing_rate(
+            decoded.samples,
+            hop_length=self.hop_length,
+        )[0]
+
         results: list[TimbreDetection] = []
         for onset in onsets:
             relative = onset.onset_seconds - decoded.source_offset_seconds
@@ -277,6 +296,12 @@ class LibrosaTimbreDetector:
                 TimbreDetection(
                     onset_id=onset.onset_id,
                     spectral_centroid_hz=float(centroid[frame]),
+                    features={
+                        "spectral_flatness": float(flatness[frame]),
+                        "spectral_rolloff_hz": float(rolloff[frame]),
+                        "rms": float(rms[frame]),
+                        "zero_crossing_rate": float(zero_crossing[frame]),
+                    },
                     detector_id=self.detector_id,
                 )
             )
