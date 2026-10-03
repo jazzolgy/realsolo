@@ -5,6 +5,11 @@ from .adapters.performance_evidence import (
 )
 from .adapters.source import AudioSource
 from .calibration.ambiguity import AmbiguitySummary, summarize_instrument_ambiguity
+from .calibration.attribution_comparison import (
+    AttributionComparison,
+    AttributionSystemSummary,
+    compare_instrument_attribution,
+)
 from .calibration.confidence import ConfidenceReport, confidence_report
 from .context.models import ContextEvidence
 from .observation.models import (
@@ -28,6 +33,8 @@ from .posterior.revision import (
 
 __all__ = [
     "AppliedContextFactor",
+    "AttributionComparison",
+    "AttributionSystemSummary",
     "AudioEvidencePipeline",
     "AudioObservation",
     "AudioSource",
@@ -44,6 +51,7 @@ __all__ = [
     "RevisionLedger",
     "SeparationMetadata",
     "SeparatedAudioEvidencePipeline",
+    "compare_instrument_attribution",
     "confidence_report",
     "summarize_instrument_ambiguity",
     "to_performance_evidence_payload",
