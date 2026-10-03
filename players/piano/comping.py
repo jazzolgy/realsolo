@@ -416,7 +416,7 @@ class PianoCompingEvaluator:
         learned_density = numeric_target_bias(
             self.comping_prior,
             "density",
-            float(state._estimate_density(candidate).intrusion_index),
+            float(state._estimate_density(candidate).onset_rate),
             tolerance=.65,
             max_bonus=.10,
             max_penalty=.04,
