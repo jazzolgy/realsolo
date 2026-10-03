@@ -41,8 +41,6 @@ class DetectorEvidence:
         for key,value in self.confidence_fields.items():
             if not key or not 0.0 <= float(value) <= 1.0:
                 raise ValueError("confidence_fields values must be named confidences within 0..1")
-        if self.metric_form_position is not None:
-            self.metric_form_position.validate()
         if self.pitch_hz is not None and self.pitch_hz <= 0:
             raise ValueError("pitch_hz must be positive when known")
 
@@ -80,6 +78,8 @@ class PerformanceEvidence:
             raise ValueError("timestamp_s may not be negative")
         self.raw.validate()
         self.posterior.validate()
+        if self.metric_form_position is not None:
+            self.metric_form_position.validate()
 
 
 @dataclass(frozen=True)
@@ -96,6 +96,7 @@ class MusicalMoment:
     role_probabilities: Mapping[str,float] = field(default_factory=dict)
     confidence_fields: Mapping[str,float] = field(default_factory=dict)
     provenance: tuple[str,...] = ()
+    metric_form_position: MetricFormPosition | None = None
 
     def validate(self) -> None:
         if not self.source_id:
@@ -115,6 +116,8 @@ class MusicalMoment:
         for key,value in self.confidence_fields.items():
             if not key or not 0.0 <= float(value) <= 1.0:
                 raise ValueError("confidence_fields values must be named confidences within 0..1")
+        if self.metric_form_position is not None:
+            self.metric_form_position.validate()
 
 
 def identity_context_correction(raw: DetectorEvidence) -> ContextCorrection:
@@ -157,7 +160,7 @@ def musical_moment_from_evidence(
         role_probabilities=dict(evidence.posterior.role_probabilities),
         confidence_fields=dict(evidence.posterior.confidence_fields),
         provenance=evidence.provenance+("shared_audio_intelligence:musical_moment",),
-        metric_form_position=metric_form_position,
+        metric_form_position=(metric_form_position or evidence.metric_form_position),
     )
 
 
@@ -204,5 +207,5 @@ def structural_event_from_evidence(
         role_probabilities=dict(posterior.role_probabilities),
         confidence_fields=dict(posterior.confidence_fields),
         provenance=evidence.provenance+("shared_audio_intelligence:structural_promotion",),
-        metric_form_position=None,
+        metric_form_position=evidence.metric_form_position,
     )
