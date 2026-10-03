@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "legend_id": "bill_evans",
+  "performer_links": [
+    "bill_evans",
+    "paul_motian"
+  ],
+  "track_id": "BE-010",
+  "song_id": "nardis",
+  "source_id": "be_playlist_project_audio",
+  "audio_provenance": {
+    "track_absolute_seconds": [
+      3034,
+      3388
+    ],
+    "duration_s": 354
+  },
+  "expected_harmony_sources": [
+    "chart.standard100.nardis"
+  ],
+  "signal_probe": {
+    "representation": "full-mix chroma CQT",
+    "strongest_cycle_period_s": 36.8,
+    "mean_cosine_similarity_32bar_candidate": 0.696,
+    "mean_cosine_similarity_half_cycle_18_4s": 0.6676,
+    "implied_bar_duration_s_if_32_bar_form": 1.15,
+    "implied_quarter_bpm_if_4_4": 208.7,
+    "candidate_bar_grid_phase_s": 0.01,
+    "candidate_32bar_bar_grid_similarity": 0.8231,
+    "legacy_track_tempo_proxy_bpm": 161.499
+  },
+  "interpretation": {
+    "form": "32-bar AABA candidate from shared form map/chord corpus",
+    "core_form_recurrence_status": "strong_candidate",
+    "quarter_grid_status": "strong_candidate",
+    "exact_form_rotation_status": "unresolved",
+    "exact_form_bar_status": "not_canonical",
+    "learning_note": "The form-aligned quarter-grid hypothesis is more coherent than the legacy whole-track tempo proxy; do not use legacy tempo as canonical time."
+  },
+  "promotion_gate": [
+    "align Standard 100 expected harmony against 32 possible form rotations",
+    "verify downbeat phase locally",
+    "identify head/solo/out-head recurrence roles",
+    "then promote exact form_bar"
+  ],
+  "provenance": [
+    "user_provided_bill_evans_compilation",
+    "shared_standard100:nardis",
+    "full_mix_chroma_cycle_probe"
+  ]
+}
