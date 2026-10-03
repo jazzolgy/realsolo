@@ -113,6 +113,18 @@ class BassNativeDecider:
     def __call__(self, context: Mapping[str, object]) -> NativeImmediateResult | None:
         forwarded = dict(context)
         forwarded.setdefault("bass_mode", self.mode.value)
+
+        # Walking harmony lives on the quarter-note spine. Swung offbeats are
+        # optional ghost/dead-note opportunities, not a second harmonic bass
+        # decision. This keeps the causal eighth-note ensemble clock without
+        # turning walking bass into eight pitched attacks per bar.
+        beat=float(forwarded.get("beat_in_bar",0.0))
+        if forwarded["bass_mode"]=="walking":
+            frac=beat%1.0
+            forwarded.setdefault(
+                "bass_ghost_only",
+                abs(frac-.5)<=.08,
+            )
         return self.delegate(forwarded)
 
 
