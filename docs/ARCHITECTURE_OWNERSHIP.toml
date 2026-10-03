@@ -1,0 +1,69 @@
+# Machine-readable architecture ownership for CI/tests.
+version = 1
+
+[workstreams.audio_evidence]
+canonical_name = "Audio Evidence Engine"
+owned_roots = ["src/music_intelligence/audio_evidence/"]
+forbidden_import_prefixes = [
+  "music_intelligence.transcribe",
+  "music_intelligence.learning",
+  "music_intelligence.harmony",
+  "music_intelligence.reasoning",
+  "players",
+  "realtime",
+]
+forbidden_module_names = [
+  "harmony",
+  "form",
+  "phrase",
+  "ensemble",
+  "notation",
+  "engraving",
+  "musicxml",
+  "logical_score",
+]
+may_reference_contract_docs = [
+  "docs/PERFORMANCE_EVIDENCE_OBSERVATION_POSTERIOR.md",
+]
+contract_policy = "may know Performance Evidence, must not own it"
+
+[workstreams.transcription_notation]
+canonical_name = "AI Transcription + Notation"
+owned_roots = ["src/music_intelligence/transcribe/"]
+forbidden_import_prefixes = [
+  "music_intelligence.audio_evidence",
+]
+contract_policy = "consumes Performance Evidence; must not depend on Audio Evidence internals"
+
+[workstreams.music_intelligence_core]
+canonical_name = "Music Intelligence Core"
+owned_roots = [
+  "src/music_intelligence/harmony/",
+  "src/music_intelligence/reasoning/",
+  "src/music_intelligence/corpus/",
+  "src/music_intelligence/vocabulary/",
+  "src/music_intelligence/style/",
+  "src/music_intelligence/legends/",
+]
+contract_policy = "owns shared musical meaning; must not duplicate product notation or detector internals"
+
+[contracts.performance_evidence]
+schema_version = "performance-evidence.v1"
+owner = "transcription_notation"
+required_observation_posterior_fields = [
+  "raw_instrument_probabilities",
+  "context_instrument_probabilities",
+  "raw_role_probabilities",
+  "context_role_probabilities",
+  "raw_confidence",
+  "contextual_confidence",
+  "context_corrections",
+  "revision_history",
+]
+
+[preflight]
+check_main_head = true
+check_contract_version = true
+check_import_boundaries = true
+check_duplicate_semantic_modules = true
+check_workstream_overlap = true
