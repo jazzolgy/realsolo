@@ -46,4 +46,22 @@ __all__ = [
     "LearningFeedback",
     "LearningPriorView",
     "SharedLearningEngine",
+    "AlignmentStatus",
+    "AudioScoreAlignment",
+    "MusicalScoreCoordinate",
+    "PerformancePhase",
+    "ScoreAlignedEvidence",
+    "research_learning_status",
+    "same_musical_position",
 ]
+
+
+from .score_alignment import (
+    AlignmentStatus,
+    AudioScoreAlignment,
+    MusicalScoreCoordinate,
+    PerformancePhase,
+    ScoreAlignedEvidence,
+    research_learning_status,
+    same_musical_position,
+)
