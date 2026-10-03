@@ -178,6 +178,7 @@ class ResearchHandler(SimpleHTTPRequestHandler):
                 self.runtime.save()
                 obs=row["observation"]
                 pe=row["performance_evidence"]
+                moment=row["musical_moment"]
                 posterior=pe["posterior"]
                 instruments=posterior.get("instrument_probabilities",{})
                 roles=posterior.get("role_probabilities",{})
@@ -192,6 +193,9 @@ class ResearchHandler(SimpleHTTPRequestHandler):
                     "top_instrument":max(instruments,key=instruments.get) if instruments else None,
                     "top_role":max(roles,key=roles.get) if roles else None,
                     "context_reasons":posterior.get("reasons",[]),
+                    "tempo_bpm":moment.get("tempo_bpm"),
+                    "beat_position":moment.get("beat_position"),
+                    "register_center":moment.get("register_center"),
                 })
             except (ValueError,RuntimeError) as exc:
                 self._json({"ok":False,"error":str(exc)},400)
