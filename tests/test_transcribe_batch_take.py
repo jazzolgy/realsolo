@@ -287,3 +287,148 @@ def test_dynamic_hairpins_are_segmented_across_large_gaps():
 
     assert len(result.parts[0].dynamic_trajectories) == 2
     assert len(result.score.spanners) == 2
+
+
+
+def _polyphonic_piano_event(event_id, beat, duration, midi, voice_role):
+    return CommittedPerformanceEvent(
+        event_id=event_id,
+        player_id="piano",
+        instrument="piano",
+        commitment=CommitmentState.PLAYED,
+        time=PerformanceTimeSpan(
+            onset_seconds=float(beat) * .5,
+            offset_seconds=float(beat + duration) * .5,
+            transport_beat=float(beat),
+            transport_offset_beat=float(beat + duration),
+        ),
+        pitch=PerformedPitch(nominal_midi=float(midi)),
+        voice_role=voice_role,
+        dynamic=.5,
+        provenance=("test:polyphonic-piano",),
+    )
+
+
+def test_polyphonic_piano_secondary_voice_rests_stay_within_active_bar():
+    engine = NotationEngine()
+    upper = StaffProfile(
+        "pn:upper",
+        "upper",
+        role_tags=frozenset({"voice1", "voice2"}),
+        nominal_low_midi=60,
+        nominal_high_midi=108,
+    )
+    lower = StaffProfile(
+        "pn:lower",
+        "lower",
+        role_tags=frozenset({"bass"}),
+        nominal_low_midi=21,
+        nominal_high_midi=59,
+    )
+    request = PartTranscriptionRequest(
+        part_id="pn",
+        name="Piano",
+        instrument="piano",
+        events=(
+            _polyphonic_piano_event("v1:a", 0, 2, 76, "voice1"),
+            _polyphonic_piano_event("v1:b", 2, 2, 79, "voice1"),
+            _polyphonic_piano_event("v2:a", 1, 1, 67, "voice2"),
+        ),
+        staffs=(upper, lower),
+        end_beat=8.0,
+        infer_piano_gestures=False,
+        infer_dynamic_hairpins=False,
+    )
+
+    result = engine.transcribe_part(request)
+    upper_events = [
+        event
+        for event in result.part.events
+        if event.staff_id == "pn:upper"
+    ]
+    voice_ids = sorted({event.voice_id for event in upper_events})
+    assert len(voice_ids) == 2
+    primary_voice = next(
+        event.voice_id
+        for event in upper_events
+        if "v1:a" in event.source_event_ids
+    )
+    secondary_voice = next(
+        event.voice_id
+        for event in upper_events
+        if "v2:a" in event.source_event_ids
+    )
+
+    secondary_rests = [
+        event
+        for event in upper_events
+        if event.voice_id == secondary_voice and event.kind.value == "rest"
+    ]
+    assert secondary_rests
+    assert all(event.span.offset <= 4 for event in secondary_rests)
+
+    primary_rests = [
+        event
+        for event in upper_events
+        if event.voice_id == primary_voice and event.kind.value == "rest"
+    ]
+    assert any(event.span.onset >= 4 for event in primary_rests)
+
+
+def test_polyphonic_piano_overlapping_voices_get_opposing_stems_and_musicxml_backup():
+    engine = NotationEngine()
+    upper = StaffProfile(
+        "pn:upper",
+        "upper",
+        role_tags=frozenset({"voice1", "voice2"}),
+        nominal_low_midi=60,
+        nominal_high_midi=108,
+    )
+    lower = StaffProfile(
+        "pn:lower",
+        "lower",
+        role_tags=frozenset({"bass"}),
+        nominal_low_midi=21,
+        nominal_high_midi=59,
+    )
+    request = PartTranscriptionRequest(
+        part_id="pn",
+        name="Piano",
+        instrument="piano",
+        events=(
+            _polyphonic_piano_event("upper:sustain", 0, 2, 76, "voice1"),
+            _polyphonic_piano_event("lower:entry", 1, 1, 67, "voice2"),
+        ),
+        staffs=(upper, lower),
+        end_beat=4.0,
+        infer_piano_gestures=False,
+        infer_dynamic_hairpins=False,
+    )
+
+    result, xml = engine.transcribe_take_musicxml(
+        (request,),
+        score_id="take:polyphonic-piano",
+        title="Polyphonic Piano",
+    )
+    plan = engine.engraving_plan(result.score)
+
+    source_to_stem = {}
+    by_event = {intent.event_id: intent for intent in plan.intents}
+    for event in result.score.parts[0].events:
+        if event.source_event_ids:
+            source_to_stem[event.source_event_ids[0]] = by_event[event.event_id].stem_direction.value
+
+    assert source_to_stem["upper:sustain"] == "up"
+    assert source_to_stem["lower:entry"] == "down"
+
+    root = ET.fromstring(xml)
+    piano_measure = root.find(".//part[@id='pn']/measure")
+    assert piano_measure is not None
+    assert piano_measure.find("backup") is not None
+    stems = [
+        note.findtext("stem")
+        for note in piano_measure.findall("note")
+        if note.find("pitch") is not None
+    ]
+    assert "up" in stems
+    assert "down" in stems
