@@ -66,7 +66,7 @@ aiRole:document.querySelector("#aiRole"),position:document.querySelector("#posit
 soundMode:document.querySelector("#soundMode"),soundfont:document.querySelector("#soundfont"),bankText:document.querySelector("#bankText"),providerText:document.querySelector("#providerText")
 };
 var audioCtx=null,master=null,sampler=null,approvedSamples=null,lastScheduledBeat=-1,lastScheduledQuartetTick=-1,quartetRequestChain=Promise.resolve(),soloStep=0;
-for(var i=-12;i<=12;i++){var opt=document.createElement("option");opt.value=String(i);opt.textContent=i===0?"0":(i>0?"+"+i:String(i));els.transpose.appendChild(opt);}
+for(var i=-12;i<=12;i++){var opt=document.createElement("option");opt.value=String(i);opt.textContent=i===0?"0":(i>0?"+"+i:String(i));els.transpose.appendChild(opt);}els.transpose.value="0";
 var chart=null,playing=false,startedAt=0,offsetBeats=0,raf=0;
 function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
 function ensureAudio(){
@@ -179,8 +179,9 @@ while(lastScheduledQuartetTick<targetTick){
 lastScheduledQuartetTick++;
 if(lastScheduledQuartetTick<Math.floor(tickNow))continue;
 var absoluteBeat=lastScheduledQuartetTick*step;
-var beatsPerChorus=chart.bars.length*chart.beats_per_bar;
-var inChorus=absoluteBeat%beatsPerChorus;
+var beatsPerChorus=chart.bars.length*chart.beats_per_bar,totalChoruses=clamp(Number(els.choruses.value)||1,1,20);
+if(absoluteBeat>=beatsPerChorus*totalChoruses)break;
+var inChorus=((absoluteBeat%beatsPerChorus)+beatsPerChorus)%beatsPerChorus;
 var barIndex=Math.floor(inChorus/chart.beats_per_bar),beatInBar=inChorus%chart.beats_per_bar;
 var chorusIndex=Math.floor(absoluteBeat/beatsPerChorus);
 var chord=chordAt(barIndex,beatInBar),nextChord=nextChordAtStep(barIndex,beatInBar,step);
@@ -222,7 +223,7 @@ els.chart.appendChild(node);
 });
 }
 function currentBeat(now){var tempo=clamp(Number(els.tempo.value)||120,40,320);if(!playing)return offsetBeats;return offsetBeats+((now-startedAt)/1000)*(tempo/60);}
-function chordAt(barIndex,beatInBar){var chords=chart.bars[barIndex].chords;if(!chords.length)return "";var idx=Math.min(chords.length-1,Math.floor((beatInBar/chart.beats_per_bar)*chords.length));return chords[idx];}
+function chordAt(barIndex,beatInBar){if(!chart||!Array.isArray(chart.bars)||!chart.bars.length)return "";var n=chart.bars.length,normalized=((Number(barIndex)%n)+n)%n;var bar=chart.bars[normalized];var chords=bar&&Array.isArray(bar.chords)?bar.chords:[];if(!chords.length)return "";var idx=Math.min(chords.length-1,Math.max(0,Math.floor((beatInBar/chart.beats_per_bar)*chords.length)));return chords[idx];}
 function render(now){
 if(!chart)return;var beats=currentBeat(now);var beatsPerChorus=chart.bars.length*chart.beats_per_bar;var totalChoruses=clamp(Number(els.choruses.value)||1,1,20);var totalBeats=beatsPerChorus*totalChoruses;
 var displayBeats=Math.min(beats,Math.max(0,totalBeats-.0001));var chorus=Math.floor(displayBeats/beatsPerChorus);var inChorus=displayBeats%beatsPerChorus;var barIndex=Math.floor(inChorus/chart.beats_per_bar);
