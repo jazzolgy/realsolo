@@ -1,10 +1,10 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "source_id": "be_playlist_project_audio",
   "track_id": "BE-003",
   "song_id": "autumn_leaves",
   "track_start_abs_s": 708,
-  "rule": "absolute seconds are provenance; spans carry canonical musical addresses",
+  "rule": "absolute seconds are provenance; early section windows are candidate navigation spans only. Latest v0.3 checkpoint does not promote exact chorus boundaries.",
   "spans": [
     {
       "id": "head_A1",
@@ -15,7 +15,9 @@
       "end_form_bar": 8,
       "chorus_index": 0,
       "phase": "head",
-      "confidence": 0.88
+      "confidence": 0.88,
+      "canonical": false,
+      "usage": "navigation_candidate_only"
     },
     {
       "id": "head_A2",
@@ -26,7 +28,9 @@
       "end_form_bar": 16,
       "chorus_index": 0,
       "phase": "head",
-      "confidence": 0.82
+      "confidence": 0.82,
+      "canonical": false,
+      "usage": "navigation_candidate_only"
     },
     {
       "id": "head_B",
@@ -37,7 +41,9 @@
       "end_form_bar": 24,
       "chorus_index": 0,
       "phase": "head",
-      "confidence": 0.9
+      "confidence": 0.9,
+      "canonical": false,
+      "usage": "navigation_candidate_only"
     },
     {
       "id": "head_C",
@@ -48,7 +54,9 @@
       "end_form_bar": 32,
       "chorus_index": 0,
       "phase": "head",
-      "confidence": 0.78
+      "confidence": 0.78,
+      "canonical": false,
+      "usage": "navigation_candidate_only"
     },
     {
       "id": "piano_solo_1_A1",
@@ -59,7 +67,9 @@
       "end_form_bar": 8,
       "chorus_index": 1,
       "phase": "solo",
-      "confidence": 0.86
+      "confidence": 0.86,
+      "canonical": false,
+      "usage": "navigation_candidate_only"
     },
     {
       "id": "piano_solo_1_A2",
@@ -70,7 +80,9 @@
       "end_form_bar": 16,
       "chorus_index": 1,
       "phase": "solo",
-      "confidence": 0.55
+      "confidence": 0.55,
+      "canonical": false,
+      "usage": "navigation_candidate_only"
     },
     {
       "id": "piano_solo_1_B",
@@ -81,7 +93,9 @@
       "end_form_bar": 24,
       "chorus_index": 1,
       "phase": "solo",
-      "confidence": 0.55
+      "confidence": 0.55,
+      "canonical": false,
+      "usage": "navigation_candidate_only"
     },
     {
       "id": "piano_solo_1_C",
@@ -92,7 +106,9 @@
       "end_form_bar": 32,
       "chorus_index": 1,
       "phase": "solo",
-      "confidence": 0.55
+      "confidence": 0.55,
+      "canonical": false,
+      "usage": "navigation_candidate_only"
     }
   ],
   "expected_harmony_sources": [
@@ -102,5 +118,19 @@
   ],
   "provenance": [
     "research/legends/bill_evans/observations/score_alignment/autumn_leaves_take1_sections_v0_1.json"
+  ],
+  "status": "provisional_alignment_candidates_not_canonical",
+  "latest_alignment_checkpoint": "research/legends/bill_evans/analyses/autumn_leaves_alignment_checkpoint_v0_3.md",
+  "leading_timing_hypothesis": {
+    "quarter_bpm_approx": 206.72,
+    "four_beat_bar_candidates_approx": "305-306 across 361s track",
+    "harmonic_32bar_lag_similarity": "mean about 0.85 across phases",
+    "implication": "32-bar cyclic structure is supported; exact downbeat/chorus offset remains probabilistic"
+  },
+  "promotion_gate": [
+    "local downbeat phase verified",
+    "32-bar cycle boundary stable",
+    "score/chord emission supports local form offset",
+    "head/solo/out-head role independently verified"
   ]
 }
