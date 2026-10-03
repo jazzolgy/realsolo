@@ -19,6 +19,8 @@ __all__ = [
     "source_instrument_affinity",
     "vocabulary_affinity",
     "VocabularyUseScore",
+    "DIRECT_LITERAL_SHARE",
+    "choose_runtime_vocabulary_use",
     "vocabulary_use_score",
     "score_vocabulary_item",
     "rank_vocabulary_items",
